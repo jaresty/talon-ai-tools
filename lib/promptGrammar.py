@@ -194,6 +194,13 @@ def _build_axis_section(
         if desc
     }
 
+    axis_heuristics_raw = catalog.get("axis_heuristics") or {}
+    axis_heuristics: dict[str, list[str]] = {
+        str(axis): [str(h) for h in hints]
+        for axis, hints in sorted(axis_heuristics_raw.items())
+        if hints
+    }
+
     section: dict[str, Any] = {
         "definitions": axis_definitions,
         "list_tokens": axis_list_tokens,
@@ -210,6 +217,8 @@ def _build_axis_section(
         section["routing_concept"] = axis_routing_concept
     if axis_descriptions:
         section["axis_descriptions"] = axis_descriptions
+    if axis_heuristics:
+        section["axis_heuristics"] = axis_heuristics
 
     # Metadata (ADR-0155): structured definition/heuristics/distinctions per axis token.
     axis_token_metadata_raw = catalog.get("axis_token_metadata") or {}

@@ -55,6 +55,9 @@ func renderHelpToken(w io.Writer, grammar *Grammar, slug string) error {
 			continue
 		}
 		fmt.Fprintf(w, "# Token: %s (%s)\n\n", slug, axis)
+		if axisDesc := grammar.AxisLevelDescription(axis); axisDesc != "" {
+			fmt.Fprintf(w, "**Axis**: %s — %s\n\n", axis, axisDesc)
+		}
 		kanji := grammar.AxisKanji(axis, canonical)
 		if kanji != "" {
 			fmt.Fprintf(w, "**Kanji**: %s\n\n", kanji)

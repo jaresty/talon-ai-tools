@@ -994,3 +994,25 @@ func TestHelpTokenAxisDistinctionsIncludeNote(t *testing.T) {
 		t.Errorf("renderHelpToken(%q) distinctions missing note text %q\noutput:\n%s", testSlug, wantNote, output)
 	}
 }
+
+// TestHelpTokenAxisTokenShowsAxisDescription verifies that bar help token for an axis token
+// includes the axis-level description so callers understand which category the token belongs to.
+func TestHelpTokenAxisTokenShowsAxisDescription(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// Use "flow" (method axis) — method has a well-known axis description
+	var buf bytes.Buffer
+	if err := renderHelpToken(&buf, grammar, "flow"); err != nil {
+		t.Fatalf("renderHelpToken(flow): %v", err)
+	}
+	output := buf.String()
+	axisDesc := grammar.AxisLevelDescription("method")
+	if axisDesc == "" {
+		t.Skip("method axis has no axis description in grammar — run make bar-grammar-update")
+	}
+	if !strings.Contains(output, axisDesc) {
+		t.Errorf("renderHelpToken(flow) should include axis description %q\noutput:\n%s", axisDesc, output)
+	}
+}

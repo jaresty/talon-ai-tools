@@ -69,6 +69,7 @@ type AxisSection struct {
 	RoutingConcept      map[string]map[string]string            // ADR-0146: distilled routing concept phrases
 	CrossAxisComposition   map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,cautionary}
 	AxisDescriptions       map[string]string                              // axis-level empty-state descriptions
+	AxisHeuristics         map[string][]string                            // axis-level BM25 routing heuristics
 	FormDefaultCompleteness map[string]string                             // ADR-0153: per-form-token completeness override
 	Metadata                map[string]map[string]TaskMetadata            // ADR-0155: structured metadata per axis token
 }
@@ -91,7 +92,6 @@ type TaskMetadata struct {
 	Definition   string                    `json:"definition"`
 	Heuristics   []string                  `json:"heuristics"`
 	Distinctions []TaskMetadataDistinction `json:"distinctions"`
-	Embedding    []float32                 `json:"embedding,omitempty"`
 }
 
 type StaticSection struct {
@@ -200,6 +200,7 @@ type rawAxisSection struct {
 	RoutingConcept       map[string]map[string]string                `json:"routing_concept"`        // ADR-0146
 	CrossAxisComposition    map[string]map[string]map[string]CrossAxisPair `json:"cross_axis_composition"`     // ADR-0147
 	AxisDescriptions        map[string]string                              `json:"axis_descriptions"`          // axis-level empty-state descriptions
+	AxisHeuristics          map[string][]string                            `json:"axis_heuristics"`            // axis-level BM25 routing heuristics
 	FormDefaultCompleteness map[string]string                              `json:"form_default_completeness"`  // ADR-0153
 	Metadata                map[string]map[string]TaskMetadata             `json:"metadata"`                   // ADR-0155
 }
@@ -310,6 +311,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			RoutingConcept:       raw.Axes.RoutingConcept,
 			CrossAxisComposition:    raw.Axes.CrossAxisComposition,
 			AxisDescriptions:        raw.Axes.AxisDescriptions,
+			AxisHeuristics:          raw.Axes.AxisHeuristics,
 			FormDefaultCompleteness: raw.Axes.FormDefaultCompleteness,
 			Metadata:                raw.Axes.Metadata,
 		},
@@ -1049,6 +1051,14 @@ func (g *Grammar) AxisLevelDescription(axis string) string {
 		return ""
 	}
 	return g.Axes.AxisDescriptions[normalizeAxis(axis)]
+}
+
+// AxisLevelHeuristics returns the axis-level BM25 routing heuristics for a given axis.
+func (g *Grammar) AxisLevelHeuristics(axis string) []string {
+	if g.Axes.AxisHeuristics == nil {
+		return nil
+	}
+	return g.Axes.AxisHeuristics[normalizeAxis(axis)]
 }
 
 // AxisRoutingConcept returns the distilled routing concept phrase for a token (ADR-0146).

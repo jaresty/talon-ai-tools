@@ -1309,6 +1309,104 @@
       "tone": "The emotional register — how the response sounds.",
       "voice": "Who is speaking — the perspective and expertise level."
     },
+    "axis_heuristics": {
+      "audience": [
+        "for whom",
+        "intended audience",
+        "reader level",
+        "target reader",
+        "who is reading",
+        "who should understand"
+      ],
+      "channel": [
+        "artifact type",
+        "delivery format",
+        "generate a",
+        "output channel",
+        "output type",
+        "produce a",
+        "what artifact"
+      ],
+      "completeness": [
+        "depth of coverage",
+        "detail level",
+        "exhaustiveness",
+        "how complete",
+        "how much detail",
+        "how thorough",
+        "level of depth"
+      ],
+      "directional": [
+        "direction of response",
+        "emphasis direction",
+        "lean abstract",
+        "lean concrete",
+        "lean more",
+        "push toward",
+        "response bias",
+        "tilt toward"
+      ],
+      "form": [
+        "format the response",
+        "how to structure",
+        "output format",
+        "output structure",
+        "present as",
+        "response shape",
+        "structure as"
+      ],
+      "intent": [
+        "aim of output",
+        "communication intent",
+        "goal of communication",
+        "purpose of response",
+        "response goal",
+        "what to accomplish"
+      ],
+      "method": [
+        "analysis method",
+        "cognitive strategy",
+        "how to approach",
+        "how to reason",
+        "how to think",
+        "reasoning approach",
+        "thinking style"
+      ],
+      "scope": [
+        "breadth of coverage",
+        "coverage area",
+        "focus on",
+        "how much to include",
+        "scope of response",
+        "what to cover",
+        "what to include"
+      ],
+      "tone": [
+        "attitude of response",
+        "emotional tone",
+        "formality level",
+        "how formal",
+        "register",
+        "sentiment",
+        "tone of voice"
+      ],
+      "topology": [
+        "epistemic stance",
+        "how to observe",
+        "observation mode",
+        "observer role",
+        "perspective mode",
+        "witness mode"
+      ],
+      "voice": [
+        "communication style",
+        "how to communicate",
+        "how to write",
+        "register",
+        "voice style",
+        "writing voice"
+      ]
+    },
     "metadata": {
       "channel": {
         "adr": {
@@ -10506,7 +10604,7 @@
     }
   ],
   "checksums": {
-    "axes": "8ccf1fbc5906b769f14834441d0ea44e543330efa5ec507f4c99a91d0ec99c4d",
+    "axes": "e524e9fb2875901d4b73971863726708e4eeeb00e7fbd064aaf9ed07f2a4b2f9",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "c52bb15444318ebae4e6a5d36082bada3653e6121f5310e0d4815c246a3f51bf",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

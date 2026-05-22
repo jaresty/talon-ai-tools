@@ -219,6 +219,9 @@ def axis_catalog(
         "axis_descriptions": {
             k: v for k, v in axisConfig.AXIS_KEY_TO_AXIS_DESC.items() if v
         },
+        "axis_heuristics": {
+            k: v for k, v in getattr(axisConfig, "AXIS_KEY_TO_AXIS_HEURISTICS", {}).items() if v
+        },
         "static_prompts": static_prompt_catalog(
             static_prompt_list_path if lists_dir else ""
         ),
@@ -256,6 +259,7 @@ def serialize_axis_config(
         "axis_category_order": catalog["axis_category_order"],
         "axis_routing_concept": catalog["axis_routing_concept"],
         "axis_descriptions": catalog["axis_descriptions"],
+        "axis_heuristics": catalog["axis_heuristics"],
     }
     if include_axis_lists:
         payload["axis_list_tokens"] = catalog["axis_list_tokens"]

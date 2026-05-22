@@ -1573,6 +1573,105 @@ AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
     "voice": "Who is speaking — the perspective and expertise level.",
 }
 
+AXIS_KEY_TO_AXIS_HEURISTICS: Dict[str, List[str]] = {
+    "audience": [
+        "for whom",
+        "intended audience",
+        "reader level",
+        "target reader",
+        "who is reading",
+        "who should understand",
+    ],
+    "channel": [
+        "artifact type",
+        "delivery format",
+        "generate a",
+        "output channel",
+        "output type",
+        "produce a",
+        "what artifact",
+    ],
+    "completeness": [
+        "depth of coverage",
+        "detail level",
+        "exhaustiveness",
+        "how complete",
+        "how much detail",
+        "how thorough",
+        "level of depth",
+    ],
+    "directional": [
+        "direction of response",
+        "emphasis direction",
+        "lean abstract",
+        "lean concrete",
+        "lean more",
+        "push toward",
+        "response bias",
+        "tilt toward",
+    ],
+    "form": [
+        "format the response",
+        "how to structure",
+        "output format",
+        "output structure",
+        "present as",
+        "response shape",
+        "structure as",
+    ],
+    "intent": [
+        "aim of output",
+        "communication intent",
+        "goal of communication",
+        "purpose of response",
+        "response goal",
+        "what to accomplish",
+    ],
+    "method": [
+        "analysis method",
+        "cognitive strategy",
+        "how to approach",
+        "how to reason",
+        "how to think",
+        "reasoning approach",
+        "thinking style",
+    ],
+    "scope": [
+        "breadth of coverage",
+        "coverage area",
+        "focus on",
+        "how much to include",
+        "scope of response",
+        "what to cover",
+        "what to include",
+    ],
+    "tone": [
+        "attitude of response",
+        "emotional tone",
+        "formality level",
+        "how formal",
+        "register",
+        "sentiment",
+        "tone of voice",
+    ],
+    "topology": [
+        "epistemic stance",
+        "how to observe",
+        "observation mode",
+        "observer role",
+        "perspective mode",
+        "witness mode",
+    ],
+    "voice": [
+        "communication style",
+        "how to communicate",
+        "how to write",
+        "register",
+        "voice style",
+        "writing voice",
+    ],
+}
+
 CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
     "channel": {
         "shellscript": {
@@ -2087,6 +2186,11 @@ def axis_key_to_routing_concept_map(axis: str) -> dict[str, str]:
 def axis_key_to_axis_desc(axis: str) -> str:
     """Return the axis-level description string for empty-state UI panels."""
     return AXIS_KEY_TO_AXIS_DESC.get(axis, "")
+
+
+def axis_key_to_axis_heuristics(axis: str) -> List[str]:
+    """Return axis-level trigger phrases for BM25 indexing."""
+    return AXIS_KEY_TO_AXIS_HEURISTICS.get(axis, [])
 
 
 def get_cross_axis_composition(axis: str, token: str) -> dict:

@@ -276,34 +276,6 @@
 		focusedIndex = -1;
 	});
 
-	// Auto-focus first chip after user stops typing in filter (desktop only)
-	// This enables arrow navigation without needing to press Tab first
-	let filterTimeout: ReturnType<typeof setTimeout> | null = null;
-	$effect(() => {
-		const currentFilter = filter;
-		const isMobile = typeof window !== 'undefined' && window.innerWidth <= 767;
-
-		if (!currentFilter.trim() || isMobile || !gridRef) {
-			if (filterTimeout) { clearTimeout(filterTimeout); filterTimeout = null; }
-			return;
-		}
-
-		const filterInput = document.activeElement as HTMLInputElement | null;
-		if (!filterInput?.classList.contains('filter-input')) {
-			if (filterTimeout) { clearTimeout(filterTimeout); filterTimeout = null; }
-			return;
-		}
-
-		if (filterTimeout) clearTimeout(filterTimeout);
-		filterTimeout = setTimeout(() => {
-			if (filtered.length > 0) {
-				focusedIndex = 0;
-				focusChip(0);
-			}
-		}, 600);
-
-		return () => { if (filterTimeout) clearTimeout(filterTimeout); };
-	});
 
 	function chipOptions(): HTMLElement[] {
 		if (!gridRef) return [];

@@ -133,6 +133,41 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 	}
 }
 
+// TestLookupAxisHeuristicsMatchTier0 specifies that a query word matching an axis-level heuristic
+// phrase produces MatchedField "axis_heuristics" at tier 0.
+func TestLookupAxisHeuristicsMatchTier0(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	// "strategy" appears in method axis heuristics ("cognitive strategy") but not in any
+	// method token's name, heuristics, distinctions, or definition.
+	results := LookupTokens("strategy", grammar, "method")
+	if len(results) == 0 {
+		t.Fatal("expected results for 'strategy' in method axis, got none")
+	}
+	for _, r := range results {
+		if r.Tier >= 0 && r.MatchedField != "axis_heuristics" && r.MatchedField != "bm25" {
+			// Any tier-matched result must have come via axis_heuristics since "strategy"
+			// doesn't appear in token-level content.
+			t.Errorf("result %s:%s: expected matched_field 'axis_heuristics', got %q (tier %d)",
+				r.Axis, r.Token, r.MatchedField, r.Tier)
+		}
+	}
+	// At least one result should have matched_field "axis_heuristics"
+	var found bool
+	for _, r := range results {
+		if r.MatchedField == "axis_heuristics" {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Errorf("expected at least one result with matched_field 'axis_heuristics', got %v", results)
+	}
+}
+
 // TestLookupMultiWordANDLogic specifies tier-result AND-match behavior and BM25 OR-match behavior.
 func TestLookupMultiWordANDLogic(t *testing.T) {
 	t.Setenv(envGrammarPath, "")

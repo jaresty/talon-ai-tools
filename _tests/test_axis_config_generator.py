@@ -32,11 +32,11 @@ if bootstrap is not None:
             allowed_helpers = {
                 'AXIS_KEY_TO_LABEL',
                 'AXIS_KEY_TO_KANJI', 'AXIS_KEY_TO_CATEGORY', 'AXIS_KEY_TO_ROUTING_CONCEPT',
-                'AXIS_KEY_TO_AXIS_DESC', 'CROSS_AXIS_COMPOSITION', 'FORM_DEFAULT_COMPLETENESS',
+                'AXIS_KEY_TO_AXIS_DESC', 'AXIS_KEY_TO_AXIS_HEURISTICS', 'CROSS_AXIS_COMPOSITION', 'FORM_DEFAULT_COMPLETENESS',
                 'USAGE_PATTERNS', 'AxisDoc', 'axis_key_to_value_map', 'axis_key_to_label_map',
                 'axis_key_to_kanji_map',
                 'axis_key_to_category_map', 'axis_key_to_routing_concept_map',
-                'axis_key_to_axis_desc', 'get_cross_axis_composition', 'axis_docs_for',
+                'axis_key_to_axis_desc', 'axis_key_to_axis_heuristics', 'get_cross_axis_composition', 'axis_docs_for',
                 'axis_docs_index', 'get_usage_patterns', 'dataclass', 'field', 'Any', 'Dict',
                 'FrozenSet', 'List', 'TypedDict', 'Union', 'annotations', '__doc__', '__annotations__',
                 '__conditional_annotations__',

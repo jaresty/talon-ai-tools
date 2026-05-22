@@ -155,6 +155,24 @@ def render_axis_config() -> str:
     axis_desc_raw = payload.get("axis_descriptions", {}) or {}
     axis_desc_mapping: dict[str, str] = dict(sorted(axis_desc_raw.items()))
     axis_desc_body = pprint.pformat(axis_desc_mapping, width=200, sort_dicts=True)
+    _axis_heuristics_defaults: dict[str, list] = {
+        "audience": ["for whom", "intended audience", "reader level", "target reader", "who is reading", "who should understand"],
+        "channel": ["artifact type", "delivery format", "generate a", "output channel", "output type", "produce a", "what artifact"],
+        "completeness": ["depth of coverage", "detail level", "exhaustiveness", "how complete", "how much detail", "how thorough", "level of depth"],
+        "directional": ["direction of response", "emphasis direction", "lean abstract", "lean concrete", "lean more", "push toward", "response bias", "tilt toward"],
+        "form": ["format the response", "how to structure", "output format", "output structure", "present as", "response shape", "structure as"],
+        "intent": ["aim of output", "communication intent", "goal of communication", "purpose of response", "response goal", "what to accomplish"],
+        "method": ["analysis method", "cognitive strategy", "how to approach", "how to reason", "how to think", "reasoning approach", "thinking style"],
+        "scope": ["breadth of coverage", "coverage area", "focus on", "how much to include", "scope of response", "what to cover", "what to include"],
+        "tone": ["attitude of response", "emotional tone", "formality level", "how formal", "register", "sentiment", "tone of voice"],
+        "topology": ["epistemic stance", "how to observe", "observation mode", "observer role", "perspective mode", "witness mode"],
+        "voice": ["communication style", "how to communicate", "how to write", "register", "voice style", "writing voice"],
+    }
+    axis_heuristics_raw = payload.get("axis_heuristics", {}) or {}
+    axis_heuristics_mapping: dict[str, list] = {
+        axis: list(hints) for axis, hints in sorted(axis_heuristics_raw.items()) if hints
+    } if axis_heuristics_raw else _axis_heuristics_defaults
+    axis_heuristics_body = pprint.pformat(axis_heuristics_mapping, width=200, sort_dicts=True)
     cross_axis_raw = payload.get("cross_axis_composition", {}) or {}
     cross_axis_body = pprint.pformat(cross_axis_raw, width=200, sort_dicts=False)
     form_default_completeness_raw = payload.get("form_default_completeness", {}) or {}
@@ -275,6 +293,11 @@ def render_axis_config() -> str:
         def axis_key_to_axis_desc(axis: str) -> str:
             \"\"\"Return the axis-level description string for empty-state UI panels.\"\"\"
             return AXIS_KEY_TO_AXIS_DESC.get(axis, "")
+
+
+        def axis_key_to_axis_heuristics(axis: str) -> List[str]:
+            \"\"\"Return axis-level trigger phrases for BM25 indexing.\"\"\"
+            return AXIS_KEY_TO_AXIS_HEURISTICS.get(axis, [])
 
 
         def get_cross_axis_composition(axis: str, token: str) -> dict:
@@ -420,6 +443,7 @@ def axis_token_metadata() -> dict[str, dict[str, AxisTokenMetadata]]:
                 f"# Shown when no token is selected on an axis tab/section so users understand\n"
                 f"# what the axis means, when to use it, and what skipping it means.\n"
                 f"AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {axis_desc_body}",
+                f"AXIS_KEY_TO_AXIS_HEURISTICS: Dict[str, List[str]] = {axis_heuristics_body}",
                 f"CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {cross_axis_body}",
                 f"# Default completeness token for format-constrained form tokens (ADR-0153).\n"
                 f"# When a form token structurally limits response depth and the user has not\n"

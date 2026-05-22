@@ -1,7 +1,7 @@
 package barcli
 
 import (
-	"math"
+	"strings"
 	"testing"
 )
 
@@ -18,94 +18,91 @@ func TestBM25ScoresStemming(t *testing.T) {
 	}
 }
 
-// TestHybridScore verifies hybridScore returns a weighted combination of BM25 and cosine scores.
-func TestHybridScore(t *testing.T) {
-	// bm25=1.0, cosine=0.0 → 0.4*1.0 + 0.6*0.0 = 0.4
-	got := hybridScore(1.0, 0.0)
-	if math.Abs(got-0.4) > 1e-9 {
-		t.Errorf("hybridScore(1.0, 0.0) = %v, want 0.4", got)
-	}
-	// bm25=0.0, cosine=1.0 → 0.4*0.0 + 0.6*1.0 = 0.6
-	got2 := hybridScore(0.0, 1.0)
-	if math.Abs(got2-0.6) > 1e-9 {
-		t.Errorf("hybridScore(0.0, 1.0) = %v, want 0.6", got2)
-	}
-	// hybrid of unequal scores differs from both inputs
-	got3 := hybridScore(1.0, 0.5)
-	// 0.4*1.0 + 0.6*0.5 = 0.7
-	if math.Abs(got3-0.7) > 1e-9 {
-		t.Errorf("hybridScore(1.0, 0.5) = %v, want 0.7", got3)
-	}
-}
 
-// TestBuildTokenDocsPopulatesEmbedding verifies buildTokenDocs copies Embedding from TaskMetadata.
-func TestBuildTokenDocsPopulatesEmbedding(t *testing.T) {
+// TestBuildTokenDocsIncludesAxisHeuristics verifies buildTokenDocs includes axis-level
+// heuristics in each token's BM25 body so queries like "reasoning approach" match method tokens.
+func TestBuildTokenDocsIncludesAxisHeuristics(t *testing.T) {
 	g := &Grammar{
 		Axes: AxisSection{
 			Metadata: map[string]map[string]TaskMetadata{
-				"scope": {
-					"narrow": {Definition: "narrow scope", Embedding: []float32{0.1, 0.2}},
-				},
+				"method": {"flow": {Definition: "Linear stage sequencing"}},
+			},
+			AxisHeuristics: map[string][]string{
+				"method": {"reasoning approach", "how to think"},
 			},
 		},
 	}
 	docs := buildTokenDocs(g, "")
-	if len(docs) == 0 {
-		t.Fatal("expected at least one doc")
-	}
 	var found *tokenDoc
 	for i := range docs {
-		if docs[i].id == "scope:narrow" {
+		if docs[i].id == "method:flow" {
 			found = &docs[i]
 			break
 		}
 	}
 	if found == nil {
-		t.Fatal("doc scope:narrow not found")
+		t.Fatal("doc method:flow not found")
 	}
-	if len(found.embedding) != 2 {
-		t.Errorf("buildTokenDocs: embedding not populated, got len %d", len(found.embedding))
-	}
-}
-
-// TestEmbeddingScores verifies embeddingScores returns cosine scores for docs with stored embeddings.
-func TestEmbeddingScores(t *testing.T) {
-	// Two docs: one parallel to query vector, one orthogonal.
-	docs := []tokenDoc{
-		{id: "parallel", embedding: []float32{1, 0, 0}},
-		{id: "orthogonal", embedding: []float32{0, 1, 0}},
-	}
-	query := []float32{1, 0, 0}
-	scores := embeddingScores(docs, query)
-	if scores["parallel"] <= 0 {
-		t.Errorf("embeddingScores: parallel doc should have positive score, got %v", scores["parallel"])
-	}
-	if scores["orthogonal"] != 0 {
-		t.Errorf("embeddingScores: orthogonal doc should have score 0, got %v", scores["orthogonal"])
+	if !strings.Contains(found.body, "reasoning approach") {
+		t.Errorf("buildTokenDocs: body for method:flow should contain axis heuristic 'reasoning approach', got: %q", found.body)
 	}
 }
 
-// TestTaskMetadataEmbeddingField verifies TaskMetadata has an Embedding field that round-trips via JSON.
-func TestTaskMetadataEmbeddingField(t *testing.T) {
-	m := TaskMetadata{Embedding: []float32{0.1, 0.2, 0.3}}
-	if len(m.Embedding) != 3 {
-		t.Errorf("TaskMetadata.Embedding: got len %d, want 3", len(m.Embedding))
+// TestBuildTokenDocsIncludesAxisDescription verifies buildTokenDocs includes the axis-level
+// description in each token's BM25 body.
+func TestBuildTokenDocsIncludesAxisDescription(t *testing.T) {
+	g := &Grammar{
+		Axes: AxisSection{
+			Metadata: map[string]map[string]TaskMetadata{
+				"method": {"flow": {Definition: "Linear stage sequencing"}},
+			},
+			AxisDescriptions: map[string]string{
+				"method": "Reasoning approach — how to think through the problem",
+			},
+		},
+	}
+	docs := buildTokenDocs(g, "")
+	var found *tokenDoc
+	for i := range docs {
+		if docs[i].id == "method:flow" {
+			found = &docs[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Fatal("doc method:flow not found")
+	}
+	if !strings.Contains(found.body, "Reasoning approach") {
+		t.Errorf("buildTokenDocs: body for method:flow should contain axis description, got: %q", found.body)
 	}
 }
 
-// TestCosineSimilarity verifies cosineSimilarity returns 1.0 for identical unit vectors.
-func TestCosineSimilarity(t *testing.T) {
-	v := []float32{1, 0, 0}
-	got := cosineSimilarity(v, v)
-	if math.Abs(float64(got)-1.0) > 1e-6 {
-		t.Errorf("cosineSimilarity(v,v) = %v, want 1.0", got)
+// TestBuildTokenDocsIncludesRoutingConcept verifies buildTokenDocs includes routing_concept
+// in the BM25 body for axis tokens.
+func TestBuildTokenDocsIncludesRoutingConcept(t *testing.T) {
+	g := &Grammar{
+		Axes: AxisSection{
+			Metadata: map[string]map[string]TaskMetadata{
+				"method": {"flow": {Definition: "Linear stage sequencing"}},
+			},
+			RoutingConcept: map[string]map[string]string{
+				"method": {"flow": "sequence steps in a pipeline"},
+			},
+		},
 	}
-	// orthogonal vectors → 0
-	a := []float32{1, 0, 0}
-	b := []float32{0, 1, 0}
-	got2 := cosineSimilarity(a, b)
-	if math.Abs(float64(got2)) > 1e-6 {
-		t.Errorf("cosineSimilarity(orthogonal) = %v, want 0.0", got2)
+	docs := buildTokenDocs(g, "")
+	var found *tokenDoc
+	for i := range docs {
+		if docs[i].id == "method:flow" {
+			found = &docs[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Fatal("doc method:flow not found")
+	}
+	if !strings.Contains(found.body, "sequence steps in a pipeline") {
+		t.Errorf("buildTokenDocs: body for method:flow should contain routing_concept, got: %q", found.body)
 	}
 }
 

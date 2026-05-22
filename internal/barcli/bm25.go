@@ -14,39 +14,16 @@ import (
 )
 
 const (
-	bm25K1          = 1.5
-	bm25B           = 0.75
-	titleWeight     = 5
-	hybridBM25Weight = 0.4
-	hybridEmbWeight  = 0.6
+	bm25K1      = 1.5
+	bm25B       = 0.75
+	titleWeight = 5
 )
-
-// hybridScore combines a normalised BM25 score and a cosine similarity score
-// into a single ranking signal: 0.4*bm25 + 0.6*cosine.
-func hybridScore(bm25, cosine float64) float64 {
-	return hybridBM25Weight*bm25 + hybridEmbWeight*cosine
-}
-
-// cosineSimilarity returns the dot product of two pre-normalised float32 vectors.
-// Vectors are expected to be unit-length (as produced by sentence-transformers with
-// normalize_embeddings=True), so dot product equals cosine similarity.
-func cosineSimilarity(a, b []float32) float32 {
-	if len(a) != len(b) {
-		return 0
-	}
-	var sum float32
-	for i := range a {
-		sum += a[i] * b[i]
-	}
-	return sum
-}
 
 // tokenDoc is a BM25 document representing one grammar token.
 type tokenDoc struct {
-	id        string    // "axis:token"
-	title     string    // name + " " + label
-	body      string    // definition + heuristics + distinctions
-	embedding []float32 // pre-normalised sentence embedding (nil when absent)
+	id    string // "axis:token"
+	title string // name + " " + label
+	body  string // definition + heuristics + distinctions + axis context
 }
 
 // buildTokenDocs constructs the BM25 corpus from all grammar tokens.
@@ -54,7 +31,7 @@ type tokenDoc struct {
 func buildTokenDocs(g *Grammar, axisFilter string) []tokenDoc {
 	var docs []tokenDoc
 
-	add := func(axis, token, label, definition string, heuristics, distinctions []string, emb []float32) {
+	add := func(axis, token, label, definition string, heuristics, distinctions []string) {
 		if axisFilter != "" && axis != axisFilter {
 			return
 		}
@@ -65,11 +42,19 @@ func buildTokenDocs(g *Grammar, axisFilter string) []tokenDoc {
 		if len(distinctions) > 0 {
 			body += " " + strings.Join(distinctions, " ")
 		}
+		if axisH := g.AxisLevelHeuristics(axis); len(axisH) > 0 {
+			body += " " + strings.Join(axisH, " ")
+		}
+		if axisDesc := g.AxisLevelDescription(axis); axisDesc != "" {
+			body += " " + axisDesc
+		}
+		if rc := g.AxisRoutingConcept(axis, token); rc != "" {
+			body += " " + rc
+		}
 		docs = append(docs, tokenDoc{
-			id:        axis + ":" + token,
-			title:     token + " " + label,
-			body:      body,
-			embedding: emb,
+			id:    axis + ":" + token,
+			title: token + " " + label,
+			body:  body,
 		})
 	}
 
@@ -80,7 +65,7 @@ func buildTokenDocs(g *Grammar, axisFilter string) []tokenDoc {
 			for _, d := range meta.Distinctions {
 				dists = append(dists, d.Token)
 			}
-			add("task", taskName, g.TaskLabel(taskName), g.TaskDescription(taskName), meta.Heuristics, dists, meta.Embedding)
+			add("task", taskName, g.TaskLabel(taskName), g.TaskDescription(taskName), meta.Heuristics, dists)
 		}
 	}
 
@@ -90,7 +75,7 @@ func buildTokenDocs(g *Grammar, axisFilter string) []tokenDoc {
 			for _, d := range meta.Distinctions {
 				dists = append(dists, d.Token)
 			}
-			add(axis, tokenName, g.AxisLabel(axis, tokenName), meta.Definition, meta.Heuristics, dists, meta.Embedding)
+			add(axis, tokenName, g.AxisLabel(axis, tokenName), meta.Definition, meta.Heuristics, dists)
 		}
 	}
 
@@ -101,29 +86,11 @@ func buildTokenDocs(g *Grammar, axisFilter string) []tokenDoc {
 			for _, d := range meta.Distinctions {
 				dists = append(dists, d.Token)
 			}
-			add(axis, slug, g.PersonaLabel(axis, tokenName), meta.Definition, meta.Heuristics, dists, meta.Embedding)
+			add(axis, slug, g.PersonaLabel(axis, tokenName), meta.Definition, meta.Heuristics, dists)
 		}
 	}
 
 	return docs
-}
-
-// embeddingScores computes cosine similarity between queryVec and each doc's stored
-// embedding. Docs without an embedding or with score ≤ 0 are excluded from the result.
-func embeddingScores(docs []tokenDoc, queryVec []float32) map[string]float64 {
-	if len(queryVec) == 0 {
-		return nil
-	}
-	scores := make(map[string]float64)
-	for _, d := range docs {
-		if len(d.embedding) != len(queryVec) {
-			continue
-		}
-		if s := float64(cosineSimilarity(d.embedding, queryVec)); s > 0 {
-			scores[d.id] = s
-		}
-	}
-	return scores
 }
 
 // bm25Tokenize splits text into lowercase tokens (len > 1).

@@ -34,7 +34,11 @@ jobs:
           VERSION="${GITHUB_REF_NAME#bar-v}"
           mkdir -p dist
           for GOOS in linux darwin; do
-            for GOARCH in amd64 arm64; do
+            case "$GOOS" in
+              linux) GOARCHES="amd64" ;;
+              darwin) GOARCHES="amd64 arm64" ;;
+            esac
+            for GOARCH in $GOARCHES; do
               echo "Building bar for ${GOOS}/${GOARCH}"
               OUTPUT_DIR="dist/${GOOS}_${GOARCH}"
               mkdir -p "${OUTPUT_DIR}"

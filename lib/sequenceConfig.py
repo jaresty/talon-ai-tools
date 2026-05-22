@@ -14,6 +14,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "debug-cycle": {
         "description": "Surface root causes, fix them, then verify the fix holds.",
         "example": "A production service is returning 500s intermittently and the cause is unknown.",
+        "heuristics": ["investigate then fix", "debug and verify", "find and fix", "root cause then repair", "diagnose fix verify", "something is broken fix it", "find the bug fix it check it"],
         "mode": "linear",
         "steps": [
             {
@@ -37,6 +38,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "experiment-cycle": {
         "description": "Frame a hypothesis before running an experiment, then review evidence afterward.",
         "example": "Testing whether adding a cache layer reduces p95 latency below 200ms.",
+        "heuristics": ["run an experiment", "test a hypothesis", "scientific method", "hypothesis and evidence", "frame then test", "design an experiment", "validate with data"],
         "mode": "cycle",
         "steps": [
             {
@@ -55,6 +57,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "extract-and-package": {
         "description": "Extract a relevant subset, then package it for downstream use.",
         "example": "Pull the authentication flow from a large codebase and package it as context for a new engineer.",
+        "heuristics": ["extract and package", "pull out and wrap", "extract relevant parts", "package for downstream", "extract context", "isolate and document"],
         "mode": "autonomous",
         "steps": [
             {
@@ -72,6 +75,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "gather-and-synthesize": {
         "description": "Frame what to gather, collect it in the real world, then synthesize findings into conclusions.",
         "example": "Understanding why engineers on a team are reluctant to write tests.",
+        "heuristics": ["gather and synthesize", "collect and summarize", "research and conclude", "gather evidence then synthesize", "interview then analyze", "collect findings"],
         "mode": "linear",
         "steps": [
             {
@@ -90,6 +94,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "check-and-rewrite": {
         "description": "Evaluate an artifact against criteria, then rewrite it so the gaps are closed.",
         "example": "Reviewing a technical design doc and rewriting the sections that don't hold up.",
+        "heuristics": ["check then rewrite", "evaluate and revise", "review then fix", "find gaps and close them", "critique then improve", "audit and rewrite"],
         "mode": "autonomous",
         "steps": [
             {
@@ -107,6 +112,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "make-and-review": {
         "description": "Produce an artifact, then review it critically before treating it as done.",
         "example": "Drafting an ADR and reviewing it for gaps before publishing.",
+        "heuristics": ["make then review", "draft and critique", "produce then evaluate", "write then check", "create and review", "build and vet"],
         "mode": "autonomous",
         "steps": [
             {
@@ -124,6 +130,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "probe-and-plan": {
         "description": "Diagnose the structure and hidden assumptions of a situation, then derive a targeted action plan.",
         "example": "Figuring out why a team is slow to ship, then planning what to change.",
+        "heuristics": ["diagnose then plan", "understand then act", "investigate then plan", "surface assumptions then plan", "why then what", "root cause then roadmap"],
         "mode": "linear",
         "steps": [
             {
@@ -142,6 +149,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "plan-and-retrospect": {
         "description": "Derive an action plan, implement it in the real world, then retrospectively review what worked.",
         "example": "Improving a team's code review process over two iterations.",
+        "heuristics": ["plan then retrospect", "act and reflect", "implement and review", "try then learn", "plan execute review", "iterative improvement"],
         "mode": "cycle",
         "steps": [
             {
@@ -160,6 +168,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "scenario-to-plan": {
         "description": "Simulate a scenario, then derive the action plan it implies.",
         "example": "Planning a migration from a monolith to microservices.",
+        "heuristics": ["simulate then plan", "what if then what now", "scenario planning", "model the future then plan", "anticipate then act"],
         "mode": "autonomous",
         "steps": [
             {
@@ -177,6 +186,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "simulate-and-make": {
         "description": "Simulate the consequences of a scenario, then produce the artifact the simulation implies is needed.",
         "example": "Simulating a security breach to determine what runbook needs to be written.",
+        "heuristics": ["simulate then build", "what happens then what to make", "anticipate then produce", "simulate consequences then act"],
         "mode": "autonomous",
         "steps": [
             {
@@ -194,6 +204,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "simulate-and-review": {
         "description": "Simulate a scenario before executing it, then review actual outcomes against the simulation.",
         "example": "Migrating the auth service as a pilot for a broader microservices migration.",
+        "heuristics": ["simulate then execute", "predict then review", "anticipate then evaluate", "pre-mortem then retrospective", "model then compare"],
         "mode": "linear",
         "steps": [
             {

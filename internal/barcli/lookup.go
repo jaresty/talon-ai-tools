@@ -45,7 +45,7 @@ func LookupTokensWithContext(query string, g *Grammar, axisFilter, subject, adde
 		sort.Slice(ranked, func(i, j int) bool {
 			return ranked[i].score > ranked[j].score
 		})
-		const resultCap = 10
+		const resultCap = 15
 		var results []LookupResult
 		for _, r := range ranked {
 			if len(results) >= resultCap {
@@ -55,18 +55,37 @@ func LookupTokensWithContext(query string, g *Grammar, axisFilter, subject, adde
 			if colonIdx < 0 {
 				continue
 			}
-			axis := r.id[:colonIdx]
-			token := r.id[colonIdx+1:]
-			results = append(results, LookupResult{
-				Axis:         axis,
-				Token:        token,
-				Label:        labelForToken(g, axis, token),
+			prefix := r.id[:colonIdx]
+			name := r.id[colonIdx+1:]
+			res := LookupResult{
+				Axis:         prefix,
+				Token:        name,
 				Tier:         -1,
 				Score:        r.score,
 				ContextScore: r.score,
 				MatchedField: "bm25",
-				Sequences:    g.SequencesForToken(r.id),
-			})
+			}
+			switch prefix {
+			case "pack":
+				res.Kind = "pack"
+				for _, p := range g.StarterPacks {
+					if p.Name == name {
+						res.Label = p.Framing
+						res.Command = p.Command
+						break
+					}
+				}
+			case "sequence":
+				res.Kind = "sequence"
+				if seq, ok := g.Sequences[name]; ok {
+					res.Label = seq.Description
+				}
+			default:
+				res.Kind = "token"
+				res.Label = labelForToken(g, prefix, name)
+				res.Sequences = g.SequencesForToken(r.id)
+			}
+			results = append(results, res)
 		}
 		return results
 	}
@@ -310,10 +329,10 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 	// Search starter packs by name and framing (when no axis filter active)
 	if axisFilter == "" {
 		for _, p := range g.StarterPacks {
-			tryToken("pack", p.Name, p.Framing, p.Framing, nil, nil)
+			tryToken("pack", p.Name, p.Framing, p.Framing, p.Heuristics, nil)
 		}
 		for name, seq := range g.Sequences {
-			tryToken("sequence", name, seq.Description, seq.Description, nil, nil)
+			tryToken("sequence", name, seq.Description, seq.Description, seq.Heuristics, nil)
 		}
 	}
 

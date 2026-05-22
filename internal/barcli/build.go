@@ -712,18 +712,19 @@ func searchByHeuristics(g *Grammar, word string) []string {
 		return nil
 	}
 	results := LookupTokens(word, g, "")
-	limit := 5
-	if len(results) < limit {
-		limit = len(results)
-	}
-	out := make([]string, limit)
-	for i := 0; i < limit; i++ {
-		r := results[i]
+	var out []string
+	for _, r := range results {
+		if r.Kind != "token" {
+			continue // packs/sequences are not valid bar build tokens
+		}
 		entry := r.Axis + ":" + r.Token
 		if r.Label != "" {
 			entry += " — " + r.Label
 		}
-		out[i] = entry
+		out = append(out, entry)
+		if len(out) >= 5 {
+			break
+		}
 	}
 	return out
 }

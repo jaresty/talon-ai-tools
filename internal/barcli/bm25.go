@@ -92,17 +92,25 @@ func buildTokenDocs(g *Grammar, axisFilter string) []tokenDoc {
 
 	if axisFilter == "" {
 		for _, p := range g.StarterPacks {
+			body := p.Framing + " " + p.Command
+			if len(p.Heuristics) > 0 {
+				body += " " + strings.Join(p.Heuristics, " ")
+			}
 			docs = append(docs, tokenDoc{
 				id:    "pack:" + p.Name,
 				title: p.Name,
-				body:  p.Framing + " " + p.Command,
+				body:  body,
 			})
 		}
 		for name, seq := range g.Sequences {
+			body := seq.Description + " " + seq.Example
+			if len(seq.Heuristics) > 0 {
+				body += " " + strings.Join(seq.Heuristics, " ")
+			}
 			docs = append(docs, tokenDoc{
 				id:    "sequence:" + name,
 				title: name,
-				body:  seq.Description + " " + seq.Example,
+				body:  body,
 			})
 		}
 	}

@@ -158,9 +158,10 @@ type DefaultsSection struct {
 
 // StarterPack maps a task framing to a suggested bar build command (ADR-0144 Phase 2).
 type StarterPack struct {
-	Name    string `json:"name"`
-	Framing string `json:"framing"`
-	Command string `json:"command"`
+	Name       string   `json:"name"`
+	Framing    string   `json:"framing"`
+	Command    string   `json:"command"`
+	Heuristics []string `json:"heuristics,omitempty"`
 }
 
 // GrammarPattern represents a named usage pattern from the SSOT (ADR-0134 D3).

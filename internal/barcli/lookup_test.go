@@ -1002,6 +1002,53 @@ func TestLookupTextOutputShowsSequenceInvocation(t *testing.T) {
 	}
 }
 
+// TestLookupPackHeuristicMatchesTDD asserts that "test driven development" returns pack:craft via heuristic.
+func TestLookupPackHeuristicMatchesTDD(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	results := LookupTokens("test driven development", g, "")
+	var found *LookupResult
+	for i := range results {
+		if results[i].Kind == "pack" && results[i].Token == "craft" {
+			found = &results[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Fatalf("expected pack:craft in results for 'test driven development', got %v", results)
+	}
+	if found.Tier < 2 {
+		t.Errorf("expected tier ≥2 for heuristic match, got tier %d", found.Tier)
+	}
+}
+
+// TestLookupSequenceHeuristicMatch asserts that a sequence heuristic phrase returns that sequence.
+func TestLookupSequenceHeuristicMatch(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	// debug-cycle should match "investigate then fix"
+	results := LookupTokens("investigate", g, "")
+	var found *LookupResult
+	for i := range results {
+		if results[i].Kind == "sequence" && results[i].Token == "debug-cycle" {
+			found = &results[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Fatalf("expected sequence:debug-cycle in results for 'investigate', got %v", results)
+	}
+	if found.Tier < 2 {
+		t.Errorf("expected tier ≥2 for heuristic match, got tier %d", found.Tier)
+	}
+}
+
 // TestTokenHeuristicCoverage asserts every token in every axis has ≥5 heuristics.
 // This test is intentionally dynamic: it iterates all axes/tokens from the grammar
 // so that newly added tokens are automatically covered without updating the test.

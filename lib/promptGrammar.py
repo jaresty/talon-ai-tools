@@ -518,7 +518,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
     from talon_user.lib.starterPacks import STARTER_PACKS
 
     starter_packs_section = [
-        {"name": p.name, "framing": p.framing, "command": p.command}
+        {"name": p.name, "framing": p.framing, "command": p.command, "heuristics": list(p.heuristics)}
         for p in STARTER_PACKS
     ]
 

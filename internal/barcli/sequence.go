@@ -24,6 +24,7 @@ type Sequence struct {
 	Description string         `json:"description"`
 	Example     string         `json:"example,omitempty"`
 	Mode        string         `json:"mode,omitempty"` // ADR-0226: "autonomous" | "linear" | "cycle"
+	Heuristics  []string       `json:"heuristics,omitempty"`
 	Steps       []SequenceStep `json:"steps"`
 }
 

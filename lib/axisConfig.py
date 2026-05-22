@@ -378,14 +378,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "code: this constraint does not apply when the code being modified is statically unreachable — defined as: (a) a static analysis tool or compiler flags the specific code path "
         "as unreachable in a tool-executed result above this line, or (b) a tool-executed run of the full test suite with the code removed produces an identical result to a run with "
         "it present; both conditions are verifiable by inspection of tool results; a code path is not unreachable merely because no current test covers it — reachability is a "
-        "structural property of the code, not a property of the test suite. Exception — governing artifact creation is not gated (allow-list): the only relief granted is that a "
-        "tool-executed FAIL result is not required before creating a governing artifact — an artifact that will remain as the permanent assertion of the governed behavior after "
-        "implementation is complete. All other pre-edit requirements remain in force: the scope declaration, derivation block, and line manifest must appear before the governing "
-        "artifact edit. A throwaway scaffold — one whose assertion will not persist as a re-executable record after implementation is complete — is not a governing artifact; no relief "
-        "applies to it. Produce the assertion in the form it will take permanently from the start. The FAIL gate applies only to non-governing artifact edits (implementation). A prose "
-        "statement that names a file-modifying action as the next step is permitted only when a tool-executed FAIL result appears above it in the transcript whose failure signal names "
-        "the behavior the action governs — a prose statement announcing an implementation step where no such FAIL result exists above it does not satisfy this requirement and must be "
-        "replaced with the FAIL-producing run first.",
+        "structural property of the code, not a property of the test suite. Exception — one pre-edit requirement only is waived for governing artifact creation: a tool-executed FAIL "
+        "result is not required before creating a governing artifact — an artifact that will remain as the permanent assertion of the governed behavior after implementation is "
+        "complete. All other pre-edit requirements remain in force: the scope declaration, derivation block, line manifest, and behavior-absent state for the insufficient-check run "
+        "must appear before the governing artifact edit. A throwaway scaffold — one whose assertion will not persist as a re-executable record after implementation is complete — is "
+        "not a governing artifact; no relief applies to it. Produce the assertion in the form it will take permanently from the start. The FAIL gate applies only to non-governing "
+        "artifact edits (implementation). A prose statement that names a file-modifying action as the next step is permitted only when a tool-executed FAIL result appears above it in "
+        "the transcript whose failure signal names the behavior the action governs — a prose statement announcing an implementation step where no such FAIL result exists above it does "
+        "not satisfy this requirement and must be replaced with the FAIL-producing run first.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

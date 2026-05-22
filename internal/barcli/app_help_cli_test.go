@@ -623,3 +623,25 @@ func TestHelpLLMNoHardcodedIntentLine(t *testing.T) {
 		t.Error("ADR-0146 Change 3: hardcoded '**Choosing intent=**' line must be removed from heuristics; intent use_when is already in the Token Catalog")
 	}
 }
+
+// TestHelpLLMLookupSectionDescribesPacksAndSequences asserts that the lookup usage
+// section in help llm explains that results include packs and sequences, not just tokens.
+func TestHelpLLMLookupSectionDescribesPacksAndSequences(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("bar help llm exited %d: %s", exit, stderr.String())
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "starter packs") && !strings.Contains(out, "starter pack") {
+		t.Error("help llm lookup section must mention starter packs — lookup now returns pack results")
+	}
+	if !strings.Contains(out, "sequence") {
+		t.Error("help llm lookup section must mention sequences — lookup now returns sequence results")
+	}
+	if !strings.Contains(out, "kind") {
+		t.Error("help llm lookup section must mention the kind field — JSON results distinguish token/pack/sequence via kind")
+	}
+}

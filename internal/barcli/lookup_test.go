@@ -767,6 +767,241 @@ func TestMethodTokensHaveCodeHeuristics(t *testing.T) {
 	}
 }
 
+// TestLookupResultHasKindField asserts that LookupResult has a Kind field distinguishing token/pack/sequence.
+func TestLookupResultHasKindField(t *testing.T) {
+	r := LookupResult{Kind: "token"}
+	if r.Kind != "token" {
+		t.Errorf("expected Kind 'token', got %q", r.Kind)
+	}
+}
+
+// TestLookupPacksAppearInResults asserts that starter pack framings appear in lookup results with Kind="pack".
+func TestLookupPacksAppearInResults(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	if len(g.StarterPacks) == 0 {
+		t.Skip("no starter packs in grammar")
+	}
+	pack := g.StarterPacks[0]
+	// Search using a word from the framing
+	word := strings.Fields(pack.Framing)[0]
+	results := LookupTokens(word, g, "")
+	var found *LookupResult
+	for i := range results {
+		if results[i].Kind == "pack" && results[i].Token == pack.Name {
+			found = &results[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Fatalf("expected pack %q in results for %q, got %v", pack.Name, word, results)
+	}
+}
+
+// TestLookupSequencesAppearInResults asserts that sequence descriptions appear in lookup results with Kind="sequence".
+func TestLookupSequencesAppearInResults(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	if len(g.Sequences) == 0 {
+		t.Skip("no sequences in grammar")
+	}
+	var seqName string
+	for k := range g.Sequences {
+		seqName = k
+		break
+	}
+	// Search by sequence name — the canonical discovery path.
+	results := LookupTokens(seqName, g, "")
+	var found *LookupResult
+	for i := range results {
+		if results[i].Kind == "sequence" && results[i].Token == seqName {
+			found = &results[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Fatalf("expected sequence %q in results for %q, got %v", seqName, seqName, results)
+	}
+}
+
+// TestLookupExactPackNameReturnsCommand asserts that an exact pack name match populates Command.
+func TestLookupExactPackNameReturnsCommand(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	if len(g.StarterPacks) == 0 {
+		t.Skip("no starter packs in grammar")
+	}
+	pack := g.StarterPacks[0]
+	results := LookupTokens(pack.Name, g, "")
+	var found *LookupResult
+	for i := range results {
+		if results[i].Kind == "pack" && results[i].Token == pack.Name {
+			found = &results[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Fatalf("expected pack %q in results for exact name query, got %v", pack.Name, results)
+	}
+	if found.Command == "" {
+		t.Errorf("expected Command to be populated for exact pack name match, got empty")
+	}
+}
+
+// TestLookupJSONIncludesKindAndCommand asserts that --json output includes kind and command fields for packs.
+func TestLookupJSONIncludesKindAndCommand(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	if len(g.StarterPacks) == 0 {
+		t.Skip("no starter packs in grammar")
+	}
+	pack := g.StarterPacks[0]
+	results := LookupTokens(pack.Name, g, "")
+	var found *LookupResult
+	for i := range results {
+		if results[i].Kind == "pack" && results[i].Token == pack.Name {
+			found = &results[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Fatalf("pack %q not found in results", pack.Name)
+	}
+
+	type jsonResult struct {
+		Kind    string `json:"kind"`
+		Command string `json:"command"`
+		Token   string `json:"token"`
+	}
+	b, err := json.Marshal([]jsonResult{{Kind: found.Kind, Command: found.Command, Token: found.Token}})
+	if err != nil {
+		t.Fatalf("marshal: %v", err)
+	}
+	var out []jsonResult
+	if err := json.Unmarshal(b, &out); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	if len(out) == 0 {
+		t.Fatal("no results in JSON output")
+	}
+	if out[0].Kind != "pack" {
+		t.Errorf("expected kind 'pack', got %q", out[0].Kind)
+	}
+	if out[0].Command == "" {
+		t.Errorf("expected non-empty command for pack result")
+	}
+}
+
+// TestLookupAppJSONIncludesKindAndCommand asserts that the app-level lookup --json output includes kind and command.
+func TestLookupAppJSONIncludesKindAndCommand(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	if len(g.StarterPacks) == 0 {
+		t.Skip("no starter packs in grammar")
+	}
+	pack := g.StarterPacks[0]
+
+	var stdout, stderr strings.Builder
+	code := Run([]string{"lookup", pack.Name, "--json"}, strings.NewReader(""), &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("RunApp returned %d: %s", code, stderr.String())
+	}
+
+	type jsonResult struct {
+		Kind    string `json:"kind"`
+		Command string `json:"command"`
+		Token   string `json:"token"`
+	}
+	var results []jsonResult
+	if err := json.Unmarshal([]byte(stdout.String()), &results); err != nil {
+		t.Fatalf("unmarshal: %v", err)
+	}
+	var found *jsonResult
+	for i := range results {
+		if results[i].Kind == "pack" && results[i].Token == pack.Name {
+			found = &results[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Fatalf("pack %q with kind='pack' not found in JSON output: %s", pack.Name, stdout.String())
+	}
+	if found.Command == "" {
+		t.Errorf("expected non-empty command in JSON output for pack %q", pack.Name)
+	}
+}
+
+// TestLookupTextOutputShowsPackCommand asserts that text output for a pack result includes the bar build command.
+func TestLookupTextOutputShowsPackCommand(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	if len(g.StarterPacks) == 0 {
+		t.Skip("no starter packs in grammar")
+	}
+	pack := g.StarterPacks[0]
+
+	var stdout, stderr strings.Builder
+	code := Run([]string{"lookup", pack.Name, "--json"}, strings.NewReader(""), &stdout, &stderr)
+	_ = code
+
+	// Text output test: run without --json
+	var stdout2, stderr2 strings.Builder
+	code2 := Run([]string{"lookup", pack.Name}, strings.NewReader(""), &stdout2, &stderr2)
+	if code2 != 0 {
+		t.Fatalf("Run returned %d: %s", code2, stderr2.String())
+	}
+	out := stdout2.String()
+	if !strings.Contains(out, pack.Command) {
+		t.Errorf("expected pack command %q in text output, got:\n%s", pack.Command, out)
+	}
+}
+
+// TestLookupTextOutputShowsSequenceInvocation asserts that text output for a sequence result includes bar sequence show <name>.
+func TestLookupTextOutputShowsSequenceInvocation(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	if len(g.Sequences) == 0 {
+		t.Skip("no sequences in grammar")
+	}
+	var seqName string
+	for k := range g.Sequences {
+		seqName = k
+		break
+	}
+
+	var stdout, stderr strings.Builder
+	code := Run([]string{"lookup", seqName}, strings.NewReader(""), &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("Run returned %d: %s", code, stderr.String())
+	}
+	out := stdout.String()
+	expected := "bar sequence show " + seqName
+	if !strings.Contains(out, expected) {
+		t.Errorf("expected %q in text output, got:\n%s", expected, out)
+	}
+}
+
 // TestTokenHeuristicCoverage asserts every token in every axis has ≥5 heuristics.
 // This test is intentionally dynamic: it iterates all axes/tokens from the grammar
 // so that newly added tokens are automatically covered without updating the test.

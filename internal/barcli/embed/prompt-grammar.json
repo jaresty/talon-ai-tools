@@ -10297,7 +10297,7 @@
     {
       "name": "craft",
       "framing": "Disciplined iterative making — TDD and strict artifact cycles",
-      "command": "bar build make ground gate falsify atomic"
+      "command": "bar build make witness ground gate falsify atomic"
     },
     {
       "name": "scout",
@@ -10610,7 +10610,7 @@
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",
     "slugs": "90d45bc02d777fc9ffb8fbb5d32e49dc9894d69a2e61cf19affa44cd9acbde9d",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
-    "starter_packs": "b5fe00c2412ef829e48999c1502444b82fb7bcc4f30e657a84eeb93c0b3f043d",
+    "starter_packs": "041bc40c7dbbccd872bc4ed56ecd6683184ed1e5a13d7d9e34f208b315909a7d",
     "sequences": "6647050b12c23ade2ea8cf0635f924d347cc5b3d551961ff8aa48d5ba81b039c",
     "compositions": "4f2de21a1d5d3b28e3a3337358f7b053660ec887c2fe70839996fd4077db6fb0"
   }

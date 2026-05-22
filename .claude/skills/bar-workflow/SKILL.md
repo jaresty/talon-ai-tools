@@ -32,15 +32,19 @@ Each step is a required gate. Do not advance to the next step until the current 
 
 1. **Analyze request** and decide on the number of steps and progression strategy
 2. **Load navigation guide** via `bar help llm` (no args), then load sections on demand
-3. **Explore tokens** — use `bar lookup` and `bar help llm` to find candidate tokens for
-   each planned step. A step plan must name at least one token candidate and the intent it
-   serves before proceeding. A transcript that reaches step 4 without naming token candidates
-   and their intents does not satisfy this requirement.
+3. **Explore tokens, packs, and sequences** — use `bar lookup` to find candidate tokens,
+   starter packs, and sequences for each planned step. `bar lookup` now returns all three kinds
+   in one ranked list: `kind=token` (append to `bar build`), `kind=pack` (runnable `bar build`
+   command shown inline — use it directly), `kind=sequence` (shows step count and
+   `bar sequence show <name>`). A step plan must name at least one token candidate and the
+   intent it serves before proceeding. A transcript that reaches step 4 without naming token
+   candidates and their intents does not satisfy this requirement.
 4. **Generate candidate step structures** — from the token candidates, write out one or more
    possible step orderings as text before running any `bar sequence` commands. Each candidate
    must name the step count, the token(s) per step, and the role each step plays. A transcript
    that runs `bar sequence list` before a candidate step structure appears in the text does
-   not satisfy this requirement.
+   not satisfy this requirement. If `bar lookup` returned a `kind=pack` result, its command
+   can serve as a single-step candidate directly.
 5. **Check sequences as a scaffold** — run `bar sequence list`. If a named sequence's step
    structure aligns with a candidate from step 4, run `bar sequence show <name>` and adopt
    its step count, step order, execution mode, prompt hints, and anchor tokens as additions

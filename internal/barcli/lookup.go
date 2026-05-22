@@ -10,6 +10,8 @@ type LookupResult struct {
 	Axis         string
 	Token        string
 	Label        string
+	Kind         string  // "token", "pack", or "sequence"
+	Command      string  // populated for Kind="pack": the suggested bar build command
 	Tier         int     // 0–3 = tier match; -1 = BM25-only result (ADR-0232)
 	Score        float64 // BM25 score; 0 for tier-matched results
 	MatchedField string  // "token", "heuristics", "distinctions", "definition", or "bm25"
@@ -305,6 +307,16 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		}
 	}
 
+	// Search starter packs by name and framing (when no axis filter active)
+	if axisFilter == "" {
+		for _, p := range g.StarterPacks {
+			tryToken("pack", p.Name, p.Framing, p.Framing, nil, nil)
+		}
+		for name, seq := range g.Sequences {
+			tryToken("sequence", name, seq.Description, seq.Description, nil, nil)
+		}
+	}
+
 	// Deduplicate tier candidates: keep highest-tier match per axis:token
 	type key struct{ axis, token string }
 	best := make(map[key]candidate)
@@ -376,15 +388,30 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		if len(results) >= resultCap {
 			break
 		}
-		results = append(results, LookupResult{
+		r := LookupResult{
 			Axis:         c.axis,
 			Token:        c.token,
 			Label:        c.label,
 			Tier:         c.tier,
 			MatchedField: c.matchedField,
 			MatchedText:  c.matchedText,
-			Sequences:    g.SequencesForToken(c.axis + ":" + c.token),
-		})
+		}
+		switch c.axis {
+		case "pack":
+			r.Kind = "pack"
+			for _, p := range g.StarterPacks {
+				if p.Name == c.token {
+					r.Command = p.Command
+					break
+				}
+			}
+		case "sequence":
+			r.Kind = "sequence"
+		default:
+			r.Kind = "token"
+			r.Sequences = g.SequencesForToken(c.axis + ":" + c.token)
+		}
+		results = append(results, r)
 	}
 	for _, br := range bm25Results {
 		if len(results) >= resultCap {
@@ -394,17 +421,38 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		if colonIdx < 0 {
 			continue
 		}
-		axis := br.id[:colonIdx]
-		token := br.id[colonIdx+1:]
-		results = append(results, LookupResult{
-			Axis:         axis,
-			Token:        token,
-			Label:        labelForToken(g, axis, token),
+		prefix := br.id[:colonIdx]
+		name := br.id[colonIdx+1:]
+		r := LookupResult{
 			Tier:         -1,
 			Score:        br.score,
 			MatchedField: "bm25",
-			Sequences:    g.SequencesForToken(br.id),
-		})
+			Token:        name,
+		}
+		switch prefix {
+		case "pack":
+			r.Kind = "pack"
+			r.Axis = "pack"
+			for _, p := range g.StarterPacks {
+				if p.Name == name {
+					r.Label = p.Framing
+					r.Command = p.Command
+					break
+				}
+			}
+		case "sequence":
+			r.Kind = "sequence"
+			r.Axis = "sequence"
+			if seq, ok := g.Sequences[name]; ok {
+				r.Label = seq.Description
+			}
+		default:
+			r.Kind = "token"
+			r.Axis = prefix
+			r.Label = labelForToken(g, prefix, name)
+			r.Sequences = g.SequencesForToken(br.id)
+		}
+		results = append(results, r)
 	}
 	if len(results) == 0 {
 		return nil

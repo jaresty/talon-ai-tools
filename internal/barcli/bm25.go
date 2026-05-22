@@ -90,6 +90,23 @@ func buildTokenDocs(g *Grammar, axisFilter string) []tokenDoc {
 		}
 	}
 
+	if axisFilter == "" {
+		for _, p := range g.StarterPacks {
+			docs = append(docs, tokenDoc{
+				id:    "pack:" + p.Name,
+				title: p.Name,
+				body:  p.Framing + " " + p.Command,
+			})
+		}
+		for name, seq := range g.Sequences {
+			docs = append(docs, tokenDoc{
+				id:    "sequence:" + name,
+				title: name,
+				body:  seq.Description + " " + seq.Example,
+			})
+		}
+	}
+
 	return docs
 }
 

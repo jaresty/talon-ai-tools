@@ -35,31 +35,48 @@ metadata changes as the grammar evolves; `bar-dictionary` always reflects the cu
 
 ## Operation 1: Intent lookup
 
-**Use when:** You have a user intent phrase and need to find matching tokens.
+**Use when:** You have a user intent phrase and need to find matching tokens, starter packs, or sequences.
+
+Results include three kinds, distinguished by the `kind` field:
+- `kind=token` — a single grammar token to append to `bar build`
+- `kind=pack` — a starter pack; the runnable `bar build` command appears inline in text output and in the `command` field in JSON
+- `kind=sequence` — a named multi-step workflow; step count and `bar sequence show <name>` appear inline
 
 ```bash
-bar lookup "<phrase>"               # search across all axes
-bar lookup "<phrase>" --axis method # restrict to one axis
-bar lookup "<phrase>" --json        # structured output for programmatic use
+bar lookup "<phrase>"               # search across all axes (tokens + packs + sequences)
+bar lookup "<phrase>" --axis method # restrict to one axis (tokens only when axis filter set)
+bar lookup "<phrase>" --json        # structured output; each result has kind, token, command fields
+bar lookup debug                    # → pack:debug (→ bar build probe diagnose adversarial unknowns), sequence:debug-cycle, tokens
 ```
 
-**Output (human-readable):** one result per line, `axis:token — Label`, ranked by match quality.
+**Output (human-readable):** one result per line, ranked by match quality.
 
 ```
-task:probe — Surface assumptions and implications
-form:prep — Experiment design write-up
-method:diagnose — Identify likely root causes
+[T3] pack:debug — Diagnosing a bug or system failure  → bar build probe diagnose adversarial unknowns
+[T3] task:probe — Surface assumptions and implications  [matched heuristics: "debug"]
+[T2] sequence:debug-cycle — Surface root causes, fix them...  [3 steps → bar sequence show debug-cycle]
+[T2] method:diagnose — Identify likely root causes
 ```
 
-**Output (--json):** array of objects with `axis`, `token`, `label`, `tier` (0–3),
-`matched_field`, `matched_text`.
+**Output (--json):** array of objects with `axis`, `token`, `label`, `kind`, `command` (packs only), `tier` (0–3), `matched_field`, `matched_text`.
 
 ```json
 [
   {
+    "axis": "pack",
+    "token": "debug",
+    "label": "Diagnosing a bug or system failure",
+    "kind": "pack",
+    "command": "bar build probe diagnose adversarial unknowns",
+    "tier": 3,
+    "matched_field": "token",
+    "matched_text": "debug"
+  },
+  {
     "axis": "task",
     "token": "probe",
     "label": "Surface assumptions and implications",
+    "kind": "token",
     "tier": 3,
     "matched_field": "heuristics",
     "matched_text": "debug"
@@ -67,13 +84,13 @@ method:diagnose — Identify likely root causes
 ]
 ```
 
-**Tier meanings:** 3 = exact heuristic match, 2 = substring heuristic match,
+**Tier meanings:** 3 = exact name/heuristic match, 2 = substring match,
 1 = distinction token name match, 0 = definition text match. Higher tier = stronger signal.
 
 **Multi-word queries use AND logic:** all words must match. Quote phrases:
 ```bash
-bar lookup "root cause"         # matches tokens where both words appear
-bar lookup "debug" --axis method  # debug-related method tokens only
+bar lookup "root cause"           # matches tokens where both words appear
+bar lookup "debug" --axis method  # debug-related method tokens only (no packs/sequences)
 ```
 
 ---

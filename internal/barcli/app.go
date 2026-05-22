@@ -405,6 +405,8 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 			Axis         string          `json:"axis"`
 			Token        string          `json:"token"`
 			Label        string          `json:"label"`
+			Kind         string          `json:"kind"`
+			Command      string          `json:"command,omitempty"`
 			Tier         int             `json:"tier"`
 			Score        float64         `json:"score,omitempty"`
 			ContextScore float64         `json:"context_score"`
@@ -422,6 +424,8 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 				Axis:         r.Axis,
 				Token:        r.Token,
 				Label:        r.Label,
+				Kind:         r.Kind,
+				Command:      r.Command,
 				Tier:         r.Tier,
 				Score:        r.Score,
 				ContextScore: r.ContextScore,
@@ -464,6 +468,16 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 		}
 		if rc != "" && !strings.EqualFold(rc, r.Label) {
 			line += "  ↳ " + rc
+		}
+		switch r.Kind {
+		case "pack":
+			if r.Command != "" {
+				line += "  → " + r.Command
+			}
+		case "sequence":
+			if seq, ok := grammar.Sequences[r.Token]; ok {
+				line += fmt.Sprintf("  [%d steps → bar sequence show %s]", len(seq.Steps), r.Token)
+			}
 		}
 		if r.MatchedField != "" && r.MatchedField != "bm25" && r.MatchedText != "" {
 			line += fmt.Sprintf("  [matched %s: %q]", r.MatchedField, r.MatchedText)

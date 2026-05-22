@@ -614,9 +614,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "other failures visible in the same result are not in scope for this step",
+            "resolving more than one item in one tool call is not permitted",
             definition,
-            "atomic must name the observable that limits the candidate to the first failure only",
+            "atomic must name the observable that limits the candidate to the first item only",
         )
 
     def test_atomic_candidate_scoped_to_observed_failure(self):
@@ -624,9 +624,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "a failure not yet observed in a prior tool-executed run result has not been shown to govern",
+            "the candidate is limited to the change that resolves the first item only",
             definition,
-            "atomic must explicitly prohibit changes that fix assertions not present in the governing FAIL result",
+            "atomic must explicitly limit the candidate to the first item from the governing run result",
         )
 
     def test_atomic_smaller_change_insufficient_against_current_fail(self):
@@ -634,9 +634,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "the only permitted evidence that the smaller change is insufficient is a tool-executed run result in which the governing failure signal text appears verbatim",
+            "the only permitted evidence of insufficiency is a tool-executed run result in which the scope text appears verbatim",
             definition,
-            "atomic must require a tool-executed run of the smaller change before an insufficiency claim is permitted",
+            "atomic must require a tool-executed run of the stub before an insufficiency claim is permitted",
         )
 
     def test_falsify_empty_transcript_gap_closed(self):

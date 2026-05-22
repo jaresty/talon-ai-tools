@@ -439,10 +439,31 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 		return 0
 	}
 
+	tierBadge := func(tier int) string {
+		switch tier {
+		case 3:
+			return "[T3]"
+		case 2:
+			return "[T2]"
+		case 1:
+			return "[T1]"
+		case 0:
+			return "[T0]"
+		default:
+			return "[BM]"
+		}
+	}
 	for _, r := range results {
-		line := r.Axis + ":" + r.Token
+		line := tierBadge(r.Tier) + " " + r.Axis + ":" + r.Token
 		if r.Label != "" {
 			line += " — " + r.Label
+		}
+		rc := grammar.AxisRoutingConcept(r.Axis, r.Token)
+		if rc == "" {
+			rc = grammar.PersonaRoutingConcept(r.Axis, r.Token)
+		}
+		if rc != "" && !strings.EqualFold(rc, r.Label) {
+			line += "  ↳ " + rc
 		}
 		if r.MatchedField != "" && r.MatchedField != "bm25" && r.MatchedText != "" {
 			line += fmt.Sprintf("  [matched %s: %q]", r.MatchedField, r.MatchedText)

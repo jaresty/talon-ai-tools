@@ -282,6 +282,49 @@ func TestLookupCLIHumanReadableOutput(t *testing.T) {
 	}
 }
 
+// TestLookupCLIHumanReadableTierBadge specifies that text output lines begin with a tier badge like [T2] or [BM].
+func TestLookupCLIHumanReadableTierBadge(t *testing.T) {
+	result := runBuildCLI(t, []string{"lookup", "root cause"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
+	}
+	lines := strings.Split(strings.TrimSpace(result.Stdout), "\n")
+	if len(lines) == 0 {
+		t.Fatal("expected at least one output line")
+	}
+	for _, line := range lines {
+		if line == "" {
+			continue
+		}
+		if !strings.HasPrefix(line, "[T") && !strings.HasPrefix(line, "[BM]") {
+			t.Errorf("expected line to start with tier badge ([T3]/[T2]/[T1]/[T0]/[BM]), got: %q", line)
+		}
+	}
+}
+
+// TestLookupCLIHumanReadableRoutingConcept specifies that text output shows a routing concept
+// after the label when the token has one and it differs from the label.
+func TestLookupCLIHumanReadableRoutingConcept(t *testing.T) {
+	// method:diagnose has routing_concept "Root cause" which differs from its label
+	result := runBuildCLI(t, []string{"lookup", "root cause", "--axis", "method"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
+	}
+	var diagnoseLine string
+	for _, line := range strings.Split(result.Stdout, "\n") {
+		if strings.Contains(line, "method:diagnose") {
+			diagnoseLine = line
+			break
+		}
+	}
+	if diagnoseLine == "" {
+		t.Fatalf("expected method:diagnose in output:\n%s", result.Stdout)
+	}
+	if !strings.Contains(diagnoseLine, "↳") {
+		t.Errorf("expected routing concept arrow '↳' in method:diagnose line, got: %q", diagnoseLine)
+	}
+}
+
 // TestLookupCLIJSONOutput specifies that --json emits a valid JSON array with correct schema fields.
 func TestLookupCLIJSONOutput(t *testing.T) {
 	result := runBuildCLI(t, []string{"lookup", "root cause", "--json"}, nil)
@@ -314,7 +357,7 @@ func TestLookupCLIAxisFilter(t *testing.T) {
 		if line == "" {
 			continue
 		}
-		if !strings.HasPrefix(line, "method:") {
+		if !strings.Contains(line, "method:") {
 			t.Errorf("expected only method: results, got line: %q", line)
 		}
 	}

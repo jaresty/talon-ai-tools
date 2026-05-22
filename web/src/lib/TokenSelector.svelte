@@ -1,4 +1,4 @@
-<script module>
+<script module lang="ts">
 	// Module-level flag: persists across all TokenSelector instances (tab changes mount fresh
 	// instances with isUsingTouch=false, breaking per-instance guards). This tracks whether
 	// the last pointer interaction was touch anywhere on the page, so onfocus and onmouseenter

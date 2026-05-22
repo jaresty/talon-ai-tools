@@ -22,6 +22,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@huggingface/transformers": "^4.2.0",
     "stemmer": "^2.0.1"
   }
 }

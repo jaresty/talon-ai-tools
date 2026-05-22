@@ -91,6 +91,7 @@ type TaskMetadata struct {
 	Definition   string                    `json:"definition"`
 	Heuristics   []string                  `json:"heuristics"`
 	Distinctions []TaskMetadataDistinction `json:"distinctions"`
+	Embedding    []float32                 `json:"embedding,omitempty"`
 }
 
 type StaticSection struct {

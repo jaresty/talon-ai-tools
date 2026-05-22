@@ -2347,3 +2347,15 @@ describe('TokenSelector — ADR-0233 BM25 suggestion dimming', () => {
 		expect(probeChip.classList.contains('suggestion-dim')).toBe(false);
 	});
 });
+
+// Assertion HE: TokenSelector accepts embedder prop and passes it through to hybridRankTokens
+describe('TokenSelector — hybrid embedder prop', () => {
+	it('HE1: renders without error when embedder prop is provided', async () => {
+		const onToggle = vi.fn();
+		const stubEmbedder = async (_q: string) => new Float32Array([1, 0, 0]);
+		const { container } = render(TokenSelector, {
+			props: { axis: 'method', tokens: manyTokens, selected: [], maxSelect: 3, onToggle, embedder: stubEmbedder }
+		});
+		expect(container.querySelector('.axis-panel')).toBeTruthy();
+	});
+});

@@ -11,6 +11,9 @@
 	import { addHistoryEntry, loadHistory, deleteHistoryEntry, clearHistory, type HistoryEntry } from '$lib/history.js';
 	import { encodeState, decodeState } from '$lib/stateCodec.js';
 	import { bm25Score } from '$lib/bm25.js';
+	import { createEmbedder } from '$lib/embedder.js';
+
+	const embedder = createEmbedder();
 
 	const STORAGE_KEY = 'bar-prompt-state';
 	const RELEASE_NOTE_KEY = 'bar-release-note-gate-falsify-split-dismissed';
@@ -699,6 +702,7 @@
 					activeTokensByAxis={selected}
 					axisDescription={grammar?.axes?.axis_descriptions?.['task']}
 					{suggestionScores}
+					{embedder}
 				/>
 				<label class="input-group">
 					<span class="input-label">--addendum <span class="input-hint">task directive</span></span>
@@ -726,6 +730,7 @@
 						activeTokensByAxis={selected}
 						axisDescription={grammar?.axes?.axis_descriptions?.[axis]}
 						{suggestionScores}
+						{embedder}
 					/>
 					{/if}
 				{/each}

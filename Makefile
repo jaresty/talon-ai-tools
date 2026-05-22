@@ -77,8 +77,14 @@ bar-grammar-update:
 		echo "axisConfig.py was out of sync — updated."; \
 	fi
 	@$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
-	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
-	@cp build/prompt-grammar.json web/static/prompt-grammar.json
+	@if [ -x .venv/bin/python3 ] && .venv/bin/python3 -c "import sentence_transformers" 2>/dev/null; then \
+		echo "Generating token embeddings..."; \
+		.venv/bin/python3 scripts/embed_tokens.py; \
+	else \
+		echo "⚠ Skipping embeddings: sentence_transformers not found in .venv (run: uv pip install sentence-transformers)"; \
+		cp build/prompt-grammar.json cmd/bar/testdata/grammar.json; \
+		cp build/prompt-grammar.json web/static/prompt-grammar.json; \
+	fi
 	@echo "✓ Grammar files updated. Review with 'git diff' before committing."
 
 grammar-update-all: bar-grammar-update axis-regenerate-apply

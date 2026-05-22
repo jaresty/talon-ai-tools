@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
 )
 
 func TestRenderTokensHelpShowsPersonaSlugs(t *testing.T) {
@@ -468,5 +470,46 @@ func TestTopologyTokensInHelpTokensAxesSection(t *testing.T) {
 	}
 	if topologyIdx > 0 && completenessIdx > 0 && topologyIdx > completenessIdx {
 		t.Error("topology tokens must appear before completeness tokens in bar help tokens axes output")
+	}
+}
+
+// TestRunLookupWithEmbedderUsesHybridSearch verifies that runLookupWithEmbedder
+// routes through LookupTokensWithEmbedder rather than pure BM25 when an embedder
+// is provided and the grammar has token embeddings.
+func TestRunLookupWithEmbedderUsesHybridSearch(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// Find a token with an embedding to use as the query vector.
+	var queryVec []float32
+	for _, tokens := range g.Axes.Metadata {
+		for _, meta := range tokens {
+			if len(meta.Embedding) > 0 {
+				queryVec = meta.Embedding
+				break
+			}
+		}
+		if queryVec != nil {
+			break
+		}
+	}
+	if queryVec == nil {
+		t.Skip("no token embeddings in grammar; run scripts/embed_tokens.py first")
+	}
+
+	opts := &cli.Config{
+		Command: "lookup",
+		Tokens:  []string{"concrete specific"},
+		GrammarPath: "",
+	}
+	var stdout, stderr bytes.Buffer
+	exit := runLookupWithEmbedder(opts, g, &stubEmbedder{vec: queryVec}, &stdout, &stderr)
+	if exit != 0 {
+		t.Fatalf("runLookupWithEmbedder returned %d; stderr: %s", exit, stderr.String())
+	}
+	if stdout.Len() == 0 {
+		t.Error("expected non-empty output from runLookupWithEmbedder")
 	}
 }

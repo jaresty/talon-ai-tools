@@ -16,7 +16,7 @@
 <script lang="ts">
 	import { getMethodCategoryOrder, getCompositionData, getChipState, getReverseChipState, getChipStateWithReason } from './grammar.js';
 	import type { TokenMeta, Grammar } from './grammar.js';
-	import { bm25RankTokens } from './bm25.js';
+	import { bm25RankTokens, hybridRankTokens } from './bm25.js';
 
 	interface Props {
 		axis: string;
@@ -33,9 +33,11 @@
 		axisDescription?: string;
 		// ADR-0233: BM25 suggestion scores from subject+addendum — zero-score chips are dimmed
 		suggestionScores?: Map<string, number>;
+		// Optional async embedder for hybrid BM25+cosine search; null degrades to BM25 only.
+		embedder?: ((q: string) => Promise<Float32Array>) | null;
 	}
 
-	let { axis, tokens, selected, maxSelect, onToggle, onTabNext, onTabPrev, grammar, activeTokensByAxis, axisDescription, suggestionScores }: Props = $props();
+	let { axis, tokens, selected, maxSelect, onToggle, onTabNext, onTabPrev, grammar, activeTokensByAxis, axisDescription, suggestionScores, embedder = null }: Props = $props();
 
 	let filter = $state('');
 	let activeToken = $state<string | null>(null);
@@ -77,12 +79,23 @@
 		return result;
 	});
 
+	// Hybrid-ranked results from async embedder — updated in background when filter changes.
+	let hybridFiltered = $state<TokenMeta[] | null>(null);
+	$effect(() => {
+		const q = filter.trim();
+		if (!q || !embedder) { hybridFiltered = null; return; }
+		hybridRankTokens(tokens, q, embedder).then((ranked) => {
+			hybridFiltered = ranked.length > 0 ? ranked.map((r) => r.token) : null;
+		});
+	});
+
 	// Flat token list in display order — used for keyboard navigation.
 	// In grouped mode (no filter), tokens appear in category order; in flat/filter mode, unchanged.
 	let filtered = $derived(
 		filter.trim()
 			? (() => {
-					const ranked = bm25RankTokens(tokens, filter.trim()).map((r) => r.token);
+					// Use async hybrid results when available; BM25 is the synchronous default.
+					const ranked = (hybridFiltered ?? bm25RankTokens(tokens, filter.trim()).map((r) => r.token));
 					if (ranked.length > 0) return ranked;
 					// Fallback: substring match when BM25 finds nothing (e.g. prefix queries)
 					const q = filter.trim().toLowerCase();

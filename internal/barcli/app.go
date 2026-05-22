@@ -366,7 +366,6 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 //
 //	bar lookup <query> [--axis AXIS] [--json]
 func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
-	// Collect query from Tokens (first non-flag positional arg).
 	query := ""
 	if len(opts.Tokens) > 0 {
 		query = opts.Tokens[0]
@@ -378,9 +377,8 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	axisFilter := opts.Axis
-	if axisFilter != "" && !validLookupAxes[axisFilter] {
-		writeError(stderr, fmt.Sprintf("unknown axis %q; valid axes: task, topology, completeness, scope, method, form, channel, directional, voice, audience, tone, intent, presets", axisFilter))
+	if opts.Axis != "" && !validLookupAxes[opts.Axis] {
+		writeError(stderr, fmt.Sprintf("unknown axis %q; valid axes: task, topology, completeness, scope, method, form, channel, directional, voice, audience, tone, intent, presets", opts.Axis))
 		return 1
 	}
 
@@ -390,74 +388,8 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	results := LookupTokensWithContext(query, grammar, axisFilter, opts.Subject, opts.Addendum)
-
-	if opts.JSON {
-		type jsonSeqMember struct {
-			Name      string `json:"name"`
-			StepIndex int    `json:"step_index"`
-		}
-		type jsonResult struct {
-			Axis         string          `json:"axis"`
-			Token        string          `json:"token"`
-			Label        string          `json:"label"`
-			Tier         int             `json:"tier"`
-			Score        float64         `json:"score,omitempty"`
-			ContextScore float64         `json:"context_score"`
-			MatchedField string          `json:"matched_field"`
-			MatchedText  string          `json:"matched_text"`
-			Sequences    []jsonSeqMember `json:"sequences,omitempty"`
-		}
-		out := make([]jsonResult, len(results))
-		for i, r := range results {
-			var seqs []jsonSeqMember
-			for _, m := range r.Sequences {
-				seqs = append(seqs, jsonSeqMember{Name: m.Name, StepIndex: m.StepIndex})
-			}
-			out[i] = jsonResult{
-				Axis:         r.Axis,
-				Token:        r.Token,
-				Label:        r.Label,
-				Tier:         r.Tier,
-				Score:        r.Score,
-				ContextScore: r.ContextScore,
-				MatchedField: r.MatchedField,
-				MatchedText:  r.MatchedText,
-				Sequences:    seqs,
-			}
-		}
-		enc := json.NewEncoder(stdout)
-		enc.SetIndent("", "  ")
-		if err := enc.Encode(out); err != nil {
-			writeError(stderr, fmt.Sprintf("encode json: %v", err))
-			return 1
-		}
-		return 0
-	}
-
-	for _, r := range results {
-		line := r.Axis + ":" + r.Token
-		if r.Label != "" {
-			line += " — " + r.Label
-		}
-		if r.MatchedField != "" && r.MatchedField != "bm25" && r.MatchedText != "" {
-			line += fmt.Sprintf("  [matched %s: %q]", r.MatchedField, r.MatchedText)
-		}
-		if r.ContextScore > 0 {
-			line += fmt.Sprintf("  [ctx: %.2f]", r.ContextScore)
-		}
-		if len(r.Sequences) > 0 {
-			for _, m := range r.Sequences {
-				total := 0
-				if seq, ok := grammar.Sequences[m.Name]; ok {
-					total = len(seq.Steps)
-				}
-				line += fmt.Sprintf("  [part of: %s step %d/%d]", m.Name, m.StepIndex+1, total)
-			}
-		}
-		fmt.Fprintln(stdout, line)
-	}
-	return 0
+	emb := NewQueryEmbedder(QueryEmbedderOptions{})
+	return runLookupWithEmbedder(opts, grammar, emb, stdout, stderr)
 }
 
 // runStarter implements the `bar starter` subcommand (ADR-0144 Phase 2).
@@ -1603,6 +1535,93 @@ func emitError(err *CLIError, jsonMode bool, stdout, stderr io.Writer) {
 		return
 	}
 	writeError(stderr, err.Message)
+}
+
+// runLookupWithEmbedder is the core lookup implementation, accepting an
+// injectable embedder for hybrid BM25+cosine search. Production callers pass
+// a QueryEmbedder; tests inject a stubEmbedder.
+func runLookupWithEmbedder(opts *cli.Config, grammar *Grammar, emb tokenEmbedder, stdout, stderr io.Writer) int {
+	query := ""
+	if len(opts.Tokens) > 0 {
+		query = opts.Tokens[0]
+	}
+	axisFilter := opts.Axis
+
+	var results []LookupResult
+	if query != "" && opts.Subject == "" && opts.Addendum == "" {
+		// Pure query mode: use hybrid BM25+embedding search.
+		// LookupTokensWithEmbedder degrades to BM25 when embedder returns nil.
+		results = LookupTokensWithEmbedder(query, grammar, axisFilter, emb)
+	} else {
+		results = LookupTokensWithContext(query, grammar, axisFilter, opts.Subject, opts.Addendum)
+	}
+
+	if opts.JSON {
+		type jsonSeqMember struct {
+			Name      string `json:"name"`
+			StepIndex int    `json:"step_index"`
+		}
+		type jsonResult struct {
+			Axis         string          `json:"axis"`
+			Token        string          `json:"token"`
+			Label        string          `json:"label"`
+			Tier         int             `json:"tier"`
+			Score        float64         `json:"score,omitempty"`
+			ContextScore float64         `json:"context_score"`
+			MatchedField string          `json:"matched_field"`
+			MatchedText  string          `json:"matched_text"`
+			Sequences    []jsonSeqMember `json:"sequences,omitempty"`
+		}
+		out := make([]jsonResult, len(results))
+		for i, r := range results {
+			var seqs []jsonSeqMember
+			for _, m := range r.Sequences {
+				seqs = append(seqs, jsonSeqMember{Name: m.Name, StepIndex: m.StepIndex})
+			}
+			out[i] = jsonResult{
+				Axis:         r.Axis,
+				Token:        r.Token,
+				Label:        r.Label,
+				Tier:         r.Tier,
+				Score:        r.Score,
+				ContextScore: r.ContextScore,
+				MatchedField: r.MatchedField,
+				MatchedText:  r.MatchedText,
+				Sequences:    seqs,
+			}
+		}
+		enc := json.NewEncoder(stdout)
+		enc.SetIndent("", "  ")
+		if err := enc.Encode(out); err != nil {
+			writeError(stderr, fmt.Sprintf("encode json: %v", err))
+			return 1
+		}
+		return 0
+	}
+
+	for _, r := range results {
+		line := r.Axis + ":" + r.Token
+		if r.Label != "" {
+			line += " — " + r.Label
+		}
+		if r.MatchedField != "" && r.MatchedField != "bm25" && r.MatchedText != "" {
+			line += fmt.Sprintf("  [matched %s: %q]", r.MatchedField, r.MatchedText)
+		}
+		if r.ContextScore > 0 {
+			line += fmt.Sprintf("  [ctx: %.2f]", r.ContextScore)
+		}
+		if len(r.Sequences) > 0 {
+			for _, m := range r.Sequences {
+				total := 0
+				if seq, ok := grammar.Sequences[m.Name]; ok {
+					total = len(seq.Steps)
+				}
+				line += fmt.Sprintf("  [part of: %s step %d/%d]", m.Name, m.StepIndex+1, total)
+			}
+		}
+		fmt.Fprintln(stdout, line)
+	}
+	return 0
 }
 
 func writeError(w io.Writer, message string) {

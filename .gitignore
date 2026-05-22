@@ -15,3 +15,4 @@ GPT/lists/*.talon-list
 .envrc
 .grepai/
 ground.txt
+build/models/

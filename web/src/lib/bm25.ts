@@ -79,6 +79,46 @@ export function bm25Score(tokens: TokenMeta[], query: string): Map<string, numbe
 	return scores;
 }
 
+const HYBRID_BM25_WEIGHT = 0.4;
+const HYBRID_EMB_WEIGHT = 0.6;
+
+function cosineSimilarity(a: Float32Array, b: number[]): number {
+	if (a.length !== b.length) return 0;
+	let dot = 0;
+	for (let i = 0; i < a.length; i++) dot += a[i] * b[i];
+	return dot;
+}
+
+// hybridRankTokens merges BM25 and cosine similarity scores (0.4/0.6 weighted).
+// embedder is an async function that returns a unit-norm Float32Array for the query,
+// or null to degrade to BM25-only. Tokens without an embedding field are scored
+// by BM25 only.
+export async function hybridRankTokens(
+	tokens: TokenMeta[],
+	query: string,
+	embedder: ((q: string) => Promise<Float32Array>) | null
+): Promise<RankedToken[]> {
+	const bm25Scores = bm25Score(tokens, query);
+	let maxBM25 = 0;
+	bm25Scores.forEach((s) => { if (s > maxBM25) maxBM25 = s; });
+
+	let queryVec: Float32Array | null = null;
+	if (embedder) {
+		try { queryVec = await embedder(query); } catch { queryVec = null; }
+	}
+
+	const ranked: RankedToken[] = [];
+	for (const t of tokens) {
+		const b = maxBM25 > 0 ? (bm25Scores.get(t.token) ?? 0) / maxBM25 : 0;
+		const emb = (t.metadata as { embedding?: number[] }).embedding;
+		const c = queryVec && emb ? cosineSimilarity(queryVec, emb) : 0;
+		const score = HYBRID_BM25_WEIGHT * b + HYBRID_EMB_WEIGHT * Math.max(0, c);
+		if (score > 0) ranked.push({ token: t, score });
+	}
+	ranked.sort((a, b) => b.score - a.score);
+	return ranked;
+}
+
 // bm25RankTokens returns tokens sorted by BM25 score descending.
 // Tokens with score 0 are excluded.
 export function bm25RankTokens(tokens: TokenMeta[], query: string): RankedToken[] {

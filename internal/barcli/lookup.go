@@ -400,3 +400,98 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 	}
 	return results
 }
+
+// tokenEmbedder produces a query vector for hybrid search. Embed returns nil
+// when the model is unavailable; callers fall back to BM25-only scores.
+type tokenEmbedder interface {
+	Embed(text string) []float32
+}
+
+// LookupTokensWithEmbedder is like LookupTokens but merges BM25 scores with
+// cosine similarity against stored token embeddings (hybrid search, ADR-XXXX).
+// When the embedder returns nil the function degrades to pure BM25.
+func LookupTokensWithEmbedder(query string, g *Grammar, axisFilter string, emb tokenEmbedder) []LookupResult {
+	var queryVec []float32
+	if emb != nil {
+		queryVec = emb.Embed(query)
+	}
+	// No embedding available: fall back to standard BM25+tier lookup which
+	// preserves MatchedField/MatchedText annotations.
+	if queryVec == nil {
+		return LookupTokens(query, g, axisFilter)
+	}
+
+	docs := buildTokenDocs(g, axisFilter)
+	bm25 := bm25Scores(docs, query)
+	cosine := embeddingScores(docs, queryVec)
+
+	// Normalise BM25 scores to [0,1] for weighted combination.
+	maxBM25 := 0.0
+	for _, s := range bm25 {
+		if s > maxBM25 {
+			maxBM25 = s
+		}
+	}
+
+	combined := make(map[string]float64, len(docs))
+	for _, doc := range docs {
+		b := bm25[doc.id]
+		if maxBM25 > 0 {
+			b /= maxBM25
+		}
+		c := cosine[doc.id]
+		if b > 0 || c > 0 {
+			combined[doc.id] = hybridScore(b, c)
+		}
+	}
+
+	type candidate struct {
+		id    string
+		score float64
+	}
+	ranked := make([]candidate, 0, len(combined))
+	for id, score := range combined {
+		ranked = append(ranked, candidate{id, score})
+	}
+	sort.Slice(ranked, func(i, j int) bool {
+		return ranked[i].score > ranked[j].score
+	})
+
+	// Secondary pass: collect BM25 match annotations to enrich hybrid results.
+	bm25Results := LookupTokens(query, g, axisFilter)
+	bm25Annotations := make(map[string]LookupResult, len(bm25Results))
+	for _, r := range bm25Results {
+		bm25Annotations[r.Axis+":"+r.Token] = r
+	}
+
+	const resultCap = 10
+	results := make([]LookupResult, 0, resultCap)
+	for _, r := range ranked {
+		if len(results) >= resultCap {
+			break
+		}
+		colonIdx := strings.Index(r.id, ":")
+		if colonIdx < 0 {
+			continue
+		}
+		axis := r.id[:colonIdx]
+		token := r.id[colonIdx+1:]
+		matchedField := "hybrid"
+		var matchedText string
+		if ann, ok := bm25Annotations[r.id]; ok && ann.MatchedField != "" && ann.MatchedField != "bm25" {
+			matchedField = ann.MatchedField
+			matchedText = ann.MatchedText
+		}
+		results = append(results, LookupResult{
+			Axis:         axis,
+			Token:        token,
+			Label:        labelForToken(g, axis, token),
+			Tier:         -1,
+			Score:        r.score,
+			MatchedField: matchedField,
+			MatchedText:  matchedText,
+			Sequences:    g.SequencesForToken(r.id),
+		})
+	}
+	return results
+}

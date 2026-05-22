@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { bm25Score, bm25RankTokens } from './bm25.js';
+import { bm25Score, bm25RankTokens, hybridRankTokens } from './bm25.js';
 import type { TokenMeta } from './grammar.js';
 
 function makeMeta(token: string, label: string, description: string, heuristics: string[] = [], distinctions: string[] = []): TokenMeta {
@@ -79,5 +79,26 @@ describe('bm25RankTokens — multi-word OR fallback', () => {
 		const tokenNames = ranked.map((r) => r.token.token);
 		expect(tokenNames).toContain('gate');
 		expect(tokenNames).toContain('ground');
+	});
+});
+
+// Assertion H: hybridRankTokens — embedding-weighted hybrid search
+describe('hybridRankTokens', () => {
+	it('H1: with null embedder degrades to BM25-only ordering', async () => {
+		const hybrid = await hybridRankTokens(corpus, 'TDD assertion', null);
+		const bm25Only = bm25RankTokens(corpus, 'TDD assertion');
+		expect(hybrid.map(r => r.token.token)).toEqual(bm25Only.map(r => r.token.token));
+	});
+
+	it('H2: with stub embedder that returns a known vector, boosts token with matching embedding', async () => {
+		const corpusWithEmb = corpus.map(t => ({
+			...t,
+			metadata: { ...t.metadata, embedding: t.token === 'gate' ? [1, 0, 0] : [0, 1, 0] }
+		})) as unknown as TokenMeta[];
+
+		const stubEmbedder = async (_query: string) => new Float32Array([1, 0, 0]);
+		const hybrid = await hybridRankTokens(corpusWithEmb, 'something unrelated', stubEmbedder);
+		expect(hybrid.length).toBeGreaterThan(0);
+		expect(hybrid[0].token.token).toBe('gate');
 	});
 });

@@ -33,13 +33,16 @@ jobs:
         run: python3 -m pip install -r ./.github/requirements-test.txt
 
       - name: Regenerate prompt grammar artifacts
-        run: python3 -m prompts.export --output build/prompt-grammar.json
+        run: python3 -m prompts.export --output /tmp/grammar-regen.json
 
       - name: Verify prompt grammar artifact cleanliness
-        run: git diff --exit-code build/prompt-grammar.json
+        run: python3 scripts/check_grammar_sync.py /tmp/grammar-regen.json build/prompt-grammar.json
 
       - name: Verify grammar sync across all copies
-        run: make bar-grammar-check
+        run: |
+          for copy in internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json; do
+            python3 scripts/check_grammar_sync.py /tmp/grammar-regen.json "$copy"
+          done
 
       - name: Run Go tests
         run: go test ./... -v

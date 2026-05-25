@@ -62,13 +62,17 @@ bar-grammar-check:
 		cp tmp/axisConfig.generated.py lib/axisConfig.py; \
 		echo "axisConfig.py was out of sync — updated."; \
 	fi
-	@$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
-	@cp build/prompt-grammar.json cmd/bar/testdata/grammar.json
-	@cp build/prompt-grammar.json web/static/prompt-grammar.json
-	@echo "Checking for grammar drift..."
-	@if ! git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json > /dev/null 2>&1; then \
-		git add build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json; \
-		echo "Grammar files were out of sync — updated and staged automatically."; \
+	@$(PYTHON) -m prompts.export --output tmp/grammar-check.json --skip-embed
+	@echo "Checking for grammar drift (ignoring embeddings)..."
+	@FAILED=0; \
+	for copy in build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json; do \
+		if ! $(PYTHON) scripts/check_grammar_sync.py tmp/grammar-check.json $$copy > /dev/null 2>&1; then \
+			echo "  ✗ $$copy is out of sync"; \
+			FAILED=1; \
+		fi; \
+	done; \
+	if [ "$$FAILED" = "1" ]; then \
+		echo "Grammar files are out of sync — run: make bar-grammar-update"; \
 		exit 1; \
 	fi
 	@echo "✓ Grammar files are in sync"

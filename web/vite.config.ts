@@ -9,6 +9,9 @@ const isTesting = !!process.env.VITEST;
 
 export default defineConfig({
 	plugins: [isTesting ? svelte() : sveltekit()],
+	worker: {
+		format: 'es'
+	},
 	resolve: {
 		conditions: ['browser', 'import', 'module', 'default'],
 		alias: isTesting

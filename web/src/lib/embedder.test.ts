@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { createEmbedder } from './embedder.js';
 
 describe('createEmbedder', () => {
@@ -24,5 +24,24 @@ describe('createEmbedder', () => {
 		});
 		const result = await embedder('test query');
 		expect(result).toBeNull();
+	});
+
+	it('E4: with no opts, constructs a Worker for the embedder pipeline', () => {
+		let constructCount = 0;
+		class MockWorker {
+			postMessage = vi.fn();
+			onmessage: ((e: MessageEvent) => void) | null = null;
+			terminate = vi.fn();
+			constructor() { constructCount++; }
+		}
+		const OriginalWorker = globalThis.Worker;
+		globalThis.Worker = MockWorker as unknown as typeof Worker;
+		try {
+			const embedder = createEmbedder();
+			embedder('test query'); // triggers lazy Worker construction
+			expect(constructCount).toBe(1);
+		} finally {
+			globalThis.Worker = OriginalWorker;
+		}
 	});
 });

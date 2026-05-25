@@ -640,41 +640,41 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_empty_transcript_gap_closed(self):
-        """falsify must block file modifications when no execution result exists in the transcript — the 'would change the outcome of any execution result' condition is vacuously ungoverned when the result set is empty (hollow audit finding)."""
+        """falsify must block implementation until the derivation and enumeration are present as text above that point — the structural gate preventing implementation without a visible result block (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "if no execution result exists in the transcript above that tool call, the tool call is not permitted",
+            "Proceed to implementation only when the derivation and enumeration are present as text above this point in the transcript",
             definition,
-            "falsify must explicitly block file modifications when no execution result exists in the transcript",
+            "falsify must explicitly block implementation until derivation and enumeration are present in the transcript",
         )
 
     def test_falsify_slower_check_excludes_compiler_artifacts(self):
-        """falsify's slower-check clause must require a named runnable test case producing a named failure message, not 'test or assertion' which admits compiler checks and type annotations (hollow audit finding)."""
+        """falsify must require that assertions reach execution and produce a runner failure marker — excluding compiler artifacts and pre-execution errors (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "produces a named failure message",
+            "assertion-failure marker precedes the assertion identifier",
             definition,
             "falsify slower-check clause must name the observable that excludes compiler artifacts",
         )
 
     def test_falsify_self_refuting_closes_entry(self):
-        """falsify's self-refuting description clause must name a structural gate preventing a candidate check from appearing after a self-refuting description (hollow audit finding)."""
+        """falsify's enumeration must require closing or eliminating every open path — paths that cannot be closed by naming a string must be eliminated structurally (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "no candidate check may be named until a non-self-refuting slower check appears",
+            "a path that cannot be closed by naming a string because the result block is produced before assertion execution must instead be eliminated",
             definition,
-            "falsify self-refuting clause must structurally prevent candidate check from appearing after invalidation",
+            "falsify must structurally require elimination of pre-execution-error paths, not just identification",
         )
 
     def test_falsify_direct_invocation_observable(self):
-        """falsify's FAIL source clause must name the observable distinguishing direct artifact invocation from a tool call that reads or displays prior execution output (hollow audit finding)."""
+        """falsify must name the observable distinguishing a tool-executed result block from a displayed or predicted result (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "directly invokes the artifact's execution",
+            "tool-executed result block",
             definition,
             "falsify must name the observable that distinguishes direct invocation from status display",
         )

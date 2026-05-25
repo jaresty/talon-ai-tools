@@ -1,46 +1,49 @@
-// Lazy-loading embedder using @huggingface/transformers (all-MiniLM-L6-v2).
-// The pipeline is initialised once on first call; subsequent calls reuse it.
+// Lazy-loading embedder that delegates to a Web Worker so model init and
+// inference never block the main thread.
 // Returns null on any error so callers can degrade to BM25-only.
 
-const MODEL = 'Xenova/all-MiniLM-L6-v2';
-
-// Pipeline call signature with mean-pooling + normalisation options.
-type PipelineFn = (text: string, opts: { pooling: string; normalize: boolean }) => Promise<{ data: Float32Array }>;
-
 export interface EmbedderOptions {
-	// Inject a pipeline function for testing; omit to use transformers.js.
+	// Inject a pipeline function for testing; omit to use the worker.
 	pipeline?: (text: string) => Promise<Float32Array>;
 }
 
 // createEmbedder returns an async function that embeds a query string into a
 // unit-normalised 384-dim Float32Array, or null if the model is unavailable.
 export function createEmbedder(opts: EmbedderOptions = {}): (q: string) => Promise<Float32Array | null> {
-	let pipelinePromise: Promise<PipelineFn> | null = null;
-
-	function getPipeline(): Promise<PipelineFn> {
-		if (pipelinePromise) return pipelinePromise;
-		pipelinePromise = import('@huggingface/transformers').then(({ pipeline, env }) => {
-			env.allowLocalModels = false;
-			return pipeline('feature-extraction', MODEL, { dtype: 'q8' }) as Promise<PipelineFn>;
-		}).catch(() => {
-			pipelinePromise = null;
-			throw new Error('transformers pipeline init failed');
-		});
-		return pipelinePromise;
+	if (opts.pipeline) {
+		const pipe = opts.pipeline;
+		return async (query: string): Promise<Float32Array | null> => {
+			try { return await pipe(query); } catch { return null; }
+		};
 	}
 
-	return async (query: string): Promise<Float32Array | null> => {
-		try {
-			if (opts.pipeline) {
-				return await opts.pipeline(query);
+	let nextId = 0;
+	const pending = new Map<number, { resolve: (v: Float32Array | null) => void }>();
+	let worker: Worker | null = null;
+
+	function getWorker(): Worker {
+		if (worker) return worker;
+		worker = new Worker(new URL('./embedder.worker.ts', import.meta.url), { type: 'module' });
+		worker.onmessage = (e: MessageEvent<{ id: number; result?: number[]; error?: boolean }>) => {
+			const { id, result, error } = e.data;
+			const p = pending.get(id);
+			if (!p) return;
+			pending.delete(id);
+			p.resolve(error || !result ? null : new Float32Array(result));
+		};
+		return worker;
+	}
+
+	return (query: string): Promise<Float32Array | null> => {
+		return new Promise((resolve) => {
+			try {
+				const w = getWorker();
+				const id = nextId++;
+				pending.set(id, { resolve });
+				w.postMessage({ id, text: query });
+			} catch {
+				resolve(null);
 			}
-			const pipe = await getPipeline();
-			// pooling:'mean' averages over the sequence dimension → fixed 384-dim vector.
-			// normalize:true returns unit vectors so no manual L2-norm needed.
-			const output = await pipe(query, { pooling: 'mean', normalize: true });
-			return output.data;
-		} catch {
-			return null;
-		}
+		});
 	};
 }

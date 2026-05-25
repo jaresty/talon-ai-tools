@@ -1,3 +1,15 @@
+// jsdom doesn't implement Worker — provide a minimal stub
+if (typeof globalThis.Worker === 'undefined') {
+	globalThis.Worker = class {
+		postMessage() {}
+		terminate() {}
+		onmessage: ((e: MessageEvent) => void) | null = null;
+		addEventListener() {}
+		removeEventListener() {}
+		dispatchEvent() { return false; }
+	} as unknown as typeof Worker;
+}
+
 // jsdom doesn't implement ResizeObserver — provide a minimal stub
 if (typeof globalThis.ResizeObserver === 'undefined') {
 	globalThis.ResizeObserver = class {

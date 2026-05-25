@@ -332,24 +332,18 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "redirected outcome — the redirection is derived from a named premise of the incoming structure, not introduced externally.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
-        "falsify": "The response establishes, before any implementation step, that the governing artifact can detect the absence of each governed behavior. This requires two phases. Selection "
-        "phase: name at least one slower check by its file path or command string — a name that cannot be resolved to a runnable artifact by path or command does not satisfy this "
-        "requirement — and the slower check must be one that directly invokes the artifact's execution and produces a named failure message when the behavior is absent; a check that "
-        "only reports prior status or compiles without running does not satisfy this requirement; name the specific test case by its runnable identifier, the string that appears as a "
-        "test name or assertion identifier in the run output of that check; a string that does not appear in any prior tool-result block from that check does not satisfy this "
-        "requirement; a slower check whose description could apply equally to the behavior's presence and absence is self-refuting — no candidate check may be named until a "
-        "non-self-refuting slower check appears above it in the transcript; name the candidate check; name at least one insufficient check — a faster check that shares the same "
-        "triggering event as the candidate but cannot distinguish the governed behavior from its absence — and quote the specific output from a prior tool-result block above this line "
-        "whose invocation string names the insufficient check, showing the insufficient check passes when the behavior is absent; if no execution result exists in the transcript above "
-        "that tool call, the tool call is not permitted. Verification phase: run the candidate check against a minimal stub — a function with the correct type signature that returns "
-        "the zero value without performing the governed transformation; if the candidate check passes against the minimal stub, the check does not govern the implementation and a "
-        "different assertion must be written before proceeding. Then run the candidate check against the absent behavior. A FAIL is valid only when: (a) the run result names the "
-        "assertion text that fires on the absent behavior, (b) the same run result names at least one other assertion as passing, (c) the artifact shares a triggering event with the "
-        "file being changed — name the triggering event, then quote the specific string from a prior tool-result block showing both the artifact and the changed file were invoked by "
-        "that event; if no such quoted string exists above this line, the shared trigger is not established and the artifact does not govern this change. Exception — governing "
-        "artifact creation: a tool-executed FAIL result is not required before creating a governing artifact. A governing artifact is one whose assertion text is written to a file via "
-        "a file-modifying tool call in this session and whose file path appears in the line manifest; a throwaway scaffold whose assertion text does not appear in the line manifest is "
-        "not a governing artifact.",
+        "falsify": "The response establishes, before any implementation step, that the governing artifact can observe the absence of each governed behavior. Derivation phase (required before any "
+        "implementation action): name the root criterion — a tool-executed result block must appear in the transcript containing, as a literal substring, (a) for each governed "
+        "assertion, a line where the test runner's assertion-failure marker precedes the assertion identifier — name the specific failure-marker string the runner uses to signal that "
+        "an assertion reached execution and failed, and the specific error-marker string it uses to signal pre-execution failure; a result block where any governed assertion appears "
+        "under the error marker does not satisfy (a) for that assertion, and (b) a string naming the file being changed, where at least one assertion appears as PASSED in the same "
+        "result block. Then enumerate every path by which a transcript could contain a conforming result block without the artifact having actually detected absence of the behavior: "
+        "for each path, name the literal string in the result block that closes it — a path is closed only when naming that string makes the non-compliant transcript distinguishable "
+        "from the compliant one without assessing intent; a path that cannot be closed by naming a string because the result block is produced before assertion execution must instead "
+        "be eliminated by bringing the system to a state where every governed assertion can reach execution before the test is run. The enumeration is complete when no remaining open "
+        "path exists; a path whose closure requires assessing whether the model intended to run the artifact is not closed. Proceed to implementation only when the derivation and "
+        "enumeration are present as text above this point in the transcript. Exception: when a governing artifact is being created in this session (its assertion text is written via a "
+        "file-modifying tool call), the result-block requirement does not apply to that creation step.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

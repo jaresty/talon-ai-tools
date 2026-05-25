@@ -41,13 +41,16 @@ def _token_text(
     elif label:
         parts.append(f"{label}:")
     if meta.get("definition"):
-        parts.append(meta["definition"])
+        parts.append("Definition: " + meta["definition"])
     if meta.get("heuristics"):
-        parts.extend(meta["heuristics"])
+        parts.extend("Use when: " + h for h in meta["heuristics"])
     if meta.get("distinctions"):
-        parts.extend(d.get("token", "") + " " + d.get("note", "") for d in meta["distinctions"])
+        parts.extend(
+            "Contrast with " + d.get("token", "") + ": " + d.get("note", "")
+            for d in meta["distinctions"]
+        )
     if routing_concept:
-        parts.append(routing_concept)
+        parts.append("Routing: " + routing_concept)
     return " ".join(p for p in parts if p).strip() or "token"
 
 

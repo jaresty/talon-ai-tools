@@ -11,39 +11,31 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "gate+falsify",
         "tokens": ["gate", "falsify"],
         "prose": (
-            "gate + falsify: when these two tokens are co-present, the objective condition that "
-            "gate requires to be met before proceeding is that a falsifiable artifact satisfying "
-            "falsify's criteria exists in the transcript — it has fired against the minimal wrong "
-            "state and produced a visible signal. Gate provides the blocking structure; falsify "
-            "specifies the evidentiary quality that satisfies it. Together they produce the "
-            "discipline previously called 'TDD enforcement': no implementation step may begin "
-            "until a tool-executed FAIL result appears in the transcript whose output names the "
-            "assertion text that fires on the absent behavior — 'observed to fail' is satisfied "
-            "only by such a result; a FAIL result that does not name the assertion text does not satisfy this requirement."
+            "gate + falsify: the blocking condition gate requires is that a FAIL satisfying "
+            "falsify's validity criteria exists in the transcript — a tool-result block appearing "
+            "above the current position whose output names the assertion text that fires on the "
+            "absent behavior, names at least one other assertion as passing, and whose triggering "
+            "event is established by a quoted string from a prior tool-result block showing both "
+            "the artifact and the changed file were invoked by that event. No file-modifying tool "
+            "call is permitted until such a tool-result block appears above it in the transcript."
         ),
     },
     {
         "name": "ground+falsify",
         "tokens": ["ground", "falsify"],
         "prose": (
-            "ground + falsify: the intent of this combination is that every behavior is governed "
-            "by a falsifiable artifact — meaning the behavior cannot regress without the artifact "
-            "detecting it. Producing passing artifacts that happen to exist alongside the "
-            "implementation does not satisfy this intent; each artifact must structurally enforce "
-            "its governed behavior. Falsify's criteria are required constraints on whatever "
-            "enforcement process ground derives. "
-            "During ground's completion check, each assertion must have a correlated artifact-fire "
-            "in the transcript — evidence that it would detect a regression. Does a correlated "
-            "FAIL artifact already exist for this assertion? If yes — adversarial check satisfied; "
-            "do not re-perturb. If no — produce it now. Self-assessed certainty does not substitute "
-            "for a visible artifact fire — the artifact is the evidence; the assessment is not. "
-            "Adversarial completion check: every assertion text appearing in the derivation block "
-            "is governed. For each, the completion check must locate a tool-executed run result "
-            "in the transcript whose output contains that assertion text as a FAIL string — if "
-            "none exists, that assertion is a gap and the completion check must not close until "
-            "such a result appears — the only source that satisfies the completion check for a "
-            "governed assertion is a tool-executed run result in the transcript whose output "
-            "contains that assertion text as a FAIL string."
+            "ground + falsify: every behavior governed by ground's enforcement process must be "
+            "governed by a falsifiable artifact satisfying falsify's validity criteria — meaning "
+            "the behavior cannot regress without the artifact detecting it. Producing passing "
+            "artifacts that happen to exist alongside the implementation does not satisfy this "
+            "requirement; each artifact must have fired against the absent behavior. During "
+            "ground's completion check, each governed behavior must have a correlated tool-result "
+            "block in the transcript showing the artifact fired against the absent behavior — "
+            "self-assessed certainty does not substitute for a visible tool-result block. For each "
+            "governed behavior, the completion check must locate a tool-result block in the "
+            "transcript whose output contains the assertion text that fires on the absent behavior "
+            "as a FAIL string; if none exists, that behavior is a gap and the completion check "
+            "must not close until such a tool-result block appears."
         ),
     },
     {
@@ -52,33 +44,32 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "prose": (
             "gate + atomic: gate's blocking condition applies to every file-modifying tool call, "
             "including stub additions. Each file-modifying tool call must be immediately preceded "
-            "by a tool-executed FAIL result whose output contains the name of the function or "
-            "symbol that tool call adds or modifies — a FAIL result whose output does not contain "
-            "that name does not gate that tool call. A tool call whose diff contains more than one "
-            "function definition does not satisfy this requirement — each function must appear in "
-            "a separate tool call, each immediately preceded by its own qualifying FAIL result. "
-            "Atomic's first-failure-signal constraint applies within each tool call's governing FAIL."
+            "by a tool-result block whose output contains the name of the function or symbol that "
+            "tool call adds or modifies; a tool-result block that does not name that symbol does "
+            "not gate that tool call. A Symbols list with more than one entry — where the Symbols "
+            "list is the string appearing between 'Symbols:' and 'Lines:' in the pre-edit line — "
+            "requires a separate Scope line and separate tool call for each entry."
         ),
     },
     {
         "name": "falsify+atomic",
         "tokens": ["falsify", "atomic"],
         "prose": (
-            "falsify + atomic: the governing output is the artifact-fire output produced by running "
-            "the falsifiable artifact against the minimal wrong state. When no artifact-fire result "
-            "exists in the transcript for the current behavior, the only permitted action is to "
-            "produce the artifact-fire — no file-modifying tool call is permitted until a "
-            "tool-executed artifact-fire result appears above it in the transcript. The quote "
-            "required in atomic's derivation block entry (2) must be a string that (a) appears in "
-            "the tool-executed run result when the governed behavior is absent and (b) is absent "
-            "from the run result when the governed behavior is present — the permitted sources are: "
-            "a named test assertion message, a named test case identifier, or a named assertion "
-            "string from the run output that directly names the governed behavior; a string that "
-            "passes when the symbol is exported as an empty stub (e.g. typeof checks, export "
-            "presence checks) does not satisfy requirement (b); a module-level or import-level "
-            "error string does not satisfy requirement (a) because it names a missing module, not "
-            "the governed behavior; a quote from a source that produces output by retrieval rather "
-            "than execution does not satisfy this requirement regardless of its content."
+            "falsify + atomic: when this composition rule is active, the pre-edit line required by "
+            "atomic gains one additional field: 'Governing artifact: <verbatim FAIL output from "
+            "falsify's verification phase>' — this field must appear in the pre-edit line and must "
+            "quote verbatim the FAIL output produced by falsify's candidate-check run appearing "
+            "above this line in the transcript; a pre-edit line missing this field does not satisfy "
+            "atomic's requirement. Additionally, before each file-modifying tool call, produce a "
+            "minimal-state declaration naming: the specific behavior being removed, and at least "
+            "one other behavior that is present and unchanged in the test state — the "
+            "minimal-state declaration is not complete until both items appear in the transcript "
+            "above the tool call; if a tool-executed FAIL result shows the same failure with less "
+            "than the named behavior removed, the named behavior is not the sole governed cause "
+            "and must be rederived. The governing artifact must be run such that the scope text "
+            "appears as a line in the tool-result block; a run command whose output does not "
+            "contain the scope text as a line does not satisfy this requirement — use the same "
+            "command for both pre-edit and post-edit runs."
         ),
     },
     {
@@ -101,23 +92,19 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "atomic+ground",
         "tokens": ["atomic", "ground"],
         "prose": (
-            "atomic + ground: when the artifact's run result contains no remaining failures, "
-            "that result is a necessary precondition for the completion check — the completion "
-            "check is not permitted to open until a tool-executed run result showing zero failures "
-            "appears in the transcript above it; the completion check block must end before any "
-            "done declaration opens. Satisfying atomic's requirements does not exempt ground's "
-            "requirements; satisfying ground's requirements does not exempt atomic's requirements — "
-            "each applies independently. "
-            "Adversarial completion check: treat each distinct file-modifying tool call as one "
-            "step. For each step, the completion check must locate a tool result (diff, run "
-            "output, or file read) appearing in the transcript at that step's position that shows "
-            "exactly one independently testable change — where independently testable means a "
-            "separate named test or observable can detect one change while being blind to the "
-            "other. If no such tool result exists, or if it shows more than one independently "
-            "testable change, that step is a gap requiring re-execution as separate tool calls "
-            "before the completion check may close — the only source that satisfies the step "
-            "verification is a tool result appearing in the transcript at that step's position "
-            "showing exactly one independently testable change."
+            "atomic + ground: ground's completion check is not permitted to open until a "
+            "tool-result block showing zero items in the run result appears above it in the "
+            "transcript; the completion check block must end before any done declaration opens. "
+            "Satisfying atomic's requirements does not exempt ground's requirements; satisfying "
+            "ground's requirements does not exempt atomic's requirements — each applies "
+            "independently. Adversarial completion check: treat each distinct file-modifying tool "
+            "call as one step. For each step, the completion check must locate a tool-result block "
+            "appearing in the transcript at that step's position that shows exactly one "
+            "independently testable change — where independently testable means a separate named "
+            "test or observable can detect one change while being blind to the other. If no such "
+            "tool-result block exists, or if it shows more than one independently testable change, "
+            "that step is a gap requiring re-execution as separate tool calls before the "
+            "completion check may close."
         ),
     },
     {

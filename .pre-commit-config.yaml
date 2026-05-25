@@ -33,3 +33,9 @@ repos:
         entry: python3 -m pytest _tests/test_axis_token_metadata.py -q --tb=short
         pass_filenames: false
         files: ^lib/.*$
+      - id: grammar-embeddings
+        name: Grammar token embeddings present
+        language: system
+        entry: python3 scripts/check_embeddings.py
+        pass_filenames: false
+        files: ^(build|web/static|internal/barcli/embed|cmd/bar/testdata)/prompt-grammar\.json$

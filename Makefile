@@ -41,6 +41,11 @@ pre-commit-autofix:
 	$(PYTHON) -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json; \
 	cp build/prompt-grammar.json cmd/bar/testdata/grammar.json; \
 	cp build/prompt-grammar.json web/static/prompt-grammar.json; \
+	if $(PYTHON) -c "import sentence_transformers" 2>/dev/null; then \
+		$(PYTHON) scripts/embed_tokens.py; \
+	else \
+		echo "⚠ Skipping embeddings: sentence_transformers not available"; \
+	fi; \
 	if ! git diff --exit-code build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json > /dev/null 2>&1; then \
 		git add build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json cmd/bar/testdata/grammar.json web/static/prompt-grammar.json; \
 		echo "Grammar files were out of sync — updated and staged automatically."; \

@@ -67,11 +67,12 @@ def _all_metas(grammar: dict[str, Any]) -> list[tuple[dict[str, Any], str, str, 
             rc = meta.get("routing_concept", "")
             entries.append((meta, desc, label, rc))
 
-    static_meta = grammar.get("static", {}).get("metadata", {})
-    static_labels = grammar.get("static", {}).get("labels", {})
-    for token, meta in static_meta.items():
-        label = static_labels.get(token, "")
-        rc = meta.get("routing_concept", "")
+    task_meta = grammar.get("tasks", {}).get("metadata", {})
+    task_labels = grammar.get("tasks", {}).get("labels", {})
+    task_rc = grammar.get("tasks", {}).get("routing_concept", {})
+    for token, meta in task_meta.items():
+        label = task_labels.get(token, "")
+        rc = meta.get("routing_concept", task_rc.get(token, ""))
         entries.append((meta, task_desc, label, rc))
 
     persona_meta = grammar.get("persona", {}).get("metadata", {})

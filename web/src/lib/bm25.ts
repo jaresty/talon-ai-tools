@@ -82,21 +82,37 @@ export function bm25Score(tokens: TokenMeta[], query: string): Map<string, numbe
 const HYBRID_BM25_WEIGHT = 0.4;
 const HYBRID_EMB_WEIGHT = 0.6;
 
-function cosineSimilarity(a: Float32Array, b: number[]): number {
+function cosineSimilarity(a: Float32Array, b: Float32Array): number {
 	if (a.length !== b.length) return 0;
 	let dot = 0;
 	for (let i = 0; i < a.length; i++) dot += a[i] * b[i];
 	return dot;
 }
 
+// Full text used to embed a token: description + heuristics + distinctions + routing_concept.
+function tokenDocText(t: TokenMeta): string {
+	const parts: string[] = [t.description];
+	if (t.routing_concept) parts.push(t.routing_concept);
+	if (t.metadata?.definition) parts.push(t.metadata.definition);
+	if (t.metadata?.heuristics?.length) parts.push(t.metadata.heuristics.join(' '));
+	if (t.metadata?.distinctions?.length)
+		parts.push(t.metadata.distinctions.map((d) => d.token + ' ' + d.note).join(' '));
+	return parts.join(' ');
+}
+
+// Shared production cache: token name → embedding vector. Populated lazily on first hybrid search.
+export const sharedTokenEmbCache = new Map<string, Float32Array>();
+
 // hybridRankTokens merges BM25 and cosine similarity scores (0.4/0.6 weighted).
 // embedder is an async function that returns a unit-norm Float32Array for the query,
-// or null to degrade to BM25-only. Tokens without an embedding field are scored
-// by BM25 only.
+// or null to degrade to BM25-only. Token embeddings are computed lazily from full
+// doc text (description, heuristics, distinctions, routing_concept) and cached in
+// tokenEmbCache (defaults to the shared production cache; pass a fresh Map in tests).
 export async function hybridRankTokens(
 	tokens: TokenMeta[],
 	query: string,
-	embedder: ((q: string) => Promise<Float32Array>) | null
+	embedder: ((q: string) => Promise<Float32Array | null>) | null,
+	tokenEmbCache: Map<string, Float32Array> = sharedTokenEmbCache
 ): Promise<RankedToken[]> {
 	const bm25Scores = bm25Score(tokens, query);
 	let maxBM25 = 0;
@@ -107,11 +123,27 @@ export async function hybridRankTokens(
 		try { queryVec = await embedder(query); } catch { queryVec = null; }
 	}
 
+	// Embed any tokens not yet in cache that lack a pre-computed embedding.
+	if (queryVec && embedder) {
+		await Promise.all(tokens.map(async (t) => {
+			if (tokenEmbCache.has(t.token)) return;
+			const precomputed = (t.metadata as { embedding?: number[] } | null)?.embedding;
+			if (precomputed) {
+				tokenEmbCache.set(t.token, new Float32Array(precomputed));
+				return;
+			}
+			try {
+				const vec = await embedder(tokenDocText(t));
+				if (vec) tokenEmbCache.set(t.token, vec);
+			} catch { /* leave uncached; cosine score will be 0 */ }
+		}));
+	}
+
 	const ranked: RankedToken[] = [];
 	for (const t of tokens) {
 		const b = maxBM25 > 0 ? (bm25Scores.get(t.token) ?? 0) / maxBM25 : 0;
-		const emb = t.metadata && (t.metadata as { embedding?: number[] }).embedding;
-		const c = queryVec && emb ? cosineSimilarity(queryVec, emb) : 0;
+		const tokenVec = queryVec ? tokenEmbCache.get(t.token) : undefined;
+		const c = queryVec && tokenVec ? cosineSimilarity(queryVec, tokenVec) : 0;
 		const score = HYBRID_BM25_WEIGHT * b + HYBRID_EMB_WEIGHT * Math.max(0, c);
 		if (score > 0) ranked.push({ token: t, score });
 	}

@@ -4,11 +4,12 @@
 
 const MODEL = 'Xenova/all-MiniLM-L6-v2';
 
-type PipelineFn = (text: string) => Promise<{ data: Float32Array }>;
+// Pipeline call signature with mean-pooling + normalisation options.
+type PipelineFn = (text: string, opts: { pooling: string; normalize: boolean }) => Promise<{ data: Float32Array }>;
 
 export interface EmbedderOptions {
 	// Inject a pipeline function for testing; omit to use transformers.js.
-	pipeline?: PipelineFn;
+	pipeline?: (text: string) => Promise<Float32Array>;
 }
 
 // createEmbedder returns an async function that embeds a query string into a
@@ -18,10 +19,6 @@ export function createEmbedder(opts: EmbedderOptions = {}): (q: string) => Promi
 
 	function getPipeline(): Promise<PipelineFn> {
 		if (pipelinePromise) return pipelinePromise;
-		if (opts.pipeline) {
-			pipelinePromise = Promise.resolve(opts.pipeline);
-			return pipelinePromise;
-		}
 		pipelinePromise = import('@huggingface/transformers').then(({ pipeline, env }) => {
 			env.allowLocalModels = false;
 			return pipeline('feature-extraction', MODEL, { dtype: 'q8' }) as Promise<PipelineFn>;
@@ -34,17 +31,14 @@ export function createEmbedder(opts: EmbedderOptions = {}): (q: string) => Promi
 
 	return async (query: string): Promise<Float32Array | null> => {
 		try {
+			if (opts.pipeline) {
+				return await opts.pipeline(query);
+			}
 			const pipe = await getPipeline();
-			const output = await pipe(query);
-			const vec = output.data;
-			// L2-normalise in case model doesn't return unit vectors.
-			let norm = 0;
-			for (let i = 0; i < vec.length; i++) norm += vec[i] * vec[i];
-			norm = Math.sqrt(norm);
-			if (norm === 0) return vec;
-			const result = new Float32Array(vec.length);
-			for (let i = 0; i < vec.length; i++) result[i] = vec[i] / norm;
-			return result;
+			// pooling:'mean' averages over the sequence dimension → fixed 384-dim vector.
+			// normalize:true returns unit vectors so no manual L2-norm needed.
+			const output = await pipe(query, { pooling: 'mean', normalize: true });
+			return output.data;
 		} catch {
 			return null;
 		}

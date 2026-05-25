@@ -23,9 +23,9 @@ jobs:
       - name: Regenerate prompt grammar
         run: |
           set -euo pipefail
-          python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
-          git diff --exit-code -- build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json
-          cmp --silent build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json
+          python3 -m prompts.export --output /tmp/grammar-regen.json
+          python3 scripts/check_grammar_sync.py /tmp/grammar-regen.json build/prompt-grammar.json
+          python3 scripts/check_grammar_sync.py /tmp/grammar-regen.json internal/barcli/embed/prompt-grammar.json
 
       - name: Build release archives
         id: build

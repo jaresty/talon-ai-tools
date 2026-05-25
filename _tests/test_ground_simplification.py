@@ -22,18 +22,18 @@ def test_generalized_protocol_preserves_intent_primacy():
 
 
 def test_generalized_protocol_preserves_artifact_type_discipline():
-    """Slimmed protocol (ADR-0224) requires named artifact per intent item at completion check."""
+    """Slimmed protocol (ADR-0224) requires behavioral dimensions derived from the governing goal."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "intent artifact" in core.lower(), (
-        "Slimmed protocol must reference intent artifact in completion check"
+    assert "behavioral dimension" in core.lower(), (
+        "Slimmed protocol must reference behavioral dimensions in the enforcement process"
     )
 
 
 def test_generalized_protocol_preserves_observable_evidence():
-    """P3 observable evidence must be preserved — completion check names artifact + dimension."""
+    """P3 observable evidence must be preserved — completion check cites verbatim tool-executed result per dimension."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "dimension" in core.lower() and "intent artifact" in core.lower(), (
-        "Generalized protocol must require naming artifact and dimension covered at completion check"
+    assert "dimension" in core.lower() and "verbatim" in core.lower(), (
+        "Generalized protocol must require verbatim string from tool-executed result per dimension at completion check"
     )
 
 
@@ -46,10 +46,10 @@ def test_generalized_protocol_preserves_derivation_chain():
 
 
 def test_generalized_protocol_preserves_gap_driven_iteration():
-    """P5 gap-driven iteration — crystal restructure uses apparent/actual completion gap language."""
+    """P5 gap-driven iteration — derivation-based protocol requires enumeration of open paths and structural elimination."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "apparent" in core.lower() and "actual" in core.lower(), (
-        "Slimmed protocol must address gap between apparent and actual completion"
+    assert "open path" in core.lower() or "enumerat" in core.lower(), (
+        "Slimmed protocol must require enumerating and closing open paths before proceeding"
     )
 
 
@@ -62,9 +62,8 @@ def test_generalized_protocol_is_domain_independent():
 
 
 def test_generalized_protocol_has_seven_rungs():
-    """Slimmed protocol (ADR-0224/crystal) — governing principle + completion check present."""
+    """Slimmed protocol (ADR-0224/crystal) — completion-check heading gate + binding commitment present."""
     core = GROUND_PARTS_MINIMAL["core"]
-    # Crystal restructure: governing principle (attack surface) + completion check as final step
-    assert "attack surface" in core.lower() and "completion check" in core.lower(), (
-        "Crystal-restructured protocol must contain governing principle and completion check"
+    assert "completion-check heading" in core.lower() and "binding" in core.lower(), (
+        "Derivation-based protocol must contain completion-check heading gate and binding commitment sentence"
     )

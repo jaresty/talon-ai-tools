@@ -37,66 +37,65 @@ def _chain() -> str:
 # --- ground: evidence quality (Decision 3) ---
 
 def test_falsify_evidence_quality_requires_criterion_to_have_failed():
-    """falsify must state that a criterion which has only ever passed provides no coverage guarantee.
+    """falsify must require a tool-executed result block showing the runner's assertion-failure marker.
 
-    ADR-0227 Decision 3: the coverage guarantee clause belongs in falsify (not ground)
-    because it is about falsifiability — a passing artifact is not evidence of enforcement.
+    ADR-0227 Decision 3 (updated for derivation-based definition): falsify encodes the coverage
+    guarantee by requiring the runner's failure-marker to precede each assertion identifier —
+    a result block where assertions only pass does not satisfy the criterion.
     """
     text = _falsify()
-    assert "only ever passed" in text or "coverage guarantee" in text or "FAIL tool result" in text, (
-        "falsify must require a prior FAIL result demonstrating absence detection "
-        "(ADR-0227 Decision 3)"
+    assert "assertion-failure marker" in text or "failure-marker" in text, (
+        "falsify must require a runner failure-marker before each assertion identifier "
+        "(derivation-based coverage guarantee — ADR-0227 Decision 3)"
     )
 
 
 # --- ground: termination trigger (Decision 4) ---
 
 def test_ground_states_completion_check_trigger_condition():
-    """ground must name when the completion check fires relative to a governing artifact cycle.
+    """ground must name when the response is not permitted to end (completion check trigger).
 
-    ADR-0227 Decision 4: ground should state that the completion check fires
-    when the governing artifact cycle reports no remaining failures.
+    ADR-0227 Decision 4 (updated for derivation-based definition): ground states that
+    the response cannot end until the completion-check heading appears and at least one
+    dimension is covered by a verbatim tool-executed result.
     """
     text = _ground()
     assert (
-        "governing artifact" in text and
-        ("no remaining failures" in text or "reports no failures" in text or
-         "cycle" in text and "completion check" in text)
+        "completion-check heading" in text and
+        "dimension" in text and
+        "verbatim" in text
     ), (
-        "ground must state the trigger condition for the completion check "
-        "relative to a governing artifact cycle (ADR-0227 Decision 4)"
+        "ground must state the completion-check trigger: heading must appear and "
+        "at least one dimension covered by verbatim tool-executed result (ADR-0227 Decision 4)"
     )
 
 
 # --- atomic: governing output vocabulary (Decision 5) ---
 
 def test_atomic_uses_governing_output_term():
-    """atomic must use 'governing output' as the canonical term.
+    """atomic must anchor each edit to the first failing-item line from the run result.
 
-    ADR-0227 Decision 5: 'failure message' → 'governing output' in atomic.
+    ADR-0227 Decision 5 (updated for derivation-based definition): atomic uses the
+    'first failing-item line in the most recent tool-executed run result' as the
+    scope commitment anchor, replacing the old 'governing output' / 'failure message' vocabulary.
     """
     text = _atomic()
-    assert "governing output" in text, (
-        "atomic must use 'governing output' as the canonical term for the "
-        "artifact output that opens the current implementation step (ADR-0227 Decision 5)"
+    assert "first failing-item line" in text or "failing-item line" in text, (
+        "atomic must anchor scope commitment to the first failing-item line in the "
+        "most recent tool-executed run result (ADR-0227 Decision 5, derivation-based form)"
     )
 
 
 def test_atomic_defines_governing_output_on_first_use():
-    """atomic must define 'governing output' on first use.
+    """atomic must define the scope anchor as a quoted string from the most recent run result.
 
-    ADR-0227 Decision 5: governing output is defined as 'the first reported
-    failure from the governing artifact'.
+    ADR-0227 Decision 5 (updated): scope commitment is defined as quoting the first
+    failing-item line from the most recent tool-executed run result above each call.
     """
     text = _atomic()
-    assert "governing output" in text and (
-        "first reported failure" in text or
-        "reported failure from the governing artifact" in text or
-        "first failure from a tool-executed run result" in text or
-        "first failure signal from a tool-executed run result" in text
-    ), (
-        "atomic must define 'governing output' on first use as the first "
-        "failure from the governing artifact (ADR-0227 Decision 5)"
+    assert "scope commitment" in text and "tool-executed run result" in text, (
+        "atomic must define scope commitment as quoting the first failing-item line from "
+        "the most recent tool-executed run result (ADR-0227 Decision 5, derivation-based form)"
     )
 
 
@@ -113,157 +112,113 @@ def test_falsify_governing_artifact_creation_not_gated():
     """
     text = _falsify()
     assert (
-        "governing artifact creation" in text and (
-            "not gated" in text or
-            "not subject to" in text or
-            "governing artifact creation is not" in text or
-            "cannot pre-exist its own" in text
-        )
+        "governing artifact is being created" in text or "governing artifact creation" in text
+    ) and (
+        "does not apply" in text or "result-block requirement does not apply" in text
     ), (
         "falsify must explicitly exempt governing artifact creation (test/spec writing) "
-        "from the FAIL gate — the phrase 'governing artifact creation' plus an explicit "
-        "exemption clause must appear in the definition (hollow audit fix)"
+        "from the result-block requirement (hollow audit fix)"
     )
 
 
 # --- atomic: hollow audit fixes ---
 
 def test_atomic_manifest_entry_requires_disappearance_criterion():
-    """atomic line manifest entry must require quoted text to disappear from run result.
+    """atomic scope commitment must require the quoted scope text to be absent after the edit.
 
-    hollow audit finding 1: 'each entry quoting the specific text in the governing
-    failure signal that names the behavior the line implements' requires intent-assessment
-    (what the line 'implements'). Fix: the quoted string must be the assertion string
-    that is absent from the run result when the line's behavior is present — structurally
-    verifiable without intent assessment.
+    hollow audit finding 1 (updated for derivation-based definition): the old manifest entry
+    clause required intent-assessment. The derivation-based atomic closes this by requiring
+    the scope text (first failing-item line) to be absent from the post-edit run result —
+    structurally verifiable without intent assessment.
     """
     text = _atomic()
-    # The fix must appear in the manifest clause itself, not in the post-edit
-    # verification clause (which already contains "absent from the new run result").
-    # We require the manifest clause to contain the disappearance criterion tied
-    # to the line being present — the specific phrase that closes the escape route.
-    assert (
-        "absent from the run result" in text and "line is present" in text
-    ) or (
-        "disappear" in text and ("manifest" in text or "line to be added" in text)
-    ), (
-        "atomic manifest entry clause must require the quoted string to be absent from "
-        "the run result when the line is present — not assessed by what the line 'implements' "
-        "(hollow audit fix 1)"
+    assert "quoted scope text is absent" in text or (
+        "scope text" in text and "absent" in text
+    ) or "quoted scope" in text, (
+        "atomic must require the quoted scope text to be absent from the post-edit run result "
+        "(derivation-based form of hollow audit fix 1)"
     )
 
 
 def test_atomic_minimal_stub_defined_by_zero_extra_statements():
-    """atomic minimal stub must be defined structurally as zero non-signature statements.
+    """atomic symbol commitment must require naming every symbol before the call.
 
-    hollow audit finding 2: 'without performing the governed transformation' requires
-    intent-assessment (what counts as 'performing' the transformation). Fix: minimal stub
-    is defined as containing only the type signature and a return statement — no other
-    statements — determinable by inspection without intent assessment.
+    hollow audit finding 2 (updated for derivation-based definition): the old 'minimal stub'
+    clause required intent-assessment. The derivation-based atomic closes the isolation gap
+    by requiring symbol commitment — every symbol the call will add or modify must be
+    named above the call before it executes — structurally verifiable without intent assessment.
     """
     text = _atomic()
-    assert (
-        "no other statement" in text or
-        "zero other statement" in text or
-        "only" in text and "return statement" in text and "no other" in text
-    ), (
-        "atomic minimal stub must be defined as containing only the type signature and "
-        "a return statement with no other statements — not by 'without performing the "
-        "governed transformation' (hollow audit fix 2)"
+    assert "symbol commitment" in text, (
+        "atomic must require symbol commitment — every symbol to be added or modified must "
+        "be named above the call before it executes (derivation-based form of hollow audit fix 2)"
     )
 
 
 def test_atomic_summary_line_defined_structurally():
-    """atomic summary-line exclusion must use a structural predicate, not semantic categories.
+    """atomic post-edit verification must check every other line from the pre-edit run result.
 
-    hollow audit finding: 'a line that reports a count of failures, a test-case name,
-    or a grouping header' requires domain knowledge of test runner output format.
-    Fix: define summary line as any line whose text does not name a specific condition
-    that was not met — derived from the existing positive definition of the governing line.
-    The structural predicate must appear in the summary-line clause itself (within 200 chars
-    of 'summary line and does not govern'), not appended elsewhere in the description.
+    hollow audit finding D1 (updated for derivation-based definition): the old summary-line
+    exclusion required domain knowledge of test runner output. The derivation-based atomic
+    closes this by requiring that every other line from the immediately preceding pre-edit
+    run result is present in the post-edit run result — structurally verifiable by string match.
     """
     text = _atomic()
-    summary_marker = "summary line and does not govern"
-    idx = text.find(summary_marker)
-    assert idx != -1, "atomic must contain 'summary line and does not govern'"
-    # The structural predicate must appear within the summary-line clause — defined as
-    # within 300 characters before the marker (where the definition lives).
-    clause_window = text[max(0, idx - 300):idx + len(summary_marker)]
-    assert "does not name a specific condition that was not met" in clause_window, (
-        "atomic summary-line clause must define summary line structurally as a line whose "
-        "text does not name a specific condition that was not met — the structural predicate "
-        "must appear in the summary-line clause, not elsewhere in the description "
-        "(hollow audit fix D1)"
+    assert "every other line" in text or (
+        "immediately preceding pre-edit run result" in text and "present" in text
+    ), (
+        "atomic must require every other line from the pre-edit run result to be present "
+        "in the post-edit run result (derivation-based form of hollow audit fix D1)"
     )
 
 
 def test_atomic_multiple_scope_lines_quote_distinct_signals():
-    """atomic must require each Scope line to quote a distinct governing failure signal.
+    """atomic scope commitment must be derived from the root criterion via enumeration.
 
-    hollow audit finding: when multiple governing failures exist, the clause 'each must
-    appear as a separate Scope line' does not prevent two Scope lines from quoting the
-    same failure signal — leaving cardinality unverifiable by transcript inspection alone.
-    Fix: require each Scope line to quote a distinct verbatim string from the run result;
-    no two Scope lines may quote the same string from the same run result.
-    The constraint must appear in the multiple-failure clause (within 200 chars after
-    'multiple governing failures').
+    hollow audit finding D3 (updated for derivation-based definition): the old multiple-Scope
+    cardinality clause required verifying intent. The derivation-based atomic closes this by
+    requiring the model to enumerate every path by which the commitments could be satisfied
+    without the call having changed exactly one independently observable behavior.
     """
     text = _atomic()
-    marker = "multiple governing failures"
-    idx = text.find(marker)
-    assert idx != -1, "atomic must contain 'multiple governing failures'"
-    clause_window = text[idx:idx + 400]
-    assert (
-        "no two Scope lines" in clause_window or
-        "each Scope line quotes a distinct" in clause_window or
-        "distinct" in clause_window and "Scope line" in clause_window
-    ), (
-        "atomic multiple-failure clause must require each Scope line to quote a distinct "
-        "governing failure signal — 'no two Scope lines may quote the same string from the "
-        "same run result' or equivalent must appear in the multiple-failure clause "
-        "(hollow audit fix D3)"
+    assert "one independently observable" in text or "independently observable behavior" in text, (
+        "atomic must require exactly one independently observable behavior change per call "
+        "(derivation-based form of hollow audit fix D3)"
     )
 
 
 def test_atomic_smaller_gate_requires_visible_application_tool_call():
-    """atomic Smaller gate must require the smaller-change application to be visible as a tool call.
+    """atomic path enumeration must close paths that cannot be named by string elimination.
 
-    hollow audit finding: 'produced by applying the smaller change' cannot be verified
-    from the transcript alone — provenance requires tracking causal history beyond what
-    is structurally observable. Fix: require that the file-modifying tool call that applied
-    the smaller change appears in the transcript above the run result.
-    The constraint must appear in the Smaller gate clause (within 300 chars after
-    'a Smaller line is valid only when').
+    hollow audit finding D4 (updated for derivation-based definition): the old Smaller gate
+    required causal provenance tracking. The derivation-based atomic closes provenance gaps
+    via the elimination clause — a path that cannot be closed by naming a string must be
+    eliminated by bringing the system to a state where the commitments can be satisfied
+    structurally.
     """
     text = _atomic()
-    marker = "a Smaller line is valid only when"
-    idx = text.lower().find(marker.lower())
-    assert idx != -1, "atomic must contain 'a Smaller line is valid only when'"
-    clause_window = text[idx:idx + 400]
-    assert (
-        "file-modifying tool call that applied the smaller change" in clause_window or
-        "tool call that applied the smaller change must appear" in clause_window
+    assert "path that cannot be closed by naming a string" in text or (
+        "cannot be closed by naming a string" in text
     ), (
-        "atomic Smaller gate clause must require the file-modifying tool call that applied "
-        "the smaller change to appear in the transcript above the run result — 'produced by "
-        "applying' is not verifiable by transcript inspection alone (hollow audit fix D4)"
+        "atomic must require paths that cannot be closed by naming a string to be eliminated "
+        "structurally (derivation-based form of hollow audit fix D4)"
     )
 
 
 def test_atomic_post_edit_verification_defines_assertion_text():
-    """atomic post-edit condition (b) must use a structural failure-line pattern, not a semantic class.
+    """atomic post-edit verification must be structurally evaluable by string match.
 
-    hollow audit finding (updated): the prior 'assertion text' class was semantic. Fix: condition (b)
-    must anchor to the failure-line pattern observed in the pre-edit run result — a structural property
-    evaluable by string match, not by meaning.
+    hollow audit finding (updated for derivation-based definition): the old 'assertion text' class
+    was semantic. The derivation-based atomic closes this by requiring the quoted scope text to
+    be absent and every other line from the pre-edit run result to be present — evaluable by
+    string match without semantic assessment.
     """
     text = _atomic()
-    assert (
-        "failure-line pattern" in text
+    assert "quoted scope text is absent" in text or (
+        "scope text" in text and "absent" in text and "pre-edit run result" in text
     ), (
-        "atomic post-edit verification clause (b) must define compliance via 'failure-line pattern' "
-        "anchored to the pre-edit run result — not a semantic 'assertion text' class (hollow audit fix)"
+        "atomic post-edit verification must require the quoted scope text absent and pre-edit "
+        "lines present — evaluable by string match (derivation-based hollow audit fix)"
     )
 
 

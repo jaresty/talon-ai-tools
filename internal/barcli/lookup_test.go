@@ -110,8 +110,8 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 
-	// "optimizer's attack surface" appears in method:ground definition but not heuristics/distinctions.
-	results := LookupTokens("optimizer's attack surface", grammar, "method")
+	// "path closures are binding" appears in method:ground definition but not heuristics/distinctions.
+	results := LookupTokens("path closures are binding", grammar, "method")
 	if len(results) == 0 {
 		t.Fatal("expected results for 'appearance of satisfying the intent', got none")
 	}

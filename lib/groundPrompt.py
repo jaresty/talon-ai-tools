@@ -24,62 +24,30 @@ _SENTINEL_GATES: dict[str, str] = {}
 
 GROUND_PARTS_MINIMAL: dict[str, str] = {
     "core": (
-        'The gap between apparent completion and actual completion is the optimizer\'s attack surface. '
-        'Every constraint in this protocol exists to make that gap visible and costly to maintain. '
-        'Before acting, state the boundary searched — the content at the role=user position of the most '
-        'recent user turn in the transcript; any noun or noun phrase in that content that names a file path, '
-        'URL, ticket number, or document title not already present in the transcript must be fetched before '
-        'deriving desired end states; if the referent cannot be resolved, derivation is blocked — then list every statement within that '
-        'boundary that describes a desired end state. For each, state whether it subsumes the others — a goal '
-        'G1 subsumes G2 if achieving G2 is a necessary condition for achieving G1. Produce the '
-        'subsumption analysis as a completed block. Then produce the literal heading "## Anchoring citation" '
-        'followed by the goal no other goal subsumes, quoting its text and location — a block that does not '
-        'open with this literal heading is not the anchoring citation. If multiple unsubsumed goals exist, '
-        'cite all of them under this heading. '
-        'Then produce the literal heading "## Intent artifact" followed by an enumerated list of behavioral '
-        'dimensions derived from the cited goal statement(s) — a block that does not open with this literal '
-        'heading is not the intent artifact; each dimension must cite the specific clause in the anchoring '
-        'citation it derives from, and every clause in the anchoring citation must produce at least one '
-        'dimension; a dimension with no cited source clause has not been derived, and a clause with no '
-        'corresponding dimension has been silently dropped. Each dimension states the specific behavior it '
-        'governs such that its presence or absence in any artifact is determinable without interpretation. '
-        'Then produce the literal heading "## Ladder" followed by the ladder derivation — an ordered sequence '
-        'of artifacts where each rung opens with the literal label "Rung [N]:" (where N is its position) and '
-        'names (a) the specific outcome the prior rung admits that this rung rejects, (b) the behavioral '
-        'dimension that outcome leaves unconstrained in the prior rung, and (c) the artifact type whose '
-        'presence eliminates the judgment the prior rung required — two rungs belong to the same class when '
-        'the same artifact type eliminates both; a rung whose judgment class cannot be named by an artifact '
-        'type has not been derived. A block that does not open with "Rung [N]:" is not a rung. A rung whose '
-        'text does not contain labeled entries for (a), (b), and (c) must be merged with the rung above — '
-        'the merge is permitted only when a completed block above this line quotes the literal "Rung [N]:" '
-        'label of each candidate rung attempted and found to require the same artifact type — the quoted-text '
-        'block must end before the merge block opens. For each rung, produce a completed block above it '
-        'naming two candidate sub-rungs and the artifact type each would eliminate; if both name the same '
-        'artifact type, the split is not required and that block constitutes the demonstration; if they name '
-        'different artifact types, the split is required and the block must end before the two new rungs open. '
-        'The ladder must terminate at a rung whose satisfaction condition requires no judgment — checked by '
-        'prior-executed results, not by inspection of prose. '
-        'Every step requires a prior-executed result already in the transcript as its governing '
-        'artifact — a step whose governing artifact has not produced a result above it in the '
-        'transcript has no authorization to proceed. '
-        'When a governing artifact cycle is active, the completion check fires when the cycle '
-        'reports no remaining failures — exhausting the artifact is necessary but not sufficient '
-        'for completion. '
-        'No file-modifying tool call may appear in the response before the literal heading "## Completion check". '
-        'The response is not permitted to end until the literal heading "## Completion check" appears in the '
-        'transcript. Under that heading, for each item in the intent artifact, produce a line of the form '
-        '"Dimension [N]: [covered] — [quoted string from tool-executed result]" or '
-        '"Dimension [N]: [uncovered]" — a line not matching one of these two forms does not satisfy this '
-        'requirement; a "covered" entry whose quoted string does not appear verbatim in a tool-executed result '
-        'above the heading does not satisfy this requirement. '
-        'A "## Completion check" block with zero covered dimensions does not satisfy this gate. '
-        'Scope reduction is permitted only when the intent artifact or a prior completion-check '
-        'artifact contains text that verbatim and explicitly excludes the element — cost, effort, '
-        'or proportionality arguments are not valid at any stage. '
-        'After each of the four artifact headings ("## Anchoring citation", "## Intent artifact", '
-        '"## Ladder", "## Completion check"), if the artifact\'s current state can be expressed as a '
-        'table, diagram, or structured list in fewer lines than the prose representation, produce one '
-        'in that format. This display has no effect on artifact validity and does not substitute for it.'
+        'Derivation phase (required before any file-modifying tool call): name the root criterion — '
+        '(1) the governing goal must appear under a literal heading in the transcript before any '
+        'implementation action, identified as the goal no other stated goal subsumes; (2) behavioral '
+        'dimensions must appear under a literal heading, each naming as a literal substring the specific '
+        'clause in the governing goal it derives from; (3) each artifact in the enforcement sequence must '
+        'appear under a literal heading naming, as a literal substring, what the prior artifact\'s passing '
+        'state admits that this artifact rejects; (4) each behavioral dimension must be covered by a '
+        'verbatim string from a tool-executed result appearing under a literal completion-check heading. '
+        'Then enumerate every path by which a transcript could satisfy these heading requirements without '
+        'the governing goal having actually been identified, dimensions actually derived, or dimensions '
+        'actually covered: for each path, name the literal string in the transcript that closes it — a '
+        'path is closed only when naming that string makes the non-compliant transcript distinguishable '
+        'from the compliant one without assessing intent; a path that cannot be closed by naming a string '
+        'must be eliminated by ensuring the required structural property is present before the heading is '
+        'written. The enumeration is complete when no remaining open path exists. The literal strings '
+        'named during enumeration as path closures are binding — a heading or structural property that '
+        'does not match the committed string verbatim does not satisfy the corresponding requirement. '
+        'Proceed to implementation only when the derivation and enumeration are present as text above '
+        'this point in the transcript. Any noun phrase in the governing goal that names a file path, '
+        'URL, ticket number, or document title not already present in the transcript must be fetched '
+        'before the governing goal heading is written — derivation is blocked until the referent is '
+        'resolved. No file-modifying tool call may appear before the completion-check heading. The '
+        'response is not permitted to end until the completion-check heading appears in the transcript '
+        'and at least one dimension is covered by a verbatim string from a tool-executed result above it.'
     ),
 }
 
@@ -91,10 +59,6 @@ def build_ground_prompt() -> str:
     ground is a method token — it is not in STATIC_PROMPT_CONFIG.
     """
     return (
-        "The response applies this meta-process discipline — before acting, answer: what does this specific task "
-        "require as evidence of completion that is a tool-executed result in the transcript when tools are available, "
-        "or a named observable artifact when they are not — not a prose description of the process? If you cannot "
-        "identify what that result or artifact would look like for this task, the process is not yet derived. Derive "
-        "an enforcement process whose steps produce that result or artifact. "
+        "The response applies a meta-process discipline before any implementation action. "
         + GROUND_PARTS_MINIMAL["core"]
     )

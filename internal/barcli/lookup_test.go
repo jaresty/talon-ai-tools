@@ -296,6 +296,9 @@ func TestLookupCLIHumanReadableTierBadge(t *testing.T) {
 		if line == "" {
 			continue
 		}
+		if strings.HasPrefix(line, "Tip:") {
+			continue // footer hint line — not a result line
+		}
 		if !strings.HasPrefix(line, "[T") && !strings.HasPrefix(line, "[BM]") {
 			t.Errorf("expected line to start with tier badge ([T3]/[T2]/[T1]/[T0]/[BM]), got: %q", line)
 		}
@@ -354,7 +357,7 @@ func TestLookupCLIAxisFilter(t *testing.T) {
 		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
 	}
 	for _, line := range strings.Split(strings.TrimSpace(result.Stdout), "\n") {
-		if line == "" {
+		if line == "" || strings.HasPrefix(line, "Tip:") {
 			continue
 		}
 		if !strings.Contains(line, "method:") {
@@ -1046,6 +1049,28 @@ func TestLookupSequenceHeuristicMatch(t *testing.T) {
 	}
 	if found.Tier < 2 {
 		t.Errorf("expected tier ≥2 for heuristic match, got tier %d", found.Tier)
+	}
+}
+
+// TestLookupCLIFooterHintPresent specifies that a tip line appears after results in human-readable mode.
+func TestLookupCLIFooterHintPresent(t *testing.T) {
+	result := runBuildCLI(t, []string{"lookup", "root cause"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "Tip: bar help token") {
+		t.Errorf("expected footer hint 'Tip: bar help token' in output, got:\n%s", result.Stdout)
+	}
+}
+
+// TestLookupCLIFooterHintAbsentInJSON specifies that the tip line is absent in --json mode.
+func TestLookupCLIFooterHintAbsentInJSON(t *testing.T) {
+	result := runBuildCLI(t, []string{"lookup", "root cause", "--json"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
+	}
+	if strings.Contains(result.Stdout, "Tip: bar help token") {
+		t.Errorf("footer hint must not appear in --json output, got:\n%s", result.Stdout)
 	}
 }
 

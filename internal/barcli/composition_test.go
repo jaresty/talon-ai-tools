@@ -159,7 +159,7 @@ func TestRenderPlainText_NoCompositionRulesWithoutTokenPair(t *testing.T) {
 func TestFalsifyDefinition_AbsenceDetection(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "written to assert that specific behavior") && !strings.Contains(def, "behavior is absent") && !strings.Contains(def, "behavior absent") {
+	if !strings.Contains(def, "written to assert that specific behavior") && !strings.Contains(def, "behavior is absent") && !strings.Contains(def, "behavior absent") && !strings.Contains(def, "detected absence of the behavior") && !strings.Contains(def, "absence of each governed behavior") {
 		t.Error("falsify definition must require artifact to be written to assert the specific governed behavior")
 	}
 }

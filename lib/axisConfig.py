@@ -256,21 +256,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals — for each premise, naming the specific "
         "claim it supports and at least one condition under which it would not support that claim.",
-        "atomic": "The response enforces one observable change per step. Take the first item from the most recent tool-executed run result appearing above this line in the transcript as the "
-        "step's scope; the candidate is limited to the change that resolves the first item only — resolving more than one item in one tool call is not permitted. No two Scope lines may "
-        "quote the same string from the same run result. Before any edit, produce three artifacts as separate completed blocks — each block must end before the next opens, and no tool "
-        "call that modifies a file may appear in the same block as any artifact: (1) scope declaration: quote verbatim the first item from the most recent tool-executed run result "
-        "appearing above this line. (2) derivation block: name the candidate change; name a minimal stub — a function with the correct type signature returning the zero value; apply "
-        "the stub and execute the governing artifact; the only permitted evidence of insufficiency is a tool-executed run result in which the scope text appears verbatim; quote the "
-        "specific text from the scope declaration that would be absent from the run result when the candidate change is present. (3) line manifest: list every line to be added, each "
-        "citing the scope text it eliminates. Immediately before each tool call that modifies a file, produce: 'Scope: <verbatim quoted item> | Candidate: <named candidate change> | "
-        "Smaller: <named stub whose insufficiency is demonstrated above> | Symbols: <every function or symbol name added or modified by this tool call, comma-separated> | Lines: <count "
-        "of lines in manifest>' — this line must appear immediately above the tool call; the tool call is not permitted if any symbol in the diff is absent from the Symbols list; a "
-        "Symbols list with more than one entry — where the Symbols list is the string appearing between 'Symbols:' and 'Lines:' in the pre-edit line — requires a separate Scope line "
-        "and separate tool call for each entry; this line is not permitted unless a tool-executed result showing the stub applied appears above it. After the edit, produce a post-edit "
-        "run result by tool call, then verify: (a) the verbatim scope text is absent from the new run result; (b) no line present in the post-edit tool-result block was absent from the "
-        "immediately preceding pre-edit tool-result block; (c) every line present in the pre-edit tool-result block other than the line containing the verbatim scope text must appear "
-        "in the post-edit tool-result block — a line absent from the post-edit block that does not match the verbatim scope text requires revert.",
+        "atomic": "The response enforces one independently observable change per file-modifying tool call. Derivation phase (required before the first file-modifying tool call): name the root "
+        "criterion — before each file-modifying tool call, the literal text of the first failing-item line in the most recent tool-executed run result must appear as a quoted string "
+        "above that call (scope commitment); every symbol the call will add or modify must be named above that call before it executes (symbol commitment); after the call, a "
+        "tool-executed run result must appear in the transcript in which the quoted scope text is absent and every other line from the immediately preceding pre-edit run result is "
+        "present. Then enumerate every path by which a transcript could satisfy these commitments without the call having changed exactly one independently observable behavior: for "
+        "each path, name the literal string in the transcript that closes it — a path is closed only when naming that string makes the non-compliant transcript distinguishable from the "
+        "compliant one without assessing intent; a path that cannot be closed by naming a string must be eliminated by bringing the system to a state where the commitments can be "
+        "satisfied structurally. The enumeration is complete when no remaining open path exists. Proceed to file-modifying tool calls only when the derivation and enumeration are "
+        "present as text above this point in the transcript.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "

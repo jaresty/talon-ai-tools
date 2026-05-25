@@ -610,33 +610,33 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_atomic_candidate_limited_to_first_failure(self):
-        """atomic must explicitly limit the candidate to the first failure only — other failures in the same result may not expand the candidate (hollow audit finding)."""
+        """atomic must scope each tool call to the first failing-item line in the run result — the scope commitment must reference the first failing item only (hollow audit finding)."""
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "resolving more than one item in one tool call is not permitted",
+            "the first failing-item line in the most recent tool-executed run result",
             definition,
-            "atomic must name the observable that limits the candidate to the first item only",
+            "atomic must name the observable that limits the candidate to the first failing item only",
         )
 
     def test_atomic_candidate_scoped_to_observed_failure(self):
-        """atomic's candidate change must be scoped to the specific error or assertion in the governing FAIL — changes that fix unobserved assertions are not permitted (hollow audit finding)."""
+        """atomic's scope commitment must require the literal text of the failing item to appear as a quoted string above the tool call — not a paraphrase (hollow audit finding)."""
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "the candidate is limited to the change that resolves the first item only",
+            "scope commitment",
             definition,
-            "atomic must explicitly limit the candidate to the first item from the governing run result",
+            "atomic must name the scope commitment as the structural gate before each file-modifying tool call",
         )
 
     def test_atomic_smaller_change_insufficient_against_current_fail(self):
-        """atomic must require that the smaller change's insufficiency be demonstrated against the current FAIL only — future failures may not be cited (hollow audit finding)."""
+        """atomic must require that paths which cannot be closed by naming a string be eliminated structurally — not just identified (hollow audit finding)."""
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "the only permitted evidence of insufficiency is a tool-executed run result in which the scope text appears verbatim",
+            "a path that cannot be closed by naming a string must be eliminated by bringing the system to a state where the commitments can be satisfied structurally",
             definition,
-            "atomic must require a tool-executed run of the stub before an insufficiency claim is permitted",
+            "atomic must require structural elimination of paths that cannot be closed by naming a string",
         )
 
     def test_falsify_empty_transcript_gap_closed(self):

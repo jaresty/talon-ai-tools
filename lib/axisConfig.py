@@ -444,8 +444,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "thecriteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by naming the prior decisions or events that produced the subject's current form, and for at least one named prior decision or event, naming a "
         "specific present-state property it produced that would be absent if that decision or event had not occurred.",
-        "own": "The response contains no path, command, instruction, or recommendation whose execution would write to a repository, shared tool, or multi-user environment. Output targeting only "
-        "the operator's local filesystem, shell session, or personal tooling satisfies this constraint; output targeting any shared system does not.",
+        "own": "The response contains no path, command, instruction, or recommendation whose execution would affect any artifact that is shared with or accessible to others — whether or not the "
+        "effect has been transmitted yet. An artifact satisfies this constraint only if it is entirely private to the operator and no action the operator could take would make it visible "
+        "to another party without first creating a new artifact. An artifact that could be shared by a single transmission step does not satisfy this constraint.",
         "paradox": "The response holds the subject as an unresolved generative tension rather than converging toward explanation or conclusion. It names what resists analysis without "
         "substituting a reframing that dissolves the resistance. Synthesis, resolution, and explanation are not valid closing moves.",
         "perturb": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, "

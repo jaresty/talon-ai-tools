@@ -25,6 +25,10 @@ _SENTINEL_GATES: dict[str, str] = {}
 GROUND_PARTS_MINIMAL: dict[str, str] = {
     "core": (
         'Derivation phase (required before any file-modifying tool call): name the root criterion — '
+        '(0) before naming the governing goal, run the subject under observation and record its output '
+        'under a literal heading — the governing goal heading must contain as a literal substring a string '
+        'present verbatim in that tool-executed result; a governing goal heading with no such substring '
+        'has not been derived from observed state and does not satisfy this requirement; '
         '(1) the governing goal must appear under a literal heading in the transcript before any '
         'implementation action, identified as the goal no other stated goal subsumes; (2) behavioral '
         'dimensions must appear under a literal heading, each naming as a literal substring the specific '
@@ -47,7 +51,9 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'before the governing goal heading is written — derivation is blocked until the referent is '
         'resolved. No file-modifying tool call may appear before the completion-check heading. The '
         'response is not permitted to end until the completion-check heading appears in the transcript '
-        'and at least one dimension is covered by a verbatim string from a tool-executed result above it.'
+        'and every covered dimension must cite a verbatim string from a tool-executed result whose invocation names the '
+        'subject under observation directly — a tool-executed result whose invocation names an artifact that evaluates '
+        'or reports on the subject rather than the subject itself does not satisfy this requirement.'
     ),
 }
 

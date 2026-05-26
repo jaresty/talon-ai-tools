@@ -145,6 +145,20 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "variants+adversarial",
+        "tokens": ["variants", "adversarial"],
+        "prose": (
+            "variants + adversarial: each variant must include its primary failure mode "
+            "co-located within that variant's block — a failure mode appearing in a "
+            "separate section rather than inside the variant it governs does not satisfy "
+            "this requirement. The failure mode must name the specific flaw type "
+            "(edge case, unstated assumption, architectural brittleness, etc.) and at "
+            "least one concrete instance of that type found in the variant. A variant "
+            "block without a co-located failure mode is incomplete regardless of whether "
+            "adversarial's global failure-category requirement is otherwise met."
+        ),
+    },
+    {
         "name": "mint+root",
         "tokens": ["mint", "root"],
         "prose": (

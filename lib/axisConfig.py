@@ -456,6 +456,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "preserve": "The response modifies the task by naming each existing interface or assumption the change touches and showing that no named interface or assumption is absent from the "
         "post-change state.",
         "prioritize": "The response enhances the task by ordering items by a named criterion stated in the response, naming the criterion before applying it, and making the ranking explicit.",
+        "prism": "The response enhances the task by first enumerating N named vantage-point frames as a governing artifact — each frame must differ from the others in at least one named "
+        "structural property — and then applying each frame independently to the subject, producing a named result per frame. The enumeration is a precondition: no frame may be applied "
+        "until the full set is named. A response that applies frames without first enumerating them, or that produces fewer named results than enumerated frames, does not satisfy this "
+        "requirement.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "pulse": "The response models the transfer being analyzed by distinguishing what is being conveyed from the medium that carries it, identifying where the medium distorts the content, and "
         "specifying what mechanism — if any — detects and corrects that distortion.",
@@ -746,6 +750,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "polar": "Attractor and repeller dynamics",
         "preserve": "Maintain compatibility with existing structures",
         "prioritize": "Rank items by importance or impact",
+        "prism": "Multi-frame enumeration",
         "probability": "Probabilistic and statistical reasoning",
         "pulse": "Content vs medium; distortion and correction",
         "redact": "Rewrite for general consumption",
@@ -973,6 +978,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "polar": "磁",
         "preserve": "守",
         "prioritize": "優",
+        "prism": "稜",
         "probability": "確",
         "pulse": "伝",
         "redact": "消",
@@ -1173,6 +1179,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "polar": "Comparative",
         "preserve": "Structural",
         "prioritize": "Comparative",
+        "prism": "Generative",
         "probability": "Reasoning",
         "pulse": "Temporal/Dynamic",
         "reify": "Generative",
@@ -1401,6 +1408,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "polar": "Attractors/repellers",
         "preserve": "Backward compatibility",
         "prioritize": "Rank by importance",
+        "prism": "Enumerate frames then apply each",
         "probability": "Statistical reasoning",
         "pulse": "Content/medium separation and distortion",
         "redact": "Criteria-governed content removal for general audience",
@@ -5922,6 +5930,38 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what matters most",
                 "high-priority items",
                 "rank and explain the ranking",
+            ],
+        },
+        "prism": {
+            "distinctions": [
+                {
+                    "note": "analog = apply one structural mapping from a known case; prism = enumerate N named frames first, then apply each independently",
+                    "token": "analog",
+                },
+                {
+                    "note": "sweep = enumerate options without applying any; prism = enumerate frames and apply each, producing a result per frame",
+                    "token": "sweep",
+                },
+                {
+                    "note": "spur = fork on a key assumption and pursue each branch; prism = enumerate named vantage-point frames as a precondition, then apply each",
+                    "token": "spur",
+                },
+                {
+                    "note": "orbit = vary initial conditions to find invariant attractor geometry; prism = apply intentionally chosen named frames to surface what each "
+                    "independently reveals",
+                    "token": "orbit",
+                },
+            ],
+            "heuristics": [
+                "look at this from multiple angles",
+                "apply different lenses",
+                "consider multiple perspectives",
+                "what does this look like from each vantage point",
+                "enumerate the frames and apply each",
+                "think about this as a regulator, then as a user, then as an engineer",
+                "force structurally different restatements",
+                "what would each stakeholder see",
+                "apply N independent viewpoints",
             ],
         },
         "probability": {

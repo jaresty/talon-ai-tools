@@ -456,10 +456,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "preserve": "The response modifies the task by naming each existing interface or assumption the change touches and showing that no named interface or assumption is absent from the "
         "post-change state.",
         "prioritize": "The response enhances the task by ordering items by a named criterion stated in the response, naming the criterion before applying it, and making the ranking explicit.",
-        "prism": "The response enhances the task by first enumerating N named vantage-point frames as a governing artifact — each frame must differ from the others in at least one named "
-        "structural property — and then applying each frame independently to the subject, producing a named result per frame. The enumeration is a precondition: no frame may be applied "
-        "until the full set is named. A response that applies frames without first enumerating them, or that produces fewer named results than enumerated frames, does not satisfy this "
-        "requirement.",
+        "prism": "The response enhances the task by first enumerating N named vantage-point frames as a governing artifact — each frame is introduced by a named label that appears as a heading "
+        "in the transcript, and each frame's output block is headed by that label; a frame without a heading label or an output block not headed by its label does not satisfy this "
+        "requirement. The enumeration is a precondition: no frame may be applied until the full set of labeled frames is named. A response that applies frames without first enumerating "
+        "them, or that produces fewer labeled output blocks than enumerated frames, does not satisfy this requirement.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "pulse": "The response models the transfer being analyzed by distinguishing what is being conveyed from the medium that carries it, identifying where the medium distorts the content, and "
         "specifying what mechanism — if any — detects and corrects that distortion.",

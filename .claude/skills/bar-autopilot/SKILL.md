@@ -44,7 +44,7 @@ Each step is a required gate. Do not advance to the next step until the current 
 - **Never hardcode tokens.** Always discover them via `bar help llm` (preferred) or `bar help tokens` (fallback).
 - **Be version-agnostic.** Tokens evolve; discover them dynamically from the current bar version.
 - **Use kebab-case for multi-word tokens.** When tokens contain spaces (e.g., "as kent beck"), convert to kebab-case: "as-kent-beck".
-- **Be transparent about usage.** After running bar build, state the command used and the reason each token was selected — a response that does not name both the command and the token selection reasons does not satisfy this requirement.
+- **REQUIRED: Document token selection after every bar build.** After running `bar build`, state the exact command used and the reason each token was selected — a response that does not name both the command and the token selection reasons does not satisfy this requirement. Format: "I used `bar build [tokens]` — [token]: [reason], [token]: [reason], ..."
 - **Fallback only on command-not-found.** If bar is unavailable, fall back to normal response and tell the user. A failed bar command is not a reason to skip; retry once with corrections.
 - **Cross-agent compatible.** Must work across all Claude agent types (general-purpose, Explore, Plan, etc.).
 - **Use Bash tool.** Execute bar commands via the Bash tool.
@@ -149,7 +149,7 @@ If the request doesn't clearly match any pattern:
 After selecting tokens via discovery:
 1. Build the bar command with discovered tokens
 2. Execute it to structure your response
-3. Briefly explain: "I used `bar build [tokens]` to structure this response around [reason]"
+3. **After responding, state:** "I used `bar build [tokens]` — [token]: [reason], [token]: [reason], ..." — a post-response note that does not name both the exact command and a per-token reason does not satisfy this requirement.
 
 ## Performance Notes
 

@@ -165,6 +165,9 @@ bar help llm
 
 # Also accessible as:
 bar help reference
+
+# Per-token disambiguation (near-neighbor guidance, combination entries):
+bar guide <token>    # e.g. bar guide probe — when to use probe vs check vs fix
 ```
 
 **Legacy (older bar versions):**

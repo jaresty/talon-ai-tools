@@ -49,16 +49,16 @@ bar lookup "<phrase>" --json        # structured output; each result has kind, t
 bar lookup debug                    # → pack:debug (→ bar build probe diagnose adversarial unknowns), sequence:debug-cycle, tokens
 ```
 
-**Output (human-readable):** one result per line, ranked by match quality.
+**Output (human-readable):** one result per line, ranked by match quality. Tokens with a guidebook entry show `[guide]`; use `bar guide <token>` to read it.
 
 ```
 [T3] pack:debug — Diagnosing a bug or system failure  → bar build probe diagnose adversarial unknowns
-[T3] task:probe — Surface assumptions and implications  [matched heuristics: "debug"]
+[T3] task:probe — Surface assumptions and implications  [guide]  [matched heuristics: "debug"]
 [T2] sequence:debug-cycle — Surface root causes, fix them...  [3 steps → bar sequence show debug-cycle]
 [T2] method:diagnose — Identify likely root causes
 ```
 
-**Output (--json):** array of objects with `axis`, `token`, `label`, `kind`, `command` (packs only), `tier` (0–3), `matched_field`, `matched_text`.
+**Output (--json):** array of objects with `axis`, `token`, `label`, `kind`, `command` (packs only), `tier` (0–3), `matched_field`, `matched_text`, `has_guide` (true when a guidebook entry exists).
 
 ```json
 [
@@ -79,7 +79,8 @@ bar lookup debug                    # → pack:debug (→ bar build probe diagno
     "kind": "token",
     "tier": 3,
     "matched_field": "heuristics",
-    "matched_text": "debug"
+    "matched_text": "debug",
+    "has_guide": true
   }
 ]
 ```
@@ -105,10 +106,15 @@ When the input is a natural-language intent phrase or a token name being searche
 bar lookup "diagnose" --axis method
 ```
 
-**Output:** ranked results with tier (3 = exact token match, 1 = mentioned in distinctions):
+**Output:** ranked results with tier (3 = exact token match, 1 = mentioned in distinctions). `[guide]` signals a guidebook entry exists:
 ```
 method:diagnose — Identify likely root causes  [matched token: "diagnose"]
 method:abduce — Generate explanatory hypotheses  [matched distinctions: "diagnose"]
+```
+
+When a result shows `[guide]`, read the disambiguation entry before committing to a token:
+```bash
+bar guide diagnose    # near-neighbor disambiguation: diagnose vs probe vs abduce vs induce
 ```
 
 When the raw four-field tab-separated record (heuristics or distinctions text verbatim) is required:

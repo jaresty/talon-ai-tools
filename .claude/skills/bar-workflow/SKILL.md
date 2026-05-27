@@ -36,7 +36,9 @@ Each step is a required gate. Do not advance to the next step until the current 
    starter packs, and sequences for each planned step. `bar lookup` now returns all three kinds
    in one ranked list: `kind=token` (append to `bar build`), `kind=pack` (runnable `bar build`
    command shown inline — use it directly), `kind=sequence` (shows step count and
-   `bar sequence show <name>`). A step plan must name at least one token candidate and the
+   `bar sequence show <name>`). When a result shows `[guide]`, run `bar guide <token>` before
+   committing — it provides near-neighbor disambiguation that may change the token choice.
+   A step plan must name at least one token candidate and the
    intent it serves before proceeding. A transcript that reaches step 4 without naming token
    candidates and their intents does not satisfy this requirement.
 4. **Generate candidate step structures** — from the token candidates, write out one or more

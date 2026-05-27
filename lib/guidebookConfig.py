@@ -584,4 +584,25 @@ GUIDEBOOK: list[dict[str, Any]] = [
             "Use specific tokens when you already know the shape of the task and its failure modes."
         ),
     },
+
+    # ── Persona + channel register conflicts ──────────────────────────────────
+
+    {
+        "id": "presentation-persona-vs-technical-channel",
+        "title": "presentation persona vs technical channel",
+        "tokens": ["executive_brief", "designer_to_pm", "stakeholder_facilitator"],
+        "body": (
+            "**Presentation personas** (`executive_brief`, `designer_to_pm`, "
+            "`stakeholder_facilitator`) establish a prose-narrative register: the "
+            "audience expects summary, framing, and rationale in natural language.\n\n"
+            "**Technical-output-only channels** (`code`, `shellscript`, `codetour`) "
+            "produce output with no prose slot — only code, shell commands, or "
+            "code-navigation steps.\n\n"
+            "These conflict: the persona requires prose; the channel forecloses it. "
+            "Resolution: pair presentation personas with prose channels (`plain`, "
+            "`slack`, `remote`, `agent`, `presenterm`) where narrative is possible. "
+            "If a technical channel is genuinely needed, drop the presentation persona "
+            "and address the technical audience directly."
+        ),
+    },
 ]

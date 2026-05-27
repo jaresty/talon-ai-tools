@@ -117427,6 +117427,16 @@
         "atomic"
       ],
       "body": "**ground** asks the model to *derive* what constraints this task needs — it's a meta-token that produces enforcement structure appropriate to the specific task. Use when the task is open-ended or novel enough that you can't anticipate the failure shape.\n\n**gate**, **falsify**, **atomic** *specify* constraints directly:\n- `gate`: evaluation artifact precedes implementation\n- `falsify`: the artifact must have fired against the absent behavior (FAIL before edit)\n- `atomic`: one independently observable change per step\n\nThe combination `witness ground gate falsify atomic` is the active TDD cluster — `ground` makes the model internalize the tokens rather than passively acknowledge them, `witness` externalizes reasoning transitions, and `falsify` ensures tests detect absence.\n\nUse `ground` alone for open-ended research or planning. Use specific tokens when you already know the shape of the task and its failure modes."
+    },
+    {
+      "id": "presentation-persona-vs-technical-channel",
+      "title": "presentation persona vs technical channel",
+      "tokens": [
+        "executive_brief",
+        "designer_to_pm",
+        "stakeholder_facilitator"
+      ],
+      "body": "**Presentation personas** (`executive_brief`, `designer_to_pm`, `stakeholder_facilitator`) establish a prose-narrative register: the audience expects summary, framing, and rationale in natural language.\n\n**Technical-output-only channels** (`code`, `shellscript`, `codetour`) produce output with no prose slot — only code, shell commands, or code-navigation steps.\n\nThese conflict: the persona requires prose; the channel forecloses it. Resolution: pair presentation personas with prose channels (`plain`, `slack`, `remote`, `agent`, `presenterm`) where narrative is possible. If a technical channel is genuinely needed, drop the presentation persona and address the technical audience directly."
     }
   ],
   "checksums": {
@@ -117439,6 +117449,6 @@
     "starter_packs": "1f779f51c8a4ca34cb618093d18e1bb74414477d77be2bc2e95bbc4228a0cf04",
     "sequences": "1d0200e2782a0778fdaf6d6bc5ebaef8577d8bf382f3a1f2eff4266934feb138",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
-    "guidebook": "7b725d1d1cd3a3c8c908daa932d225f27bf7867f631ed554d70e8d27d078f96b"
+    "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }
 }

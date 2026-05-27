@@ -13,6 +13,59 @@ from typing import Any
 
 GUIDEBOOK: list[dict[str, Any]] = [
 
+    # ── Form axis experiment cluster ─────────────────────────────────────────
+
+    {
+        "id": "prep-vs-vet",
+        "title": "prep vs vet",
+        "tokens": ["prep", "vet"],
+        "body": (
+            "**prep** — structures output as an *experiment design*: hypothesis, method, "
+            "expected outcomes, and evaluation criteria. Use before running an experiment, "
+            "making a change, or committing to a plan. Output is a write-up that guides "
+            "the work ahead.\n\n"
+            "**vet** — structures output as a *post-experiment review*: what was observed, "
+            "how outcomes compare to expectations, what was learned, and what follows. "
+            "Use after an experiment, decision, or implementation — when you have results "
+            "to interpret.\n\n"
+            "`prep` asks 'what should we expect and why?' before the work; `vet` asks "
+            "'what actually happened and what does it mean?' after. They are designed "
+            "as a complementary pair: `prep` sets the criteria, `vet` evaluates against them."
+        ),
+    },
+    {
+        "id": "prep-vs-plan",
+        "title": "prep vs plan",
+        "tokens": ["prep"],
+        "body": (
+            "**prep** — structures output as an *experiment design*: frames the upcoming "
+            "work as a hypothesis to test, with explicit success criteria and expected "
+            "outcomes. Output is a scientific write-up, not an action sequence.\n\n"
+            "**plan** — proposes the *steps to take* to reach a goal. Output is an action "
+            "sequence — ordered tasks, milestones, dependencies.\n\n"
+            "Use `prep` when the goal is *learning or validation* (you want to know if "
+            "something is true). Use `plan` when the goal is *execution* (you want to "
+            "know what to do). A plan can follow a prep: `prep` defines the experiment, "
+            "`plan` sequences how to run it."
+        ),
+    },
+    {
+        "id": "vet-vs-check",
+        "title": "vet vs check",
+        "tokens": ["vet"],
+        "body": (
+            "**vet** — a *post-experiment review*: interprets what happened relative to "
+            "prior expectations, surfaces what was learned, and proposes what follows. "
+            "Output is a reflective synthesis — it requires a hypothesis or plan to "
+            "compare against.\n\n"
+            "**check** — evaluates a subject against a *specific condition* in the present. "
+            "Output is a pass/fail verdict. It does not require prior expectations.\n\n"
+            "Use `vet` when you have run something and want to interpret the results "
+            "relative to what you expected. Use `check` when you have a named criterion "
+            "and want to know whether a subject satisfies it — no prior hypothesis needed."
+        ),
+    },
+
     # ── Task axis near-neighbors ──────────────────────────────────────────────
 
     {

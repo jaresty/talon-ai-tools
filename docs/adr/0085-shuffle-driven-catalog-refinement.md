@@ -171,6 +171,13 @@ For each shuffled prompt, document:
 - [ ] Combination pattern not covered in "Usage Patterns"
 - [ ] Skill guidance contradicts shuffle result (explain why)
 
+**Guide gap check:** For each token in this combination, run `bar guide <token>`. If a token
+has no guide entry and the choice required explanation (near-neighbor confusion, non-obvious
+disambiguation), file a new entry in `lib/guidebookConfig.py` before the next cycle.
+- [ ] `bar guide <token>` run for each token in combination
+- [ ] Guide gap identified for token {X} — new entry needed: "{X} vs {Y}"
+- [ ] No guide gaps — all near-neighbor confusions already covered
+
 **Recommendations for skills:**
 - Update bar-{skill-name} § "{section}" to include {specific guidance}
 - Add new usage pattern example for {task type}

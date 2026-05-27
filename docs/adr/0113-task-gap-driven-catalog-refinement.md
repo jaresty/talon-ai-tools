@@ -428,6 +428,29 @@ evidence: [task_T28]
 
 ---
 
+### Phase 4b: Guide Gap Check
+
+For every misrouting surfaced in Phase 4 (task scoring ≤3 due to near-neighbor confusion),
+check whether a guidebook entry would have prevented it:
+
+1. Run `bar guide <misrouted-token>` and `bar guide <correct-token>`.
+2. If no entry exists covering the confusion pair, file a new entry in
+   `lib/guidebookConfig.py` before the next loop iteration. This is not optional — a
+   recurring misrouting without a guide entry leaves the same gap open for future loops.
+3. If an entry exists but the misrouting occurred anyway, note whether the entry's framing
+   should be sharpened (add to `undiscoverable-token` recommendation).
+
+```markdown
+### Guide gap check for task {ID}
+
+- `bar guide <misrouted-token>`: {entry found / no entry}
+- `bar guide <correct-token>`: {entry found / no entry}
+- Gap: "{misrouted-token} vs {correct-token}" — {new entry needed / entry exists, sharpening needed / covered}
+- Action: {add entry to guidebookConfig.py / update existing entry / none}
+```
+
+---
+
 ### Phase 5: Recommend
 
 Aggregate gap diagnoses into actionable recommendations following the same taxonomy as ADR-0085:
@@ -440,6 +463,7 @@ Aggregate gap diagnoses into actionable recommendations following the same taxon
 | `category-misrouting` | **Skill-update** — revise "Choosing Method" section to clarify category selection for this task type | **Yes** — confirm Diagnostic/correct-category token is better |
 | `distinguishable-weaker` | **Skill-update** — clarify relative quality ordering in heuristics for this task class | **Yes** — required for detection |
 | `out-of-scope` | **Document** — note as known boundary in bar help llm | No |
+| `near-neighbor-confusion` | **Guide** — add or sharpen entry in `lib/guidebookConfig.py` | No |
 
 ---
 

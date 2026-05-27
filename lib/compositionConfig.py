@@ -209,6 +209,19 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "prep+svg",
+        "tokens": ["prep", "svg"],
+        "prose": (
+            "prep + svg: prep form requires rich prose blocks — hypothesis, method, "
+            "expected outcomes, evaluation criteria. svg is markup-only with no prose "
+            "slot. The structured write-up prep requires has no valid rendering target "
+            "inside svg. Same mechanism as ghost+svg and twin+svg: the form demands "
+            "prose structure the channel structurally cannot hold. When prep and svg "
+            "appear together, the prep write-up must appear as a prose block before "
+            "or after the svg artifact."
+        ),
+    },
+    {
         "name": "ghost+svg",
         "tokens": ["ghost", "svg"],
         "prose": (

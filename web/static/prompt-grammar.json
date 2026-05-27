@@ -117051,6 +117051,14 @@
       "prose": "ground + gate + falsify + atomic + chain (multi-layer work): ground's first artifact is a dependency graph that partitions the work into independent branches — two branches are independent if neither's first step depends on any node in the other. Each node carries an explicit predecessor/successor contract. This graph is required before any branch begins. The protocol's ordering constraint applies within each branch, not across independent branches. Once a shared upstream dependency satisfies its assertions, independent branches must be executed as parallel subagent invocations; parallel execution is available if and only if the execution context supports simultaneous tool calls — if not, name the specific tool or context property that is absent before proceeding sequentially; a statement of unavailability without a named absent property does not satisfy this condition. Each subagent runs gate+falsify+atomic+chain on its assigned branch; ground is the orchestrating protocol and its dependency graph is not re-derived within a branch. When asserting layer boundaries, structural impossibility (the assertion cannot be written) and pressure to stop early (a high-quality intermediate creates a false sense of completion) are distinct failure modes with different causes; they are not resolved by the same intervention."
     },
     {
+      "name": "prep+svg",
+      "tokens": [
+        "prep",
+        "svg"
+      ],
+      "prose": "prep + svg: prep form requires rich prose blocks — hypothesis, method, expected outcomes, evaluation criteria. svg is markup-only with no prose slot. The structured write-up prep requires has no valid rendering target inside svg. Same mechanism as ghost+svg and twin+svg: the form demands prose structure the channel structurally cannot hold. When prep and svg appear together, the prep write-up must appear as a prose block before or after the svg artifact."
+    },
+    {
       "name": "ghost+svg",
       "tokens": [
         "ghost",
@@ -117414,7 +117422,7 @@
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "1f779f51c8a4ca34cb618093d18e1bb74414477d77be2bc2e95bbc4228a0cf04",
     "sequences": "1d0200e2782a0778fdaf6d6bc5ebaef8577d8bf382f3a1f2eff4266934feb138",
-    "compositions": "70fb3b3a230cc117e06bdb4dd82f84e55c71f8502cb69e9f0b12b86e43962607",
+    "compositions": "6d744e3b0861edc99065f18189b9cc021b2113c0c564b5161f4d9234e18348ea",
     "guidebook": "7b725d1d1cd3a3c8c908daa932d225f27bf7867f631ed554d70e8d27d078f96b"
   }
 }

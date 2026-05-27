@@ -814,3 +814,40 @@ Clean, effective combination. The "order" method (hierarchy, dominance) adds ana
 ### Status
 
 Findings C29-F1 through C29-F5 identified. Guide gaps documented. Apply before cycle 30.
+
+---
+
+## Cycle 30: Post-Apply General Cross-Axis Shuffle — Seeds S301–S308
+
+**Date:** 2026-05-27
+**Binary:** dev (post-ADR-0227 full-token composition expansion)
+**Fill:** 1.0
+
+| Seed | Key tokens | Score |
+|------|-----------|-------|
+| S301 | executive_brief+show+witness+deep+mean+diagnose+formats+shellscript+fip+ong | 3 |
+| S302 | executive_brief+sim+audit+max+view+rigor+actions+codetour+fip+bog | 3 |
+| S303 | stakeholder_facilitator+sim+solo+full+good+visual+spike+remote+fly+ong | 4 |
+| S304 | teach_junior_dev+check+blind+taper+time+mu+bullets+skill+fly+ong | 5 |
+| S305 | scientist_to_analyst+fix+relay+gist+act+effects+questions+diagram+dip+rog | 4 |
+| S306 | teach_junior_dev+diff+witness+minimal+dam+prism+prep+svg+fly+rog | 2 |
+| S307 | fun_mode+plan+witness+minimal+dam+grove+cards+html+jog | 4 |
+| S308 | fun_mode+pick+audit+triage+good+effects+table+plain+fly+rog | 4 |
+
+**Mean: 3.625/5**
+
+### Findings
+
+**C30-F1: prep+svg** — third instance of the prose-form + svg incompatibility pattern (ghost+svg C28-F3, twin+svg C29-F3). prep form requires hypothesis/method/criteria prose blocks; svg is markup-only with no prose slot. This is now a recurring structural category: prose-heavy form tokens (ghost, twin, prep) are incompatible with svg channel. → `form→prep→channel→svg` cautionary. Applied immediately to compositionConfig.py.
+
+**Pattern note:** executive_brief + technical channels (shellscript, codetour) is a recurring register mismatch across S301 and S302 — not a structural incompatibility but a semantic one. Worth a future guide entry or composition rule if it recurs.
+
+### Guide Gap Check
+
+- `bar guide prep` → prep-vs-vet, prep-vs-plan: ✓ covered. No new guide entry needed (conflict is structural form+channel, not selection confusion).
+- `bar guide svg` → no entry. svg is a channel token with no near-neighbor confusion — no entry needed.
+- C30-F1 applied directly to compositionConfig.py as prep+svg entry.
+
+### Status
+
+C30-F1 applied. Pattern: prose-form+svg is a category (3 instances). Consider a general `help_llm` note rather than per-pair entries going forward. No guide gaps.

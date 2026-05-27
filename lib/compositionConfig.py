@@ -209,6 +209,35 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "cards+gherkin",
+        "tokens": ["cards", "gherkin"],
+        "prose": (
+            "cards + gherkin: cards form produces a card-deck layout with prose content "
+            "per card; gherkin channel mandates Given/When/Then DSL output only. These "
+            "are incompatible output structures — the card layout form has no valid "
+            "rendering target inside Gherkin syntax. Same mechanism as ghost+svg, "
+            "twin+svg, prep+svg: a prose-layout form meets a DSL-only channel. When "
+            "cards and gherkin appear together, the card content must appear as "
+            "prose blocks before or after the Gherkin scenarios; embedding card prose "
+            "inside Gherkin steps does not satisfy cards' layout requirement."
+        ),
+    },
+    {
+        "name": "deep+commit",
+        "tokens": ["deep", "commit"],
+        "prose": (
+            "deep + commit: commit form defaults to gist completeness because conventional "
+            "commit messages are structurally brief — a subject line and short body. "
+            "Explicit deep overrides this default but creates a content-exceeds-format "
+            "tension: deep requires addressing every named element at one level of depth, "
+            "which a commit message format cannot hold. Resolution: expand beyond "
+            "conventional commit format — use a commit message header for the summary, "
+            "then append a full structured section below for the deep content. The commit "
+            "header still follows conventional format; the appended section satisfies deep. "
+            "A commit-only response without the appended section does not satisfy deep."
+        ),
+    },
+    {
         "name": "prep+svg",
         "tokens": ["prep", "svg"],
         "prose": (

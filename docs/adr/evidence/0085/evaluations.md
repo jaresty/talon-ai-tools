@@ -851,3 +851,42 @@ Findings C29-F1 through C29-F5 identified. Guide gaps documented. Apply before c
 ### Status
 
 C30-F1 applied. Pattern: prose-form+svg is a category (3 instances). Consider a general `help_llm` note rather than per-pair entries going forward. No guide gaps.
+
+---
+
+## Cycle 31: General Cross-Axis Shuffle — Seeds S311–S318
+
+**Date:** 2026-05-27
+**Binary:** dev (post-ADR-0227 full-token expansion)
+**Fill:** 1.0
+
+| Seed | Key tokens | Score |
+|------|-----------|-------|
+| S311 | fun_mode+check+witness+skim+act+visual+twin+notebook+fip+rog | 4 |
+| S312 | fun_mode+make+witness+zoom+lever+mod+scaffold+html+bog | 4 |
+| S313 | executive_brief+plan+relay+zoom+time+experimental+facilitate+remote+fip+rog | 4 |
+| S314 | teach_junior_dev+diff+audit+full+motifs+objectivity+faq+zettel+dig | 4 |
+| S315 | fun_mode+sort+live+taper+stable+seep+cards+gherkin+fip+rog | 2 |
+| S316 | teach_junior_dev+pick+blind+zoom+stable+cite+direct+sketch+fig | 5 |
+| S317 | designer_to_pm+sim+live+gist+act+survive+tight+code+rog | 2 |
+| S318 | product_manager_to_team+plan+live+deep+view+prism+commit+agent+fly+rog | 3 |
+
+**Mean: 3.5/5**
+
+### Findings
+
+**C31-F1: cards+gherkin** — cards form produces a card-deck layout; gherkin channel mandates Given/When/Then DSL only. Structurally incompatible — same category as ghost+svg, twin+svg, prep+svg. Prose-layout form meets DSL-only channel. → `form→cards→channel→gherkin` cautionary. Applied immediately.
+
+**C31-F2: presentation-persona + code channel (pattern)** — designer_to_pm+code (S317) follows the same register mismatch as executive_brief+shellscript/codetour (C30). Pattern now has 3 instances: presentation/executive personas (executive_brief, designer_to_pm) + technical-output-only channels (code, shellscript, codetour). Not yet a composition entry but worth a guide entry or help_llm note. Candidate: `executive_brief vs code` guide, noting that presentation personas expect prose register.
+
+**C31-F3: deep+commit** — commit form has a gist default (ADR-0153); explicit deep overrides it but the conventional commit format can't hold deep content. Inverse of skim+gate. Resolution: header in commit format + appended structured section for depth. → `completeness→deep→form→commit` composition rule. Applied immediately.
+
+### Guide Gap Check
+
+- `bar guide cards` → no entry. cards vs other form tokens is not a near-neighbor selection confusion — no guide entry needed. The conflict is structural (channel incompatibility).
+- `bar guide commit` → no entry. deep+commit is a completeness+form interaction, not a token selection confusion — composition rule is the right layer, not a guide entry.
+- C31-F2 pattern: guide entry for presentation-persona + code channel warranted — deferred to next cycle.
+
+### Status
+
+C31-F1 and C31-F3 applied. C31-F2 (presentation-persona+code pattern) documented, deferred. Two structural pattern categories now well-established: (1) prose-layout forms + DSL channels; (2) presentation personas + technical-output channels.

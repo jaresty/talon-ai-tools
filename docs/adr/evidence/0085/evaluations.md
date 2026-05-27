@@ -760,3 +760,57 @@ Clean, effective combination. The "order" method (hierarchy, dominance) adds ana
 3. Consider retiring or recategorizing method tokens that overlap with tasks
 4. Add compatibility metadata to tokens (compatible_with, incompatible_with)
 5. Re-run evaluation after catalog edits to measure improvement
+
+---
+
+## Cycle 29: General Cross-Axis Shuffle — Seeds S294–S301
+
+**Date:** 2026-05-27
+**Binary:** dev (post-ADR-0237)
+**Fill:** 1.0 (all axes filled)
+
+| Seed | Key tokens | Score |
+|------|-----------|-------|
+| S294 | scientist_to_analyst+probe+solo+full+view+falsify+table+zettel+ong | 3 |
+| S295 | designer_to_pm+pick+relay+grow+act+drift+indirect+agent+fly+rog | 2 |
+| S296 | scientist_to_analyst+diff+blind+zoom+lever+sweep+timeline+zettel+fly+bog | 4 |
+| S297 | product_manager_to_team+pick+witness+triage+assume+abduce+twin+svg+fly+bog | 2 |
+| S298 | product_manager_to_team+pick+solo+triage+fail+abduce+cocreate+presenterm+rog | 3 |
+| S299 | scientist_to_analyst+plan+audit+minimal+stable+order+case+skill+fly+bog | 4 |
+| S2910 | fun_mode+make+blind+taper+good+reset+indirect+slack+jog | 3 |
+| S2911 | teach_junior_dev+pick+relay+taper+cross+chain+contextualise+sketch+fig | 5 |
+
+**Mean: 3.25/5**
+
+### Findings
+
+**C29-F1: probe+falsify** — falsify presupposes an implementation artifact to gate before; probe produces understanding, not an artifact. falsify in a probe context has no enforcement target. → `task→probe→method→falsify` cautionary: "falsify requires an implementation step to precede; probe produces no artifact for falsify to gate."
+
+**C29-F2: pick+indirect** — pick commits to one answer; indirect withholds direct statement. Structurally opposed: a token that selects one option cannot simultaneously decline to state it. → `task→pick→form→indirect` cautionary: "pick requires an explicit selection; indirect forecloses it."
+
+**C29-F3: twin+svg** — twin form produces two-column parallel prose comparison; svg is markup-only with no prose slot. The witness+abduce reasoning required in S297 has nowhere to render in svg. → `form→twin→channel→svg` cautionary (same mechanism as ghost+svg C28-F3).
+
+**C29-F4: pick+cocreate** — cocreate scaffolds an open-ended iterative co-creation process; pick commits to one final answer. The process form and the decisive task token are in mild friction: a co-creation scaffold implies ongoing iteration, but pick asks for a committed selection now. Note: cocreate+presenterm is *not* a conflict — cocreate governs how the artifact is built (collaboratively), presenterm governs what artifact is being built (slides). → `task→pick→form→cocreate` cautionary: "pick's commitment to one answer conflicts with cocreate's iterative open-ended process."
+
+**C29-F5: reset+good** — reset clears state and starts fresh; good reinforces what's already working. Both are method tokens in the "what's working" domain but operate in opposite directions — you can't simultaneously reinforce existing strengths and reset them. → `method→reset→method→good` cautionary.
+
+### Guide Gap Check
+
+- `bar guide probe` → probe-vs-check, probe-vs-fix: ✓ covered
+- `bar guide falsify` → verify-vs-falsify-vs-gate: ✓ covered
+- `bar guide pick` → converge-vs-pick-vs-prioritize: ✓ covered
+- `bar guide indirect` → no entry. C29-F2 (pick+indirect) needs `pick vs indirect` entry.
+- `bar guide twin` → no entry. C29-F3 points to form+channel incompatibility — extend form-channel cautionary cluster.
+- `bar guide cocreate` → no entry. C29-F4 (pick+cocreate) — pick vs cocreate tension needs entry.
+- `bar guide reset` → no entry. C29-F5 (reset+good) needs `reset vs good` entry.
+- `bar guide good` → no entry. (same as above)
+
+**Guide gaps identified:** 4 new entries needed before cycle 30:
+1. `pick vs indirect` — task commits, form withholds
+2. `twin vs svg` — form+channel structural incompatibility (extend existing cautionary cluster)
+3. `pick vs cocreate` — task commits, form is iterative/open-ended
+4. `reset vs good` — method opposition
+
+### Status
+
+Findings C29-F1 through C29-F5 identified. Guide gaps documented. Apply before cycle 30.

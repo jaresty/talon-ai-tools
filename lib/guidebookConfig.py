@@ -66,6 +66,54 @@ GUIDEBOOK: list[dict[str, Any]] = [
         ),
     },
 
+    {
+        "id": "pick-vs-cocreate",
+        "title": "pick vs cocreate",
+        "tokens": ["pick", "cocreate"],
+        "body": (
+            "**pick** — commits to one final answer: the LLM names one option and "
+            "declares it the selection. Output is a decisive, stated choice.\n\n"
+            "**cocreate** (form) — scaffolds an open-ended, iterative co-creation "
+            "process: the response structures itself as collaborative turns converging "
+            "toward an artifact.\n\n"
+            "Used together, cocreate's scaffold must converge to a decision — the "
+            "collaborative process is not open-ended but aimed at the pick output. "
+            "The final turn must name the selected option explicitly. A cocreate "
+            "scaffold that never commits does not satisfy `pick`."
+        ),
+    },
+    {
+        "id": "pick-vs-indirect",
+        "title": "pick vs indirect",
+        "tokens": ["pick", "indirect"],
+        "body": (
+            "**pick** — selects one option and names it explicitly. The LLM commits "
+            "to a declared choice. Output requires a stated selection.\n\n"
+            "**indirect** (form) — withholds direct statement, hinting or scaffolding "
+            "toward a conclusion rather than declaring it.\n\n"
+            "These conflict: `pick` requires naming the selection; `indirect` forecloses "
+            "naming it. `pick` takes precedence — the selection must be stated. `indirect` "
+            "may govern surrounding framing (context, caveats, approach narration) but "
+            "not the selection itself. A response that only hints at a selection without "
+            "naming it does not satisfy `pick`."
+        ),
+    },
+    {
+        "id": "reset-vs-good",
+        "title": "reset vs good",
+        "tokens": ["reset", "good"],
+        "body": (
+            "**reset** — clears state and starts fresh: discards prior context, "
+            "accumulated assumptions, or approach drift. Output starts from a clean slate.\n\n"
+            "**good** — reinforces what is already working: names and preserves existing "
+            "strengths before making changes.\n\n"
+            "These point in opposite directions on the same material — you can't "
+            "simultaneously clear and reinforce. Used together, treat them as sequential: "
+            "`good` identifies what to preserve *before* `reset` clears everything else. "
+            "Name what survives before naming what is discarded."
+        ),
+    },
+
     # ── Task axis near-neighbors ──────────────────────────────────────────────
 
     {

@@ -198,3 +198,82 @@ func TestAtomicDefinition_NoGranularitiesClause(t *testing.T) {
 		t.Error("atomic definition must not contain the granularities-match clause — it belongs in gate+atomic composition prose, not the atomic definition")
 	}
 }
+
+// Cross-axis composition tests — compositions involving non-method tokens.
+// These verify that ActiveCompositions matches against the full active token set,
+// not only method tokens.
+
+func TestActiveCompositions_PickIndirect(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	active := g.ActiveCompositions(map[string]struct{}{"pick": {}, "indirect": {}})
+	if len(active) == 0 {
+		t.Fatal("expected pick+indirect to activate a composition")
+	}
+	found := false
+	for _, c := range active {
+		if c.Name == "pick+indirect" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected composition named 'pick+indirect', got %v", active)
+	}
+}
+
+func TestActiveCompositions_ProbeFalsify(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	active := g.ActiveCompositions(map[string]struct{}{"probe": {}, "falsify": {}})
+	if len(active) == 0 {
+		t.Fatal("expected probe+falsify to activate a composition")
+	}
+	found := false
+	for _, c := range active {
+		if c.Name == "probe+falsify" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected composition named 'probe+falsify', got %v", active)
+	}
+}
+
+func TestActiveCompositions_ResetGood(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	active := g.ActiveCompositions(map[string]struct{}{"reset": {}, "good": {}})
+	if len(active) == 0 {
+		t.Fatal("expected reset+good to activate a composition")
+	}
+	found := false
+	for _, c := range active {
+		if c.Name == "reset+good" {
+			found = true
+		}
+	}
+	if !found {
+		t.Errorf("expected composition named 'reset+good', got %v", active)
+	}
+}
+
+// End-to-end: bar build pick indirect must inject COMPOSITION RULES section.
+func TestBuildPickIndirectInjectsCompositionRules(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	result := runBuildCLI(t, []string{"build", "pick", "indirect", "--subject", "x"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "COMPOSITION RULES") {
+		t.Errorf("expected COMPOSITION RULES section for pick+indirect, got:\n%s", result.Stdout)
+	}
+}
+
+// End-to-end: bar build probe falsify must inject COMPOSITION RULES section.
+func TestBuildProbeFalsifyInjectsCompositionRules(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	result := runBuildCLI(t, []string{"build", "probe", "falsify", "--subject", "x"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "COMPOSITION RULES") {
+		t.Errorf("expected COMPOSITION RULES section for probe+falsify, got:\n%s", result.Stdout)
+	}
+}

@@ -117049,6 +117049,54 @@
         "chain"
       ],
       "prose": "ground + gate + falsify + atomic + chain (multi-layer work): ground's first artifact is a dependency graph that partitions the work into independent branches — two branches are independent if neither's first step depends on any node in the other. Each node carries an explicit predecessor/successor contract. This graph is required before any branch begins. The protocol's ordering constraint applies within each branch, not across independent branches. Once a shared upstream dependency satisfies its assertions, independent branches must be executed as parallel subagent invocations; parallel execution is available if and only if the execution context supports simultaneous tool calls — if not, name the specific tool or context property that is absent before proceeding sequentially; a statement of unavailability without a named absent property does not satisfy this condition. Each subagent runs gate+falsify+atomic+chain on its assigned branch; ground is the orchestrating protocol and its dependency graph is not re-derived within a branch. When asserting layer boundaries, structural impossibility (the assertion cannot be written) and pressure to stop early (a high-quality intermediate creates a false sense of completion) are distinct failure modes with different causes; they are not resolved by the same intervention."
+    },
+    {
+      "name": "ghost+svg",
+      "tokens": [
+        "ghost",
+        "svg"
+      ],
+      "prose": "ghost + svg: ghost produces a step-by-step execution trace in prose — each step names what was done and what result was produced. svg is a markup-only channel with no prose slot. The trace narrative ghost requires has nowhere to render in svg. When ghost and svg appear together, the ghost trace must appear as a separate prose block before the svg artifact; embedding trace commentary inside svg markup does not satisfy ghost's requirement for a readable execution narrative."
+    },
+    {
+      "name": "twin+svg",
+      "tokens": [
+        "twin",
+        "svg"
+      ],
+      "prose": "twin + svg: twin form produces a two-column parallel prose comparison — each column runs a distinct analytical lens on the same subject. svg is markup-only with no prose slot for column content. The prose comparison twin requires has no valid rendering target inside svg. Same mechanism as ghost+svg: the form demands prose structure that the channel structurally cannot hold. When twin and svg appear together, the twin comparison must appear as a prose block before or after the svg artifact."
+    },
+    {
+      "name": "probe+falsify",
+      "tokens": [
+        "probe",
+        "falsify"
+      ],
+      "prose": "probe + falsify: falsify requires an implementation artifact to precede it — the artifact must fire against the absent behavior (FAIL) before any implementation step. probe produces understanding, not an implementation artifact. There is no implementation step for falsify to gate before. When probe and falsify appear together, falsify applies only if the probe output leads to an implementation step within the same response; if the response is analysis only, falsify has no target and is silently inapplicable."
+    },
+    {
+      "name": "pick+indirect",
+      "tokens": [
+        "pick",
+        "indirect"
+      ],
+      "prose": "pick + indirect: pick requires an explicit committed selection — the LLM names one option and commits to it. indirect withholds direct statement, hinting rather than declaring. These conflict: a token that selects one option cannot simultaneously decline to state it. Resolution: pick takes precedence — the selection must be named explicitly. indirect may govern surrounding framing (context, caveats, approach) but not the selection itself. A response that hints at a selection without naming it does not satisfy pick."
+    },
+    {
+      "name": "pick+cocreate",
+      "tokens": [
+        "pick",
+        "cocreate"
+      ],
+      "prose": "pick + cocreate: cocreate scaffolds an open-ended iterative co-creation process; pick commits to one final answer. These are in mild tension: the co-creation form implies ongoing iteration and dialogue, while pick asks for a committed selection. Resolution: structure the cocreate scaffold toward a decision point — the collaborative process converges to the pick output rather than remaining open-ended. The final cocreate turn must name the picked option explicitly. A cocreate scaffold that never commits to a selection does not satisfy pick."
+    },
+    {
+      "name": "reset+good",
+      "tokens": [
+        "reset",
+        "good"
+      ],
+      "prose": "reset + good: reset clears state and starts fresh, discarding prior context; good reinforces what is already working, building on existing strengths. These operate in opposite directions on the same material — you cannot simultaneously clear and reinforce. Resolution: treat them as sequential rather than simultaneous — good identifies what to preserve before reset clears everything else. The response must name what is being preserved (good) before naming what is being cleared (reset); a response that resets without first identifying preserved strengths does not satisfy good."
     }
   ],
   "guidebook": [
@@ -117076,6 +117124,33 @@
         "vet"
       ],
       "body": "**vet** — a *post-experiment review*: interprets what happened relative to prior expectations, surfaces what was learned, and proposes what follows. Output is a reflective synthesis — it requires a hypothesis or plan to compare against.\n\n**check** — evaluates a subject against a *specific condition* in the present. Output is a pass/fail verdict. It does not require prior expectations.\n\nUse `vet` when you have run something and want to interpret the results relative to what you expected. Use `check` when you have a named criterion and want to know whether a subject satisfies it — no prior hypothesis needed."
+    },
+    {
+      "id": "pick-vs-cocreate",
+      "title": "pick vs cocreate",
+      "tokens": [
+        "pick",
+        "cocreate"
+      ],
+      "body": "**pick** — commits to one final answer: the LLM names one option and declares it the selection. Output is a decisive, stated choice.\n\n**cocreate** (form) — scaffolds an open-ended, iterative co-creation process: the response structures itself as collaborative turns converging toward an artifact.\n\nUsed together, cocreate's scaffold must converge to a decision — the collaborative process is not open-ended but aimed at the pick output. The final turn must name the selected option explicitly. A cocreate scaffold that never commits does not satisfy `pick`."
+    },
+    {
+      "id": "pick-vs-indirect",
+      "title": "pick vs indirect",
+      "tokens": [
+        "pick",
+        "indirect"
+      ],
+      "body": "**pick** — selects one option and names it explicitly. The LLM commits to a declared choice. Output requires a stated selection.\n\n**indirect** (form) — withholds direct statement, hinting or scaffolding toward a conclusion rather than declaring it.\n\nThese conflict: `pick` requires naming the selection; `indirect` forecloses naming it. `pick` takes precedence — the selection must be stated. `indirect` may govern surrounding framing (context, caveats, approach narration) but not the selection itself. A response that only hints at a selection without naming it does not satisfy `pick`."
+    },
+    {
+      "id": "reset-vs-good",
+      "title": "reset vs good",
+      "tokens": [
+        "reset",
+        "good"
+      ],
+      "body": "**reset** — clears state and starts fresh: discards prior context, accumulated assumptions, or approach drift. Output starts from a clean slate.\n\n**good** — reinforces what is already working: names and preserves existing strengths before making changes.\n\nThese point in opposite directions on the same material — you can't simultaneously clear and reinforce. Used together, treat them as sequential: `good` identifies what to preserve *before* `reset` clears everything else. Name what survives before naming what is discarded."
     },
     {
       "id": "probe-vs-check",
@@ -117339,7 +117414,7 @@
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "1f779f51c8a4ca34cb618093d18e1bb74414477d77be2bc2e95bbc4228a0cf04",
     "sequences": "1d0200e2782a0778fdaf6d6bc5ebaef8577d8bf382f3a1f2eff4266934feb138",
-    "compositions": "2b2d8636c08e6dbe087ca2e03e4a7bdec98118e8e63548ffe79091c906e3f410",
-    "guidebook": "0f2553e9dad911f811fcbde14ac79fe5d35d7770e0435cb68fc4ae0ddce4f8eb"
+    "compositions": "70fb3b3a230cc117e06bdb4dd82f84e55c71f8502cb69e9f0b12b86e43962607",
+    "guidebook": "7b725d1d1cd3a3c8c908daa932d225f27bf7867f631ed554d70e8d27d078f96b"
   }
 }

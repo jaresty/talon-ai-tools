@@ -1,7 +1,18 @@
-# ADR-0227: Pairwise token compositions.
+# ADR-0227: Pairwise token compositions — application-time behavioral rules.
 #
-# Each composition defines prompt text injected into the COMPOSITION RULES section
-# when all tokens in its set are co-present in a bar build command.
+# PURPOSE: These entries govern how the LLM behaves when tokens are *already co-present*
+# in a bar build command. They are injected into the COMPOSITION RULES section of the
+# prompt at runtime. They are NOT for discovery (use guidebookConfig.py for that).
+#
+# Discovery layer (token selection guidance): guidebookConfig.py → `bar guide <token>`
+# Application layer (co-presence resolution):  this file → injected into COMPOSITION RULES
+#
+# Each entry answers: "given these tokens are already selected, how should the LLM
+# resolve their interaction?" Entries typically cover:
+#   - Precedence (one token takes priority over another)
+#   - Sequencing (apply one before the other)
+#   - Scope restriction (token A applies everywhere except where token B governs)
+#
 # Compositions are pairwise — each activates independently for partial combinations.
 
 from typing import Any
@@ -195,6 +206,86 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "written) and pressure to stop early (a high-quality intermediate creates a "
             "false sense of completion) are distinct failure modes with different causes; "
             "they are not resolved by the same intervention."
+        ),
+    },
+    {
+        "name": "ghost+svg",
+        "tokens": ["ghost", "svg"],
+        "prose": (
+            "ghost + svg: ghost produces a step-by-step execution trace in prose — "
+            "each step names what was done and what result was produced. svg is a "
+            "markup-only channel with no prose slot. The trace narrative ghost requires "
+            "has nowhere to render in svg. When ghost and svg appear together, the "
+            "ghost trace must appear as a separate prose block before the svg artifact; "
+            "embedding trace commentary inside svg markup does not satisfy ghost's "
+            "requirement for a readable execution narrative."
+        ),
+    },
+    {
+        "name": "twin+svg",
+        "tokens": ["twin", "svg"],
+        "prose": (
+            "twin + svg: twin form produces a two-column parallel prose comparison — "
+            "each column runs a distinct analytical lens on the same subject. svg is "
+            "markup-only with no prose slot for column content. The prose comparison "
+            "twin requires has no valid rendering target inside svg. Same mechanism as "
+            "ghost+svg: the form demands prose structure that the channel structurally "
+            "cannot hold. When twin and svg appear together, the twin comparison must "
+            "appear as a prose block before or after the svg artifact."
+        ),
+    },
+    {
+        "name": "probe+falsify",
+        "tokens": ["probe", "falsify"],
+        "prose": (
+            "probe + falsify: falsify requires an implementation artifact to precede it — "
+            "the artifact must fire against the absent behavior (FAIL) before any "
+            "implementation step. probe produces understanding, not an implementation "
+            "artifact. There is no implementation step for falsify to gate before. When "
+            "probe and falsify appear together, falsify applies only if the probe output "
+            "leads to an implementation step within the same response; if the response "
+            "is analysis only, falsify has no target and is silently inapplicable."
+        ),
+    },
+    {
+        "name": "pick+indirect",
+        "tokens": ["pick", "indirect"],
+        "prose": (
+            "pick + indirect: pick requires an explicit committed selection — the LLM names "
+            "one option and commits to it. indirect withholds direct statement, hinting rather "
+            "than declaring. These conflict: a token that selects one option cannot "
+            "simultaneously decline to state it. Resolution: pick takes precedence — the "
+            "selection must be named explicitly. indirect may govern surrounding framing "
+            "(context, caveats, approach) but not the selection itself. A response that "
+            "hints at a selection without naming it does not satisfy pick."
+        ),
+    },
+    {
+        "name": "pick+cocreate",
+        "tokens": ["pick", "cocreate"],
+        "prose": (
+            "pick + cocreate: cocreate scaffolds an open-ended iterative co-creation "
+            "process; pick commits to one final answer. These are in mild tension: the "
+            "co-creation form implies ongoing iteration and dialogue, while pick asks for "
+            "a committed selection. Resolution: structure the cocreate scaffold toward a "
+            "decision point — the collaborative process converges to the pick output rather "
+            "than remaining open-ended. The final cocreate turn must name the picked option "
+            "explicitly. A cocreate scaffold that never commits to a selection does not "
+            "satisfy pick."
+        ),
+    },
+    {
+        "name": "reset+good",
+        "tokens": ["reset", "good"],
+        "prose": (
+            "reset + good: reset clears state and starts fresh, discarding prior context; "
+            "good reinforces what is already working, building on existing strengths. These "
+            "operate in opposite directions on the same material — you cannot simultaneously "
+            "clear and reinforce. Resolution: treat them as sequential rather than "
+            "simultaneous — good identifies what to preserve before reset clears everything "
+            "else. The response must name what is being preserved (good) before naming what "
+            "is being cleared (reset); a response that resets without first identifying "
+            "preserved strengths does not satisfy good."
         ),
     },
 ]

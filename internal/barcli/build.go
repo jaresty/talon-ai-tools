@@ -1025,13 +1025,34 @@ func (s *buildState) toResult() *BuildResult {
 		result.HydratedPersona = append([]HydratedPromptlet(nil), s.hydratedPersona...)
 	}
 
-	// ADR-0227: populate active compositions from method token co-presence.
-	if len(s.grammar.Compositions) > 0 && len(s.method) > 0 {
-		methodSet := make(map[string]struct{}, len(s.method))
-		for _, tok := range s.method {
-			methodSet[tok] = struct{}{}
+	// ADR-0227: populate active compositions from full token co-presence (all axes).
+	if len(s.grammar.Compositions) > 0 {
+		allTokens := make(map[string]struct{})
+		if s.static != "" {
+			allTokens[s.static] = struct{}{}
 		}
-		if active := s.grammar.ActiveCompositions(methodSet); len(active) > 0 {
+		if s.topology != "" {
+			allTokens[s.topology] = struct{}{}
+		}
+		if s.completeness != "" {
+			allTokens[s.completeness] = struct{}{}
+		}
+		for _, tok := range s.scope {
+			allTokens[tok] = struct{}{}
+		}
+		for _, tok := range s.method {
+			allTokens[tok] = struct{}{}
+		}
+		for _, tok := range s.form {
+			allTokens[tok] = struct{}{}
+		}
+		for _, tok := range s.channel {
+			allTokens[tok] = struct{}{}
+		}
+		if s.directional != "" {
+			allTokens[s.directional] = struct{}{}
+		}
+		if active := s.grammar.ActiveCompositions(allTokens); len(active) > 0 {
 			result.ActiveCompositions = active
 		}
 	}

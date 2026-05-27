@@ -142,11 +142,11 @@ export function renderPrompt(
 		parts.push(constraintLines.join('\n') + '\n\n');
 	}
 
-	// ADR-0227: COMPOSITION RULES section — injected when active method token co-presence activates a composition.
+	// ADR-0227: COMPOSITION RULES section — injected when active token co-presence activates a composition (all axes).
 	if (grammar.compositions && grammar.compositions.length > 0) {
-		const activeMethodTokens = new Set(selected['method'] ?? []);
+		const allActiveTokens = new Set<string>(Object.values(selected).flat());
 		const activeCompositions = grammar.compositions.filter((c) =>
-			c.tokens.every((t) => activeMethodTokens.has(t))
+			c.tokens.every((t) => allActiveTokens.has(t))
 		);
 		if (activeCompositions.length > 0) {
 			parts.push(`=== COMPOSITION RULES 合成 (CO-PRESENCE) ===\n`);

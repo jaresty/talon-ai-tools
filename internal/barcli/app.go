@@ -483,6 +483,9 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 				line += fmt.Sprintf("  [%d steps → bar sequence show %s]", len(seq.Steps), r.Token)
 			}
 		}
+		if r.HasGuide {
+			line += "  [guide]"
+		}
 		if r.MatchedField != "" && r.MatchedField != "bm25" && r.MatchedText != "" {
 			line += fmt.Sprintf("  [matched %s: %q]", r.MatchedField, r.MatchedText)
 		}

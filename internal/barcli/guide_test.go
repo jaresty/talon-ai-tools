@@ -75,6 +75,34 @@ func TestRunGuideUnknownToken(t *testing.T) {
 	}
 }
 
+// Behavior 6: bar help llm navigation output contains "bar guide <token>".
+func TestHelpLLMGuideCommand(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	var buf bytes.Buffer
+	renderNavigationGuide(&buf, grammar)
+	out := buf.String()
+	if !strings.Contains(out, "bar guide") {
+		t.Errorf("bar help llm navigation: want 'bar guide' in output, got none\noutput:\n%s", out)
+	}
+}
+
+// Behavior 7: bar lookup printed output includes [guide] annotation when HasGuide=true.
+func TestLookupGuideAnnotation(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	opts := &cli.Config{Command: "lookup", Tokens: []string{"probe"}}
+	code := runLookup(opts, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("runLookup probe: exit %d stderr=%s", code, stderr.String())
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "[guide]") {
+		t.Errorf("bar lookup 'probe': want '[guide]' annotation in output for token with guide entry, got none\noutput:\n%s", out)
+	}
+}
+
 // Behavior 5: LookupResult.HasGuide is true for probe, which has a guide entry.
 func TestLookupResultHasGuide(t *testing.T) {
 	grammar, err := LoadGrammar("")

@@ -101,8 +101,10 @@ it without fighting hover height limits, and gives guide content a clear, perman
 - Hover chip → lightweight panel (description only, transient)
 - Click `?` icon → full reference panel (persistent, scrollable)
 
-The `?` icon appears on every token with metadata. Tokens without metadata (rare) show no icon.
-Guide entries appear as an additional section within the full reference panel, after distinctions.
+The `?` icon appears on every token with metadata (definition, heuristics, distinctions — which
+covers most tokens). Tokens without metadata (rare) show no icon. Guide entries appear as an
+additional section within the full reference panel, after distinctions, and are only shown when a
+guidebook entry exists for that token.
 
 ### Why not the review panel chip gutter
 
@@ -223,7 +225,8 @@ a guidebook entry exists for that token.
 
 - **Risk**: `?` icon adds visual noise to the axis selection panels.
   Mitigation: the icon is small and secondary; it appears on all tokens with metadata (most
-  tokens), so it becomes a consistent affordance rather than a sporadic signal.
+  tokens), so it becomes a consistent affordance rather than a sporadic signal. Guidebook entries
+  appear only where authored — the icon's presence does not imply a guide entry exists.
 - **Risk**: Touch target sizing on mobile for the `?` icon alongside a short token label.
   Mitigation: allocate a fixed icon zone of ≥44px regardless of label length; test on mobile
   viewport before shipping.

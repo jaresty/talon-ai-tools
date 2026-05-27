@@ -505,7 +505,7 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 	}
 	if len(results) > 0 {
 		fmt.Fprintln(stdout)
-		fmt.Fprintln(stdout, "Tip: bar help token <name> shows the full definition, heuristics, and distinctions for any token. For sequences: bar sequence show <name>.")
+		fmt.Fprintln(stdout, "Tip: bar help token <name> shows the full definition, heuristics, and distinctions for any token. For sequences: bar sequence show <name>. For disambiguation: bar guide <name>.")
 	}
 	return 0
 }

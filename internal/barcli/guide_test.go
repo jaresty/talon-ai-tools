@@ -89,6 +89,20 @@ func TestHelpLLMGuideCommand(t *testing.T) {
 	}
 }
 
+// Behavior 8: bar lookup tip line mentions "bar guide <name>" for disambiguation.
+func TestLookupTipMentionsGuide(t *testing.T) {
+	var stdout, stderr bytes.Buffer
+	opts := &cli.Config{Command: "lookup", Tokens: []string{"probe"}}
+	code := runLookup(opts, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("runLookup probe: exit %d stderr=%s", code, stderr.String())
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "bar guide") {
+		t.Errorf("bar lookup tip: want 'bar guide' in tip line, got none\noutput:\n%s", out)
+	}
+}
+
 // Behavior 7: bar lookup printed output includes [guide] annotation when HasGuide=true.
 func TestLookupGuideAnnotation(t *testing.T) {
 	var stdout, stderr bytes.Buffer

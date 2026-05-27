@@ -1,3 +1,11 @@
+// ADR-0237: Token Guidebook entry.
+export interface GuideEntry {
+	id: string;
+	title: string;
+	tokens: string[];
+	body: string;
+}
+
 export interface StarterPack {
 	name: string;
 	framing: string;
@@ -94,6 +102,7 @@ export interface Grammar {
 	patterns?: GrammarPattern[];
 	starter_packs?: StarterPack[]; // ADR-0144 Phase 2
 	compositions?: GrammarComposition[]; // ADR-0227
+	guidebook?: GuideEntry[]; // ADR-0237
 	reference_key: {
 		task: string;
 		addendum: string;
@@ -118,6 +127,7 @@ export interface TokenMeta {
 	category: string; // ADR-0144: semantic family for method tokens; empty for other axes
 	routing_concept: string; // ADR-0146: distilled routing concept phrase
 	metadata: TaskMetadata | null; // ADR-0154: structured definition, heuristics, distinctions
+	guides: GuideEntry[]; // ADR-0237: guidebook entries for this token
 }
 
 import { base } from '$app/paths';
@@ -132,6 +142,18 @@ export async function loadGrammar(): Promise<Grammar> {
 	return cached!;
 }
 
+// buildGuideIndex returns a map from token slug → guide entries for that token (ADR-0237).
+function buildGuideIndex(grammar: Grammar): Map<string, GuideEntry[]> {
+	const index = new Map<string, GuideEntry[]>();
+	for (const entry of grammar.guidebook ?? []) {
+		for (const token of entry.tokens) {
+			if (!index.has(token)) index.set(token, []);
+			index.get(token)!.push(entry);
+		}
+	}
+	return index;
+}
+
 export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 	const defs = grammar.axes.definitions[axis] ?? {};
 	const labels = grammar.axes.labels?.[axis] ?? {};
@@ -141,6 +163,7 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 	const categories = grammar.axes.categories?.[axis] ?? {};
 	const routing_concepts = grammar.axes.routing_concept?.[axis] ?? {};
 	const axisMetadata = grammar.axes.metadata?.[axis] ?? {};
+	const guideIndex = buildGuideIndex(grammar);
 	return Object.keys(defs)
 		.sort()
 		.map((token) => ({
@@ -152,7 +175,8 @@ export function getAxisTokens(grammar: Grammar, axis: string): TokenMeta[] {
 			kanji: kanji[token] ?? '',
 			category: categories[token] ?? '',
 			routing_concept: routing_concepts[token] ?? '',
-			metadata: axisMetadata[token] ?? null
+			metadata: axisMetadata[token] ?? null,
+			guides: guideIndex.get(token) ?? []
 		}));
 }
 
@@ -190,6 +214,7 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 	const kanji = grammar.tasks.kanji ?? {};
 	const routing_concepts = grammar.tasks.routing_concept ?? {};
 	const metadata = grammar.tasks.metadata ?? {};
+	const guideIndex = buildGuideIndex(grammar);
 	return Object.keys(descs)
 		.sort()
 		.map((token) => ({
@@ -201,7 +226,8 @@ export function getTaskTokens(grammar: Grammar): TokenMeta[] {
 			kanji: kanji[token] ?? '',
 			category: '',
 			routing_concept: routing_concepts[token] ?? '',
-			metadata: metadata[token] ?? null
+			metadata: metadata[token] ?? null,
+			guides: guideIndex.get(token) ?? []
 		}));
 }
 
@@ -250,7 +276,8 @@ export function getPersonaAxisTokensMeta(grammar: Grammar, axis: 'voice' | 'audi
 		kanji: kanji[token] ?? '',
 		category: '',
 		routing_concept: routing_concepts[token] ?? '',
-		metadata: personaMetadata[token] ?? null  // ADR-0156
+		metadata: personaMetadata[token] ?? null, // ADR-0156
+		guides: []
 	}));
 }
 

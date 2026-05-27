@@ -49,6 +49,7 @@ type Grammar struct {
 	Patterns        []GrammarPattern
 	StarterPacks    []StarterPack
 	Compositions    []Composition // ADR-0227
+	Guides          []GuideEntry  // ADR-0237
 	axisTokens      map[string]map[string]struct{}
 	axisDocs        map[string]map[string]string
 	axisPriority    []string
@@ -189,6 +190,7 @@ type rawGrammar struct {
 	Patterns      []GrammarPattern    `json:"patterns"`
 	StarterPacks  []StarterPack       `json:"starter_packs"`
 	Compositions  []Composition       `json:"compositions"` // ADR-0227
+	Guidebook     []GuideEntry        `json:"guidebook"`    // ADR-0237
 }
 
 type rawAxisSection struct {
@@ -302,6 +304,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 		Patterns:          raw.Patterns,
 		StarterPacks:  raw.StarterPacks,
 		Compositions:  raw.Compositions,
+		Guides:        raw.Guidebook,
 		Axes: AxisSection{
 			Definitions:    raw.Axes.Definitions,
 			ListTokens:     raw.Axes.ListTokens,

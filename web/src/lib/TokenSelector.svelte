@@ -56,6 +56,20 @@
 	// ADR-0155 T-1: token referenced by the currently hovered distinction entry
 	let hoveredDistinctionToken = $state<string | null>(null);
 
+	// ADR-0237: token whose full reference panel (? panel) is currently open
+	let guideToken = $state<string | null>(null);
+	let guideMeta = $derived(tokens.find((t) => t.token === guideToken) ?? null);
+
+	// Render inline markdown (**bold**, *italic*, `code`) to HTML for guide bodies.
+	function renderMarkdown(text: string): string {
+		return text
+			.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+			.replace(/\*(.+?)\*/g, '<em>$1</em>')
+			.replace(/`([^`]+)`/g, '<code>$1</code>')
+			.replace(/\n\n/g, '</p><p class="guide-body">')
+			.replace(/\n/g, '<br>');
+	}
+
 	// True when any token has a non-empty category — enables grouped rendering
 	let hasCategoryGroups = $derived(tokens.some((t) => t.category));
 
@@ -470,11 +484,15 @@
 						{#if meta.label}
 							<span class="token-label">{meta.label}</span>
 						{/if}
-						{#if meta.use_when || meta.metadata}
-							<span class="use-when-dot">●</span>
-						{/if}
 						{#if meta.routing_concept}
 							<span class="routing-concept">{meta.routing_concept}</span>
+						{/if}
+						{#if meta.metadata}
+							<!-- svelte-ignore a11y_click_events_have_key_events -->
+							<span class="guide-icon" role="button" aria-label="Open reference for {meta.token}"
+								onclick={(e) => { e.stopPropagation(); guideToken = guideToken === meta.token ? null : meta.token; activeToken = null; }}
+								onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); guideToken = guideToken === meta.token ? null : meta.token; activeToken = null; } }}
+							>?</span>
 						{/if}
 					</div>
 				{/each}
@@ -526,11 +544,15 @@
 					{#if meta.label}
 						<span class="token-label">{meta.label}</span>
 					{/if}
-					{#if meta.use_when || meta.metadata}
-						<span class="use-when-dot">●</span>
-					{/if}
 					{#if meta.routing_concept}
 						<span class="routing-concept">{meta.routing_concept}</span>
+					{/if}
+					{#if meta.metadata}
+						<!-- svelte-ignore a11y_click_events_have_key_events -->
+						<span class="guide-icon" role="button" aria-label="Open reference for {meta.token}"
+							onclick={(e) => { e.stopPropagation(); guideToken = guideToken === meta.token ? null : meta.token; activeToken = null; }}
+							onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); e.stopPropagation(); guideToken = guideToken === meta.token ? null : meta.token; activeToken = null; } }}
+						>?</span>
 					{/if}
 				</div>
 			{/each}
@@ -558,29 +580,7 @@
 				{#if activeMeta.description}
 					<p class="meta-description">{activeMeta.description}</p>
 				{/if}
-				{#if activeMeta.metadata}
-					{#if activeMeta.metadata.heuristics.length > 0}
-						<div class="meta-section">
-							<span class="meta-section-label">Heuristics</span>
-							<div class="meta-heuristics">
-								{#each activeMeta.metadata.heuristics as h}
-									<span class="meta-heuristic-chip">{h}</span>
-								{/each}
-							</div>
-						</div>
-					{/if}
-					{#if activeMeta.metadata.distinctions.length > 0}
-						<div class="meta-section meta-distinctions">
-							<span class="meta-section-label">Distinctions</span>
-							{#each activeMeta.metadata.distinctions as d}
-								<p class="meta-distinction-entry"
-									onmouseenter={() => hoveredDistinctionToken = d.token}
-									onmouseleave={() => hoveredDistinctionToken = null}
-								><code>{d.token}</code> — {d.note}</p>
-							{/each}
-						</div>
-					{/if}
-				{:else}
+				{#if !activeMeta.metadata}
 					{#if activeMeta.use_when}
 						<div class="meta-section">
 							<span class="meta-section-label">When to use</span>
@@ -632,6 +632,71 @@
 					onclick={() => { onToggle(activeMeta!.token); activeToken = null; }}
 				>
 					{#if isActiveSel}✓ Deselect{:else if atCap}At limit{:else}Select ↵{/if}
+				</button>
+			</div>
+		</div>
+	{/if}
+
+	{#if guideMeta}
+		{@const isGuideSel = selected.includes(guideMeta.token)}
+		{@const atGuideCap = !isGuideSel && selected.length >= maxSelect && maxSelect > 1}
+		{@const guideDesc = guideMeta.metadata?.definition || guideMeta.description}
+		<div class="guide-panel">
+			<div class="meta-header">
+				{#if guideMeta.kanji}
+					<span class="meta-kanji">{guideMeta.kanji}</span>
+				{/if}
+				<code class="meta-token">{guideMeta.token}</code>
+				{#if guideMeta.label}
+					<span class="meta-label">{guideMeta.label}</span>
+				{/if}
+				<button class="meta-close" onclick={() => (guideToken = null)}>✕</button>
+			</div>
+			<div class="meta-body">
+				{#if guideDesc}
+					<p class="meta-description">{guideDesc}</p>
+				{/if}
+				{#if guideMeta.metadata}
+					{#if guideMeta.metadata.heuristics.length > 0}
+						<div class="meta-section">
+							<span class="meta-section-label">Heuristics</span>
+							<div class="meta-heuristics">
+								{#each guideMeta.metadata.heuristics as h}
+									<span class="meta-heuristic-chip">{h}</span>
+								{/each}
+							</div>
+						</div>
+					{/if}
+					{#if guideMeta.metadata.distinctions.length > 0}
+						<div class="meta-section meta-distinctions">
+							<span class="meta-section-label">Distinctions</span>
+							{#each guideMeta.metadata.distinctions as d}
+								<p class="meta-distinction-entry"
+									onmouseenter={() => hoveredDistinctionToken = d.token}
+									onmouseleave={() => hoveredDistinctionToken = null}
+								><code>{d.token}</code> — {d.note}</p>
+							{/each}
+						</div>
+					{/if}
+				{/if}
+				{#if guideMeta.guides && guideMeta.guides.length > 0}
+					{#each guideMeta.guides as entry}
+						<div class="meta-section guide-entry">
+							<span class="meta-section-label">{entry.title}</span>
+							<!-- eslint-disable-next-line svelte/no-at-html-tags -->
+							<p class="guide-body">{@html renderMarkdown(entry.body)}</p>
+						</div>
+					{/each}
+				{/if}
+			</div>
+			<div class="meta-footer">
+				<button
+					class="meta-select-btn"
+					class:selected={isGuideSel}
+					disabled={atGuideCap}
+					onclick={() => { onToggle(guideMeta!.token); guideToken = null; }}
+				>
+					{#if isGuideSel}✓ Deselect{:else if atGuideCap}At limit{:else}Select ↵{/if}
 				</button>
 			</div>
 		</div>
@@ -724,13 +789,14 @@
 		align-items: center;
 		flex-wrap: wrap;
 		gap: 0.3rem;
-		padding: 0.25rem 0.5rem;
+		padding: 0.25rem 1.6rem 0.25rem 0.5rem;
 		background: var(--color-surface);
 		border: 1px solid var(--color-border);
 		border-radius: var(--radius);
 		cursor: pointer;
 		transition: border-color 0.1s, background 0.1s;
 		user-select: none;
+		position: relative;
 	}
 
 	.token-chip:hover:not(.disabled) {
@@ -795,10 +861,53 @@
 		white-space: nowrap;
 	}
 
-	.use-when-dot {
-		font-size: 0.5rem;
+	/* ADR-0237: ? guide icon — absolutely positioned in top-right of chip, does not affect flex layout */
+	.guide-icon {
+		position: absolute;
+		top: 50%;
+		right: 0.3rem;
+		transform: translateY(-50%);
+		font-size: 0.6rem;
+		font-weight: 700;
 		color: var(--color-accent);
 		line-height: 1;
+		padding: 0.1rem 0.2rem;
+		border: 1px solid var(--color-accent);
+		border-radius: 3px;
+		cursor: pointer;
+		user-select: none;
+		background: var(--color-surface);
+	}
+
+	.guide-icon:hover {
+		background: var(--color-accent-muted);
+	}
+
+	/* ADR-0237: guide panel — full reference panel (desktop: fixed anchored; mobile: slide-up) */
+	.guide-panel {
+		padding: 0.75rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-accent-muted);
+		border-radius: var(--radius);
+		font-size: 0.8rem;
+		line-height: 1.5;
+		display: flex;
+		flex-direction: column;
+		position: fixed;
+		bottom: 3rem;
+		right: 1rem;
+		width: min(480px, calc(100vw - 2rem));
+		max-height: 70vh;
+		overflow: hidden;
+		z-index: 150;
+	}
+
+	.guide-body {
+		margin: 0.3rem 0 0 0;
+		color: var(--color-text);
+		font-size: 0.8rem;
+		line-height: 1.5;
+		white-space: pre-wrap;
 	}
 
 	/* ADR-0146: routing concept subtitle — same visual weight as chip label, not artificially dimmed */
@@ -1013,6 +1122,33 @@
 	}
 
 	@media (max-width: 767px) {
+		.guide-icon {
+			/* Expand tap target to 44px without inflating chip — invisible padding */
+			padding: 0.8rem 0.5rem;
+			font-size: 0.7rem;
+		}
+
+		.guide-panel {
+			position: fixed;
+			bottom: 0;
+			top: auto;
+			left: 0;
+			right: 0;
+			width: 100%;
+			margin: 0;
+			border-radius: var(--radius) var(--radius) 0 0;
+			border-left: none;
+			border-right: none;
+			border-bottom: none;
+			border-top: 2px solid var(--color-accent);
+			max-height: 70vh;
+			z-index: 200;
+			font-size: 1rem;
+			line-height: 1.6;
+			padding-bottom: 0;
+			overscroll-behavior: contain;
+		}
+
 		.token-grid {
 			grid-template-columns: 1fr;
 		}

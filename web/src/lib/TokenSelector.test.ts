@@ -145,11 +145,11 @@ describe('TokenSelector — D2 metadata panel', () => {
 		expect(screen.getByText('prose')).toBeTruthy();
 	});
 
-	it('shows dot indicator for tokens with use_when', () => {
+	it('shows no guide-icon for tokens without metadata', () => {
 		renderSelector();
-		// wardley has use_when, prose does not
-		const dots = document.querySelectorAll('.use-when-dot');
-		expect(dots.length).toBe(1);
+		// wardley and prose have no metadata field → no guide-icon shown
+		const icons = document.querySelectorAll('.guide-icon');
+		expect(icons.length).toBe(0);
 	});
 
 	it('metadata panel is hidden initially', () => {
@@ -1740,7 +1740,7 @@ const axisTokenNoMetadata = {
 };
 
 describe('TokenSelector — ADR-0154 structured metadata panel', () => {
-	it('task token panel shows Heuristics section with trigger phrases', async () => {
+	it('task token guide panel shows Heuristics section with trigger phrases', async () => {
 		render(TokenSelector, {
 			props: {
 				axis: 'task',
@@ -1750,14 +1750,14 @@ describe('TokenSelector — ADR-0154 structured metadata panel', () => {
 				onToggle: vi.fn()
 			}
 		});
-		const chip = document.querySelector('[data-token="probe"]')!;
-		await fireEvent.click(chip);
+		const guideIcon = document.querySelector('[data-token="probe"] .guide-icon')!;
+		await fireEvent.click(guideIcon);
 		expect(screen.getByText('Heuristics')).toBeTruthy();
 		expect(screen.getByText('analyze')).toBeTruthy();
 		expect(screen.getByText('debug')).toBeTruthy();
 	});
 
-	it('task token panel shows Distinctions section with token→note pairs', async () => {
+	it('task token guide panel shows Distinctions section with token→note pairs', async () => {
 		render(TokenSelector, {
 			props: {
 				axis: 'task',
@@ -1767,8 +1767,8 @@ describe('TokenSelector — ADR-0154 structured metadata panel', () => {
 				onToggle: vi.fn()
 			}
 		});
-		const chip = document.querySelector('[data-token="probe"]')!;
-		await fireEvent.click(chip);
+		const guideIcon = document.querySelector('[data-token="probe"] .guide-icon')!;
+		await fireEvent.click(guideIcon);
 		expect(screen.getByText('Distinctions')).toBeTruthy();
 		expect(screen.getByText(/probe = analyze broadly; pull = extract subset/)).toBeTruthy();
 	});
@@ -1804,8 +1804,8 @@ describe('TokenSelector — ADR-0154 structured metadata panel', () => {
 		expect(screen.getByText('Use when a Wardley map output is needed.')).toBeTruthy();
 	});
 
-	// T-10 (ADR-0154): chip dot indicator shows for task tokens with structured metadata
-	it('task token chip shows use-when-dot when metadata is present (no use_when string)', () => {
+	// T-10 (ADR-0237): guide-icon shows for task tokens with structured metadata
+	it('task token chip shows guide-icon when metadata is present', () => {
 		render(TokenSelector, {
 			props: {
 				axis: 'task',
@@ -1815,11 +1815,11 @@ describe('TokenSelector — ADR-0154 structured metadata panel', () => {
 				onToggle: vi.fn()
 			}
 		});
-		const dots = document.querySelectorAll('.use-when-dot');
-		expect(dots.length).toBe(1);
+		const icons = document.querySelectorAll('.guide-icon');
+		expect(icons.length).toBe(1);
 	});
 
-	it('axis token chip shows NO use-when-dot when use_when is empty and metadata is null', () => {
+	it('axis token chip shows NO guide-icon when metadata is null', () => {
 		const axisNoUseWhen = { ...axisTokenNoMetadata, use_when: '', metadata: null };
 		render(TokenSelector, {
 			props: {
@@ -1830,8 +1830,8 @@ describe('TokenSelector — ADR-0154 structured metadata panel', () => {
 				onToggle: vi.fn()
 			}
 		});
-		const dots = document.querySelectorAll('.use-when-dot');
-		expect(dots.length).toBe(0);
+		const icons = document.querySelectorAll('.guide-icon');
+		expect(icons.length).toBe(0);
 	});
 });
 
@@ -1882,9 +1882,9 @@ describe('TokenSelector — ADR-0155 distinction chip highlight', () => {
 				onToggle: vi.fn()
 			}
 		});
-		// Open probe's meta panel
-		const probeChip = document.querySelector('[data-token="probe"]')!;
-		await fireEvent.click(probeChip);
+		// Open probe's guide panel (distinctions live in guide panel, not hover panel)
+		const guideIcon = document.querySelector('[data-token="probe"] .guide-icon')!;
+		await fireEvent.click(guideIcon);
 
 		// Hover the distinction entry for 'pull'
 		const entry = document.querySelector('.meta-distinction-entry')!;
@@ -1904,8 +1904,8 @@ describe('TokenSelector — ADR-0155 distinction chip highlight', () => {
 				onToggle: vi.fn()
 			}
 		});
-		const probeChip = document.querySelector('[data-token="probe"]')!;
-		await fireEvent.click(probeChip);
+		const guideIcon = document.querySelector('[data-token="probe"] .guide-icon')!;
+		await fireEvent.click(guideIcon);
 
 		const entry = document.querySelector('.meta-distinction-entry')!;
 		await fireEvent.mouseEnter(entry);
@@ -1937,7 +1937,7 @@ const axisTokenWithMetadata = {
 };
 
 describe('TokenSelector — ADR-0155 T-9: axis token structured metadata panel', () => {
-	it('axis token with metadata shows Heuristics section', async () => {
+	it('axis token guide panel shows Heuristics section', async () => {
 		render(TokenSelector, {
 			props: {
 				axis: 'completeness',
@@ -1947,14 +1947,14 @@ describe('TokenSelector — ADR-0155 T-9: axis token structured metadata panel',
 				onToggle: vi.fn()
 			}
 		});
-		const chip = document.querySelector('[data-token="gist"]')!;
-		await fireEvent.click(chip);
+		const guideIcon = document.querySelector('[data-token="gist"] .guide-icon')!;
+		await fireEvent.click(guideIcon);
 		expect(screen.getByText('Heuristics')).toBeTruthy();
 		expect(screen.getByText('brief summary')).toBeTruthy();
 		expect(screen.getByText('high-level overview')).toBeTruthy();
 	});
 
-	it('axis token with metadata shows Distinctions section', async () => {
+	it('axis token guide panel shows Distinctions section', async () => {
 		render(TokenSelector, {
 			props: {
 				axis: 'completeness',
@@ -1964,8 +1964,8 @@ describe('TokenSelector — ADR-0155 T-9: axis token structured metadata panel',
 				onToggle: vi.fn()
 			}
 		});
-		const chip = document.querySelector('[data-token="gist"]')!;
-		await fireEvent.click(chip);
+		const guideIcon = document.querySelector('[data-token="gist"] .guide-icon')!;
+		await fireEvent.click(guideIcon);
 		expect(screen.getByText('Distinctions')).toBeTruthy();
 		expect(screen.getByText(/gist = brief but complete; skim = light pass/)).toBeTruthy();
 	});
@@ -1985,7 +1985,7 @@ describe('TokenSelector — ADR-0155 T-9: axis token structured metadata panel',
 		expect(screen.queryByText('When to use')).toBeNull();
 	});
 
-	it('axis token with metadata shows use-when-dot chip indicator', () => {
+	it('axis token with metadata shows guide-icon chip indicator', () => {
 		render(TokenSelector, {
 			props: {
 				axis: 'completeness',
@@ -1995,8 +1995,8 @@ describe('TokenSelector — ADR-0155 T-9: axis token structured metadata panel',
 				onToggle: vi.fn()
 			}
 		});
-		const dots = document.querySelectorAll('.use-when-dot');
-		expect(dots.length).toBe(1);
+		const icons = document.querySelectorAll('.guide-icon');
+		expect(icons.length).toBe(1);
 	});
 });
 
@@ -2021,7 +2021,7 @@ const personaTokenWithMetadata = {
 };
 
 describe('TokenSelector — ADR-0156 T-7: persona token structured metadata panel', () => {
-	it('persona token with metadata shows Heuristics section', async () => {
+	it('persona token guide panel shows Heuristics section', async () => {
 		render(TokenSelector, {
 			props: {
 				axis: 'voice',
@@ -2031,13 +2031,13 @@ describe('TokenSelector — ADR-0156 T-7: persona token structured metadata pane
 				onToggle: vi.fn()
 			}
 		});
-		const chip = document.querySelector('[data-token="as designer"]')!;
-		await fireEvent.click(chip);
+		const guideIcon = document.querySelector('[data-token="as designer"] .guide-icon')!;
+		await fireEvent.click(guideIcon);
 		expect(screen.getByText('Heuristics')).toBeTruthy();
 		expect(screen.getByText("from a designer's perspective")).toBeTruthy();
 	});
 
-	it('persona token with metadata shows Distinctions section', async () => {
+	it('persona token guide panel shows Distinctions section', async () => {
 		render(TokenSelector, {
 			props: {
 				axis: 'voice',
@@ -2047,8 +2047,8 @@ describe('TokenSelector — ADR-0156 T-7: persona token structured metadata pane
 				onToggle: vi.fn()
 			}
 		});
-		const chip = document.querySelector('[data-token="as designer"]')!;
-		await fireEvent.click(chip);
+		const guideIcon = document.querySelector('[data-token="as designer"] .guide-icon')!;
+		await fireEvent.click(guideIcon);
 		expect(screen.getByText('Distinctions')).toBeTruthy();
 		expect(screen.getByText(/voice:as designer = speaks FROM designer/)).toBeTruthy();
 	});
@@ -2068,7 +2068,7 @@ describe('TokenSelector — ADR-0156 T-7: persona token structured metadata pane
 		expect(screen.queryByText('When to use')).toBeNull();
 	});
 
-	it('persona token with metadata shows use-when-dot chip indicator', () => {
+	it('persona token with metadata shows guide-icon chip indicator', () => {
 		render(TokenSelector, {
 			props: {
 				axis: 'voice',
@@ -2078,8 +2078,8 @@ describe('TokenSelector — ADR-0156 T-7: persona token structured metadata pane
 				onToggle: vi.fn()
 			}
 		});
-		const dots = document.querySelectorAll('.use-when-dot');
-		expect(dots.length).toBe(1);
+		const icons = document.querySelectorAll('.guide-icon');
+		expect(icons.length).toBe(1);
 	});
 });
 
@@ -2312,5 +2312,117 @@ describe('TokenSelector — hybrid embedder prop', () => {
 			props: { axis: 'method', tokens: manyTokens, selected: [], maxSelect: 3, onToggle, embedder: stubEmbedder }
 		});
 		expect(container.querySelector('.axis-panel')).toBeTruthy();
+	});
+});
+
+// ── ADR-0237: Token guidebook guide panel ──
+// The ? icon on each chip with metadata opens a full reference panel (definition,
+// heuristics, distinctions, guide entries). The hover meta-panel is slimmed to description only.
+
+const guideableToken = {
+	token: 'probe',
+	label: 'Probe',
+	description: 'Analyzes to surface structure.',
+	guidance: '',
+	use_when: '',
+	kanji: '',
+	category: '',
+	routing_concept: '',
+	metadata: {
+		definition: 'Open-ended analysis to surface structure, assumptions, or implications.',
+		heuristics: ['analyze this', 'what is going on'],
+		distinctions: [{ token: 'check', note: 'probe = open-ended; check = specific condition' }]
+	},
+	guides: [{
+		id: 'probe-vs-check',
+		title: 'probe vs check',
+		tokens: ['probe', 'check'],
+		body: 'Use probe for open-ended analysis; use check for specific conditions.'
+	}]
+};
+
+describe('TokenSelector — ADR-0237 guide panel', () => {
+	function renderGuide(extras = {}) {
+		return render(TokenSelector, {
+			props: {
+				axis: 'task',
+				tokens: [guideableToken],
+				selected: [],
+				maxSelect: 1,
+				onToggle: vi.fn(),
+				...extras
+			}
+		});
+	}
+
+	it('G1: guide panel is hidden initially', () => {
+		renderGuide();
+		expect(document.querySelector('.guide-panel')).toBeNull();
+	});
+
+	it('G2: clicking ? icon opens the guide panel', async () => {
+		renderGuide();
+		const guideIcon = document.querySelector('.guide-icon')!;
+		await fireEvent.click(guideIcon);
+		expect(document.querySelector('.guide-panel')).toBeTruthy();
+	});
+
+	it('G3: guide panel shows definition text', async () => {
+		renderGuide();
+		const guideIcon = document.querySelector('.guide-icon')!;
+		await fireEvent.click(guideIcon);
+		expect(screen.getByText(/Open-ended analysis to surface structure/)).toBeTruthy();
+	});
+
+	it('G4: guide panel shows heuristics', async () => {
+		renderGuide();
+		const guideIcon = document.querySelector('.guide-icon')!;
+		await fireEvent.click(guideIcon);
+		expect(screen.getByText('Heuristics')).toBeTruthy();
+		expect(screen.getByText('analyze this')).toBeTruthy();
+	});
+
+	it('G5: guide panel shows distinctions', async () => {
+		renderGuide();
+		const guideIcon = document.querySelector('.guide-icon')!;
+		await fireEvent.click(guideIcon);
+		expect(screen.getByText('Distinctions')).toBeTruthy();
+		expect(screen.getByText(/probe = open-ended; check = specific condition/)).toBeTruthy();
+	});
+
+	it('G6: guide panel shows guide entries when present', async () => {
+		renderGuide();
+		const guideIcon = document.querySelector('.guide-icon')!;
+		await fireEvent.click(guideIcon);
+		expect(screen.getByText('probe vs check')).toBeTruthy();
+		expect(screen.getByText(/Use probe for open-ended analysis/)).toBeTruthy();
+	});
+
+	it('G7: guide panel close button closes the panel', async () => {
+		renderGuide();
+		const guideIcon = document.querySelector('.guide-icon')!;
+		await fireEvent.click(guideIcon);
+		expect(document.querySelector('.guide-panel')).toBeTruthy();
+		const closeBtn = document.querySelector('.guide-panel .meta-close')!;
+		await fireEvent.click(closeBtn);
+		expect(document.querySelector('.guide-panel')).toBeNull();
+	});
+
+	it('G8: clicking ? icon closes the hover meta-panel if open', async () => {
+		renderGuide();
+		const chip = document.querySelector('[data-token="probe"]')!;
+		await fireEvent.click(chip);
+		expect(document.querySelector('.meta-panel')).toBeTruthy();
+		const guideIcon = document.querySelector('.guide-icon')!;
+		await fireEvent.click(guideIcon);
+		expect(document.querySelector('.meta-panel')).toBeNull();
+	});
+
+	it('G9: hover meta-panel does not show Heuristics when metadata is present', async () => {
+		renderGuide();
+		const chip = document.querySelector('[data-token="probe"]')!;
+		await fireEvent.click(chip);
+		expect(document.querySelector('.meta-panel')).toBeTruthy();
+		expect(screen.queryByText('Heuristics')).toBeNull();
 	});
 });

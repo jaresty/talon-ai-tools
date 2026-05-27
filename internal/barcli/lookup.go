@@ -18,6 +18,7 @@ type LookupResult struct {
 	MatchedText  string  // the specific phrase that matched
 	Sequences    []SequenceMembership // ADR-0225: sequence memberships for this token
 	ContextScore float64 // ADR-0234: secondary BM25 score from --subject/--addendum; 0 when not provided
+	HasGuide     bool    // ADR-0237: true when a guidebook entry exists for this token
 }
 
 // LookupTokensWithContext is like LookupTokens but accepts subject and addendum
@@ -400,6 +401,14 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		labelFor[doc.id] = doc.title
 	}
 
+	// Build guide token set for HasGuide annotation (ADR-0237).
+	guideTokens := make(map[string]bool)
+	for _, e := range g.Guides {
+		for _, t := range e.Tokens {
+			guideTokens[t] = true
+		}
+	}
+
 	// Merge: tier results first, then BM25-only results, cap at 10
 	const resultCap = 10
 	var results []LookupResult
@@ -414,6 +423,7 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 			Tier:         c.tier,
 			MatchedField: c.matchedField,
 			MatchedText:  c.matchedText,
+			HasGuide:     guideTokens[c.token],
 		}
 		switch c.axis {
 		case "pack":
@@ -447,6 +457,7 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 			Score:        br.score,
 			MatchedField: "bm25",
 			Token:        name,
+			HasGuide:     guideTokens[name],
 		}
 		switch prefix {
 		case "pack":

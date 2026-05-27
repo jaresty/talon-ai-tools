@@ -280,6 +280,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runSequence(options, stdout, stderr)
 	}
 
+	if options.Command == "guide" { // ADR-0237
+		return runGuide(options, stdout, stderr)
+	}
+
 	if options.Command != "build" {
 		writeError(stderr, topUsage)
 		return 1

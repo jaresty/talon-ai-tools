@@ -531,6 +531,9 @@ def prompt_grammar_payload() -> dict[str, Any]:
         for c in COMPOSITIONS
     ]
 
+    from talon_user.lib.guidebookConfig import GUIDEBOOK
+    guidebook_section = list(GUIDEBOOK)
+
     sections: dict[str, Any] = {
         "axes": axis_section,
         "tasks": static_section,
@@ -541,6 +544,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
         "starter_packs": starter_packs_section,
         "sequences": sequences_section,
         "compositions": compositions_section,
+        "guidebook": guidebook_section,
     }
 
     checksums = {name: _compute_checksum(content) for name, content in sections.items()}

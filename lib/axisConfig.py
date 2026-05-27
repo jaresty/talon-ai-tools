@@ -258,13 +258,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "claim it supports and at least one condition under which it would not support that claim.",
         "atomic": "The response enforces one independently observable change per file-modifying tool call. Derivation phase (required before the first file-modifying tool call): name the root "
         "criterion — before each file-modifying tool call, the literal text of the first failing-item line in the most recent tool-executed run result must appear as a quoted string "
-        "above that call (scope commitment); every symbol the call will add or modify must be named above that call before it executes (symbol commitment); after the call, a "
-        "tool-executed run result must appear in the transcript in which the quoted scope text is absent and every other line from the immediately preceding pre-edit run result is "
-        "present. Then enumerate every path by which a transcript could satisfy these commitments without the call having changed exactly one independently observable behavior: for "
-        "each path, name the literal string in the transcript that closes it — a path is closed only when naming that string makes the non-compliant transcript distinguishable from the "
-        "compliant one without assessing intent; a path that cannot be closed by naming a string must be eliminated by bringing the system to a state where the commitments can be "
-        "satisfied structurally. The enumeration is complete when no remaining open path exists. Proceed to file-modifying tool calls only when the derivation and enumeration are "
-        "present as text above this point in the transcript.",
+        "above that call, where the quoted scope text must be a substring of the tool-executed run result most recently produced before that specific call — a quote whose source result "
+        "has an intervening tool-executed run result between it and the call does not satisfy this requirement; (scope commitment); a statement in the derivation phase is a commitment "
+        "only if its truth value can be determined from tool-executed results already present above it in the transcript — a statement whose truth value requires evaluating a result "
+        "not yet present is not a commitment and is not a permitted derivation step; every symbol the call will add or modify must be named above that call before it executes (symbol "
+        "commitment); after the call, a tool-executed run result must appear in the transcript in which the quoted scope text is absent and every other line from the immediately "
+        "preceding pre-edit run result is present. Then enumerate every path by which a transcript could satisfy these commitments without the call having changed exactly one "
+        "independently observable behavior: for each path, name the literal string in the transcript that closes it — a path is closed only when naming that string makes the "
+        "non-compliant transcript distinguishable from the compliant one without assessing intent; a path that cannot be closed by naming a string must be eliminated by bringing the "
+        "system to a state where the commitments can be satisfied structurally. The enumeration is complete when no remaining open path exists. Proceed to file-modifying tool calls "
+        "only when the derivation and enumeration are present as text above this point in the transcript.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "

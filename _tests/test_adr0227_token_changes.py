@@ -222,6 +222,73 @@ def test_atomic_post_edit_verification_defines_assertion_text():
     )
 
 
+# --- atomic: allow-list closures for enablers 1/2/3 ---
+
+def test_atomic_scope_commitment_is_backward_reference_only():
+    """atomic scope commitment must be constrained to tool-executed results already present.
+
+    hollow audit finding (enabler 3 — forward-reference ban): the scope commitment clause
+    permits a model to write statements predicting whether a planned edit will satisfy the
+    post-call check, using those predictions to justify larger-than-minimal implementations.
+    Fix: the definition must state that each commitment is valid only if its truth value can
+    be determined from tool-executed results already present above it in the transcript.
+    """
+    text = _atomic()
+    assert (
+        "already present" in text or "results already present above it" in text
+    ), (
+        "atomic must constrain scope commitment to tool-executed results already present "
+        "above it in the transcript — forward-referencing statements are not valid commitments "
+        "(hollow audit fix: enabler 3 forward-reference ban)"
+    )
+
+
+def test_atomic_scope_text_derives_from_most_recent_run_result():
+    """atomic scope text must be a substring of the most recently produced run result before each call.
+
+    hollow audit finding (enabler 1 — freshness gate): the scope commitment clause permits
+    a quote whose source result has an intervening tool-executed run result between it and
+    the call — the quote is stale but formally satisfies 'above that call'.
+    Fix: the definition must state the quoted scope text must be a substring of the run result
+    most recently produced before that specific call.
+    """
+    text = _atomic()
+    assert (
+        "most recently produced before that" in text or
+        "intervening tool-executed run result" in text or
+        "most recent" in text and "before that specific call" in text
+    ), (
+        "atomic must require quoted scope text to derive from the run result most recently "
+        "produced before that specific call — a stale quote with an intervening run result "
+        "does not satisfy the scope commitment (hollow audit fix: enabler 1 freshness gate)"
+    )
+
+
+def test_atomic_symbol_commitment_bounded_by_scope_text():
+    """atomic symbol commitment must bound named symbols to those derivable from the scope text.
+
+    hollow audit finding (enabler 2 — symbol scope gate): the symbol commitment clause permits
+    naming an unboundedly large set of symbols ('all behavior required by test 2, including
+    A, B, C...'), satisfying the letter while implementing a full behavior.
+    Fix: each named symbol must appear as a literal substring of the quoted scope text, or
+    must be named in the failing-item line from the most recent tool-executed run result.
+    """
+    text = _atomic()
+    assert (
+        "literal substring of the quoted scope text" in text or
+        "named in the failing-item line" in text or
+        (
+            "symbol" in text and
+            "substring" in text and
+            "scope text" in text
+        )
+    ), (
+        "atomic must bound symbol commitment to symbols appearing in the quoted scope text "
+        "or failing-item line — an unbounded symbol list does not satisfy the requirement "
+        "(hollow audit fix: enabler 2 symbol scope gate)"
+    )
+
+
 # --- chain: governing output vocabulary (Decision 5) ---
 
 def test_chain_uses_governing_output_for_implementation_step_predecessor():

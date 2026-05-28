@@ -6,7 +6,7 @@ import (
 )
 
 // TestHeuristicSuggestions verifies that unrecognized tokens matching heuristics[]
-// or distinctions[] fields emit a "Suggested by intent:" section in the error output,
+// or distinctions[] fields emit a "Lookup results:" section in the error output,
 // with each suggestion showing the token key and its label.
 func TestHeuristicSuggestions(t *testing.T) {
 	tests := []struct {
@@ -19,7 +19,7 @@ func TestHeuristicSuggestions(t *testing.T) {
 			name: "heuristic match for debug surfaces task:probe with label",
 			args: []string{"build", "debug"},
 			expectInMessage: []string{
-				"Suggested by intent:",
+				"Lookup results:",
 				"task:probe",
 				"Surface assumptions and implications",
 			},
@@ -28,7 +28,7 @@ func TestHeuristicSuggestions(t *testing.T) {
 			name: "heuristic match for troubleshoot surfaces task:probe",
 			args: []string{"build", "troubleshoot"},
 			expectInMessage: []string{
-				"Suggested by intent:",
+				"Lookup results:",
 				"task:probe",
 				"Surface assumptions and implications",
 			},
@@ -37,7 +37,7 @@ func TestHeuristicSuggestions(t *testing.T) {
 			name: "heuristic match for root cause surfaces task:probe",
 			args: []string{"build", "root cause"},
 			expectInMessage: []string{
-				"Suggested by intent:",
+				"Lookup results:",
 				"task:probe",
 			},
 		},
@@ -45,7 +45,7 @@ func TestHeuristicSuggestions(t *testing.T) {
 			name: "heuristic match is case-insensitive",
 			args: []string{"build", "DEBUG"},
 			expectInMessage: []string{
-				"Suggested by intent:",
+				"Lookup results:",
 				"task:probe",
 			},
 		},
@@ -53,14 +53,14 @@ func TestHeuristicSuggestions(t *testing.T) {
 			name: "no heuristic section for truly foreign word",
 			args: []string{"build", "xyz123"},
 			unexpectInMessage: []string{
-				"Suggested by intent:",
+				"Lookup results:",
 			},
 		},
 		{
 			name: "heuristic match for analyze surfaces task:probe",
 			args: []string{"build", "analyze"},
 			expectInMessage: []string{
-				"Suggested by intent:",
+				"Lookup results:",
 				"task:probe",
 			},
 		},
@@ -68,7 +68,7 @@ func TestHeuristicSuggestions(t *testing.T) {
 			name: "heuristic match for persona voice token includes label",
 			args: []string{"build", "TDD mindset"},
 			expectInMessage: []string{
-				"Suggested by intent:",
+				"Lookup results:",
 				"voice:as-kent-beck",
 				"Kent Beck",
 			},
@@ -77,7 +77,7 @@ func TestHeuristicSuggestions(t *testing.T) {
 			name: "heuristic match for persona audience token includes label",
 			args: []string{"build", "executive audience"},
 			expectInMessage: []string{
-				"Suggested by intent:",
+				"Lookup results:",
 				"audience:to-ceo",
 				"Business impact",
 			},
@@ -86,7 +86,7 @@ func TestHeuristicSuggestions(t *testing.T) {
 			name: "heuristic match for persona tone token includes label",
 			args: []string{"build", "conversational tone"},
 			expectInMessage: []string{
-				"Suggested by intent:",
+				"Lookup results:",
 				"tone:casually",
 				"casual",
 			},
@@ -95,7 +95,7 @@ func TestHeuristicSuggestions(t *testing.T) {
 			name: "heuristic match for method token includes label",
 			args: []string{"build", "root cause"},
 			expectInMessage: []string{
-				"Suggested by intent:",
+				"Lookup results:",
 				"method:diagnose",
 				"Identify likely root causes",
 			},
@@ -292,6 +292,94 @@ func TestBuildUnrecognizedToken(t *testing.T) {
 			for _, unexpected := range tt.unexpectInMessage {
 				if strings.Contains(result.Stderr, unexpected) {
 					t.Errorf("expected stderr NOT to contain %q\nGot:\n%s", unexpected, result.Stderr)
+				}
+			}
+		})
+	}
+}
+
+// TestInlineLookupResultsInBuildError verifies that unrecognized tokens with lookup
+// matches show inline results in the error output.
+func TestInlineLookupResultsInBuildError(t *testing.T) {
+	tests := []struct {
+		name            string
+		args            []string
+		expectInMessage []string
+	}{
+		{
+			name: "token with lookup matches shows inline results header",
+			args: []string{"build", "debug"},
+			expectInMessage: []string{
+				"Lookup results:",
+				"task:probe",
+			},
+		},
+		{
+			name: "token with no lookup matches omits inline results header",
+			args: []string{"build", "bogustoken"},
+			expectInMessage: []string{
+				"bar lookup bogustoken",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := runBuildCLI(t, tt.args, nil)
+			for _, expected := range tt.expectInMessage {
+				if !strings.Contains(result.Stderr, expected) {
+					t.Errorf("expected stderr to contain %q\nGot:\n%s", expected, result.Stderr)
+				}
+			}
+		})
+	}
+}
+
+// TestMultipleUnrecognizedTokensAccumulated verifies that Build() continues past
+// the first unrecognized token and surfaces all bad tokens in a single combined error.
+func TestMultipleUnrecognizedTokensAccumulated(t *testing.T) {
+	tests := []struct {
+		name            string
+		args            []string
+		expectInMessage []string
+	}{
+		{
+			name: "single unrecognized token still shows its lookup hint",
+			args: []string{"build", "debug"},
+			expectInMessage: []string{
+				"bar lookup debug",
+			},
+		},
+		{
+			name: "second unrecognized token appears in error",
+			args: []string{"build", "make", "debug", "narrow", "refactor"},
+			expectInMessage: []string{
+				"refactor",
+			},
+		},
+		{
+			name: "each bad token has its own lookup block",
+			args: []string{"build", "make", "debug", "narrow", "refactor"},
+			expectInMessage: []string{
+				"bar lookup debug",
+				"bar lookup refactor",
+			},
+		},
+		{
+			name: "successfully recognized appears once covering all valid tokens",
+			args: []string{"build", "make", "debug", "narrow", "refactor"},
+			expectInMessage: []string{
+				"Successfully recognized:",
+				"task: make",
+				"completeness: narrow",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := runBuildCLI(t, tt.args, nil)
+			for _, expected := range tt.expectInMessage {
+				if !strings.Contains(result.Stderr, expected) {
+					t.Errorf("expected stderr to contain %q\nGot:\n%s", expected, result.Stderr)
 				}
 			}
 		})

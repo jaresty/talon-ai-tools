@@ -95,6 +95,7 @@ type buildState struct {
 
 	recognized          map[string][]string
 	unrecognized        []string
+	pendingUnknownErrs  []*CLIError
 	hydratedConstraints []HydratedPromptlet
 	hydratedPersona     []HydratedPromptlet
 }
@@ -227,6 +228,10 @@ func Build(g *Grammar, tokens []string) (*BuildResult, *CLIError) {
 		}
 	}
 
+	if len(state.pendingUnknownErrs) > 0 {
+		return nil, formatCombinedUnrecognizedError(state.pendingUnknownErrs, state.cloneRecognized())
+	}
+
 	if err := state.finalise(); err != nil {
 		return nil, err
 	}
@@ -269,14 +274,7 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 		return s.applyPersonaPreset(token, false)
 	}
 
-	msg := formatUnrecognizedError(s.grammar, "", token, s.recognized)
-	s.unrecognized = append(s.unrecognized, token)
-	return s.fail(&CLIError{
-		Type:         errorUnknownToken,
-		Message:      msg,
-		Unrecognized: append([]string{}, s.unrecognized...),
-		Recognized:   s.cloneRecognized(),
-	})
+	return s.unknownValue("", token)
 }
 
 func (s *buildState) applyOverrideToken(token string) *CLIError {
@@ -594,12 +592,14 @@ func (s *buildState) splitValueList(value string) []string {
 func (s *buildState) unknownValue(key, value string) *CLIError {
 	msg := formatUnrecognizedError(s.grammar, key, value, s.recognized)
 	s.unrecognized = append(s.unrecognized, value)
-	return s.fail(&CLIError{
+	err := s.fail(&CLIError{
 		Type:         errorUnknownToken,
 		Message:      msg,
 		Unrecognized: append([]string{}, s.unrecognized...),
 		Recognized:   s.cloneRecognized(),
 	})
+	s.pendingUnknownErrs = append(s.pendingUnknownErrs, err)
+	return nil
 }
 
 // formatUnrecognizedError creates a helpful error message for unrecognized tokens.
@@ -658,75 +658,138 @@ func formatUnrecognizedError(g *Grammar, axis, token string, recognized map[stri
 	msg.WriteString("tokens:\n  ")
 	msg.WriteString(helpCommand)
 
-	// Add recognized token context if any tokens were successfully parsed
-	if len(recognized) > 0 {
-		msg.WriteString("\n\nSuccessfully recognized:")
-
-		// Display in grammar order: task, completeness, scope, method, form, channel, directional
-		axisOrder := []string{"task", "completeness", "scope", "method", "form", "channel", "directional"}
-
-		for _, axisName := range axisOrder {
-			tokens := recognized[axisName]
-			if len(tokens) == 0 {
-				continue
+	// Inline lookup results (token-kind only, top 5)
+	lookupResults := LookupTokens(token, g, "")
+	var inlineResults []LookupResult
+	for _, r := range lookupResults {
+		if r.Kind == "token" {
+			inlineResults = append(inlineResults, r)
+			if len(inlineResults) >= 5 {
+				break
 			}
-
-			msg.WriteString("\n  ")
-			msg.WriteString(axisName)
-			msg.WriteString(": ")
-			msg.WriteString(strings.Join(tokens, ", "))
 		}
-
-		// Handle persona axes if present
-		personaAxes := []string{"voice", "audience", "tone", "intent", "persona"}
-		for _, axisName := range personaAxes {
-			tokens := recognized[axisName]
-			if len(tokens) == 0 {
-				continue
-			}
-
+	}
+	if len(inlineResults) > 0 {
+		msg.WriteString("\n\nLookup results:")
+		for _, r := range inlineResults {
 			msg.WriteString("\n  ")
-			msg.WriteString(axisName)
-			msg.WriteString(": ")
-			msg.WriteString(strings.Join(tokens, ", "))
+			switch r.Tier {
+			case 3:
+				msg.WriteString("[T3]")
+			case 2:
+				msg.WriteString("[T2]")
+			case 1:
+				msg.WriteString("[T1]")
+			case 0:
+				msg.WriteString("[T0]")
+			default:
+				msg.WriteString("[BM]")
+			}
+			msg.WriteString(" ")
+			msg.WriteString(r.Axis)
+			msg.WriteString(":")
+			msg.WriteString(r.Token)
+			if r.Label != "" {
+				msg.WriteString(" — ")
+				msg.WriteString(r.Label)
+			}
 		}
 	}
 
-	// Add heuristic/distinction suggestions
-	heuristicSuggestions := searchByHeuristics(g, token)
-	if len(heuristicSuggestions) > 0 {
-		msg.WriteString("\n\nSuggested by intent:")
-		for _, s := range heuristicSuggestions {
-			msg.WriteString("\n  • ")
-			msg.WriteString(s)
+	// Catalog search hint and tip
+	msg.WriteString("\n\nTo search the full catalog:\n  bar lookup ")
+	msg.WriteString(token)
+	msg.WriteString("\n\nTip: bar help token <name> shows the full definition, heuristics, and distinctions. For disambiguation: bar guide <name>.")
+
+	// Add recognized token context at the end (stripped by formatCombinedUnrecognizedError)
+	if len(recognized) > 0 {
+		msg.WriteString("\n\nSuccessfully recognized:")
+		axisOrder := []string{"task", "completeness", "scope", "method", "form", "channel", "directional"}
+		for _, axisName := range axisOrder {
+			toks := recognized[axisName]
+			if len(toks) == 0 {
+				continue
+			}
+			msg.WriteString("\n  ")
+			msg.WriteString(axisName)
+			msg.WriteString(": ")
+			msg.WriteString(strings.Join(toks, ", "))
+		}
+		for _, axisName := range []string{"voice", "audience", "tone", "intent", "persona"} {
+			toks := recognized[axisName]
+			if len(toks) == 0 {
+				continue
+			}
+			msg.WriteString("\n  ")
+			msg.WriteString(axisName)
+			msg.WriteString(": ")
+			msg.WriteString(strings.Join(toks, ", "))
 		}
 	}
 
 	return msg.String()
 }
 
-// searchByHeuristics returns up to 5 "axis:token — Label" strings for error
-// suggestions, delegating to LookupTokens (ADR-0163).
-func searchByHeuristics(g *Grammar, word string) []string {
-	if word == "" {
-		return nil
+// formatCombinedUnrecognizedError merges multiple unknown-token errors into one,
+// with each token's error block followed by a single shared "Successfully recognized" footer.
+func formatCombinedUnrecognizedError(errs []*CLIError, recognized map[string][]string) *CLIError {
+	if len(errs) == 1 {
+		errs[0].Recognized = recognized
+		return errs[0]
 	}
-	results := LookupTokens(word, g, "")
-	var out []string
-	for _, r := range results {
-		if r.Kind != "token" {
-			continue // packs/sequences are not valid bar build tokens
+
+	var all []string
+	for _, e := range errs {
+		all = append(all, e.Unrecognized...)
+	}
+
+	var msg strings.Builder
+	for i, e := range errs {
+		if i > 0 {
+			msg.WriteString("\n\n---")
 		}
-		entry := r.Axis + ":" + r.Token
-		if r.Label != "" {
-			entry += " — " + r.Label
+		msg.WriteString("\n")
+		// Strip the per-error "Successfully recognized:" block — replaced by shared footer
+		errMsg := e.Message
+		if idx := strings.Index(errMsg, "\n\nSuccessfully recognized:"); idx >= 0 {
+			errMsg = errMsg[:idx]
 		}
-		out = append(out, entry)
-		if len(out) >= 5 {
-			break
+		msg.WriteString(errMsg)
+	}
+
+	// Shared recognized footer
+	if len(recognized) > 0 {
+		msg.WriteString("\n\nSuccessfully recognized:")
+		axisOrder := []string{"task", "completeness", "scope", "method", "form", "channel", "directional"}
+		for _, axisName := range axisOrder {
+			tokens := recognized[axisName]
+			if len(tokens) == 0 {
+				continue
+			}
+			msg.WriteString("\n  ")
+			msg.WriteString(axisName)
+			msg.WriteString(": ")
+			msg.WriteString(strings.Join(tokens, ", "))
+		}
+		personaAxes := []string{"voice", "audience", "tone", "intent", "persona"}
+		for _, axisName := range personaAxes {
+			tokens := recognized[axisName]
+			if len(tokens) == 0 {
+				continue
+			}
+			msg.WriteString("\n  ")
+			msg.WriteString(axisName)
+			msg.WriteString(": ")
+			msg.WriteString(strings.Join(tokens, ", "))
 		}
 	}
-	return out
+
+	return &CLIError{
+		Type:         errorUnknownToken,
+		Message:      strings.TrimPrefix(msg.String(), "\n"),
+		Unrecognized: all,
+		Recognized:   recognized,
+	}
 }
 
 func (s *buildState) fail(err *CLIError) *CLIError {

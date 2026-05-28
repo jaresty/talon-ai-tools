@@ -39,9 +39,11 @@ def test_four_named_compositions_exist():
 def test_composition_tokens_are_valid_axis_tokens():
     from lib.compositionConfig import COMPOSITIONS
     from lib.axisConfig import AXIS_KEY_TO_VALUE
+    from lib.staticPromptConfig import STATIC_PROMPT_CONFIG
     all_tokens: set[str] = set()
     for axis_tokens in AXIS_KEY_TO_VALUE.values():
         all_tokens.update(axis_tokens.keys())
+    all_tokens.update(STATIC_PROMPT_CONFIG.keys())
     for comp in COMPOSITIONS:
         for token in comp["tokens"]:
             assert token in all_tokens, (

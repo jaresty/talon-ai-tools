@@ -205,7 +205,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "description": "Enumerate independent evaluation frames, execute each in isolation, then converge on a recommendation.",
         "example": "Evaluating a proposed API design from the perspectives of a security engineer, a frontend consumer, and a platform operator — each independently, with no shared priors.",
         "heuristics": ["evaluate independently", "multiple independent perspectives", "parallel evaluation", "isolated ideation", "spin up subagents", "evaluate from each angle separately", "no shared context between evaluators", "independent assessments then merge"],
-        "mode": "linear",
+        "mode": "autonomous",
         "steps": [
             {
                 "token": "method:prism",

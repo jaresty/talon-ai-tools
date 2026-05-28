@@ -640,6 +640,16 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "atomic must require structural elimination of paths that cannot be closed by naming a string",
         )
 
+    def test_atomic_governing_test_clause_required(self):
+        """atomic must require that the quoted failing-item line comes from a test whose pass/fail state is determined solely by the symbols being modified — a test that passes or fails independently of those symbols does not satisfy the scope commitment (hollow audit finding)."""
+        atomic = self.meta.get("atomic", {})
+        definition = atomic.get("definition", "")
+        self.assertIn(
+            "pass/fail state is determined solely by the symbols named in the symbol commitment",
+            definition,
+            "atomic must name the governing-test constraint: the quoted failing line must be from a test whose outcome depends on the symbols being modified",
+        )
+
     def test_falsify_empty_transcript_gap_closed(self):
         """falsify must block implementation until the derivation and enumeration are present as text above that point — the structural gate preventing implementation without a visible result block (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})

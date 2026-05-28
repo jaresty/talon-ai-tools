@@ -740,6 +740,26 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "falsify creation-step exception must require canonical test file — file path must share a segment with source file containing symbol (4)",
         )
 
+    def test_falsify_implementation_boundary_named(self):
+        """falsify's derivation phase must name 'file-modifying tool call' as the literal boundary for 'implementation action' — 'implementation action' is not evaluatable without semantic inference (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "before any file-modifying tool call",
+            definition,
+            "falsify must name 'file-modifying tool call' as the literal boundary — 'implementation action' requires semantic inference",
+        )
+
+    def test_falsify_no_naming_convention_escape(self):
+        """falsify must not permit 'derived from it by the test framework naming convention' as a substitute for substring containment — naming convention requires semantic inference (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertNotIn(
+            "derived from it by the test framework naming convention",
+            definition,
+            "falsify must not permit naming-convention escape route — only substring containment is addressable",
+        )
+
     def test_hollow_root_criterion_encodes_domain_scope(self):
         """hollow's root criterion sentence must name its domain of application so the domain-agnostic language clause is derivable from the criterion rather than independently asserted (ADR-0235 mint/root/collapse finding)."""
         hollow = self.meta.get("hollow", {})

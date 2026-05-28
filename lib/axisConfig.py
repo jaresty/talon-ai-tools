@@ -331,7 +331,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "falsify": "The response establishes, before any implementation step, that the governing artifact can observe the absence of each governed behavior. Derivation phase (required before any "
-        "implementation action): Name: (1) the runner's assertion-failure marker string, (2) the runner's pre-execution error marker string, (3) the assertion identifier string for "
+        "file-modifying tool call): Name: (1) the runner's assertion-failure marker string, (2) the runner's pre-execution error marker string, (3) the assertion identifier string for "
         "each governed assertion, (4) the name of the symbol under modification. A tool-executed result block satisfies this token if and only if a line where (1) immediately precedes "
         "(3) appears in the transcript, (3) contains (4) as a substring or is derived from it by the test framework's naming convention, and no governed assertion appears under (2). A "
         "result block where any governed assertion appears under (2) does not satisfy this token for that assertion — bring the system to a state where every governed assertion can "

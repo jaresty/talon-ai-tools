@@ -5967,6 +5967,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "force structurally different restatements",
                 "what would each stakeholder see",
                 "apply N independent viewpoints",
+                "brainstorm from multiple lenses",
+                "brainstorm from each stakeholder perspective",
+                "ideate across different viewpoints",
+                "generate ideas from each angle",
             ],
         },
         "probability": {

@@ -331,18 +331,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "falsify": "The response establishes, before any implementation step, that the governing artifact can observe the absence of each governed behavior. Derivation phase (required before any "
-        "implementation action): name the root criterion — a tool-executed result block must appear in the transcript containing, as a literal substring, (a) for each governed "
-        "assertion, a line where the test runner's assertion-failure marker precedes the assertion identifier — name the specific failure-marker string the runner uses to signal that "
-        "an assertion reached execution and failed, and the specific error-marker string it uses to signal pre-execution failure; a result block where any governed assertion appears "
-        "under the error marker does not satisfy (a) for that assertion, and (b) a string naming the file being changed, where at least one assertion appears as PASSED in the same "
-        "result block. Then enumerate every path by which a transcript could contain a conforming result block without the artifact having actually detected absence of the behavior: "
-        "for each path, name the literal string in the result block that closes it — a path is closed only when naming that string makes the non-compliant transcript distinguishable "
-        "from the compliant one without assessing intent; a path that cannot be closed by naming a string because the result block is produced before assertion execution must instead "
-        "be eliminated by bringing the system to a state where every governed assertion can reach execution before the test is run. The enumeration is complete when no remaining open "
-        "path exists; a path whose closure requires assessing whether the model intended to run the artifact is not closed. Proceed to implementation only when the derivation and "
-        "enumeration are present as text above this point in the transcript. Exception: the result-block requirement does not apply to the single file-modifying tool call whose diff "
-        "introduces the governing criterion string as a new string — a tool call is the creation step only if the governing criterion string is absent from the file before the call "
-        "and present after it; any tool call targeting a file other than the one introducing the governing criterion string is not a creation step and is not exempt.",
+        "implementation action): Name: (1) the runner's assertion-failure marker string, (2) the runner's pre-execution error marker string, (3) the assertion identifier string for "
+        "each governed assertion, (4) the name of the symbol under modification. A tool-executed result block satisfies this token if and only if a line where (1) immediately precedes "
+        "(3) appears in the transcript, (3) contains (4) as a substring or is derived from it by the test framework's naming convention, and no governed assertion appears under (2). A "
+        "result block where any governed assertion appears under (2) does not satisfy this token for that assertion — bring the system to a state where every governed assertion can "
+        "reach execution before running the test. Proceed to implementation only when the derivation and the satisfying result block are present as text above this point in the "
+        "transcript. Exception: the result-block requirement does not apply to the single file-modifying tool call whose diff introduces the governing criterion string as a new string "
+        "— a tool call is the creation step only if the governing criterion string is absent from the file before the call and present after it, and the target file path shares at "
+        "least one path segment with the source file containing (4); any tool call that does not satisfy both conditions is not a creation step and is not exempt.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

@@ -655,9 +655,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "Proceed to implementation only when the derivation and enumeration are present as text above this point in the transcript",
+            "Proceed to implementation only when the derivation and the satisfying result block are present as text above this point in the transcript",
             definition,
-            "falsify must explicitly block implementation until derivation and enumeration are present in the transcript",
+            "falsify must explicitly block implementation until derivation and satisfying result block are present in the transcript",
         )
 
     def test_falsify_slower_check_excludes_compiler_artifacts(self):
@@ -665,7 +665,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "assertion-failure marker precedes the assertion identifier",
+            "(1) immediately precedes (3)",
             definition,
             "falsify slower-check clause must name the observable that excludes compiler artifacts",
         )
@@ -675,7 +675,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "a path that cannot be closed by naming a string because the result block is produced before assertion execution must instead be eliminated",
+            "bring the system to a state where every governed assertion can reach execution before running the test",
             definition,
             "falsify must structurally require elimination of pre-execution-error paths, not just identification",
         )
@@ -698,6 +698,46 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "governing criterion string is absent from the file before the call and present after it",
             definition,
             "falsify must name the creation-step boundary using structural terms: governing criterion string absent before the call and present after it — any other tool call is not exempt",
+        )
+
+    def test_falsify_no_open_enumeration(self):
+        """falsify's derivation instruction must not use open enumeration — 'enumerate every path' is hollow because no string proves enumeration is complete (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertNotIn(
+            "enumerate every path",
+            definition,
+            "falsify must not use open enumeration — replace with bounded four named-strings derivation",
+        )
+
+    def test_falsify_four_named_strings_derivation(self):
+        """falsify's derivation instruction must use a four named-strings structure — name (1) failure marker, (2) error marker, (3) assertion identifier, (4) symbol under modification (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "Name: (1)",
+            definition,
+            "falsify derivation must use four named-strings structure: Name: (1) failure marker (2) error marker (3) assertion identifier (4) symbol",
+        )
+
+    def test_falsify_specificity_constraint(self):
+        """falsify must require that the assertion identifier names the specific symbol under modification — integration-level FAIL through unrelated code does not satisfy the criterion (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "(3) contains (4)",
+            definition,
+            "falsify must require assertion identifier (3) to contain symbol name (4) — closes specificity gap",
+        )
+
+    def test_falsify_creation_step_canonical_file(self):
+        """falsify's creation-step exception must require the target file to share a path segment with the source file containing the symbol under modification — temp files do not qualify (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "shares at least one path segment with the source file containing (4)",
+            definition,
+            "falsify creation-step exception must require canonical test file — file path must share a segment with source file containing symbol (4)",
         )
 
     def test_hollow_root_criterion_encodes_domain_scope(self):

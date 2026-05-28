@@ -120,9 +120,10 @@ func renderNavigationGuide(w io.Writer, grammar *Grammar) {
 	fmt.Fprintf(w, "## Recommended loading pattern for agents\n\n")
 	fmt.Fprintf(w, "1. **Discover tokens, packs, and sequences by intent**: `bar lookup \"<intent>\"` — no reference load needed\n")
 	fmt.Fprintf(w, "2. **Get token detail**: `bar help token <slug>` — loads one token's full metadata\n")
-	fmt.Fprintf(w, "3. **Check composition rules**: `bar help llm --section rules` — loads composition rules only\n")
-	fmt.Fprintf(w, "4. **Plan a workflow**: `bar help llm --section heuristics` — loads choosing-X guidance\n")
-	fmt.Fprintf(w, "5. **Full reference**: `bar help llm --section tokens` — loads complete token catalog\n\n")
+	fmt.Fprintf(w, "3. **Disambiguate between near-neighbor tokens**: `bar guide <token>` — side-by-side distinctions and combination guidance\n")
+	fmt.Fprintf(w, "4. **Check composition rules**: `bar help llm --section rules` — loads composition rules only\n")
+	fmt.Fprintf(w, "5. **Plan a workflow**: `bar help llm --section heuristics` — loads choosing-X guidance\n")
+	fmt.Fprintf(w, "6. **Full reference**: `bar help llm --section tokens` — loads complete token catalog\n\n")
 	fmt.Fprintf(w, "Use `bar help llm --section <name>` or `bar help token <slug>` rather than loading the full reference.\n")
 }
 

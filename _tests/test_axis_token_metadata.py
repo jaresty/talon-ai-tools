@@ -690,6 +690,16 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "falsify must name the observable that distinguishes direct invocation from status display",
         )
 
+    def test_falsify_creation_step_boundary_required(self):
+        """falsify's exception clause must name the transcript-observable boundary of 'creation step' — the exception applies only to the tool call whose diff introduces the assertion identifier as a new string, not to any subsequent implementation tool call (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "governing criterion string is absent from the file before the call and present after it",
+            definition,
+            "falsify must name the creation-step boundary using structural terms: governing criterion string absent before the call and present after it — any other tool call is not exempt",
+        )
+
     def test_hollow_root_criterion_encodes_domain_scope(self):
         """hollow's root criterion sentence must name its domain of application so the domain-agnostic language clause is derivable from the criterion rather than independently asserted (ADR-0235 mint/root/collapse finding)."""
         hollow = self.meta.get("hollow", {})

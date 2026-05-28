@@ -340,8 +340,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "from the compliant one without assessing intent; a path that cannot be closed by naming a string because the result block is produced before assertion execution must instead "
         "be eliminated by bringing the system to a state where every governed assertion can reach execution before the test is run. The enumeration is complete when no remaining open "
         "path exists; a path whose closure requires assessing whether the model intended to run the artifact is not closed. Proceed to implementation only when the derivation and "
-        "enumeration are present as text above this point in the transcript. Exception: when a governing artifact is being created in this session (its assertion text is written via a "
-        "file-modifying tool call), the result-block requirement does not apply to that creation step.",
+        "enumeration are present as text above this point in the transcript. Exception: the result-block requirement does not apply to the single file-modifying tool call whose diff "
+        "introduces the governing criterion string as a new string — a tool call is the creation step only if the governing criterion string is absent from the file before the call "
+        "and present after it; any tool call targeting a file other than the one introducing the governing criterion string is not a creation step and is not exempt.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

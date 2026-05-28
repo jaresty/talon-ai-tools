@@ -112,12 +112,13 @@ def test_falsify_governing_artifact_creation_not_gated():
     """
     text = _falsify()
     assert (
-        "governing artifact is being created" in text or "governing artifact creation" in text
+        "governing criterion string is absent from the file before the call and present after it" in text
     ) and (
-        "does not apply" in text or "result-block requirement does not apply" in text
+        "result-block requirement does not apply" in text
     ), (
         "falsify must explicitly exempt governing artifact creation (test/spec writing) "
-        "from the result-block requirement (hollow audit fix)"
+        "from the result-block requirement, with a structural boundary: governing criterion string "
+        "absent before the call and present after it (hollow audit fix)"
     )
 
 

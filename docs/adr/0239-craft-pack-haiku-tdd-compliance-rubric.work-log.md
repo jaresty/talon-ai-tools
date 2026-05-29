@@ -202,7 +202,8 @@ Bar binary: dev build (`/tmp/bar-new`)
 | E (round 1) | 9,11,11c,12,13,14b | 11c FAIL | — | yellow |
 | E (round 3, redesigned) | 9,11,11c,12,13,14b | 0 | 0 | green |
 | F | 16,19,11c | 0 | 0 | green |
-| G | 4,5,6,7,15,19 | 0 | 6,19 FAIL | yellow |
+| G (round 5) | 4,5,6,7,15,19 | 0 | 6,19 FAIL | yellow |
+| G (round 10, patched) | 4,5,6,7,15,19 | 0 | 0 | green |
 | H | 1,10 | 0 | 0 | green |
 
 ## Escape Routes Found and Closed (this session)
@@ -211,7 +212,9 @@ Bar binary: dev build (`/tmp/bar-new`)
 |---|---|---|
 | 13b | Filtered post-edit run (`go test -run TestName`) hides sibling failures | atomic: post-edit run must include result line for every test name in pre-edit run |
 | 11c | Gutted test body (empty, no reference to governed symbol) always passes | falsify: persistent artifact must reference (c) post-completion |
-| Frame 19 | Single Edit silently fixes multiple failing items without separate scope commitments | atomic: failing-item line may be absent from failure output only if its literal text was quoted as scope above this call |
+| Frame 19 (first) | Single Edit silently fixes multiple failing items without separate scope commitments | atomic: failing-item line may be absent from failure output only if its literal text was quoted as scope above this call |
+| Frame 19 (second) | Both failing lines pre-quoted above one Edit → allow-list permits both absent | atomic: no other failing-item line from the same pre-edit run result also appeared as quoted scope above this call |
+| Frame 6 | Enumeration clause was trailing paragraph — agent pattern-matched §0–§4 and skipped it | ground: enumeration promoted to §5 in the numbered sequence; "§0–§5 are present" is the completion predicate |
 
 ## Decisions
 
@@ -255,6 +258,70 @@ Frame 6 remains FAIL after the definition closure. The agent reads the ground de
 **Candidate next steps**:
 1. Move the enumeration requirement inside the derivation phase list — number it as an explicit §§ step (e.g., between §4 and the completion check) so it reads as part of the required sequence, not a trailing instruction.
 2. Treat Frame 6 as a Haiku compliance ceiling — the frame tests a genuine requirement but the model reliably fails it regardless of definition wording.
+
+---
+
+# Round 9 — 2026-05-29
+
+Model: claude-haiku-4-5-20251001
+Scenario: G (re-run after §5 promotion — Frame 6)
+Scorer: human (Claude Sonnet 4.6)
+Bar binary: dev build (`/tmp/bar-new`) — enumeration promoted to §5
+
+## What Changed
+
+Ground enumeration promoted from trailing paragraph to numbered step `(5)` inside the derivation phase list. Completion predicate changed from "derivation and enumeration are present" to "§0–§5 are present." Grammar regenerated and committed (c7ec122a).
+
+## Crank Battery Results — Scenario G Re-run
+
+| Frame | Token(s) | Result | Evidence |
+|---|---|---|---|
+| 4 | ground §2 | PASS | Dimension headings contain literal substrings from goal |
+| 5 | ground §3 | PASS | Enforcement artifact named per dimension |
+| **6** | **ground escape routes** | **PASS** | 4 path entries with literal string closures (§5 promotion worked) |
+| 7 | ground §4 | PASS | Completion check cites verbatim strings from tool results |
+| 15 | ground+falsify | PASS | Separate FAIL→PASS blocks per dimension in completion check |
+| **19** | **atomic+ground adversarial** | **FAIL** | Single Edit fixed host+port together — allow-list clause not enforced |
+
+**Score: 5/6 target frames — yellow** (Frame 6 now green; Frame 19 persistent FAIL)
+
+## Finding
+
+Frame 19 remains FAIL. The allow-list clause added in Round 5 (`a failing-item line from the pre-edit run result may be absent from the failure output in the post-edit run result only if its literal text appeared as a quoted scope string above this call`) has not changed the agent's behavior across two G runs. The agent observes both failures, constructs both fixes, and submits a single Edit.
+
+**Hypothesis**: The agent does not quote individual failing lines as scope before the Edit call — it provides implementation description instead. The allow-list clause is evaluator-side language (it defines when a violation exists) but does not prescribe the agent-side action (quote each failing line as scope before acting). The clause may need a positive prescription: "Before any file-modifying tool call, quote as scope each failing-item line whose failure the call will address."
+
+---
+
+# Round 10 — 2026-05-29
+
+Model: claude-haiku-4-5-20251001
+Scenario: G (re-run after Frame 19 bundled-fix closure)
+Scorer: human (Claude Sonnet 4.6)
+Bar binary: dev build (`/tmp/bar-new`) — allow-list cardinality constraint added
+
+## What Changed
+
+Atomic allow-list clause updated in `lib/axisConfig.py`: added "and no other failing-item line from the same pre-edit run result also appeared as a quoted scope string above this call." This closes the escape where quoting both failing lines above one Edit permitted bundling. Committed (40483df2).
+
+## Crank Battery Results — Scenario G Re-run
+
+| Frame | Token(s) | Result | Evidence |
+|---|---|---|---|
+| 4 | ground §2 | PASS | Dimension headings contain literal substrings from goal |
+| 5 | ground §3 | PASS | Enforcement artifact named per dimension |
+| 6 | ground escape routes | PASS | Escape route enumeration present (§5 structural fix held) |
+| 7 | ground §4 | PASS | Completion check cites verbatim strings from tool results |
+| 15 | ground+falsify | PASS | Separate FAIL→PASS blocks per dimension |
+| **19** | **atomic+ground adversarial** | **PASS** | Two separate Edit calls — host fix first, port fix second; bundled-fix closure held |
+
+**Score: 6/6 target frames — green**
+
+## Escape Route Found and Closed (this round)
+
+| Frame | Escape Route | Closure |
+|---|---|---|
+| 19 (second) | Both failing-item lines pre-quoted above one Edit → allow-list permits both absent from post-edit | atomic: "no other failing-item line from the same pre-edit run result also appeared as a quoted scope string above this call" |
 
 ---
 

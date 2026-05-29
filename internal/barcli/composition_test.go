@@ -167,22 +167,19 @@ func TestFalsifyDefinition_AbsenceDetection(t *testing.T) {
 func TestFalsifyDefinition_FiredBeforeImplementation(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "before any tool call that modifies") && !strings.Contains(def, "before any edit tool call") && !strings.Contains(def, "FAIL tool result already present") && !strings.Contains(def, "before any implementation") {
-		t.Error("falsify definition must require FAIL result to precede any tool call that modifies a governed file")
+	if !strings.Contains(def, "before any tool call that modifies") && !strings.Contains(def, "before any edit tool call") && !strings.Contains(def, "FAIL tool result already present") && !strings.Contains(def, "before any implementation") && !strings.Contains(def, "before any governed action") {
+		t.Error("falsify definition must require FAIL result to precede the governed action")
 	}
 }
 
 func TestFalsifyDefinition_ImplementationStepConstraint(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "result block immediately following") {
-		t.Error("falsify implementation step constraint must be stated as a transcript-observable post-step check: result block immediately following the tool call")
+	if !strings.Contains(def, "disposable artifact") {
+		t.Error("falsify definition must prohibit disposable governing artifacts")
 	}
-	if !strings.Contains(def, "zero occurrences of") {
-		t.Error("falsify implementation step constraint must require a tool-executed search showing zero occurrences before removing a definition")
-	}
-	if !strings.Contains(def, "call-site positions") {
-		t.Error("falsify implementation step constraint must name 'call-site positions' as the search scope")
+	if !strings.Contains(def, "will not persist in the work product") {
+		t.Error("falsify definition must name 'will not persist in the work product' as the disposable-artifact criterion")
 	}
 }
 

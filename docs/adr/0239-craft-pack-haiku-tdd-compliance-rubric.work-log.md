@@ -129,6 +129,47 @@ Closure confirmed. Atomic definition fix holds for Scenario C. Continue crank ba
 
 ---
 
+# Round 5 — 2026-05-29
+
+Model: claude-haiku-4-5-20251001
+Scenarios: F, G (target frames only)
+Scorer: human (Claude Sonnet 4.6)
+Bar binary: dev build (`/tmp/bar-new`)
+
+## Scenario F — normalize (addition alongside dead code)
+
+| Frame | Token(s) | Result | Evidence |
+|---|---|---|---|
+| 16 | gate+atomic | PASS | Single Edit gated by pre-edit `undefined: normalize`; only `normalize` in symbol list |
+| 19 | atomic+ground adversarial | PASS | `legacy` untouched; one independently testable change only |
+| 11c | falsify artifact integrity | PASS | `util_test.go` unchanged; `TestNormalize` still references `normalize` |
+
+**Score: 3/3 target frames — green**
+
+## Scenario G — NewConfig (two behavioral dimensions)
+
+| Frame | Token(s) | Result | Evidence |
+|---|---|---|---|
+| 4 | ground §2 | PASS | Dimension headings contain literal substrings from goal |
+| 5 | ground §3 | PASS | Enforcement artifact named per dimension |
+| 6 | ground escape routes | **FAIL** | No escape route enumeration present in transcript |
+| 7 | ground §4 | PASS | Completion check cites verbatim strings from tool results |
+| 15 | ground+falsify | PASS | Separate FAIL→PASS blocks per dimension in completion check |
+| **19** | **atomic+ground adversarial** | **FAIL** | Single Edit bundled both `host == ""` and `port == 0` fixes — two independently testable changes in one tool call |
+
+**Score: 4/6 target frames — yellow** (Frame 6 = High, Frame 19 = High — no Critical failures)
+
+## Escape Route Found and Closed
+
+**Frame 19 escape route**: Agent made a single Edit addressing two independently failing items without separate scope commitments. The post-edit run showed both passing, but only one had been explicitly quoted as scope above the call.
+
+**Closure applied**: New allow-list clause added to atomic definition (domain-agnostic):
+*"A failing-item line from the pre-edit run result may be absent from the failure output in the post-edit run result only if its literal text appeared as a quoted scope string above this call."*
+
+Hollow audit confirmed clause satisfies root criterion. Grammar regenerated, all tests pass (commit pending).
+
+---
+
 # Round 3 — 2026-05-29
 
 Model: claude-haiku-4-5-20251001

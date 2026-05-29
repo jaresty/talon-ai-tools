@@ -265,8 +265,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "commitment); the quoted failing-item line must be from a test assertion whose pass/fail state is determined solely by the symbols named in the symbol commitment — a test that "
         "passes or fails independently of those symbols does not satisfy this requirement; after the call, a tool-executed run result must appear in the transcript in which the quoted "
         "scope text is absent, every other line from the immediately preceding pre-edit run result is present, and a result line appears for every test name that appeared in that "
-        "pre-edit run result. Then enumerate every path by which a transcript could satisfy these commitments without the call having changed exactly one independently observable "
-        "behavior: for each path, name the literal string in the transcript that closes it — a path is closed only when naming that string makes the non-compliant transcript "
+        "pre-edit run result; a failing-item line from the pre-edit run result may be absent from the failure output in the post-edit run result only if its literal text appeared as a "
+        "quoted scope string above this call. Then enumerate every path by which a transcript could satisfy these commitments without the call having changed exactly one independently "
+        "observable behavior: for each path, name the literal string in the transcript that closes it — a path is closed only when naming that string makes the non-compliant transcript "
         "distinguishable from the compliant one without assessing intent; a path that cannot be closed by naming a string must be eliminated by bringing the system to a state where the "
         "commitments can be satisfied structurally. The enumeration is complete when no remaining open path exists. Proceed to file-modifying tool calls only when the derivation and "
         "enumeration are present as text above this point in the transcript.",

@@ -210,7 +210,15 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Use this step to enumerate the named evaluation frames as a governing artifact. Each frame must differ structurally. Do not apply any frame yet — enumeration is the only output of this step. After producing the frame list, spawn one isolated subagent per frame using the Agent tool, passing only the subject and that frame's description as the subagent's full context — no shared history, no cross-frame information. Collect all subagent results before proceeding to step 2.",
+                "prompt_hint": "Use this step to enumerate the named evaluation frames as a governing artifact. Each frame must differ structurally. Do not apply any frame yet — enumeration is the only output of this step.",
+            },
+            {
+                "type": "dispatch",
+                "role": "parallel frame evaluation",
+                "fan_out": "enumerate",
+                "join": "all",
+                "isolation": True,
+                "prompt_hint": "Each agent receives only the subject and its assigned frame description as full context — no shared history, no cross-frame information. Return findings in a labeled block.",
             },
             {
                 "token": "task:show",
@@ -263,12 +271,21 @@ def validate_sequences(sequences: dict[str, Any], known_tokens: set[str]) -> lis
             errors.append(f"{name}: steps must be a list of ≥2 entries")
             continue
         for i, step in enumerate(steps):
-            if not isinstance(step.get("token"), str) or not step["token"]:
-                errors.append(f"{name} step {i}: missing token")
-            elif known_tokens and step["token"] not in known_tokens:
-                errors.append(f"{name} step {i}: unknown token {step['token']!r}")
             if not isinstance(step.get("role"), str) or not step["role"]:
                 errors.append(f"{name} step {i}: missing role")
+            step_type = step.get("type", "prompt")
+            if step_type == "dispatch":
+                if "token" in step:
+                    errors.append(f"{name} step {i}: dispatch step must not have a token field")
+                if not step.get("fan_out"):
+                    errors.append(f"{name} step {i}: dispatch step missing fan_out")
+                if not step.get("join"):
+                    errors.append(f"{name} step {i}: dispatch step missing join")
+            else:
+                if not isinstance(step.get("token"), str) or not step["token"]:
+                    errors.append(f"{name} step {i}: missing token")
+                elif known_tokens and step["token"] not in known_tokens:
+                    errors.append(f"{name} step {i}: unknown token {step['token']!r}")
     return errors
 
 

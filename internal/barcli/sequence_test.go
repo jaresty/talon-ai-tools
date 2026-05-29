@@ -392,3 +392,28 @@ func min(a, b int) int {
 	}
 	return b
 }
+
+// Behavior 22: `bar help llm --section sequences` includes a dispatch steps note separate from execution modes.
+func TestHelpLLMSequencesIncludesDispatchNote(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
+	if code != 0 {
+		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Dispatch steps") {
+		t.Errorf("expected bar help llm --section sequences to include a \"Dispatch steps\" note:\n%s", out)
+	}
+	if strings.Contains(out, "autonomous` (all steps run cold) | `linear` (pause for user input) | `cycle` (repeat until user ends) | `dispatch`") {
+		t.Errorf("dispatch must not appear as a sequence execution mode in the modes line:\n%s", out)
+	}
+}
+
+// Behavior 23: `bar help llm --section sequences` step summary for parallel-eval shows dispatch fan-out/join.
+func TestHelpLLMSequencesDispatchStepShowsFanOut(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
+	if code != 0 {
+		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "dispatch[enumerate→all]") {
+		t.Errorf("expected parallel-eval step summary to contain \"dispatch[enumerate→all]\":\n%s", out)
+	}
+}

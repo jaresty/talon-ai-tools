@@ -53,14 +53,15 @@ class TestSequenceConfigStructure(unittest.TestCase):
             steps = seq.get("steps", [])
             self.assertGreaterEqual(len(steps), 2, f"{name}: must have ≥2 steps")
 
-    # Behavior: each step has token and role
+    # Behavior: each prompt step has token and role; dispatch steps have role only
     def test_all_steps_have_token_and_role(self):
         for name, seq in self.sequences.items():
             for i, step in enumerate(seq.get("steps", [])):
-                self.assertIsInstance(step.get("token"), str, f"{name} step {i}: token must be a string")
-                self.assertTrue(step["token"], f"{name} step {i}: token must be non-empty")
                 self.assertIsInstance(step.get("role"), str, f"{name} step {i}: role must be a string")
                 self.assertTrue(step["role"], f"{name} step {i}: role must be non-empty")
+                if step.get("type") != "dispatch":
+                    self.assertIsInstance(step.get("token"), str, f"{name} step {i}: token must be a string")
+                    self.assertTrue(step["token"], f"{name} step {i}: token must be non-empty")
 
     # Behavior: three new sequences exist
     def test_gather_and_synthesize_exists(self):
@@ -83,6 +84,40 @@ class TestSequenceConfigStructure(unittest.TestCase):
             if seq.get("mode") in ("linear", "cycle"):
                 has_pause = any(step.get("requires_user_input") for step in seq.get("steps", []))
                 self.assertTrue(has_pause, f"{name} (mode={seq['mode']}): must have at least one step with requires_user_input=True")
+
+
+    # Behavior: dispatch steps are allowed to omit token field
+    def test_dispatch_steps_do_not_require_token(self):
+        for name, seq in self.sequences.items():
+            for i, step in enumerate(seq.get("steps", [])):
+                if step.get("type") == "dispatch":
+                    self.assertNotIn("token", step, f"{name} step {i}: dispatch step must not have a token field")
+                    self.assertIn("fan_out", step, f"{name} step {i}: dispatch step must have fan_out")
+                    self.assertIn("join", step, f"{name} step {i}: dispatch step must have join")
+
+    # Behavior: validate_sequences rejects dispatch steps missing fan_out or join
+    def test_validate_sequences_rejects_dispatch_without_fan_out_join(self):
+        bad_seq = {
+            "bad": {
+                "description": "test",
+                "example": "test",
+                "mode": "autonomous",
+                "steps": [
+                    {"token": "task:make", "role": "first"},
+                    {"type": "dispatch", "role": "second"},  # missing fan_out and join
+                ],
+            }
+        }
+        errors = self.validate(bad_seq, known_tokens={"task:make"})
+        self.assertTrue(any("fan_out" in e or "join" in e for e in errors),
+                        f"Expected error about missing fan_out/join, got: {errors}")
+
+    # Behavior: parallel-eval has a dispatch step
+    def test_parallel_eval_has_dispatch_step(self):
+        seq = self.sequences.get("parallel-eval")
+        self.assertIsNotNone(seq, "parallel-eval sequence must exist")
+        dispatch_steps = [s for s in seq["steps"] if s.get("type") == "dispatch"]
+        self.assertGreater(len(dispatch_steps), 0, "parallel-eval must have at least one dispatch step")
 
 
 if __name__ == "__main__":

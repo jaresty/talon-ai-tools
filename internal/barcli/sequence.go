@@ -17,6 +17,10 @@ type SequenceStep struct {
 	Role              string `json:"role"`
 	PromptHint        string `json:"prompt_hint,omitempty"`
 	RequiresUserInput bool   `json:"requires_user_input,omitempty"` // ADR-0226
+	Type              string `json:"type,omitempty"`                // ADR-0238: "prompt" | "dispatch"
+	FanOut            string `json:"fan_out,omitempty"`             // ADR-0238: "replicate" | "enumerate"
+	Join              string `json:"join,omitempty"`                // ADR-0238: "all" | "first" | "merge"
+	Isolation         bool   `json:"isolation,omitempty"`           // ADR-0238: strip shared context
 }
 
 // Sequence is a named, directed multi-step workflow pattern.
@@ -118,6 +122,10 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			Role              string `json:"role"`
 			PromptHint        string `json:"prompt_hint,omitempty"`
 			RequiresUserInput bool   `json:"requires_user_input,omitempty"`
+			Type              string `json:"type,omitempty"`
+			FanOut            string `json:"fan_out,omitempty"`
+			Join              string `json:"join,omitempty"`
+			Isolation         bool   `json:"isolation,omitempty"`
 		}
 		type jsonSeq struct {
 			Name        string     `json:"name"`
@@ -128,7 +136,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		}
 		steps := make([]jsonStep, len(seq.Steps))
 		for i, s := range seq.Steps {
-			steps[i] = jsonStep{Token: s.Token, Role: s.Role, PromptHint: s.PromptHint, RequiresUserInput: s.RequiresUserInput}
+			steps[i] = jsonStep{Token: s.Token, Role: s.Role, PromptHint: s.PromptHint, RequiresUserInput: s.RequiresUserInput, Type: s.Type, FanOut: s.FanOut, Join: s.Join, Isolation: s.Isolation}
 		}
 		out := jsonSeq{Name: name, Description: seq.Description, Example: seq.Example, Mode: seq.Mode, Steps: steps}
 		enc := json.NewEncoder(stdout)
@@ -153,7 +161,15 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		if step.RequiresUserInput {
 			marker = "⏸ "
 		}
-		fmt.Fprintf(stdout, "%sStep %d  %-24s %s\n", marker, i+1, step.Token, step.Role)
+		tokenCol := step.Token
+		if step.Type == "dispatch" {
+			isolation := ""
+			if step.Isolation {
+				isolation = ", isolated"
+			}
+			tokenCol = fmt.Sprintf("dispatch [%s→%s%s]", step.FanOut, step.Join, isolation)
+		}
+		fmt.Fprintf(stdout, "%sStep %d  %-24s %s\n", marker, i+1, tokenCol, step.Role)
 		if step.PromptHint != "" {
 			fmt.Fprintf(stdout, "          %s\n", step.PromptHint)
 		}

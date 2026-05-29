@@ -116914,7 +116914,15 @@
         {
           "token": "method:prism",
           "role": "frame enumeration",
-          "prompt_hint": "Use this step to enumerate the named evaluation frames as a governing artifact. Each frame must differ structurally. Do not apply any frame yet — enumeration is the only output of this step. After producing the frame list, spawn one isolated subagent per frame using the Agent tool, passing only the subject and that frame's description as the subagent's full context — no shared history, no cross-frame information. Collect all subagent results before proceeding to step 2."
+          "prompt_hint": "Use this step to enumerate the named evaluation frames as a governing artifact. Each frame must differ structurally. Do not apply any frame yet — enumeration is the only output of this step."
+        },
+        {
+          "type": "dispatch",
+          "role": "parallel frame evaluation",
+          "fan_out": "enumerate",
+          "join": "all",
+          "isolation": true,
+          "prompt_hint": "Each agent receives only the subject and its assigned frame description as full context — no shared history, no cross-frame information. Return findings in a labeled block."
         },
         {
           "token": "task:show",
@@ -117451,7 +117459,7 @@
     "slugs": "3b96f75b46feea5ca04ed4dacd365f97fe69e438df568daeedbd4f7d13352a8f",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "1f779f51c8a4ca34cb618093d18e1bb74414477d77be2bc2e95bbc4228a0cf04",
-    "sequences": "ad3f764e74514ad6d873a867a13143cceb6e6395c9598e8d0bfe75c3e363b74e",
+    "sequences": "700cd2e1e4f61ece17eace92a11bdd335d050c8dd58b323d556d11fb3319882e",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

@@ -1593,6 +1593,7 @@ func renderLLMSequencesSection(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "- Any step requires real-world action between LLM steps (experiment, deploy, gather data)\n")
 	fmt.Fprintf(w, "- The pattern recurs and ordering is non-obvious\n\n")
 	fmt.Fprintf(w, "**Execution modes:** `autonomous` (all steps run cold) | `linear` (pause for user input) | `cycle` (repeat until user ends)\n\n")
+	fmt.Fprintf(w, "**Dispatch steps:** Any sequence may contain steps of type `dispatch` (shown as `dispatch[fan_out→join]` in `bar sequence show`). A dispatch step fans out to isolated subagents — one per frame — then joins their results before the next step. Dispatch steps are not a sequence mode; they can appear within any execution mode.\n\n")
 	fmt.Fprintf(w, "**Parallelization:** When planning multiple sequences, those where neither sequence names the other's output among its inputs may be run as parallel agents — each agent runs its full sequence independently, and results are synthesized afterward. This is a judgment call: parallelize when you can name a specific cost that sequential execution would incur that parallel execution avoids; otherwise run sequentially.\n\n")
 
 	if compact {
@@ -1613,7 +1614,11 @@ func renderLLMSequencesSection(w io.Writer, grammar *Grammar, compact bool) {
 			if i > 0 {
 				stepSummary += " → "
 			}
-			stepSummary += step.Role
+			if step.Type == "dispatch" {
+				stepSummary += fmt.Sprintf("dispatch[%s→%s]", step.FanOut, step.Join)
+			} else {
+				stepSummary += step.Role
+			}
 		}
 		fmt.Fprintf(w, "- **%s** (%s): %s\n", name, seq.Mode, seq.Description)
 		if seq.Example != "" {

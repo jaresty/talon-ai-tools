@@ -27,93 +27,75 @@ Invoke with `/craft-pack-eval <scenario>` when:
 - Running a full battery investigation (scenarios D–H — specific excluded frames)
 - Establishing a baseline for a new haiku model version
 
-## Phases
+## Execution — run these steps in order
+
+When this skill is invoked, execute all four phases sequentially using tool calls. Do not
+describe what you would do — run the Bash tool calls directly.
 
 ### Phase 1 — Setup
 
-Run the setup companion script for the named scenario:
-
+Run:
 ```bash
 bash .claude/skills/craft-pack-eval/setup.sh <scenario>
 ```
 
-This creates `/tmp/haiku-test-<scenario>/`, initialises the Go module, writes the source
-and test files from ADR-0239, and runs `go test ./...` to confirm the pre-state failure.
-
-**Gate (falsifiable):**
-- (a) absence signal: `setup.sh` exits non-zero, OR `go test` output does not contain
-  the scenario's `EXPECT` string (defined in `setup.sh` per scenario)
-- (b) presence signal: `setup.sh` exits 0 AND `go test` output contains `EXPECT`
-- Gate is satisfied when: `grep -q "$EXPECT" <(cd /tmp/haiku-test-<X> && go test ./... 2>&1)`
-  exits 0
-
-Do not proceed to Phase 2 until this grep exits 0.
+Read the output. Confirm it ends with `PASS: pre-state output contains expected string`.
+If it exits non-zero or prints `FAIL:`, stop and report the error — do not proceed.
 
 ### Phase 2 — Haiku agent run
 
-Run the agent companion script:
-
+Run:
 ```bash
 bash .claude/skills/craft-pack-eval/run-agent.sh <scenario>
 ```
 
-This:
-1. Runs `bar build make witness ground gate falsify atomic` to capture the system prompt
-2. Loads the scenario task prompt from `setup.sh`
-3. Invokes the haiku agent:
-   ```bash
-   claude -p "<task-prompt>" \
-     --system-prompt "<craft-pack-system-prompt>" \
-     --model claude-haiku-4-5 \
-     --allowedTools "Bash,Read,Edit,Write" \
-     --output-format stream-json --verbose \
-     > /tmp/haiku-test-<scenario>/transcript.jsonl
-   ```
-4. Saves the stream-json transcript to `/tmp/haiku-test-<scenario>/transcript.jsonl`
-
-**Gate (falsifiable):**
-- (a) absence signal: `transcript.jsonl` does not exist, OR
-  `grep '"type":"tool_result"' transcript.jsonl` exits non-zero
-- (b) presence signal: file exists AND contains `"type":"tool_result"`
-- Gate is satisfied when:
-  `grep -q '"type":"tool_result"' /tmp/haiku-test-<scenario>/transcript.jsonl`
-  exits 0
-
-Do not proceed to Phase 3 until this grep exits 0.
+This will take 1–3 minutes. Read the output. Confirm it ends with
+`PASS: transcript contains N tool_result block(s)`.
+If it exits non-zero or prints `FAIL:`, stop and report the error — do not proceed.
 
 ### Phase 3 — Scoring
 
-Read `/tmp/haiku-test-<scenario>/transcript.jsonl`. Extract the assistant text turns:
-
+Extract assistant text from the transcript:
 ```bash
 cat /tmp/haiku-test-<scenario>/transcript.jsonl \
-  | jq -r 'select(.type=="assistant") | .message.content[]? | select(.type=="text") | .text' \
-  > /tmp/haiku-test-<scenario>/assistant-text.md
+  | python3 -c "
+import sys, json
+for line in sys.stdin:
+    line = line.strip()
+    if not line: continue
+    try:
+        obj = json.loads(line)
+        if obj.get('type') == 'assistant':
+            for block in obj.get('message', {}).get('content', []):
+                if block.get('type') == 'text':
+                    print(block['text'])
+    except: pass
+" > /tmp/haiku-test-<scenario>/assistant-text.md
+cat /tmp/haiku-test-<scenario>/assistant-text.md
 ```
 
-For each frame in the scenario's target frame list (from the coverage matrix in ADR-0239):
+Then read `assistant-text.md` and `transcript.jsonl`. For each frame in the scenario's
+target frame list (coverage matrix in ADR-0239), apply the pass criterion:
 
-1. State the pass criterion for the frame (from ADR-0239 Scoring Rubric)
-2. Search `assistant-text.md` (and tool-result blocks in `transcript.jsonl`) for the
-   required string or structural property
-3. Quote the verbatim evidence if found, or write `absent` if not
-4. State PASS or FAIL
+1. Quote the specific string or structural property being checked
+2. Search the transcript for it — use Bash grep if needed:
+   ```bash
+   grep -n "<string>" /tmp/haiku-test-<scenario>/assistant-text.md
+   ```
+3. State PASS or FAIL with verbatim evidence quoted from the transcript, or `absent`
 
 **Scoring rules:**
 - Critical frame failure → overall FAIL regardless of other scores
-- Evidence must be a verbatim quote from `transcript.jsonl` or `assistant-text.md`
-- "I would have..." or prose narration does not count as a tool-result block
-- A required tool-result block is absent if no `"type":"tool_result"` line in
-  `transcript.jsonl` contains the required string
+- Evidence must be a verbatim quote — not paraphrase, not inference
+- Prose narration ("I would now run...") does not count as a tool-result block
+- A tool-result block is absent if no line in `transcript.jsonl` matching
+  `"type":"tool_result"` contains the required string
 
 ### Phase 4 — Output
 
-Emit the filled round-result block using the template from ADR-0239 §Round Result Template.
-
-Every `PASS/FAIL` cell must be filled. Every evidence cell must contain either a verbatim
-quoted string or `absent`. A block containing any unfilled `PASS/FAIL` placeholder is not
-complete — the Phase 4 gate is satisfied when `grep -q 'PASS/FAIL' <output>` exits non-zero
-(i.e. the placeholder is gone).
+Emit the filled round-result block (template from ADR-0239 §Round Result Template).
+Every cell must contain `PASS` or `FAIL` plus a quoted evidence string or `absent`.
+No `PASS/FAIL` placeholder may remain in the output.
 
 ---
 

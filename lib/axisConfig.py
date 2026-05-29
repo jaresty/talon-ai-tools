@@ -339,7 +339,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "token. A result where any governed behavior identifier appears under a signal other than (a) or (b) does not satisfy this token for that behavior; bring the system to a state "
         "where every governed behavior can produce either (a) or (b) before proceeding. Proceed to the governed action only when the derivation and the satisfying result are present "
         "as text above this point in the transcript. Exception: the result requirement does not apply to the single governed action whose effect introduces (c) as a new string — a "
-        "governed action is the creation step only if (c) is absent before the action and present after it; any other governed action is not exempt.",
+        "governed action is the creation step only if (c) is absent before the action and present after it; any other governed action is not exempt. After all governed actions "
+        "complete, the persistent artifact must contain at least one statement referencing (c) whose outcome would change if the governed behavior were reversed.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

@@ -336,9 +336,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "(3) appears in the transcript, (3) contains (4) as a substring or is derived from it by the test framework's naming convention, and no governed assertion appears under (2). A "
         "result block where any governed assertion appears under (2) does not satisfy this token for that assertion — bring the system to a state where every governed assertion can "
         "reach execution before running the test. Proceed to implementation only when the derivation and the satisfying result block are present as text above this point in the "
-        "transcript. Exception: the result-block requirement does not apply to the single file-modifying tool call whose diff introduces the governing criterion string as a new string "
-        "— a tool call is the creation step only if the governing criterion string is absent from the file before the call and present after it, and the target file path shares at "
-        "least one path segment with the source file containing (4); any tool call that does not satisfy both conditions is not a creation step and is not exempt.",
+        "transcript. Implementation step constraint: a file-modifying tool call is invalid if the result block immediately following it contains any governed assertion (3) under "
+        "pre-execution error marker (2). Before any tool call whose diff removes the definition of (4), a tool-executed result showing zero occurrences of (4) in call-site positions "
+        "must appear in the transcript. Exception: the result-block requirement does not apply to the single file-modifying tool call whose diff introduces the governing criterion "
+        "string as a new string — a tool call is the creation step only if the governing criterion string is absent from the file before the call and present after it, and the target "
+        "file path shares at least one path segment with the source file containing (4); any tool call that does not satisfy both conditions is not a creation step and is not exempt.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

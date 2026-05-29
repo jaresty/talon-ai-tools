@@ -199,7 +199,8 @@ Bar binary: dev build (`/tmp/bar-new`)
 | C (round 1) | 2,3,4,8,9,10,12,13,13b,14,17 | 13b FAIL | — | yellow |
 | C (round 2, patched) | same | 0 | 0 | green |
 | D | 9,12b,16,19,20 | 0 | 0 | green |
-| E | 9,11,11c,12,13,14b | 11c FAIL | — | yellow |
+| E (round 1) | 9,11,11c,12,13,14b | 11c FAIL | — | yellow |
+| E (round 3, redesigned) | 9,11,11c,12,13,14b | 0 | 0 | green |
 | F | 16,19,11c | 0 | 0 | green |
 | G | 4,5,6,7,15,19 | 0 | 6,19 FAIL | yellow |
 | H | 1,10 | 0 | 0 | green |
@@ -268,3 +269,33 @@ Bar binary: dev build (`/tmp/bar-new`)
 **Frame 11c FAIL**: Post-edit `TestAdd_removed` body is empty — contains only comments, no statement referencing `Add`. Re-introducing `Add` to `calc.go` would leave `TestAdd_removed` still passing. The artifact integrity clause (falsify definition, added 2026-05-29) requires at least one statement referencing (c) whose outcome changes if the governed behavior is reversed.
 
 **Root cause**: Scenario E's test design created a structural trap — `_ = Add; t.Fatal(...)` is a valid pre-removal guard but the only mechanical path to a passing test after removal is to gut the reference. Scenario E may need redesign (separate package or build-tag approach) to make the correct post-removal state achievable without hollowing the guard.
+
+---
+
+# Round 7 — 2026-05-29
+
+Model: claude-haiku-4-5-20251001
+Scenario: E (redesigned test — Round 3 after structural trap fix)
+Scorer: human (Claude Sonnet 4.6)
+Bar binary: dev build (`/tmp/bar-new`)
+
+## What Changed
+
+Scenario E's `calc_test.go` redesigned: replaced `_ = Add; t.Fatal(...)` with `os.ReadFile("calc.go")` + `bytes.Contains(content, []byte("func Add("))`. This breaks the compile-time reference trap — the test compiles regardless of whether `Add` exists in `calc.go`, while still containing a statement whose outcome changes when the governed behavior (Add's presence) is reversed.
+
+## Crank Battery Results — Scenario E Re-run
+
+| Frame | Token(s) | Result | Evidence |
+|---|---|---|---|
+| 9 | falsify (a)(b)(c)(d) | PASS | (a) `--- FAIL: TestAdd_removed` (b) `--- PASS: TestAddInts` (c) `TestAdd_removed` (d) `calc.go` — named before edit |
+| 11 | falsify creation-step exception | PASS | No creation-step exception claimed; removal treated correctly |
+| 11c | falsify artifact integrity | PASS | `bytes.Contains(content, []byte("func Add("))` references Add; re-introducing Add would flip PASS→FAIL |
+| 12 | atomic scope+symbol | PASS | Scope quoted from pre-edit FAIL; symbol `Add` committed |
+| 13 | atomic post-edit | PASS | `go test ./...` post-edit shows `--- PASS: TestAdd_removed`; scope text absent; all test names present |
+| 14b | gate+falsify FAIL+PASS | PASS | Pre-edit block contained `--- PASS: TestAddInts` |
+
+**Score: 6/6 target frames — green**
+
+## Decision
+
+Scenario E redesign confirmed. The `os.ReadFile`+`bytes.Contains` pattern is the canonical approach for removal scenarios where Frame 11c applies — it provides a runtime reference to (c) that survives compilation when (c) is absent.

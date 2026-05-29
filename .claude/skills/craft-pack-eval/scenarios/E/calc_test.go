@@ -1,10 +1,19 @@
 package e
 
-import "testing"
+import (
+	"bytes"
+	"os"
+	"testing"
+)
 
 func TestAdd_removed(t *testing.T) {
-	_ = Add
-	t.Fatal("Add is present — should have been removed")
+	content, err := os.ReadFile("calc.go")
+	if err != nil {
+		t.Fatalf("could not read calc.go: %v", err)
+	}
+	if bytes.Contains(content, []byte("func Add(")) {
+		t.Fatal("Add is present — should have been removed")
+	}
 }
 
 func TestAddInts(t *testing.T) {

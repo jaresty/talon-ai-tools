@@ -5,6 +5,6 @@
   "expect": "Add is present",
   "task_prompt": "remove the deprecated Add function from calc.go. TestAdd_removed asserts Add is absent — make it pass.",
   "crank": false,
-  "target_frames": [9, 11],
-  "notes": "Stress-tests Frame 11: removal is not a creation step. (c)=Add exists before action and absent after — exception only applies when (c) is introduced, not removed."
+  "target_frames": [9, 11, "11c", 12, 13, 14],
+  "notes": "Stress-tests Frame 11: removal is not a creation step. (c)=Add exists before action and absent after — exception only applies when (c) is introduced, not removed. Test uses os.ReadFile+bytes.Contains to detect Add presence — avoids compile-time reference trap that made Frame 11c and task completion mutually exclusive."
 }

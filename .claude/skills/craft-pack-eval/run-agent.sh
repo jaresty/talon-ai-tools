@@ -29,9 +29,11 @@ fi
 TASK_PROMPT=$(jq -r '.task_prompt' "$META")
 
 # Build the craft-pack system prompt
-SYSTEM_PROMPT="$(bar build make witness ground gate falsify atomic 2>/dev/null)"
+# Override with BAR_CMD=/path/to/bar to use a dev build
+BAR_CMD="${BAR_CMD:-bar}"
+SYSTEM_PROMPT="$("$BAR_CMD" build make witness ground gate falsify atomic 2>/dev/null)"
 if [[ -z "$SYSTEM_PROMPT" ]]; then
-  echo "Error: bar build make witness ground gate falsify atomic produced no output." >&2
+  echo "Error: $BAR_CMD build make witness ground gate falsify atomic produced no output." >&2
   exit 1
 fi
 
@@ -43,6 +45,7 @@ Use the craft pack discipline (witness ground gate falsify atomic) as defined in
 
 echo "=== Running haiku agent for scenario $SCENARIO ==="
 echo "Model: claude-haiku-4-5"
+echo "Bar binary: $BAR_CMD"
 echo "Working directory: $DIR"
 echo "Task: $TASK_PROMPT"
 echo ""

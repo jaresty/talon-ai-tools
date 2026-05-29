@@ -204,7 +204,7 @@ func TestRunBuildWithSubjectFlag(t *testing.T) {
 	}
 }
 
-func TestRunBuildSubjectAndStdinMutualExclusivity(t *testing.T) {
+func TestRunBuildSubjectAndStdinConcatenated(t *testing.T) {
 	if runtime.GOOS == "windows" {
 		t.Skip("stdin pipe detection is not stable on Windows in go test")
 	}
@@ -221,11 +221,14 @@ func TestRunBuildSubjectAndStdinMutualExclusivity(t *testing.T) {
 
 	result := runBuildCLI(t, []string{"build", "make", "--subject", "flag content"}, r)
 
-	if result.Exit == 0 {
-		t.Fatalf("expected non-zero exit when both --subject and stdin provided")
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0 when both --subject and stdin provided, got %d with stderr: %s", result.Exit, result.Stderr)
 	}
-	if !strings.Contains(result.Stderr, "cannot provide both --subject flag and stdin input") {
-		t.Fatalf("expected mutual exclusivity error, got: %s", result.Stderr)
+	if !strings.Contains(result.Stdout, "flag content") {
+		t.Fatalf("expected stdout to include --subject content, got: %s", result.Stdout)
+	}
+	if !strings.Contains(result.Stdout, "piped content") {
+		t.Fatalf("expected stdout to include stdin content, got: %s", result.Stdout)
 	}
 }
 

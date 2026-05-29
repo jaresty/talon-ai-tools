@@ -222,6 +222,42 @@ Bar binary: dev build (`/tmp/bar-new`)
 
 ---
 
+# Round 8 — 2026-05-29
+
+Model: claude-haiku-4-5-20251001
+Scenario: G (re-run after ground enumeration closure — Frame 6)
+Scorer: human (Claude Sonnet 4.6)
+Bar binary: dev build (`/tmp/bar-new`) — includes Frame 6 enumeration closure
+
+## What Changed
+
+Ground enumeration clause updated in `lib/groundPrompt.py`: replaced "these heading requirements" with explicit "§1, §2, §3, and §4"; added cardinality floor ("at least one path entry for each of §1, §2, §3, and §4"); added explicit gate ("No file-modifying tool call may appear before this enumeration is present in the transcript"). Grammar regenerated and committed (f9f073f5).
+
+## Crank Battery Results — Scenario G Re-run
+
+| Frame | Token(s) | Result | Evidence |
+|---|---|---|---|
+| 4 | ground §2 | PASS | Dimension headings contain literal substrings from goal |
+| 5 | ground §3 | PASS | Enforcement artifact named per dimension |
+| 6 | ground escape routes | **FAIL** | No §1/§2/§3/§4 path entries present in transcript — enumeration absent |
+| 7 | ground §4 | PASS | Completion check cites verbatim strings from tool results |
+| 15 | ground+falsify | PASS | Separate FAIL→PASS blocks per dimension |
+| 19 | atomic+ground adversarial | PASS | Two separate Edit calls — Frame 19 allow-list closure held |
+
+**Score: 5/6 target frames — yellow** (Frame 6 High; Frame 19 now green)
+
+## Finding
+
+Frame 6 remains FAIL after the definition closure. The agent reads the ground derivation requirements (§0–§4) and produces compliant output for all of them, but consistently omits the enumeration block entirely. The new clause is structurally present and explicit, but Haiku skips it.
+
+**Hypothesis**: The enumeration requirement is positioned after the §0–§4 list in the ground definition text. Haiku may be pattern-matching on the derivation phase structure (§0 → §1 → §2 → §3 → §4 → implementation) and treating the enumeration as a subsequent, optional step rather than a required gate. The new explicit gate ("No file-modifying tool call may appear before this enumeration") has not changed behavior.
+
+**Candidate next steps**:
+1. Move the enumeration requirement inside the derivation phase list — number it as an explicit §§ step (e.g., between §4 and the completion check) so it reads as part of the required sequence, not a trailing instruction.
+2. Treat Frame 6 as a Haiku compliance ceiling — the frame tests a genuine requirement but the model reliably fails it regardless of definition wording.
+
+---
+
 # Round 3 — 2026-05-29
 
 Model: claude-haiku-4-5-20251001

@@ -651,53 +651,53 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_empty_transcript_gap_closed(self):
-        """falsify must block implementation until the derivation and enumeration are present as text above that point — the structural gate preventing implementation without a visible result block (hollow audit finding)."""
+        """falsify must block the governed action until the derivation and satisfying result are present as text above that point — the structural gate preventing action without a visible result (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "Proceed to implementation only when the derivation and the satisfying result block are present as text above this point in the transcript",
+            "Proceed to the governed action only when the derivation and the satisfying result are present as text above this point in the transcript",
             definition,
-            "falsify must explicitly block implementation until derivation and satisfying result block are present in the transcript",
+            "falsify must explicitly block the governed action until derivation and satisfying result are present in the transcript",
         )
 
     def test_falsify_slower_check_excludes_compiler_artifacts(self):
-        """falsify must require that assertions reach execution and produce a runner failure marker — excluding compiler artifacts and pre-execution errors (hollow audit finding)."""
+        """falsify must require that governed behaviors reach execution producing signal (a) — pre-execution failures producing a different signal do not satisfy (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "(1) immediately precedes (3)",
+            "(a) immediately precedes (c)",
             definition,
-            "falsify slower-check clause must name the observable that excludes compiler artifacts",
+            "falsify slower-check clause must name the observable that excludes pre-execution failures: (a) immediately precedes (c)",
         )
 
     def test_falsify_self_refuting_closes_entry(self):
-        """falsify's enumeration must require closing or eliminating every open path — paths that cannot be closed by naming a string must be eliminated structurally (hollow audit finding)."""
+        """falsify must structurally require elimination of non-execution paths — governed behaviors must be able to produce signal (a) or (b) before proceeding (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "bring the system to a state where every governed assertion can reach execution before running the test",
+            "bring the system to a state where every governed behavior can produce either (a) or (b) before proceeding",
             definition,
-            "falsify must structurally require elimination of pre-execution-error paths, not just identification",
+            "falsify must structurally require elimination of non-execution paths, not just identification",
         )
 
     def test_falsify_direct_invocation_observable(self):
-        """falsify must name the observable distinguishing a tool-executed result block from a displayed or predicted result (hollow audit finding)."""
+        """falsify must name the observable distinguishing direct invocation from a displayed or predicted result — tool call text naming (d) directly is the structural criterion (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "tool-executed result block",
+            "result was produced by a tool call whose text names (d) directly",
             definition,
-            "falsify must name the observable that distinguishes direct invocation from status display",
+            "falsify must name the observable that distinguishes direct invocation: result was produced by a tool call whose text names (d) directly",
         )
 
     def test_falsify_creation_step_boundary_required(self):
-        """falsify's exception clause must name the transcript-observable boundary of 'creation step' — the exception applies only to the tool call whose diff introduces the assertion identifier as a new string, not to any subsequent implementation tool call (hollow audit finding)."""
+        """falsify's exception clause must name the transcript-observable boundary of 'creation step' using the governed behavior identifier — absent before the action and present after it (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "governing criterion string is absent from the file before the call and present after it",
+            "(c) is absent before the action and present after it",
             definition,
-            "falsify must name the creation-step boundary using structural terms: governing criterion string absent before the call and present after it — any other tool call is not exempt",
+            "falsify must name the creation-step boundary: (c) is absent before the action and present after it — any other governed action is not exempt",
         )
 
     def test_falsify_no_open_enumeration(self):
@@ -707,47 +707,64 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.assertNotIn(
             "enumerate every path",
             definition,
-            "falsify must not use open enumeration — replace with bounded four named-strings derivation",
+            "falsify must not use open enumeration — replace with bounded four named-signals derivation",
         )
 
     def test_falsify_four_named_strings_derivation(self):
-        """falsify's derivation instruction must use a four named-strings structure — name (1) failure marker, (2) error marker, (3) assertion identifier, (4) symbol under modification (hollow audit finding)."""
+        """falsify's derivation instruction must use a four named-signals structure — name (a) absence signal, (b) presence signal, (c) behavior identifier, (d) governed action identifier (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "Name: (1)",
+            "Name — (a)",
             definition,
-            "falsify derivation must use four named-strings structure: Name: (1) failure marker (2) error marker (3) assertion identifier (4) symbol",
+            "falsify derivation must use four named-signals structure: Name — (a) absence signal (b) presence signal (c) behavior identifier (d) governed action identifier",
         )
 
     def test_falsify_specificity_constraint(self):
-        """falsify must require that the assertion identifier names the specific symbol under modification — integration-level FAIL through unrelated code does not satisfy the criterion (hollow audit finding)."""
+        """falsify must require that (c) identifies each governed behavior individually — a result that fires on any absent behavior regardless of scope does not satisfy this token (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "(3) contains (4)",
+            "(c) the string identifying each governed behavior",
             definition,
-            "falsify must require assertion identifier (3) to contain symbol name (4) — closes specificity gap",
+            "falsify must require (c) to identify each governed behavior specifically — closes the integration-level FAIL scope gap",
         )
 
-    def test_falsify_creation_step_canonical_file(self):
-        """falsify's creation-step exception must require the target file to share a path segment with the source file containing the symbol under modification — temp files do not qualify (hollow audit finding)."""
+    def test_falsify_governing_artifact_not_disposable(self):
+        """falsify must require the governing artifact to persist in the work product — a disposable artifact (/tmp) does not satisfy this token regardless of whether it produces the correct signals (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "shares at least one path segment with the source file containing (4)",
+            "will not persist in the work product",
             definition,
-            "falsify creation-step exception must require canonical test file — file path must share a segment with source file containing symbol (4)",
+            "falsify must prohibit disposable governing artifacts — 'will not persist in the work product' must appear in the definition",
         )
 
-    def test_falsify_implementation_boundary_named(self):
-        """falsify's derivation phase must name 'file-modifying tool call' as the literal boundary for 'implementation action' — 'implementation action' is not evaluatable without semantic inference (hollow audit finding)."""
+    def test_falsify_disposable_artifact_constraint_in_primary_condition(self):
+        """falsify's PRIMARY condition must name the disposable-artifact constraint — it must appear before 'Exception:' so /tmp-based governing artifacts are excluded from the primary condition (hollow audit finding)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        exception_start = definition.find("Exception:")
+        primary_condition = definition[:exception_start] if exception_start != -1 else definition
+        self.assertIn(
+            "disposable artifact",
+            primary_condition,
+            "falsify primary condition must prohibit disposable governing artifacts — 'disposable artifact' must appear before 'Exception:'",
+        )
+
+    def test_falsify_governed_action_boundary_named(self):
+        """falsify's derivation phase must name 'governed action' as the domain-agnostic boundary — 'file-modifying tool call' couples the token to software contexts (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
+            "before any governed action",
+            definition,
+            "falsify must name 'governed action' as the domain-agnostic boundary — not 'file-modifying tool call'",
+        )
+        self.assertNotIn(
             "before any file-modifying tool call",
             definition,
-            "falsify must name 'file-modifying tool call' as the literal boundary — 'implementation action' requires semantic inference",
+            "falsify must not name 'file-modifying tool call' — this couples the token to software contexts",
         )
 
     def test_falsify_no_naming_convention_escape(self):

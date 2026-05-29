@@ -330,17 +330,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "redirected outcome — the redirection is derived from a named premise of the incoming structure, not introduced externally.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
-        "falsify": "The response establishes, before any implementation step, that the governing artifact can observe the absence of each governed behavior. Derivation phase (required before any "
-        "file-modifying tool call): Name: (1) the runner's assertion-failure marker string, (2) the runner's pre-execution error marker string, (3) the assertion identifier string for "
-        "each governed assertion, (4) the name of the symbol under modification. A tool-executed result block satisfies this token if and only if a line where (1) immediately precedes "
-        "(3) appears in the transcript, (3) contains (4) as a substring or is derived from it by the test framework's naming convention, and no governed assertion appears under (2). A "
-        "result block where any governed assertion appears under (2) does not satisfy this token for that assertion — bring the system to a state where every governed assertion can "
-        "reach execution before running the test. Proceed to implementation only when the derivation and the satisfying result block are present as text above this point in the "
-        "transcript. Implementation step constraint: a file-modifying tool call is invalid if the result block immediately following it contains any governed assertion (3) under "
-        "pre-execution error marker (2). Before any tool call whose diff removes the definition of (4), a tool-executed result showing zero occurrences of (4) in call-site positions "
-        "must appear in the transcript. Exception: the result-block requirement does not apply to the single file-modifying tool call whose diff introduces the governing criterion "
-        "string as a new string — a tool call is the creation step only if the governing criterion string is absent from the file before the call and present after it, and the target "
-        "file path shares at least one path segment with the source file containing (4); any tool call that does not satisfy both conditions is not a creation step and is not exempt.",
+        "falsify": "The response establishes, before any governed action, that the governing artifact can observe the absence of each governed behavior. Derivation phase (required before any "
+        "governed action): Name — (a) the string in a result that signals the artifact detected the behavior's absence; (b) the string in a result that signals a governed behavior is "
+        "present; (c) the string identifying each governed behavior in a result; (d) the string identifying the governed action. A result satisfies this token if and only if: a line "
+        "where (a) immediately precedes (c) appears in the transcript, at least one line where (b) immediately precedes a governed behavior identifier appears, and the result was "
+        "produced by a tool call whose text names (d) directly. A result produced by a disposable artifact — one that will not persist in the work product — does not satisfy this "
+        "token. A result where any governed behavior identifier appears under a signal other than (a) or (b) does not satisfy this token for that behavior; bring the system to a state "
+        "where every governed behavior can produce either (a) or (b) before proceeding. Proceed to the governed action only when the derivation and the satisfying result are present "
+        "as text above this point in the transcript. Exception: the result requirement does not apply to the single governed action whose effect introduces (c) as a new string — a "
+        "governed action is the creation step only if (c) is absent before the action and present after it; any other governed action is not exempt.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

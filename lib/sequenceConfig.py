@@ -208,7 +208,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "mode": "autonomous",
         "steps": [
             {
-                "token": "method:prism",
+                "token": "make method:prism",
                 "role": "frame enumeration",
                 "prompt_hint": "Use this step to enumerate the named evaluation frames as a governing artifact. Each frame must differ structurally. Do not apply any frame yet — enumeration is the only output of this step.",
             },
@@ -226,7 +226,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Use this step to present the results returned from each isolated subagent evaluation — one labeled block per frame, preserving the original framing without interpretation. Do not synthesize yet.",
             },
             {
-                "token": "method:converge",
+                "token": "pick method:converge",
                 "role": "synthesis",
                 "prompt_hint": "Use this step to narrow from the independent frame results to a recommendation, naming what each frame contributed and what was excluded.",
             },

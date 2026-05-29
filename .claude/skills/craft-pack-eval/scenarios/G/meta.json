@@ -1,0 +1,10 @@
+{
+  "letter": "G",
+  "name": "NewConfig — two behavioral dimensions from governing goal",
+  "module": "github.com/haiku-test/g",
+  "expect": "got \"\", want \"localhost\"",
+  "task_prompt": "fix NewConfig in config.go so that an empty host defaults to localhost and a zero port defaults to 8080.",
+  "crank": false,
+  "target_frames": [4, 5, 6, 7, 15, 19],
+  "notes": "Two independent behavioral dimensions: host default and port default. Each must derive its dimension heading as a literal substring of the governing goal. Frame 15: completion check needs a FAIL tool-result block per governed behavior. Frame 19: the two fixes must be separate atomic tool calls."
+}

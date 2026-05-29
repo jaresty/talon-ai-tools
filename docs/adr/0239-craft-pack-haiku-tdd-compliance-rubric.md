@@ -15,6 +15,24 @@ requirement — either a single-token requirement or a composition-rule requirem
 
 Periodic runs produce a round result captured in a companion work-log ADR.
 
+## SSOT
+
+Executable scenario definitions (source files, task prompts, expected failure strings, target
+frames) live in:
+
+```
+.claude/skills/craft-pack-eval/scenarios/<X>/
+  meta.json       — module, expect, task_prompt, target_frames, crank flag
+  *.go            — pre-state source and test files
+```
+
+This ADR is the authoritative record of *what* each scenario tests and *why*. The `scenarios/`
+directory is the authoritative executable definition. If the two diverge, `scenarios/` governs
+for the scripts; open a PR to update the ADR description to match.
+
+To run a scenario: `bash .claude/skills/craft-pack-eval/setup.sh <X>`
+To invoke the full eval skill: `/craft-pack-eval <X>`
+
 ---
 
 ## Test Battery — 20 Frames, 31 Test Cases
@@ -328,35 +346,7 @@ sufficient for periodic runs. Full battery scenarios exercise the excluded frame
 **Frames targeted**: 2, 3, 4, 8, 9, 10, 12, 13, 14
 **Operation type**: addition
 
-**Setup**:
-```bash
-mkdir -p /tmp/haiku-test-A && cd /tmp/haiku-test-A
-go mod init github.com/haiku-test/a
-
-cat > token.go << 'EOF'
-package a
-EOF
-
-cat > token_test.go << 'EOF'
-package a
-
-import "testing"
-
-func TestParseToken(t *testing.T) {
-	got := parseToken("foo:bar")
-	if got != "bar" {
-		t.Fatalf("got %q, want %q", got, "bar")
-	}
-}
-EOF
-```
-
-**Pre-state run**:
-```
---- FAIL: TestParseToken (0.00s)
-[build failed: undefined: parseToken]
-FAIL    github.com/haiku-test/a [build failed]
-```
+**Source**: `.claude/skills/craft-pack-eval/scenarios/A/`
 
 **Task prompt**:
 > Using `bar build make witness ground gate falsify atomic`, implement `parseToken` in `token.go`.
@@ -371,50 +361,7 @@ FAIL    github.com/haiku-test/a [build failed]
 **Frames targeted**: 2, 3, 4, 8, 9, 10, 12, 13, 14 — stress-tests Frame 14b (FAIL+PASS required)
 **Operation type**: edit
 
-**Setup**:
-```bash
-mkdir -p /tmp/haiku-test-B && cd /tmp/haiku-test-B
-go mod init github.com/haiku-test/b
-
-cat > validate.go << 'EOF'
-package b
-
-func validateInput(s string) error {
-	return nil
-}
-EOF
-
-cat > validate_test.go << 'EOF'
-package b
-
-import (
-	"errors"
-	"testing"
-)
-
-func TestValidateInput_empty(t *testing.T) {
-	err := validateInput("")
-	if err == nil {
-		t.Fatal("expected error for empty string, got nil")
-	}
-}
-
-func TestValidateInput_valid(t *testing.T) {
-	err := validateInput("hello")
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-}
-EOF
-```
-
-**Pre-state run**:
-```
---- FAIL: TestValidateInput_empty (0.00s)
-    validate_test.go:12: expected error for empty string, got nil
---- PASS: TestValidateInput_valid (0.00s)
-FAIL    github.com/haiku-test/b
-```
+**Source**: `.claude/skills/craft-pack-eval/scenarios/B/`
 
 **Task prompt**:
 > Using `bar build make witness ground gate falsify atomic`, fix `validateInput` in `validate.go`
@@ -429,54 +376,7 @@ FAIL    github.com/haiku-test/b
 **Frames targeted**: 12, 13 — stress-tests Frame 13b (new failure after edit must block close)
 **Operation type**: edit with side-effect
 
-**Setup**:
-```bash
-mkdir -p /tmp/haiku-test-C && cd /tmp/haiku-test-C
-go mod init github.com/haiku-test/c
-
-cat > format.go << 'EOF'
-package c
-
-import "fmt"
-
-func formatDate(year, month, day int) string {
-	return fmt.Sprintf("%d/%02d/%02d", year, month, day)
-}
-
-func formatTime(hour, min int) string {
-	return fmt.Sprintf("%d:%02d", hour, min)
-}
-EOF
-
-cat > format_test.go << 'EOF'
-package c
-
-import "testing"
-
-func TestFormatDate(t *testing.T) {
-	got := formatDate(2026, 5, 29)
-	if got != "2026-05-29" {
-		t.Fatalf("got %q, want %q", got, "2026-05-29")
-	}
-}
-
-func TestFormatTime(t *testing.T) {
-	got := formatTime(9, 5)
-	if got != "09:05" {
-		t.Fatalf("got %q, want %q", got, "09:05")
-	}
-}
-EOF
-```
-
-**Pre-state run**:
-```
---- FAIL: TestFormatDate (0.00s)
-    format_test.go:9: got "2026/05/29", want "2026-05-29"
---- FAIL: TestFormatTime (0.00s)
-    format_test.go:16: got "9:05", want "09:05"
-FAIL    github.com/haiku-test/c
-```
+**Source**: `.claude/skills/craft-pack-eval/scenarios/C/`
 
 **Task prompt**:
 > Using `bar build make witness ground gate falsify atomic`, fix `formatDate` in `format.go`
@@ -491,72 +391,7 @@ FAIL    github.com/haiku-test/c
 **Frames targeted**: 12b, 16, 19, 20 — stress-tests multi-symbol bundling
 **Operation type**: rename across multiple files
 
-**Setup**:
-```bash
-mkdir -p /tmp/haiku-test-D && cd /tmp/haiku-test-D
-go mod init github.com/haiku-test/d
-
-cat > parser.go << 'EOF'
-package d
-
-func ParseToken(s string) string {
-	if len(s) == 0 {
-		return ""
-	}
-	return s
-}
-EOF
-
-cat > router.go << 'EOF'
-package d
-
-func route(s string) string {
-	return ParseToken(s)
-}
-EOF
-
-cat > handler.go << 'EOF'
-package d
-
-func handle(s string) string {
-	return ParseToken(s)
-}
-EOF
-
-cat > parser_test.go << 'EOF'
-package d
-
-import "testing"
-
-func TestParseToken_renamed(t *testing.T) {
-	got := parseToken("hello")
-	if got != "hello" {
-		t.Fatalf("got %q, want %q", got, "hello")
-	}
-}
-
-func TestRoute(t *testing.T) {
-	got := route("world")
-	if got != "world" {
-		t.Fatalf("got %q, want %q", got, "world")
-	}
-}
-
-func TestHandle(t *testing.T) {
-	got := handle("foo")
-	if got != "foo" {
-		t.Fatalf("got %q, want %q", got, "foo")
-	}
-}
-EOF
-```
-
-**Pre-state run**:
-```
---- FAIL: TestParseToken_renamed (0.00s)
-[build failed: undefined: parseToken]
-FAIL    github.com/haiku-test/d [build failed]
-```
+**Source**: `.claude/skills/craft-pack-eval/scenarios/D/`
 
 **Task prompt**:
 > Using `bar build make witness ground gate falsify atomic`, rename `ParseToken` to `parseToken`
@@ -571,64 +406,7 @@ FAIL    github.com/haiku-test/d [build failed]
 **Frames targeted**: 9, 11 — stress-tests (a)(b)(c)(d) for a removal task; creation-step exception does not apply
 **Operation type**: removal
 
-**Setup**:
-```bash
-mkdir -p /tmp/haiku-test-E && cd /tmp/haiku-test-E
-go mod init github.com/haiku-test/e
-
-cat > calc.go << 'EOF'
-package e
-
-// Deprecated: use AddInts instead.
-func Add(a, b int) int {
-	return a + b
-}
-
-func AddInts(a, b int) int {
-	return a + b
-}
-EOF
-
-cat > calc_test.go << 'EOF'
-package e
-
-import "testing"
-
-func TestAdd_removed(t *testing.T) {
-	// This test asserts Add no longer exists — it should fail to compile if Add is present.
-	// Uncomment when Add is removed:
-	// _ = Add
-	t.Log("Add is absent — pass")
-}
-
-func TestAddInts(t *testing.T) {
-	got := AddInts(2, 3)
-	if got != 5 {
-		t.Fatalf("got %d, want 5", got)
-	}
-}
-EOF
-```
-
-**Pre-state run** (before removal):
-```
---- PASS: TestAdd_removed (0.00s)
---- PASS: TestAddInts (0.00s)
-ok      github.com/haiku-test/e
-```
-
-Modify `calc_test.go` to uncomment the `_ = Add` line to make the test assert absence:
-```bash
-sed -i '' 's|// _ = Add|_ = Add|' calc_test.go
-```
-
-**Pre-state run** (after enabling the absence assertion):
-```
---- FAIL: TestAdd_removed (0.00s)
-    calc_test.go:10: Add is present — should have been removed
---- PASS: TestAddInts (0.00s)
-FAIL    github.com/haiku-test/e
-```
+**Source**: `.claude/skills/craft-pack-eval/scenarios/E/`
 
 **Task prompt**:
 > Using `bar build make witness ground gate falsify atomic`, remove the deprecated `Add` function
@@ -643,40 +421,7 @@ FAIL    github.com/haiku-test/e
 **Frames targeted**: 16, 19 — stress-tests that haiku does not bundle the new function with dead-code removal
 **Operation type**: addition with distractor
 
-**Setup**:
-```bash
-mkdir -p /tmp/haiku-test-F && cd /tmp/haiku-test-F
-go mod init github.com/haiku-test/f
-
-cat > util.go << 'EOF'
-package f
-
-// unused helper — dead code
-func legacy(s string) string {
-	return s + "_legacy"
-}
-EOF
-
-cat > util_test.go << 'EOF'
-package f
-
-import "testing"
-
-func TestNormalize(t *testing.T) {
-	got := normalize("Hello World")
-	if got != "hello_world" {
-		t.Fatalf("got %q, want %q", got, "hello_world")
-	}
-}
-EOF
-```
-
-**Pre-state run**:
-```
---- FAIL: TestNormalize (0.00s)
-[build failed: undefined: normalize]
-FAIL    github.com/haiku-test/f [build failed]
-```
+**Source**: `.claude/skills/craft-pack-eval/scenarios/F/`
 
 **Task prompt**:
 > Using `bar build make witness ground gate falsify atomic`, implement `normalize` in `util.go`.
@@ -691,61 +436,7 @@ FAIL    github.com/haiku-test/f [build failed]
 **Frames targeted**: 4, 5, 6, 7, 15 — stress-tests ground's derivation chain
 **Operation type**: edit with two behavioral dimensions
 
-**Setup**:
-```bash
-mkdir -p /tmp/haiku-test-G && cd /tmp/haiku-test-G
-go mod init github.com/haiku-test/g
-
-cat > config.go << 'EOF'
-package g
-
-type Config struct {
-	Host string
-	Port int
-}
-
-func NewConfig(host string, port int) Config {
-	return Config{Host: host, Port: port}
-}
-EOF
-
-cat > config_test.go << 'EOF'
-package g
-
-import "testing"
-
-func TestNewConfig_host(t *testing.T) {
-	cfg := NewConfig("", 8080)
-	if cfg.Host != "localhost" {
-		t.Fatalf("got %q, want %q", cfg.Host, "localhost")
-	}
-}
-
-func TestNewConfig_port(t *testing.T) {
-	cfg := NewConfig("localhost", 0)
-	if cfg.Port != 8080 {
-		t.Fatalf("got %d, want 8080", cfg.Port)
-	}
-}
-
-func TestNewConfig_valid(t *testing.T) {
-	cfg := NewConfig("myhost", 9090)
-	if cfg.Host != "myhost" || cfg.Port != 9090 {
-		t.Fatal("explicit values not preserved")
-	}
-}
-EOF
-```
-
-**Pre-state run**:
-```
---- FAIL: TestNewConfig_host (0.00s)
-    config_test.go:10: got "", want "localhost"
---- FAIL: TestNewConfig_port (0.00s)
-    config_test.go:17: got 0, want 8080
---- PASS: TestNewConfig_valid (0.00s)
-FAIL    github.com/haiku-test/g
-```
+**Source**: `.claude/skills/craft-pack-eval/scenarios/G/`
 
 **Task prompt**:
 > Using `bar build make witness ground gate falsify atomic`, fix `NewConfig` in `config.go`
@@ -760,42 +451,7 @@ FAIL    github.com/haiku-test/g
 **Frames targeted**: 1, 10 — stress-tests assumption naming and falsify tool-result validity
 **Operation type**: addition with procedural traps
 
-**Setup**:
-```bash
-mkdir -p /tmp/haiku-test-H && cd /tmp/haiku-test-H
-go mod init github.com/haiku-test/h
-
-cat > score.go << 'EOF'
-package h
-EOF
-
-cat > score_test.go << 'EOF'
-package h
-
-import "testing"
-
-func TestScore(t *testing.T) {
-	got := score([]int{3, 1, 4, 1, 5})
-	if got != 14 {
-		t.Fatalf("got %d, want 14", got)
-	}
-}
-EOF
-
-# Also create a check script that reports on the test (disposable artifact trap)
-cat > check.sh << 'EOF'
-#!/bin/bash
-go test ./... 2>&1 | grep -c FAIL
-EOF
-chmod +x check.sh
-```
-
-**Pre-state run**:
-```
---- FAIL: TestScore (0.00s)
-[build failed: undefined: score]
-FAIL    github.com/haiku-test/h [build failed]
-```
+**Source**: `.claude/skills/craft-pack-eval/scenarios/H/`
 
 **Task prompt**:
 > Using `bar build make witness ground gate falsify atomic`, implement `score` in `score.go`.

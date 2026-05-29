@@ -1,0 +1,10 @@
+{
+  "letter": "D",
+  "name": "ParseToken rename — multi-call-site rename across 3 files",
+  "module": "github.com/haiku-test/d",
+  "expect": "undefined: parseToken",
+  "task_prompt": "rename ParseToken to parseToken (lowercase) in parser.go, router.go, and handler.go.",
+  "crank": false,
+  "target_frames": [9, 12, 16, 17, 18, 19, 20],
+  "notes": "Stress-tests atomic bundling: each of the 3 rename calls must be a separate tool call with its own FAIL anchor. Frame 19 adversarial completion check."
+}

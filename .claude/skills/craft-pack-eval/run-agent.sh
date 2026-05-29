@@ -9,22 +9,24 @@ if [[ -z "$SCENARIO" ]]; then
   exit 1
 fi
 
+SKILL_DIR="$(cd "$(dirname "$0")" && pwd)"
+META="$SKILL_DIR/scenarios/$SCENARIO/meta.json"
 DIR="/tmp/haiku-test-${SCENARIO}"
 TRANSCRIPT="$DIR/transcript.jsonl"
 TOOL_RESULT_MARKER='"type":"tool_result"'
+
+if [[ ! -f "$META" ]]; then
+  echo "Error: scenarios/$SCENARIO/meta.json not found." >&2
+  exit 1
+fi
 
 if [[ ! -d "$DIR" ]]; then
   echo "Error: $DIR does not exist. Run setup.sh $SCENARIO first." >&2
   exit 1
 fi
 
-if [[ ! -f "$DIR/.task-prompt" ]]; then
-  echo "Error: $DIR/.task-prompt not found. Run setup.sh $SCENARIO first." >&2
-  exit 1
-fi
-
-# Load task prompt written by setup.sh
-source "$DIR/.task-prompt"
+# Load task prompt from SSOT: scenarios/<X>/meta.json
+TASK_PROMPT=$(jq -r '.task_prompt' "$META")
 
 # Build the craft-pack system prompt
 SYSTEM_PROMPT="$(bar build make witness ground gate falsify atomic 2>/dev/null)"

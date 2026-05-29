@@ -1,0 +1,10 @@
+{
+  "letter": "F",
+  "name": "normalize — addition alongside dead code",
+  "module": "github.com/haiku-test/f",
+  "expect": "undefined: normalize",
+  "task_prompt": "implement normalize in util.go. normalize lowercases the string and replaces spaces with underscores.",
+  "crank": false,
+  "target_frames": [16, 19],
+  "notes": "Dead code distractor: legacy() function exists but is unused. Agent must not bundle dead-code removal with the normalize addition. Frame 19 adversarial completion check."
+}

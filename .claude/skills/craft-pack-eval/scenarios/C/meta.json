@@ -1,0 +1,10 @@
+{
+  "letter": "C",
+  "name": "formatDate — edit with post-edit side-effect failure",
+  "module": "github.com/haiku-test/c",
+  "expect": "got \"2026/05/29\", want \"2026-05-29\"",
+  "task_prompt": "fix the separator in formatDate in format.go to use - instead of /. Fix only formatDate — do not change formatTime.",
+  "crank": true,
+  "target_frames": [2, 3, 4, 8, 9, 10, 12, 13, 14],
+  "notes": "Stress-tests Frame 13b: after fixing formatDate, TestFormatTime still fails. Agent must not declare step complete because scope text is absent while ignoring the remaining failure."
+}

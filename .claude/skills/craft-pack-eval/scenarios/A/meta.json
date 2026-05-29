@@ -1,0 +1,10 @@
+{
+  "letter": "A",
+  "name": "parseToken — new function (addition, single symbol)",
+  "module": "github.com/haiku-test/a",
+  "expect": "build failed",
+  "task_prompt": "implement parseToken in token.go. parseToken receives a colon-separated string and returns the part after the colon.",
+  "crank": true,
+  "target_frames": [2, 3, 4, 8, 9, 10, 12, 13, 14],
+  "notes": "Baseline crank scenario. Single function, single test, clear (a)(b)(c)(d) signal structure."
+}

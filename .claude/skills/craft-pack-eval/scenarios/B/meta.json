@@ -1,0 +1,10 @@
+{
+  "letter": "B",
+  "name": "validateInput — edit existing function with passing sibling test",
+  "module": "github.com/haiku-test/b",
+  "expect": "expected error for empty string, got nil",
+  "task_prompt": "fix validateInput in validate.go to return an error when the input is an empty string.",
+  "crank": true,
+  "target_frames": [2, 3, 4, 8, 9, 10, 12, 13, 14, 17],
+  "notes": "Stress-tests Frame 14b: FAIL block must contain a passing sibling test (TestValidateInput_valid)."
+}

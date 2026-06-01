@@ -463,9 +463,9 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 		"1. Do NOT run bar build for this step.",
 		"2. fan_out: enumerate",
 		"3. isolation: true",
-		"4. Spawn one Agent tool call per frame.",
+		"4. Spawn one Agent tool call per item.",
 		"5. join: all",
-		"6. Pass collected results as --subject to the next step.",
+		"6. Pass the join result as --subject to the next step.",
 	}
 	for _, want := range checks {
 		if !strings.Contains(out, want) {

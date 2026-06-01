@@ -86,6 +86,7 @@ Each step is a required gate. Do not advance to the next step until the current 
    - `bar help llm --section heuristics` → Choosing Method/Scope/Form guidance
    - `bar help llm --section tokens` → full token catalog with definitions
    - `bar help llm --section rules` → composition rules and incompatibilities
+   - `bar help llm --section sequences` → sequence list, execution modes, dispatch step protocol
    - `bar help token <slug>` → definition, heuristics, distinctions for one token
 4. **Workflow planning strategy:**
    - Consult **"Choosing Method"** section (`--section heuristics`) to understand method categorization

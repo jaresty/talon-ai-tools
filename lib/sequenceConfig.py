@@ -244,7 +244,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Use this step to enumerate the named exploration frames as a governing artifact. Each frame must differ structurally. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Do not apply any frame yet.",
+                "prompt_hint": "Use this step to enumerate the named exploration frames as a governing artifact. Each frame must differ structurally. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable (code analysis, API calls, test runs, document review) — frames that require human data-gathering do not belong in this sequence. Do not apply any frame yet.",
             },
             {
                 "type": "dispatch",
@@ -263,6 +263,32 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "token": "pick method:converge",
                 "role": "cross-frame synthesis",
                 "prompt_hint": "Use this step to synthesize across frames: what each frame's experiment cycles revealed, where frames agree or diverge, and what the combined evidence supports as a conclusion.",
+            },
+        ],
+    },
+    "frame-debug": {
+        "description": "Enumerate independent fix hypotheses, race isolated agents to resolve each one, take the first that succeeds, then explain why it worked.",
+        "example": "A service is returning intermittent 500s — enumerate candidate root causes (connection pool exhaustion, bad query plan, race condition, config drift), race fix attempts in parallel, take the first that resolves it.",
+        "heuristics": ["race fix attempts", "parallel debugging", "first fix wins", "competing hypotheses", "parallel root cause attempts", "race to resolution", "try fixes in parallel"],
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "make method:prism",
+                "role": "fix hypothesis enumeration",
+                "prompt_hint": "Use this step to enumerate independent fix hypotheses as a governing artifact. Each hypothesis must be a distinct candidate root cause with a concrete fix approach. Only enumerate hypotheses that are fully agent-verifiable (code inspection, test runs, tool calls). Do not apply any hypothesis yet.",
+            },
+            {
+                "type": "dispatch",
+                "role": "parallel fix attempts",
+                "fan_out": "enumerate",
+                "join": "first",
+                "isolation": True,
+                "prompt_hint": "Each agent receives only the subject and its assigned hypothesis. Each agent runs an experiment cycle (prep → vet → repeat) within its hypothesis frame until it can confirm or reject the hypothesis. Return a labeled block stating: hypothesis confirmed or rejected, evidence from the experiment cycles, and the fix applied (if confirmed). The first agent to confirm a hypothesis and verify a fix wins.",
+            },
+            {
+                "token": "pick method:converge",
+                "role": "resolution explanation",
+                "prompt_hint": "Use this step to explain the winning fix: what hypothesis was confirmed, what the fix was, what evidence verified it, and why the other hypotheses were not the cause (if known).",
             },
         ],
     },

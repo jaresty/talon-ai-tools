@@ -908,6 +908,53 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 	}
 }
 
+// Behavior 58: frame-debug inner cycle action step does not list 'code reads' as a valid method.
+func TestFrameDebugActionStepNoCodeReads(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "code reads") {
+		t.Errorf("frame-debug action step must not list 'code reads' as a valid method — experimentation requires running commands that produce new output:\n%s", out)
+	}
+}
+
+// Behavior 59: frame-explore inner cycle action step does not list 'code reads' or 'document review'.
+func TestFrameExploreActionStepNoStaticAnalysis(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "code reads") {
+		t.Errorf("frame-explore action step must not list 'code reads':\n%s", out)
+	}
+	if strings.Contains(out, "document review") {
+		t.Errorf("frame-explore action step must not list 'document review' — experimentation requires running commands that produce new output:\n%s", out)
+	}
+}
+
+// Behavior 60: frame-debug prep step requires naming what command or test will produce evidence.
+func TestFrameDebugPrepRequiresRunnableExperiment(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "runnable") && !strings.Contains(out, "command or test") && !strings.Contains(out, "what to run") {
+		t.Errorf("frame-debug prep step must require naming a runnable experiment (command or test), not just a code path to inspect:\n%s", out)
+	}
+}
+
+// Behavior 61: frame-explore prep step requires naming a runnable experiment.
+func TestFrameExplorePrepRequiresRunnableExperiment(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "runnable") && !strings.Contains(out, "command or test") && !strings.Contains(out, "what to run") {
+		t.Errorf("frame-explore prep step must require naming a runnable experiment (command or test), not just a hypothesis:\n%s", out)
+	}
+}
+
 // Behavior 56: dispatch protocol point 5 tells orchestrator to construct and include a literal bar build command.
 func TestDispatchProtocolLiteralBarCommand(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})

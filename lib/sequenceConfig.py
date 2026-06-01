@@ -249,7 +249,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Use this step to enumerate the named exploration frames as a governing artifact. Each frame must differ structurally. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable (code analysis, API calls, test runs, document review) — frames that require human data-gathering do not belong in this sequence. Do not apply any frame yet.",
+                "prompt_hint": "Use this step to enumerate the named exploration frames as a governing artifact. Each frame must differ structurally. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence. Do not apply any frame yet.",
             },
             {
                 "type": "dispatch",
@@ -265,12 +265,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "form:prep",
                             "role": "experiment framing",
-                            "prompt_hint": "Frame the hypothesis for this cycle: what would be true if the goal condition is met from this frame's angle, and what evidence would confirm or refute it.",
+                            "prompt_hint": "Frame the hypothesis for this cycle: what would be true if the goal condition is met from this frame's angle, what evidence would confirm or refute it, and name what to run (command, API call, or test) to produce that evidence.",
                         },
                         {
                             "type": "action",
                             "role": "experiment execution",
-                            "prompt_hint": "Execute the investigation defined in the prior step using available tools (code reads, API calls, test runs, document review). Record findings before proceeding to vet.",
+                            "prompt_hint": "Run the experiment defined in the prior step: execute a command, API call, test, or script that produces new output not already present in the transcript. Static reading of code or documents is not sufficient — the experiment must produce a new tool-executed result. Record findings before proceeding to vet.",
                         },
                         {
                             "token": "form:vet",
@@ -317,12 +317,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "form:prep",
                             "role": "hypothesis framing",
-                            "prompt_hint": "For this frame, identify the next untested hypothesis: what specific cause within this frame would explain the problem? State what would be true if this hypothesis is correct and what evidence would confirm or reject it.",
+                            "prompt_hint": "For this frame, identify the next untested hypothesis: what specific cause within this frame would explain the problem? State what would be true if this hypothesis is correct, what evidence would confirm or reject it, and name what to run (command, test, or script) to produce that evidence.",
                         },
                         {
                             "type": "action",
                             "role": "hypothesis investigation",
-                            "prompt_hint": "Execute the investigation defined in the prior step using available tools (code reads, test runs, log inspection). Record findings before proceeding to vet.",
+                            "prompt_hint": "Run the experiment defined in the prior step: execute a command, test, or script that produces new output not already present in the transcript. Static reading of code or files is not sufficient — the experiment must produce a new tool-executed result. Record findings before proceeding to vet.",
                         },
                         {
                             "token": "form:vet",

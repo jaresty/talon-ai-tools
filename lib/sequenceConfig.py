@@ -293,23 +293,23 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         ],
     },
     "frame-debug": {
-        "description": "Enumerate independent fix hypotheses, race isolated agents to resolve each one, take the first that succeeds, then explain why it worked.",
-        "example": "A service is returning intermittent 500s — enumerate candidate root causes (connection pool exhaustion, bad query plan, race condition, config drift), race fix attempts in parallel, take the first that resolves it.",
-        "heuristics": ["race fix attempts", "parallel debugging", "first fix wins", "competing hypotheses", "parallel root cause attempts", "race to resolution", "try fixes in parallel"],
+        "description": "Partition a problem into independent investigation frames, assign one agent per frame to cycle through hypotheses until the root cause is understood, then converge on the first confirmed explanation.",
+        "example": "A service is returning intermittent 500s — partition into frames (connection layer, query layer, config layer), each agent generates and cycles through hypotheses for its frame until the root cause is identified.",
+        "heuristics": ["parallel debugging", "parallel root cause analysis", "frame-per-area debugging", "independent investigation frames", "divide and diagnose", "parallel hypothesis testing"],
         "mode": "autonomous",
         "steps": [
             {
                 "token": "make method:prism",
-                "role": "fix hypothesis enumeration",
-                "prompt_hint": "Use this step to enumerate independent fix hypotheses as a governing artifact. Each hypothesis must be a distinct candidate root cause with a concrete fix approach. Only enumerate hypotheses that are fully agent-verifiable (code inspection, test runs, tool calls). Do not apply any hypothesis yet.",
+                "role": "frame enumeration",
+                "prompt_hint": "Use this step to partition the problem into independent investigation frames as a governing artifact. Each frame must be a distinct problem area (e.g. network layer, auth layer, data layer). Do not generate hypotheses yet — only name the frames and what each covers. Each frame must be fully investigable by a single agent using code inspection, test runs, and tool calls.",
             },
             {
                 "type": "dispatch",
-                "role": "parallel fix attempts",
+                "role": "parallel frame investigation",
                 "fan_out": "enumerate",
                 "join": "first",
                 "isolation": True,
-                "prompt_hint": "Each agent receives only the subject and its assigned hypothesis. Execute the inner sequence until stop_when is met. Return a labeled block stating: hypothesis confirmed or rejected, evidence from the experiment cycles, and the fix applied (if confirmed). The first agent to resolve the problem wins.",
+                "prompt_hint": "Each agent receives only the subject and its assigned frame. Generate hypotheses for that frame, then cycle through prep→action→vet for each until the root cause within the frame is understood. Return a labeled block stating: frame investigated, hypotheses tried, root cause confirmed or ruled out, and evidence gathered. The first agent to confirm a root cause wins.",
                 "inner": {
                     "mode": "cycle",
                     "stop_when": "The problem stated in the subject is understood — the root cause is identified with sufficient evidence to act on.",
@@ -317,7 +317,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "form:prep",
                             "role": "hypothesis framing",
-                            "prompt_hint": "Frame the hypothesis as a testable claim: what would be true if this hypothesis is correct, and what evidence would confirm or reject it.",
+                            "prompt_hint": "For this frame, identify the next untested hypothesis: what specific cause within this frame would explain the problem? State what would be true if this hypothesis is correct and what evidence would confirm or reject it.",
                         },
                         {
                             "type": "action",

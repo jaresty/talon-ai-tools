@@ -704,3 +704,94 @@ func TestSequenceShowNoFalsePositiveTaskWarning(t *testing.T) {
 		t.Errorf("bar sequence show frame-work emitted false-positive 'no task token' warning:\n%s", out)
 	}
 }
+
+// Behavior 39: frame-debug step 1 role is "frame enumeration" (not hypothesis enumeration).
+func TestFrameDebugStep1RoleIsFrameEnumeration(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-debug"]
+	if !ok {
+		t.Fatal("frame-debug sequence not found")
+	}
+	if len(seq.Steps) == 0 {
+		t.Fatal("frame-debug has no steps")
+	}
+	step0 := seq.Steps[0]
+	if !strings.Contains(step0.Role, "frame") {
+		t.Errorf("frame-debug step 1 role must contain 'frame', got: %q", step0.Role)
+	}
+	if strings.Contains(step0.Role, "hypothesis") {
+		t.Errorf("frame-debug step 1 role must not mention 'hypothesis', got: %q", step0.Role)
+	}
+}
+
+// Behavior 40: frame-debug dispatch role says "frame investigation" not "fix attempts".
+func TestFrameDebugDispatchRoleIsFrameInvestigation(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-debug"]
+	if !ok {
+		t.Fatal("frame-debug sequence not found")
+	}
+	var dispatchStep *SequenceStep
+	for i := range seq.Steps {
+		if seq.Steps[i].Type == "dispatch" {
+			dispatchStep = &seq.Steps[i]
+			break
+		}
+	}
+	if dispatchStep == nil {
+		t.Fatal("frame-debug has no dispatch step")
+	}
+	if strings.Contains(dispatchStep.Role, "fix attempts") {
+		t.Errorf("frame-debug dispatch role must not say 'fix attempts', got: %q", dispatchStep.Role)
+	}
+	if !strings.Contains(dispatchStep.Role, "frame") {
+		t.Errorf("frame-debug dispatch role must contain 'frame', got: %q", dispatchStep.Role)
+	}
+}
+
+// Behavior 41: frame-debug inner prep prompt_hint mentions "frame" and "hypothesis".
+func TestFrameDebugInnerPrepMentionsFrameAndHypothesis(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-debug"]
+	if !ok {
+		t.Fatal("frame-debug sequence not found")
+	}
+	var dispatchStep *SequenceStep
+	for i := range seq.Steps {
+		if seq.Steps[i].Type == "dispatch" {
+			dispatchStep = &seq.Steps[i]
+			break
+		}
+	}
+	if dispatchStep == nil || dispatchStep.Inner == nil {
+		t.Fatal("frame-debug dispatch step missing inner sequence")
+	}
+	var prepStep *SequenceStep
+	for i := range dispatchStep.Inner.Steps {
+		if dispatchStep.Inner.Steps[i].Token == "form:prep" {
+			prepStep = &dispatchStep.Inner.Steps[i]
+			break
+		}
+	}
+	if prepStep == nil {
+		t.Fatal("frame-debug inner has no form:prep step")
+	}
+	if !strings.Contains(prepStep.PromptHint, "frame") {
+		t.Errorf("frame-debug inner prep prompt_hint must mention 'frame', got: %q", prepStep.PromptHint)
+	}
+	if !strings.Contains(prepStep.PromptHint, "hypothesis") {
+		t.Errorf("frame-debug inner prep prompt_hint must mention 'hypothesis', got: %q", prepStep.PromptHint)
+	}
+}

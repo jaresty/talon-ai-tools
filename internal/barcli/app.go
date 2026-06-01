@@ -264,6 +264,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return runInstallSkills(options, stdout, stderr)
 	}
 
+	if options.Command == "install-agents" {
+		return runInstallAgents(options, stdout, stderr)
+	}
+
 	if options.Command == "install-hooks" {
 		return runInstallHooksCLI(options, stdout, stderr)
 	}

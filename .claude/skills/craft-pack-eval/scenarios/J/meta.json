@@ -1,0 +1,10 @@
+{
+  "letter": "J",
+  "name": "gate token explanation — protocol compliance (no tool use)",
+  "no_code": true,
+  "expect": "ready",
+  "task_prompt": "Write a one-paragraph explanation of the gate token satisfying this rubric: (1) every claim must name a specific string from a prior result, (2) no prose assertion of satisfaction is permitted, (3) the paragraph must be 5 sentences or fewer. No test runner is available. Produce prose only.",
+  "crank": false,
+  "target_frames": [22],
+  "notes": "Non-software frame. Tests Frame 22: rubric criterion before prose; inline violation marker before revision; completion check confirms no markers remain."
+}

@@ -1,0 +1,10 @@
+{
+  "letter": "K",
+  "name": "pure function determinism — formal derivation (no tool use)",
+  "no_code": true,
+  "expect": "ready",
+  "task_prompt": "Derive whether the following holds: 'If a function is pure and its inputs are unchanged, its output is deterministic.' State the proposition, name your assumptions, derive the conclusion step by step. No test runner is available. Produce a derivation artifact only.",
+  "crank": false,
+  "target_frames": [23],
+  "notes": "Non-software frame. Tests Frame 23: proposition before derivation; blocked-lemma statement before proceeding; completion check enumerates all proof obligations."
+}

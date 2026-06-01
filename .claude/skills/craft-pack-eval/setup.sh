@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCENARIO="${1:-}"
 if [[ -z "$SCENARIO" ]]; then
-  echo "Usage: setup.sh <A|B|C|D|E|F|G|H>" >&2
+  echo "Usage: setup.sh <A|B|C|D|E|F|G|H|I|J|K>" >&2
   exit 1
 fi
 
@@ -25,7 +25,8 @@ if [[ ! -f "$META" ]]; then
   exit 1
 fi
 
-MODULE=$(jq -r '.module' "$META")
+NO_CODE=$(jq -r '.no_code // false' "$META")
+MODULE=$(jq -r '.module // ""' "$META")
 EXPECT=$(jq -r '.expect' "$META")
 TASK_PROMPT=$(jq -r '.task_prompt' "$META")
 NAME=$(jq -r '.name' "$META")
@@ -39,26 +40,36 @@ find "$SCENARIO_DIR" -maxdepth 1 -type f ! -name 'meta.json' -exec cp {} "$DIR/"
 chmod +x "$DIR"/*.sh 2>/dev/null || true
 
 cd "$DIR"
-go mod init "$MODULE" > /dev/null 2>&1
 
 # Save task prompt for run-agent.sh
 echo "TASK_PROMPT=$(printf '%q' "$TASK_PROMPT")" > .task-prompt
 
 echo "=== Scenario $SCENARIO: $NAME ==="
-echo "Module: $MODULE"
 echo "Directory: $DIR"
 echo ""
-echo "=== Pre-state run ==="
-PRE_STATE_OUTPUT=$(go test ./... 2>&1 || true)
-echo "$PRE_STATE_OUTPUT"
 
-echo ""
-echo "=== Gate check: expecting '$EXPECT' ==="
-if echo "$PRE_STATE_OUTPUT" | grep -qF "$EXPECT"; then
+if [[ "$NO_CODE" == "true" ]]; then
+  echo "=== No-code scenario — skipping go test ==="
+  echo "ready"
+  echo ""
+  echo "=== Gate check: expecting '$EXPECT' ==="
   echo "PASS: pre-state output contains expected string"
 else
-  echo "FAIL: pre-state output does not contain '$EXPECT'" >&2
-  exit 1
+  echo "Module: $MODULE"
+  go mod init "$MODULE" > /dev/null 2>&1
+
+  echo "=== Pre-state run ==="
+  PRE_STATE_OUTPUT=$(go test ./... 2>&1 || true)
+  echo "$PRE_STATE_OUTPUT"
+
+  echo ""
+  echo "=== Gate check: expecting '$EXPECT' ==="
+  if echo "$PRE_STATE_OUTPUT" | grep -qF "$EXPECT"; then
+    echo "PASS: pre-state output contains expected string"
+  else
+    echo "FAIL: pre-state output does not contain '$EXPECT'" >&2
+    exit 1
+  fi
 fi
 
 echo ""

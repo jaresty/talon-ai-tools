@@ -5,7 +5,7 @@ set -euo pipefail
 
 SCENARIO="${1:-}"
 if [[ -z "$SCENARIO" ]]; then
-  echo "Usage: run-agent.sh <A|B|C|D|E|F|G|H>" >&2
+  echo "Usage: run-agent.sh <A|B|C|D|E|F|G|H|I|J|K>" >&2
   exit 1
 fi
 
@@ -25,8 +25,9 @@ if [[ ! -d "$DIR" ]]; then
   exit 1
 fi
 
-# Load task prompt from SSOT: scenarios/<X>/meta.json
+# Load task prompt and flags from SSOT: scenarios/<X>/meta.json
 TASK_PROMPT=$(jq -r '.task_prompt' "$META")
+NO_CODE=$(jq -r '.no_code // false' "$META")
 
 # Build the craft-pack system prompt
 # Override with BAR_CMD=/path/to/bar to use a dev build
@@ -62,7 +63,9 @@ claude -p "$FULL_PROMPT" \
 
 echo ""
 echo "=== Gate check: expecting tool_result in transcript ==="
-if grep -q "$TOOL_RESULT_MARKER" "$TRANSCRIPT"; then
+if [[ "$NO_CODE" == "true" ]]; then
+  echo "PASS: no-code scenario — tool_result gate skipped (prose-only output expected)"
+elif grep -q "$TOOL_RESULT_MARKER" "$TRANSCRIPT"; then
   TOOL_RESULT_COUNT=$(grep -c "$TOOL_RESULT_MARKER" "$TRANSCRIPT" || true)
   echo "PASS: transcript contains $TOOL_RESULT_COUNT tool_result block(s)"
 else

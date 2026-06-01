@@ -908,6 +908,17 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 	}
 }
 
+// Behavior 67: frame-synthesis dispatch prompt_hint explicitly instructs agents to read the material first.
+func TestFrameSynthesisDispatchInstructsReadFirst(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-synthesis"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-synthesis exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "First, read") && !strings.Contains(out, "first, read") && !strings.Contains(out, "Read the files") && !strings.Contains(out, "read the files") {
+		t.Errorf("frame-synthesis dispatch prompt_hint must explicitly instruct agents to read the files/material before running bar build:\n%s", out)
+	}
+}
+
 // Behavior 64: sequence list contains frame-synthesis.
 func TestSequenceListContainsFrameSynthesis(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "list"})

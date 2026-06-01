@@ -256,7 +256,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "all",
                 "isolation": True,
-                "prompt_hint": "Each agent receives only the subject and its assigned frame. Run bar build with tokens suited to reading and summarizing from that frame's perspective. Return a labeled summary: what this frame reveals, what it foregrounds, and what it sets aside.",
+                "prompt_hint": "Each agent receives only the subject and its assigned frame. First, read the files or content named in the subject. Then run bar build using the frame as the interpretive lens. Return a labeled summary: what this frame reveals, what it foregrounds, and what it sets aside.",
             },
             {
                 "token": "pick method:converge",

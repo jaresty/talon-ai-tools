@@ -1594,6 +1594,13 @@ func renderLLMSequencesSection(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "- The pattern recurs and ordering is non-obvious\n\n")
 	fmt.Fprintf(w, "**Execution modes:** `autonomous` (all steps run cold) | `linear` (pause for user input) | `cycle` (repeat until user ends)\n\n")
 	fmt.Fprintf(w, "**Dispatch steps:** Any sequence may contain steps of type `dispatch` (shown as `dispatch[fan_out→join]` in `bar sequence show`). A dispatch step fans out to isolated subagents — one per frame — then joins their results before the next step. Dispatch steps are not a sequence mode; they can appear within any execution mode.\n\n")
+	fmt.Fprintf(w, "**Executing a dispatch step** (required protocol — do not improvise):\n")
+	fmt.Fprintf(w, "1. Do NOT run `bar build` for this step. The run-one-command rule does not apply to dispatch steps.\n")
+	fmt.Fprintf(w, "2. Read `fan_out`: `enumerate` treats the prior step's output as a list of named frames and sends one frame per agent. `replicate` sends the full prior output to every agent unchanged.\n")
+	fmt.Fprintf(w, "3. Read `isolation`: when `true`, each agent receives only the subject for its assigned frame and the step's prompt_hint — no shared conversation history, no cross-frame information.\n")
+	fmt.Fprintf(w, "4. Spawn one agent per frame using the Agent tool. Pass the frame's name and description as the agent's prompt. Do not batch frames into a single agent.\n")
+	fmt.Fprintf(w, "5. Read `join`: `all` — wait for every agent to complete (fail if any fail); `first` — take the first successful result; `merge` — collect all results into an array.\n")
+	fmt.Fprintf(w, "6. Use the collected results as `--subject` for the next step. Do not synthesize or interpret results before passing them forward.\n\n")
 	fmt.Fprintf(w, "**Parallelization:** When planning multiple sequences, those where neither sequence names the other's output among its inputs may be run as parallel agents — each agent runs its full sequence independently, and results are synthesized afterward. This is a judgment call: parallelize when you can name a specific cost that sequential execution would incur that parallel execution avoids; otherwise run sequentially.\n\n")
 
 	if compact {

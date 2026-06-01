@@ -452,7 +452,29 @@ func TestHelpLLMSequencesIncludesDispatchNote(t *testing.T) {
 	}
 }
 
-// Behavior 23: `bar help llm --section sequences` step summary for parallel-eval shows dispatch fan-out/join.
+// Behavior 23: `bar sequence show` renders the dispatch execution protocol inline for dispatch steps.
+func TestSequenceShowDispatchProtocolInline(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	if code != 0 {
+		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+	}
+	checks := []string{
+		"[dispatch protocol — required]",
+		"1. Do NOT run bar build for this step.",
+		"2. fan_out: enumerate",
+		"3. isolation: true",
+		"4. Spawn one Agent tool call per frame.",
+		"5. join: all",
+		"6. Pass collected results as --subject to the next step.",
+	}
+	for _, want := range checks {
+		if !strings.Contains(out, want) {
+			t.Errorf("bar sequence show parallel-eval missing dispatch protocol line %q:\n%s", want, out)
+		}
+	}
+}
+
+// Behavior 24: `bar help llm --section sequences` step summary for parallel-eval shows dispatch fan-out/join.
 func TestHelpLLMSequencesDispatchStepShowsFanOut(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
 	if code != 0 {

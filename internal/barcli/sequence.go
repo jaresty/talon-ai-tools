@@ -178,6 +178,34 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		if step.PromptHint != "" {
 			fmt.Fprintf(stdout, "          %s\n", step.PromptHint)
 		}
+		if step.Type == "dispatch" {
+			fmt.Fprintf(stdout, "          [dispatch protocol — required]\n")
+			fmt.Fprintf(stdout, "          1. Do NOT run bar build for this step.\n")
+			fanOutDesc := step.FanOut
+			if step.FanOut == "enumerate" {
+				fanOutDesc = "enumerate — treat prior output as a list; send one frame per agent"
+			} else if step.FanOut == "replicate" {
+				fanOutDesc = "replicate — send full prior output to every agent unchanged"
+			}
+			fmt.Fprintf(stdout, "          2. fan_out: %s\n", fanOutDesc)
+			if step.Isolation {
+				fmt.Fprintf(stdout, "          3. isolation: true — each agent receives only its frame + prompt_hint; no shared history\n")
+			} else {
+				fmt.Fprintf(stdout, "          3. isolation: false — agents share conversation context\n")
+			}
+			fmt.Fprintf(stdout, "          4. Spawn one Agent tool call per frame. Do not batch frames into a single agent.\n")
+			joinDesc := step.Join
+			switch step.Join {
+			case "all":
+				joinDesc = "all — wait for every agent; fail if any fail"
+			case "first":
+				joinDesc = "first — take first successful result"
+			case "merge":
+				joinDesc = "merge — collect all results into an array"
+			}
+			fmt.Fprintf(stdout, "          5. join: %s\n", joinDesc)
+			fmt.Fprintf(stdout, "          6. Pass collected results as --subject to the next step. Do not synthesize first.\n")
+		}
 		fmt.Fprintln(stdout)
 	}
 	return 0

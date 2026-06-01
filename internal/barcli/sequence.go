@@ -203,6 +203,10 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 					hasTask = true
 					break
 				}
+				if _, isTask := g.Static.Profiles[tok]; isTask {
+					hasTask = true
+					break
+				}
 			}
 			if !hasTask {
 				fmt.Fprintf(stdout, "          [no task token — add one before running bar build: show, make, check, fix, probe, plan, or sim]\n")

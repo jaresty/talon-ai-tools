@@ -211,8 +211,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "prep": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code "
         "structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
-        "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. Without an "
-        "output-exclusive channel, conducts this as an interactive exchange; with one, structures the output as a quiz document.",
+        "quiz": "The response organizes content as a quiz structure — questions posed before explanations, testing understanding through active recall before providing answers. In interactive mode "
+        "(no output-exclusive channel): first prompts the user to recall what they know, then reveals gaps between what was recalled and what is correct or complete, then connects those "
+        "gaps to related concepts already in context — completing a recall → gap-reveal → association loop. With an output-exclusive channel, structures the output as a quiz document.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "

@@ -363,7 +363,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "type": "action",
                             "role": "scope claim",
-                            "prompt_hint": "Read the coordination store. Check for existing claims that overlap with your frame's scope. Write your frame name and the specific files/symbols you intend to modify as a claim. If overlap exists with another agent's claim, narrow your scope before proceeding and update your claim accordingly.",
+                            "prompt_hint": "Read the coordination store. Check for existing claims that overlap with your frame's scope. Write your frame name and the specific files/symbols you intend to modify as a claim. If overlap exists with another agent's claim, narrow your scope before proceeding and update your claim accordingly. Also write your ground derivation to the store: governing goal, behavioral dimensions, and enforcement sequence — this is required so the adversarial step can validate your work against your stated intent.",
                         },
                         {
                             "token": "make witness ground gate falsify atomic",
@@ -376,7 +376,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "task:check adversarial perturb",
                 "role": "governance stress-test",
-                "prompt_hint": "Review the combined output of all frame agents. First name every category of failure risk in the merged work (adversarial: integration gaps, assumption conflicts, coverage holes). Then introduce controlled faults — remove a function, break a dependency, corrupt a test input — and verify the test suite fires on each fault (perturb). A fault that does not produce a test failure is a governance gap requiring escalation.",
+                "prompt_hint": "First, read derivations from the coordination store before proceeding — each frame agent wrote its governing goal, behavioral dimensions, and enforcement sequence there. Use these to validate the merged work against stated intent: check that each artifact covers its declared behavioral dimensions, and that no dimension is present in a derivation but absent from the tests. Then name every category of failure risk in the merged work (adversarial: integration gaps, assumption conflicts, coverage holes, derivation/implementation mismatches). Then introduce controlled faults — remove a function, break a dependency, corrupt a test input — and verify the test suite fires on each fault (perturb). A fault that does not produce a test failure is a governance gap requiring escalation.",
             },
             {
                 "token": "pick method:converge",

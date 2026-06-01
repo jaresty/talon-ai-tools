@@ -58,3 +58,43 @@ func TestDispatchProtocolNamesBarAgent(t *testing.T) {
 		t.Errorf("dispatch protocol point 5 must name 'subagent_type: bar-agent':\n%s", out)
 	}
 }
+
+// Behavior 50: bar-agent.md description mentions bar-autopilot.
+func TestBarAgentDescriptionMentionsAutopilot(t *testing.T) {
+	dir := t.TempDir()
+	_, _, code := runCLI(t, []string{"install-agents", "--location", dir})
+	if code != 0 {
+		t.Fatalf("bar install-agents failed")
+	}
+	content, err := os.ReadFile(filepath.Join(dir, "bar-agent.md"))
+	if err != nil {
+		t.Fatalf("could not read bar-agent.md: %v", err)
+	}
+	if !strings.Contains(string(content), "bar-autopilot") {
+		t.Errorf("bar-agent.md description must mention 'bar-autopilot':\n%s", content)
+	}
+}
+
+// Behavior 51: bar-agent.md instructions name bar-autopilot before bar-workflow.
+func TestBarAgentInstructionsAutopilotPrimary(t *testing.T) {
+	dir := t.TempDir()
+	_, _, code := runCLI(t, []string{"install-agents", "--location", dir})
+	if code != 0 {
+		t.Fatalf("bar install-agents failed")
+	}
+	content, err := os.ReadFile(filepath.Join(dir, "bar-agent.md"))
+	if err != nil {
+		t.Fatalf("could not read bar-agent.md: %v", err)
+	}
+	autopilotPos := strings.Index(string(content), "bar-autopilot")
+	workflowPos := strings.Index(string(content), "bar-workflow")
+	if autopilotPos == -1 {
+		t.Fatal("bar-agent.md missing 'bar-autopilot'")
+	}
+	if workflowPos == -1 {
+		t.Fatal("bar-agent.md missing 'bar-workflow'")
+	}
+	if autopilotPos > workflowPos {
+		t.Errorf("bar-agent.md must mention bar-autopilot before bar-workflow (autopilot is primary)")
+	}
+}

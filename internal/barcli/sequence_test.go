@@ -843,3 +843,65 @@ func TestSequenceShowDispatchPoint5TraceabilityClause(t *testing.T) {
 		t.Errorf("dispatch protocol point 5 must contain traceability enforcement clause:\n%s", out)
 	}
 }
+
+// Behavior 52: frame-work inner scope claim prompt_hint instructs writing ground derivation to store.
+func TestFrameWorkScopeClaimWritesDerivation(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-work"]
+	if !ok {
+		t.Fatal("frame-work sequence not found")
+	}
+	var dispatchStep *SequenceStep
+	for i := range seq.Steps {
+		if seq.Steps[i].Type == "dispatch" {
+			dispatchStep = &seq.Steps[i]
+			break
+		}
+	}
+	if dispatchStep == nil || dispatchStep.Inner == nil {
+		t.Fatal("frame-work dispatch step missing inner sequence")
+	}
+	var actionStep *SequenceStep
+	for i := range dispatchStep.Inner.Steps {
+		if dispatchStep.Inner.Steps[i].Type == "action" && dispatchStep.Inner.Steps[i].Role == "scope claim" {
+			actionStep = &dispatchStep.Inner.Steps[i]
+			break
+		}
+	}
+	if actionStep == nil {
+		t.Fatal("frame-work inner has no 'scope claim' action step")
+	}
+	if !strings.Contains(actionStep.PromptHint, "write your ground derivation") {
+		t.Errorf("frame-work scope claim prompt_hint must say 'write your ground derivation', got: %q", actionStep.PromptHint)
+	}
+}
+
+// Behavior 53: frame-work adversarial step prompt_hint instructs reading derivations from store.
+func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-work"]
+	if !ok {
+		t.Fatal("frame-work sequence not found")
+	}
+	var adversarialStep *SequenceStep
+	for i := range seq.Steps {
+		if strings.Contains(seq.Steps[i].Token, "adversarial") {
+			adversarialStep = &seq.Steps[i]
+			break
+		}
+	}
+	if adversarialStep == nil {
+		t.Fatal("frame-work has no adversarial step")
+	}
+	if !strings.Contains(adversarialStep.PromptHint, "read derivations") {
+		t.Errorf("frame-work adversarial step prompt_hint must say 'read derivations', got: %q", adversarialStep.PromptHint)
+	}
+}

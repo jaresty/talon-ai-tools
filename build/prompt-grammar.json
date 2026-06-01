@@ -117360,6 +117360,46 @@
         }
       ]
     },
+    "frame-explore": {
+      "description": "Enumerate independent frames for a problem, run an experiment cycle within each frame until a goal is reached, then converge on findings across frames.",
+      "example": "Exploring whether a proposed API simplification holds up — framed from security, usability, and performance angles — each angle running hypothesis/evidence cycles until the goal condition is satisfied.",
+      "heuristics": [
+        "explore from multiple angles",
+        "parallel frame exploration",
+        "hypothesis cycles per frame",
+        "experiment across frames",
+        "multi-frame investigation",
+        "test each angle independently",
+        "explore then converge"
+      ],
+      "mode": "autonomous",
+      "stop_when": "Each frame's experiment cycle has reached the goal condition stated in the original subject.",
+      "steps": [
+        {
+          "token": "make method:prism",
+          "role": "frame enumeration",
+          "prompt_hint": "Use this step to enumerate the named exploration frames as a governing artifact. Each frame must differ structurally. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Do not apply any frame yet."
+        },
+        {
+          "type": "dispatch",
+          "role": "parallel frame experiment cycles",
+          "fan_out": "enumerate",
+          "join": "all",
+          "isolation": true,
+          "prompt_hint": "Each agent receives only the subject, its assigned frame description, and the goal condition. Each agent runs an experiment cycle (prep → vet → repeat) within its frame until the goal condition is satisfied. Return findings in a labeled block with the number of cycles run."
+        },
+        {
+          "token": "task:show",
+          "role": "per-frame findings collection",
+          "prompt_hint": "Use this step to present the findings returned from each frame agent — one labeled block per frame, preserving the original framing and cycle count. Do not synthesize yet."
+        },
+        {
+          "token": "pick method:converge",
+          "role": "cross-frame synthesis",
+          "prompt_hint": "Use this step to synthesize across frames: what each frame's experiment cycles revealed, where frames agree or diverge, and what the combined evidence supports as a conclusion."
+        }
+      ]
+    },
     "simulate-and-review": {
       "description": "Simulate a scenario before executing it, then review actual outcomes against the simulation.",
       "example": "Migrating the auth service as a pilot for a broader microservices migration.",
@@ -117883,7 +117923,7 @@
     "slugs": "9ded63c7daa070f6e0c2f48de16c5b9019fa327f0d54b72d7a612c47a6f57536",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "1f779f51c8a4ca34cb618093d18e1bb74414477d77be2bc2e95bbc4228a0cf04",
-    "sequences": "3bf4b48671d45137bd1909099bcb9bfcdf78b9759556f6f2cee1c52fa7dc6ec8",
+    "sequences": "2991c9b074a9372a544d21411295816ecc4157b257d20ab4107f068fb3be4407",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

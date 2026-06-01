@@ -75,6 +75,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "image": "The response consists solely of an image as the complete output — described through subject, style, composition, lighting, and technical parameters — with no surrounding prose "
         "or explanation.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
+        "ledger": "The response writes its output to a persistent ledger file using available tools, structuring content under four fixed headings: Facts, Decisions, Constraints, and Open "
+        "Questions. Only content relevant to one of these categories is emitted — conversational filler and reasoning traces are excluded. When no storage tool is available, the "
+        "response outputs the categorized content and notes that it should be appended to a ledger file.",
         "notebook": "The response is delivered as a valid Jupyter notebook (`.ipynb` JSON), with an ordered sequence of markdown and code cells appropriate to the task, structured for execution "
         "and exploration. No surrounding prose outside the notebook structure.",
         "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code "
@@ -334,15 +337,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "falsify": "The response establishes, before any governed action, that the governing artifact can observe the absence of each governed behavior. Derivation phase (required before any "
-        "governed action): Name — (a) the string in a result that signals the artifact detected the behavior's absence; (b) the string in a result that signals a governed behavior is "
-        "present; (c) the string identifying each governed behavior in a result; (d) the string identifying the governed action. A result satisfies this token if and only if: a line "
-        "where (a) immediately precedes (c) appears in the transcript, at least one line where (b) immediately precedes a governed behavior identifier appears, and the result was "
-        "produced by a tool call whose text names (d) directly. A result produced by a disposable artifact — one that will not persist in the work product — does not satisfy this "
-        "token. A result where any governed behavior identifier appears under a signal other than (a) or (b) does not satisfy this token for that behavior; bring the system to a state "
-        "where every governed behavior can produce either (a) or (b) before proceeding. Proceed to the governed action only when the derivation and the satisfying result are present "
-        "as text above this point in the transcript. Exception: the result requirement does not apply to the single governed action whose effect introduces (c) as a new string — a "
-        "governed action is the creation step only if (c) is absent before the action and present after it; any other governed action is not exempt. After all governed actions "
-        "complete, the persistent artifact must contain at least one statement referencing (c) whose outcome would change if the governed behavior were reversed.",
+        "governed action): Name — (a) the assertion-failure marker: the string in a result that signals the artifact detected the behavior's absence; (b) the string in a result that "
+        "signals a governed behavior is present; (c) the string identifying each governed behavior in a result; (d) the string identifying the governed action. A result satisfies this "
+        "token if and only if: a line where (a) immediately precedes (c) appears in the transcript, at least one line where (b) immediately precedes a governed behavior identifier "
+        "appears, and the result was produced by a tool call whose text names (d) directly. A result produced by a disposable artifact — one that will not persist in the work product "
+        "— does not satisfy this token. A result where any governed behavior identifier appears under a signal other than (a) or (b) does not satisfy this token for that behavior; "
+        "bring the system to a state where every governed behavior can produce either (a) or (b) before proceeding. Proceed to the governed action only when the derivation and the "
+        "satisfying result are present as text above this point in the transcript. Exception: the result-block requirement does not apply to the single governed action whose effect "
+        "introduces (c) as a new string — a governed action is the creation step only if (c) is absent before the action and present after it (equivalently: the governing criterion "
+        "string is absent from the file before the call and present after it); any other governed action is not exempt. After all governed actions complete, the persistent artifact "
+        "must contain at least one statement referencing (c) whose outcome would change if the governed behavior were reversed.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
@@ -598,6 +602,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "gherkin": "Gherkin scenario format",
         "html": "Semantic HTML only, no prose",
         "jira": "Jira markup formatting",
+        "ledger": "Write to persistent categorized ledger file",
         "plain": "Plain prose, no structural decoration",
         "presenterm": "Presenterm slide deck",
         "remote": "Optimized for remote delivery",
@@ -836,6 +841,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "html": "標",
         "image": "像",
         "jira": "票",
+        "ledger": "台",
         "notebook": "帳",
         "plain": "文",
         "presenterm": "演",
@@ -1254,6 +1260,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "html": "HTML output",
         "image": "Image output",
         "jira": "Jira formatting",
+        "ledger": "Persistent categorized ledger",
         "notebook": "Jupyter notebook",
         "plain": "Plain prose",
         "presenterm": "Slide deck",
@@ -2818,6 +2825,31 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "Jira ticket format",
                 "for a Jira comment",
                 "use Jira markup",
+            ],
+        },
+        "ledger": {
+            "distinctions": [
+                {
+                    "note": "store (channel) = persist whatever the response would have been; ledger (channel) = persist only categorized "
+                    "facts/decisions/constraints/open-questions — ledger implies both persistence and a fixed structure",
+                    "token": "store",
+                },
+                {
+                    "note": "snap (form) = one-time state snapshot for resumption; ledger (channel) = continuously-maintained categorized record that grows across turns",
+                    "token": "snap",
+                },
+            ],
+            "heuristics": [
+                "keep a ledger",
+                "maintain a ledger",
+                "write to a ledger file",
+                "reduce context compaction",
+                "capture facts and decisions",
+                "log decisions and constraints",
+                "I want to clear context and resume",
+                "fire and forget context tracking",
+                "persistent structured notes",
+                "categorize as we go",
             ],
         },
         "notebook": {

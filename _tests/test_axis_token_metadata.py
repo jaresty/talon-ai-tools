@@ -130,6 +130,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         "html",
         "image",
         "jira",
+        "ledger",
         "notebook",
         "plain",
         "presenterm",

@@ -908,6 +908,39 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 	}
 }
 
+// Behavior 64: sequence list contains frame-synthesis.
+func TestSequenceListContainsFrameSynthesis(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "list"})
+	if code != 0 {
+		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "frame-synthesis") {
+		t.Errorf("sequence list must contain 'frame-synthesis':\n%s", out)
+	}
+}
+
+// Behavior 65: frame-synthesis dispatch step has no inner steps (no experiment cycle).
+func TestFrameSynthesisDispatchHasNoInnerSteps(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-synthesis"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-synthesis exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "inner mode") {
+		t.Errorf("frame-synthesis dispatch step must have no inner sequence — no experiment cycle:\n%s", out)
+	}
+}
+
+// Behavior 66: frame-synthesis dispatch prompt_hint directs agents to run bar build.
+func TestFrameSynthesisDispatchMentionsBarBuild(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-synthesis"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-synthesis exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "bar build") {
+		t.Errorf("frame-synthesis dispatch step must mention 'bar build' for agents to run:\n%s", out)
+	}
+}
+
 // Behavior 62: frame-debug step 1 defines frames as domains containing multiple hypotheses, not as hypotheses themselves.
 func TestFrameDebugStep1DefinesFrameAsMultipleHypotheses(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})

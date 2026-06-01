@@ -239,6 +239,32 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "frame-synthesis": {
+        "description": "Enumerate interpretation frames, read and summarize from each frame in parallel, then converge on a multi-perspective synthesis.",
+        "example": "Reviewing a proposed API design from a security frame, a usability frame, and a performance frame — each agent reads the same material and returns a framed summary, then the results are synthesized.",
+        "heuristics": ["read from multiple angles", "summarize from different perspectives", "parallel frame reading", "multi-stakeholder review", "lens-based analysis", "interpret from each angle", "no experimentation needed"],
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "make method:prism",
+                "role": "frame enumeration",
+                "prompt_hint": "Use this step to enumerate the named interpretation frames as a governing artifact. A frame is an interpretive lens (e.g. security, usability, performance, compliance) — not a task to perform. Each frame must yield a distinct reading of the same material. Do not apply any frame yet — enumeration is the only output of this step.",
+            },
+            {
+                "type": "dispatch",
+                "role": "parallel frame reading",
+                "fan_out": "enumerate",
+                "join": "all",
+                "isolation": True,
+                "prompt_hint": "Each agent receives only the subject and its assigned frame. Run bar build with tokens suited to reading and summarizing from that frame's perspective. Return a labeled summary: what this frame reveals, what it foregrounds, and what it sets aside.",
+            },
+            {
+                "token": "pick method:converge",
+                "role": "cross-frame synthesis",
+                "prompt_hint": "Use this step to synthesize across frame summaries: what each frame revealed, where frames agree or diverge, and what the combined reading supports as a conclusion or recommendation.",
+            },
+        ],
+    },
     "frame-explore": {
         "description": "Enumerate independent frames for a problem, run an experiment cycle within each frame until a goal is reached, then converge on findings across frames.",
         "example": "Exploring whether a proposed API simplification holds up — framed from security, usability, and performance angles — each angle running hypothesis/evidence cycles until the goal condition is satisfied.",

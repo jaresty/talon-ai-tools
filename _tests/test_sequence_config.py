@@ -119,6 +119,13 @@ class TestSequenceConfigStructure(unittest.TestCase):
         dispatch_steps = [s for s in seq["steps"] if s.get("type") == "dispatch"]
         self.assertGreater(len(dispatch_steps), 0, "parallel-eval must have at least one dispatch step")
 
+    # Behavior: cycle-mode sequences have a non-empty stop_when predicate
+    def test_cycle_sequences_have_stop_when(self):
+        for name, seq in self.sequences.items():
+            if seq.get("mode") == "cycle":
+                self.assertIsInstance(seq.get("stop_when"), str, f"{name}: stop_when must be a string")
+                self.assertTrue(seq["stop_when"], f"{name}: stop_when must be non-empty")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -116682,6 +116682,7 @@
         "validate with data"
       ],
       "mode": "cycle",
+      "stop_when": "The hypothesis has been confirmed or falsified — further iterations would not change the conclusion.",
       "steps": [
         {
           "token": "form:prep",
@@ -116835,6 +116836,7 @@
         "iterative improvement"
       ],
       "mode": "cycle",
+      "stop_when": "The process has stabilized — the retrospective finds no new gaps worth addressing in another cycle.",
       "steps": [
         {
           "token": "task:plan",
@@ -117459,7 +117461,7 @@
     "slugs": "3b96f75b46feea5ca04ed4dacd365f97fe69e438df568daeedbd4f7d13352a8f",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "1f779f51c8a4ca34cb618093d18e1bb74414477d77be2bc2e95bbc4228a0cf04",
-    "sequences": "4257fea66557375805b5a56b549d158dd58275bb4a6b2a4c6706b29cfb689763",
+    "sequences": "3bf4b48671d45137bd1909099bcb9bfcdf78b9759556f6f2cee1c52fa7dc6ec8",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

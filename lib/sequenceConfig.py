@@ -40,6 +40,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "example": "Testing whether adding a cache layer reduces p95 latency below 200ms.",
         "heuristics": ["run an experiment", "test a hypothesis", "scientific method", "hypothesis and evidence", "frame then test", "design an experiment", "validate with data"],
         "mode": "cycle",
+        "stop_when": "The hypothesis has been confirmed or falsified — further iterations would not change the conclusion.",
         "steps": [
             {
                 "token": "form:prep",
@@ -151,6 +152,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "example": "Improving a team's code review process over two iterations.",
         "heuristics": ["plan then retrospect", "act and reflect", "implement and review", "try then learn", "plan execute review", "iterative improvement"],
         "mode": "cycle",
+        "stop_when": "The process has stabilized — the retrospective finds no new gaps worth addressing in another cycle.",
         "steps": [
             {
                 "token": "task:plan",

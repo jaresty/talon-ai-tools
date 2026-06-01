@@ -393,6 +393,51 @@ func min(a, b int) int {
 	return b
 }
 
+// Behavior 24: Sequence.StopWhen is populated for a cycle-mode sequence.
+func TestSequenceStopWhenPopulated(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["experiment-cycle"]
+	if !ok {
+		t.Fatal("experiment-cycle not found")
+	}
+	if seq.StopWhen == "" {
+		t.Fatal("expected experiment-cycle StopWhen to be non-empty for a cycle-mode sequence")
+	}
+}
+
+// Behavior 25: `bar sequence show experiment-cycle` human output includes stop_when label.
+func TestSequenceShowIncludesStopWhen(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
+	if code != 0 {
+		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "stop_when:") {
+		t.Errorf("expected \"stop_when:\" label in bar sequence show output:\n%s", out)
+	}
+}
+
+// Behavior 26: `bar sequence show experiment-cycle --json` includes stop_when field.
+func TestSequenceShowJSONIncludesStopWhen(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle", "--json"})
+	if code != 0 {
+		t.Fatalf("bar sequence show --json exited %d: %s", code, stderr)
+	}
+	type jsonSeq struct {
+		StopWhen string `json:"stop_when"`
+	}
+	var result jsonSeq
+	if err := json.Unmarshal([]byte(out), &result); err != nil {
+		t.Fatalf("expected valid JSON: %v\noutput: %s", err, out)
+	}
+	if result.StopWhen == "" {
+		t.Errorf("expected non-empty stop_when field in bar sequence show --json output:\n%s", out)
+	}
+}
+
 // Behavior 22: `bar help llm --section sequences` includes a dispatch steps note separate from execution modes.
 func TestHelpLLMSequencesIncludesDispatchNote(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})

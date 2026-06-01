@@ -621,6 +621,32 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "hollow allow-list clause must name the governed action to be verifiable by inspection",
         )
 
+    def test_hollow_deny_list_clause_is_invalid_not_permitted(self):
+        """hollow must not list deny-list clause as a permitted type — it must be treated as invalid requiring allow-list conversion."""
+        hollow = self.meta.get("hollow", {})
+        definition = hollow.get("definition", "")
+        # permitted types list must not include deny-list clause
+        permitted_idx = definition.find("permitted types are:")
+        if permitted_idx != -1:
+            # find the end of the permitted types list (next period or closing paren after the list)
+            permitted_section = definition[permitted_idx:permitted_idx + 400]
+            self.assertNotIn(
+                "deny-list clause",
+                permitted_section,
+                "hollow must not list deny-list clause as a permitted type",
+            )
+        # definition must name deny-list clause as invalid with allow-list remediation
+        self.assertIn(
+            "deny-list clause",
+            definition,
+            "hollow must name deny-list clause so auditors can identify it",
+        )
+        self.assertIn(
+            "allow-list condition",
+            definition,
+            "hollow must require deny-list clauses to be converted to allow-list conditions",
+        )
+
     def test_hollow_structural_vocabulary_requirement(self):
         """hollow's vocabulary requirement must name an observable distinguishing structural from domain-specific terms (hollow self-audit finding)."""
         hollow = self.meta.get("hollow", {})

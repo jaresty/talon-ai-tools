@@ -908,6 +908,28 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 	}
 }
 
+// Behavior 75: frame-debug inner dispatch point 5 requires subagent_type: bar-agent.
+func TestFrameDebugInnerDispatchUsesBarAgent(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "subagent_type: bar-agent") {
+		t.Errorf("frame-debug inner dispatch point 5 must require 'subagent_type: bar-agent':\n%s", out)
+	}
+}
+
+// Behavior 76: frame-debug inner dispatch point 5 requires orchestrator to preserve all Derivation blocks.
+func TestFrameDebugInnerDispatchPreservesDerivationBlocks(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "preserve all Derivation blocks") {
+		t.Errorf("frame-debug inner dispatch point 5 must require orchestrator to 'preserve all Derivation blocks':\n%s", out)
+	}
+}
+
 // Behavior 68: frame-debug step 1 names observable frame name criteria (no verb, no causal claim).
 func TestFrameDebugStep1NamesObservableFrameNameCriteria(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
@@ -941,14 +963,14 @@ func TestFrameDebugDispatchPoint3NamesAgentCallContents(t *testing.T) {
 	}
 }
 
-// Behavior 71: frame-debug dispatch point 5 (inner) requires literal /bar-workflow in Agent call text.
+// Behavior 71: frame-debug dispatch point 5 (inner) requires subagent_type: bar-agent (bar-agent has bar-workflow pre-loaded).
 func TestFrameDebugDispatchPoint5RequiresBarWorkflowSkill(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "/bar-workflow") {
-		t.Errorf("frame-debug dispatch point 5 must require literal '/bar-workflow' in Agent call text:\n%s", out)
+	if !strings.Contains(out, "subagent_type: bar-agent") {
+		t.Errorf("frame-debug dispatch point 5 must require 'subagent_type: bar-agent' (bar-agent has bar-workflow pre-loaded):\n%s", out)
 	}
 }
 

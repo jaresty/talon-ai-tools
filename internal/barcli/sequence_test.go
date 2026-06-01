@@ -7,6 +7,8 @@ package barcli
 
 import (
 	"encoding/json"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -903,6 +905,37 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 	}
 	if !strings.Contains(adversarialStep.PromptHint, "read derivations") {
 		t.Errorf("frame-work adversarial step prompt_hint must say 'read derivations', got: %q", adversarialStep.PromptHint)
+	}
+}
+
+// Behavior 56: dispatch protocol point 5 tells orchestrator to construct and include a literal bar build command.
+func TestDispatchProtocolLiteralBarCommand(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	if code != 0 {
+		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "bar build <step-token-string>") {
+		t.Errorf("dispatch protocol point 5 must include literal command template 'bar build <step-token-string>':\n%s", out)
+	}
+}
+
+// Behavior 57: bar-agent.md when-dispatched section says to run the literal command and not discover tokens.
+func TestBarAgentNoDiscovery(t *testing.T) {
+	dir := t.TempDir()
+	_, _, code := runCLI(t, []string{"install-agents", "--location", dir})
+	if code != 0 {
+		t.Fatalf("bar install-agents failed")
+	}
+	content, err := os.ReadFile(filepath.Join(dir, "bar-agent.md"))
+	if err != nil {
+		t.Fatalf("could not read bar-agent.md: %v", err)
+	}
+	s := string(content)
+	if !strings.Contains(s, "Run the literal") {
+		t.Errorf("bar-agent.md when-dispatched section must say 'Run the literal':\n%s", s)
+	}
+	if !strings.Contains(s, "Do not run") && !strings.Contains(s, "do not run") {
+		t.Errorf("bar-agent.md when-dispatched section must say 'do not run' (bar help llm):\n%s", s)
 	}
 }
 

@@ -41,8 +41,8 @@ bar sequence show <name>
 
 ### When dispatched from a sequence
 
-1. Read the prompt you received — it names the bar tokens to use, the assigned item as `--subject`, and the `prompt_hint` as `--addendum`.
-2. Run `bar build` with those parameters.
+1. Read the prompt you received — it contains a literal `bar build` command already constructed by the orchestrator.
+2. Run the literal `bar build` command exactly as given — do not run `bar help llm` or discover tokens. The orchestrator has already determined the correct command.
 3. Execute the TASK from bar's output, applying all CONSTRAINTS and PERSONA sections.
 4. Return your result in a labeled block identifying which item you processed.
 

@@ -832,3 +832,14 @@ func TestSequenceShowDispatchAgentBarCommand(t *testing.T) {
 		t.Errorf("dispatch protocol must contain 'Each agent prompt must include' bar command instruction:\n%s", out)
 	}
 }
+
+// Behavior 45: dispatch protocol point 5 includes traceability enforcement clause.
+func TestSequenceShowDispatchPoint5TraceabilityClause(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	if code != 0 {
+		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "not traceable to one of those three sections does not satisfy this requirement") {
+		t.Errorf("dispatch protocol point 5 must contain traceability enforcement clause:\n%s", out)
+	}
+}

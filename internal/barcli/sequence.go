@@ -279,7 +279,7 @@ func (g *Grammar) SequencesForToken(axisSlug string) []SequenceMembership {
 	var memberships []SequenceMembership
 	for name, seq := range g.Sequences {
 		for i, step := range seq.Steps {
-			if step.Token == axisSlug {
+			if step.Token == axisSlug || strings.HasSuffix(step.Token, " "+axisSlug) {
 				m := SequenceMembership{
 					Name:      name,
 					StepIndex: i,

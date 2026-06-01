@@ -43,7 +43,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "stop_when": "The hypothesis has been confirmed or falsified — further iterations would not change the conclusion.",
         "steps": [
             {
-                "token": "form:prep",
+                "token": "make form:prep",
                 "role": "pre-experiment framing",
                 "prompt_hint": "Use this step to state the hypothesis and success criteria before running the experiment.",
             },
@@ -54,7 +54,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "requires_user_input": True,  # user must run the experiment before vet
             },
             {
-                "token": "form:vet",
+                "token": "check form:vet",
                 "role": "post-experiment review",
                 "prompt_hint": "Use this step to evaluate the evidence against the original hypothesis.",
             },
@@ -127,7 +127,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Use this step to produce the artifact — document, plan, design, or code.",
             },
             {
-                "token": "form:vet",
+                "token": "check form:vet",
                 "role": "critical review",
                 "prompt_hint": "Use this step to review the artifact: what was produced, how it compares to intent, what is missing or weak.",
             },
@@ -166,7 +166,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "requires_user_input": True,  # user must implement before retrospective
             },
             {
-                "token": "form:vet",
+                "token": "check form:vet",
                 "role": "retrospective review",
                 "prompt_hint": "Use this step to evaluate what worked, what didn't, and what to adjust in the next cycle.",
             },
@@ -289,7 +289,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                     "stop_when": "The goal condition stated in the subject is satisfied from this frame's perspective — evidence is sufficient for a confident verdict.",
                     "steps": [
                         {
-                            "token": "form:prep",
+                            "token": "make form:prep",
                             "role": "experiment framing",
                             "prompt_hint": "Frame the hypothesis for this cycle: what would be true if the goal condition is met from this frame's angle, what evidence would confirm or refute it, and name what to run (command, API call, or test) to produce that evidence.",
                         },
@@ -299,7 +299,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                             "prompt_hint": "Run the experiment defined in the prior step against live behavior — execute a command, API call, or test that exercises the running system (e.g. trigger a request, run a test suite, call an endpoint). This step is complete only when a Bash tool call result appears in the transcript — a transcript containing only Read tool calls for this step does not satisfy this requirement. Record the Bash output before proceeding to vet.",
                         },
                         {
-                            "token": "form:vet",
+                            "token": "check form:vet",
                             "role": "evidence evaluation",
                             "prompt_hint": "Evaluate the evidence gathered against the hypothesis. State whether the goal condition is met, partially met, or unmet, and what further cycles would add.",
                         },
@@ -335,13 +335,13 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "first",
                 "isolation": True,
-                "prompt_hint": "Each agent receives only the subject and its assigned frame. For each hypothesis: (1) run `bar build form:prep` and execute the TASK from its output; (2) run the experiment; (3) run `bar build form:vet` and execute the TASK from its output. A vet step that rejects the hypothesis requires a new `bar build form:prep` before the cycle may continue. Return a labeled block stating: frame investigated, hypotheses tried, root cause confirmed or ruled out, and evidence gathered.",
+                "prompt_hint": "Each agent receives only the subject and its assigned frame. For each hypothesis: (1) run `bar build make form:prep` and execute the TASK from its output; (2) run the experiment; (3) run `bar build check form:vet` and execute the TASK from its output. A vet step that rejects the hypothesis requires a new `bar build make form:prep` before the cycle may continue. Return a labeled block stating: frame investigated, hypotheses tried, root cause confirmed or ruled out, and evidence gathered.",
                 "inner": {
                     "mode": "cycle",
                     "stop_when": "The problem stated in the subject is understood — the root cause is identified with sufficient evidence to act on.",
                     "steps": [
                         {
-                            "token": "form:prep",
+                            "token": "make form:prep",
                             "role": "hypothesis framing",
                             "prompt_hint": "For this frame, identify the next untested hypothesis: what specific cause within this frame would explain the problem? State what would be true if this hypothesis is correct, what evidence would confirm or reject it, and name what to run (command, test, or script) to produce that evidence.",
                         },
@@ -351,9 +351,9 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                             "prompt_hint": "Run the experiment defined in the prior step against the running system — execute a command, test, or script that exercises live behavior (e.g. trigger a request, run a test suite, query a running process). This step is complete only when a Bash tool call result appears in the transcript — a transcript containing only Read tool calls for this step does not satisfy this requirement. Record the Bash output before proceeding to vet.",
                         },
                         {
-                            "token": "form:vet",
+                            "token": "check form:vet",
                             "role": "evidence evaluation",
-                            "prompt_hint": "Evaluate the Bash output from the action step against the hypothesis. If confirmed, apply and verify the fix. If rejected, state why — a vet rejection is complete only when followed by a new bar build form:prep for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement.",
+                            "prompt_hint": "Evaluate the Bash output from the action step against the hypothesis. If confirmed, apply and verify the fix. If rejected, state why — a vet rejection is complete only when followed by a new bar build make form:prep for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement.",
                         },
                     ],
                 },

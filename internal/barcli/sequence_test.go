@@ -50,7 +50,7 @@ func TestSequencesForTokenReturnsMembership(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load grammar: %v", err)
 	}
-	memberships := g.SequencesForToken("form:prep")
+	memberships := g.SequencesForToken("make form:prep")
 	if len(memberships) == 0 {
 		t.Fatal("expected SequencesForToken(\"form:prep\") to return at least one membership")
 	}
@@ -112,10 +112,10 @@ func TestSequenceShowSubcommand(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "form:prep") {
+	if !strings.Contains(out, "make form:prep") {
 		t.Errorf("expected form:prep in bar sequence show output:\n%s", out)
 	}
-	if !strings.Contains(out, "form:vet") {
+	if !strings.Contains(out, "check form:vet") {
 		t.Errorf("expected form:vet in bar sequence show output:\n%s", out)
 	}
 }
@@ -524,8 +524,8 @@ func TestSequenceShowRendersInnerSequence(t *testing.T) {
 	checks := []string{
 		"inner mode:",
 		"inner stop_when:",
-		"→ form:prep",
-		"→ form:vet",
+		"→ make form:prep",
+		"→ check form:vet",
 	}
 	for _, want := range checks {
 		if !strings.Contains(out, want) {
@@ -562,7 +562,7 @@ func TestFrameDebugDispatchUsesInner(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	checks := []string{"inner mode: cycle", "inner stop_when:", "→ form:prep", "→ form:vet"}
+	checks := []string{"inner mode: cycle", "inner stop_when:", "→ make form:prep", "→ check form:vet"}
 	for _, want := range checks {
 		if !strings.Contains(out, want) {
 			t.Errorf("frame-debug dispatch step missing inner field %q:\n%s", want, out)
@@ -576,7 +576,7 @@ func TestFrameExploreDispatchUsesInner(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
 	}
-	checks := []string{"inner mode: cycle", "inner stop_when:", "→ form:prep", "→ form:vet"}
+	checks := []string{"inner mode: cycle", "inner stop_when:", "→ make form:prep", "→ check form:vet"}
 	for _, want := range checks {
 		if !strings.Contains(out, want) {
 			t.Errorf("frame-explore dispatch step missing inner field %q:\n%s", want, out)
@@ -615,12 +615,12 @@ func TestSequenceShowRendersActionStep(t *testing.T) {
 
 // Behavior 32: renderer warns when step token has no task: prefix.
 func TestSequenceShowWarnsNoTaskToken(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "extract-and-package"})
 	if code != 0 {
-		t.Fatalf("bar sequence show experiment-cycle exited %d: %s", code, stderr)
+		t.Fatalf("bar sequence show extract-and-package exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "[no task token") {
-		t.Errorf("bar sequence show experiment-cycle missing no-task-token warning:\n%s", out)
+		t.Errorf("bar sequence show extract-and-package missing no-task-token warning:\n%s", out)
 	}
 }
 
@@ -783,7 +783,7 @@ func TestFrameDebugInnerPrepMentionsFrameAndHypothesis(t *testing.T) {
 	}
 	var prepStep *SequenceStep
 	for i := range dispatchStep.Inner.Steps {
-		if dispatchStep.Inner.Steps[i].Token == "form:prep" {
+		if dispatchStep.Inner.Steps[i].Token == "make form:prep" {
 			prepStep = &dispatchStep.Inner.Steps[i]
 			break
 		}
@@ -967,14 +967,14 @@ func TestFrameDebugStep1NamesObservableFrameNameCriteria(t *testing.T) {
 	}
 }
 
-// Behavior 69: frame-debug dispatch prompt_hint names literal bar build form:prep per cycle.
+// Behavior 69: frame-debug dispatch prompt_hint names literal bar build make form:prep per cycle.
 func TestFrameDebugDispatchPromptHintNamesBarBuildCommands(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "bar build form:prep") {
-		t.Errorf("frame-debug dispatch prompt_hint must name literal 'bar build form:prep' command:\n%s", out)
+	if !strings.Contains(out, "bar build make form:prep") {
+		t.Errorf("frame-debug dispatch prompt_hint must name literal 'bar build make form:prep' command:\n%s", out)
 	}
 }
 
@@ -1011,14 +1011,14 @@ func TestFrameDebugActionStepNamesBashToolCallResult(t *testing.T) {
 	}
 }
 
-// Behavior 73: frame-debug vet step names new bar build form:prep following rejection as observable.
+// Behavior 73: frame-debug vet step names new bar build make form:prep following rejection as observable.
 func TestFrameDebugVetStepNamesNewPrepAfterRejection(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "new bar build form:prep") {
-		t.Errorf("frame-debug vet step must name 'new bar build form:prep' as the observable following rejection:\n%s", out)
+	if !strings.Contains(out, "new bar build make form:prep") {
+		t.Errorf("frame-debug vet step must name 'new bar build make form:prep' as the observable following rejection:\n%s", out)
 	}
 }
 
@@ -1213,6 +1213,55 @@ func TestInnerDispatchPoint5NoTokenDiscovery(t *testing.T) {
 	}
 	if !strings.Contains(out, "do not run bar help llm") {
 		t.Errorf("inner dispatch point 5 must say 'do not run bar help llm':\n%s", out)
+	}
+}
+
+// Behavior 81: form:prep and form:vet step tokens always include a task prefix.
+func TestPrepVetTokensHaveTaskPrefix(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	for name, seq := range g.Sequences {
+		for _, step := range seq.Steps {
+			if step.Token == "form:prep" {
+				t.Errorf("sequence %q step token must be 'make form:prep' not bare 'form:prep'", name)
+			}
+			if step.Token == "form:vet" {
+				t.Errorf("sequence %q step token must be 'check form:vet' not bare 'form:vet'", name)
+			}
+			if step.Inner != nil {
+				for _, is := range step.Inner.Steps {
+					if is.Token == "form:prep" {
+						t.Errorf("sequence %q inner step token must be 'make form:prep' not bare 'form:prep'", name)
+					}
+					if is.Token == "form:vet" {
+						t.Errorf("sequence %q inner step token must be 'check form:vet' not bare 'form:vet'", name)
+					}
+				}
+			}
+		}
+	}
+}
+
+// Behavior 82: prompt_hints referencing bar build form:prep/form:vet use task-prefixed tokens.
+func TestPrepVetPromptHintsHaveTaskPrefix(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "bar build form:prep") {
+		t.Errorf("frame-debug output must not contain bare 'bar build form:prep':\n%s", out)
+	}
+	if strings.Contains(out, "bar build form:vet") {
+		t.Errorf("frame-debug output must not contain bare 'bar build form:vet':\n%s", out)
+	}
+	if !strings.Contains(out, "bar build make form:prep") {
+		t.Errorf("frame-debug output must contain 'bar build make form:prep':\n%s", out)
+	}
+	if !strings.Contains(out, "bar build check form:vet") {
+		t.Errorf("frame-debug output must contain 'bar build check form:vet':\n%s", out)
 	}
 }
 

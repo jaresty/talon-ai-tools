@@ -339,6 +339,52 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "frame-work": {
+        "description": "Decompose a task into independent work frames, implement each in isolation using craft discipline with live coordination, then adversarially stress-test the merged result.",
+        "example": "Building three independent features in parallel — each agent claims its scope in a shared coordination store, implements with full TDD discipline, and the merged result is stress-tested before converging.",
+        "heuristics": ["parallel implementation", "parallel craft", "independent work streams", "parallel TDD", "coordinated parallel work", "implement in parallel then merge", "multi-agent coding"],
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "make method:prism",
+                "role": "frame enumeration and coordination setup",
+                "prompt_hint": "Use this step to enumerate the independent work frames as a governing artifact. Each frame must have a distinct, non-overlapping scope. Also establish the coordination store: either use nn (if available) with a shared tag, or create a temp JSON file at a deterministic path. Output: (1) named frames with scope, (2) store mechanism and path/identifier, (3) coordination protocol — what each agent must read before starting and write when claiming scope or completing work. The store path/mechanism must appear explicitly in this output so it can be passed to every dispatch agent.",
+            },
+            {
+                "type": "dispatch",
+                "role": "parallel frame implementation",
+                "fan_out": "enumerate",
+                "join": "all",
+                "isolation": True,
+                "prompt_hint": "Each agent receives its assigned frame, the store path/mechanism, and the coordination protocol from step 1. Execute the inner sequence. The store is a live coordination channel — agents must read it before claiming scope and may read it during work to detect conflicts.",
+                "inner": {
+                    "mode": "autonomous",
+                    "steps": [
+                        {
+                            "type": "action",
+                            "role": "scope claim",
+                            "prompt_hint": "Read the coordination store. Check for existing claims that overlap with your frame's scope. Write your frame name and the specific files/symbols you intend to modify as a claim. If overlap exists with another agent's claim, narrow your scope before proceeding and update your claim accordingly.",
+                        },
+                        {
+                            "token": "make witness ground gate falsify atomic",
+                            "role": "craft implementation",
+                            "prompt_hint": "Implement your frame's scope using craft discipline (witness → ground → gate → falsify → atomic). Each change must be independently verifiable. On completion, update your claim in the coordination store with the artifacts produced and tests passing.",
+                        },
+                    ],
+                },
+            },
+            {
+                "token": "task:check adversarial perturb",
+                "role": "governance stress-test",
+                "prompt_hint": "Review the combined output of all frame agents. First name every category of failure risk in the merged work (adversarial: integration gaps, assumption conflicts, coverage holes). Then introduce controlled faults — remove a function, break a dependency, corrupt a test input — and verify the test suite fires on each fault (perturb). A fault that does not produce a test failure is a governance gap requiring escalation.",
+            },
+            {
+                "token": "pick method:converge",
+                "role": "synthesis",
+                "prompt_hint": "Summarize what was built across all frames, which governance checks fired during stress-testing, any gaps that require follow-up, and the overall readiness of the merged work.",
+            },
+        ],
+    },
     "simulate-and-review": {
         "description": "Simulate a scenario before executing it, then review actual outcomes against the simulation.",
         "example": "Migrating the auth service as a pilot for a broader microservices migration.",

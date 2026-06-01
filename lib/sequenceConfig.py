@@ -252,7 +252,23 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "all",
                 "isolation": True,
-                "prompt_hint": "Each agent receives only the subject, its assigned frame description, and the goal condition. Each agent runs an experiment cycle (prep → vet → repeat) within its frame until the goal condition is satisfied. Return findings in a labeled block with the number of cycles run.",
+                "prompt_hint": "Each agent receives only the subject, its assigned frame description, and the goal condition. Execute the inner sequence until stop_when is met. Return findings in a labeled block with the number of cycles run.",
+                "inner": {
+                    "mode": "cycle",
+                    "stop_when": "The goal condition stated in the subject is satisfied from this frame's perspective — evidence is sufficient for a confident verdict.",
+                    "steps": [
+                        {
+                            "token": "form:prep",
+                            "role": "experiment framing",
+                            "prompt_hint": "Frame the hypothesis for this cycle: what would be true if the goal condition is met from this frame's angle, and what evidence would confirm or refute it.",
+                        },
+                        {
+                            "token": "form:vet",
+                            "role": "evidence evaluation",
+                            "prompt_hint": "Evaluate the evidence gathered against the hypothesis. State whether the goal condition is met, partially met, or unmet, and what further cycles would add.",
+                        },
+                    ],
+                },
             },
             {
                 "token": "task:show",
@@ -283,7 +299,23 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "first",
                 "isolation": True,
-                "prompt_hint": "Each agent receives only the subject and its assigned hypothesis. Each agent runs an experiment cycle (prep → vet → repeat) within its hypothesis frame until it can confirm or reject the hypothesis. Return a labeled block stating: hypothesis confirmed or rejected, evidence from the experiment cycles, and the fix applied (if confirmed). The first agent to confirm a hypothesis and verify a fix wins.",
+                "prompt_hint": "Each agent receives only the subject and its assigned hypothesis. Execute the inner sequence until stop_when is met. Return a labeled block stating: hypothesis confirmed or rejected, evidence from the experiment cycles, and the fix applied (if confirmed). The first agent to resolve the problem wins.",
+                "inner": {
+                    "mode": "cycle",
+                    "stop_when": "The problem stated in the subject is understood — the root cause is identified with sufficient evidence to act on.",
+                    "steps": [
+                        {
+                            "token": "form:prep",
+                            "role": "hypothesis framing",
+                            "prompt_hint": "Frame the hypothesis as a testable claim: what would be true if this hypothesis is correct, and what evidence would confirm or reject it.",
+                        },
+                        {
+                            "token": "form:vet",
+                            "role": "evidence evaluation",
+                            "prompt_hint": "Evaluate the evidence gathered against the hypothesis. If confirmed, apply and verify the fix. If rejected, state why and stop.",
+                        },
+                    ],
+                },
             },
             {
                 "token": "pick method:converge",

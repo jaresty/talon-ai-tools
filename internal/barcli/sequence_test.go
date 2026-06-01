@@ -474,6 +474,110 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 	}
 }
 
+// Behavior 25: SequenceStep struct carries Inner field with mode, stop_when, and steps.
+func TestSequenceStepInnerFieldPopulated(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-debug"]
+	if !ok {
+		t.Fatal("frame-debug sequence not found in grammar")
+	}
+	var dispatchStep *SequenceStep
+	for i := range seq.Steps {
+		if seq.Steps[i].Type == "dispatch" {
+			dispatchStep = &seq.Steps[i]
+			break
+		}
+	}
+	if dispatchStep == nil {
+		t.Fatal("no dispatch step found in frame-debug")
+	}
+	if dispatchStep.Inner == nil {
+		t.Fatal("dispatch step Inner field is nil — expected a populated inner sequence")
+	}
+	if dispatchStep.Inner.Mode == "" {
+		t.Error("dispatch step Inner.Mode is empty")
+	}
+	if dispatchStep.Inner.StopWhen == "" {
+		t.Error("dispatch step Inner.StopWhen is empty")
+	}
+	if len(dispatchStep.Inner.Steps) == 0 {
+		t.Error("dispatch step Inner.Steps is empty")
+	}
+}
+
+// Behavior 26: `bar sequence show` renders inner mode, stop_when, and nested steps indented.
+func TestSequenceShowRendersInnerSequence(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	checks := []string{
+		"inner mode:",
+		"inner stop_when:",
+		"→ form:prep",
+		"→ form:vet",
+	}
+	for _, want := range checks {
+		if !strings.Contains(out, want) {
+			t.Errorf("bar sequence show frame-debug missing inner rendering %q:\n%s", want, out)
+		}
+	}
+}
+
+// Behavior 27: `bar sequence show --json` includes inner in JSON output.
+func TestSequenceShowJSONIncludesInner(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug", "--json"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug --json exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, `"inner"`) {
+		t.Errorf("bar sequence show frame-debug --json missing \"inner\" field:\n%s", out)
+	}
+}
+
+// Behavior 28: `bar help llm --section sequences` documents the inner schema.
+func TestHelpLLMSequencesDocumentsInnerSchema(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
+	if code != 0 {
+		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "inner") {
+		t.Errorf("bar help llm --section sequences does not document inner schema:\n%s", out)
+	}
+}
+
+// Behavior 29: frame-debug dispatch step uses inner with mode, stop_when, and prep/vet steps.
+func TestFrameDebugDispatchUsesInner(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	checks := []string{"inner mode: cycle", "inner stop_when:", "→ form:prep", "→ form:vet"}
+	for _, want := range checks {
+		if !strings.Contains(out, want) {
+			t.Errorf("frame-debug dispatch step missing inner field %q:\n%s", want, out)
+		}
+	}
+}
+
+// Behavior 30: frame-explore dispatch step uses inner with mode, stop_when, and prep/vet steps.
+func TestFrameExploreDispatchUsesInner(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
+	}
+	checks := []string{"inner mode: cycle", "inner stop_when:", "→ form:prep", "→ form:vet"}
+	for _, want := range checks {
+		if !strings.Contains(out, want) {
+			t.Errorf("frame-explore dispatch step missing inner field %q:\n%s", want, out)
+		}
+	}
+}
+
 // Behavior 24: `bar help llm --section sequences` step summary for parallel-eval shows dispatch fan-out/join.
 func TestHelpLLMSequencesDispatchStepShowsFanOut(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})

@@ -11,16 +11,24 @@ import (
 
 // ADR-0225: Named Workflow Sequences — Go grammar layer.
 
+// InnerSequence is an inline mini-sequence embedded in a dispatch step.
+type InnerSequence struct {
+	Mode     string         `json:"mode,omitempty"`
+	StopWhen string         `json:"stop_when,omitempty"`
+	Steps    []SequenceStep `json:"steps"`
+}
+
 // SequenceStep is one step in a named workflow sequence.
 type SequenceStep struct {
-	Token             string `json:"token"`
-	Role              string `json:"role"`
-	PromptHint        string `json:"prompt_hint,omitempty"`
-	RequiresUserInput bool   `json:"requires_user_input,omitempty"` // ADR-0226
-	Type              string `json:"type,omitempty"`                // ADR-0238: "prompt" | "dispatch"
-	FanOut            string `json:"fan_out,omitempty"`             // ADR-0238: "replicate" | "enumerate"
-	Join              string `json:"join,omitempty"`                // ADR-0238: "all" | "first" | "merge"
-	Isolation         bool   `json:"isolation,omitempty"`           // ADR-0238: strip shared context
+	Token             string         `json:"token"`
+	Role              string         `json:"role"`
+	PromptHint        string         `json:"prompt_hint,omitempty"`
+	RequiresUserInput bool           `json:"requires_user_input,omitempty"` // ADR-0226
+	Type              string         `json:"type,omitempty"`                // ADR-0238: "prompt" | "dispatch"
+	FanOut            string         `json:"fan_out,omitempty"`             // ADR-0238: "replicate" | "enumerate"
+	Join              string         `json:"join,omitempty"`                // ADR-0238: "all" | "first" | "merge"
+	Isolation         bool           `json:"isolation,omitempty"`           // ADR-0238: strip shared context
+	Inner             *InnerSequence `json:"inner,omitempty"`               // inline sub-sequence for dispatch steps
 }
 
 // Sequence is a named, directed multi-step workflow pattern.
@@ -119,14 +127,15 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 
 	if asJSON {
 		type jsonStep struct {
-			Token             string `json:"token"`
-			Role              string `json:"role"`
-			PromptHint        string `json:"prompt_hint,omitempty"`
-			RequiresUserInput bool   `json:"requires_user_input,omitempty"`
-			Type              string `json:"type,omitempty"`
-			FanOut            string `json:"fan_out,omitempty"`
-			Join              string `json:"join,omitempty"`
-			Isolation         bool   `json:"isolation,omitempty"`
+			Token             string         `json:"token"`
+			Role              string         `json:"role"`
+			PromptHint        string         `json:"prompt_hint,omitempty"`
+			RequiresUserInput bool           `json:"requires_user_input,omitempty"`
+			Type              string         `json:"type,omitempty"`
+			FanOut            string         `json:"fan_out,omitempty"`
+			Join              string         `json:"join,omitempty"`
+			Isolation         bool           `json:"isolation,omitempty"`
+			Inner             *InnerSequence `json:"inner,omitempty"`
 		}
 		type jsonSeq struct {
 			Name        string     `json:"name"`
@@ -138,7 +147,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		}
 		steps := make([]jsonStep, len(seq.Steps))
 		for i, s := range seq.Steps {
-			steps[i] = jsonStep{Token: s.Token, Role: s.Role, PromptHint: s.PromptHint, RequiresUserInput: s.RequiresUserInput, Type: s.Type, FanOut: s.FanOut, Join: s.Join, Isolation: s.Isolation}
+			steps[i] = jsonStep{Token: s.Token, Role: s.Role, PromptHint: s.PromptHint, RequiresUserInput: s.RequiresUserInput, Type: s.Type, FanOut: s.FanOut, Join: s.Join, Isolation: s.Isolation, Inner: s.Inner}
 		}
 		out := jsonSeq{Name: name, Description: seq.Description, Example: seq.Example, Mode: seq.Mode, StopWhen: seq.StopWhen, Steps: steps}
 		enc := json.NewEncoder(stdout)
@@ -205,6 +214,18 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			}
 			fmt.Fprintf(stdout, "          5. join: %s\n", joinDesc)
 			fmt.Fprintf(stdout, "          6. Pass collected results as --subject to the next step. Do not synthesize first.\n")
+			if step.Inner != nil {
+				fmt.Fprintf(stdout, "          inner mode: %s\n", step.Inner.Mode)
+				if step.Inner.StopWhen != "" {
+					fmt.Fprintf(stdout, "          inner stop_when: %s\n", step.Inner.StopWhen)
+				}
+				for _, is := range step.Inner.Steps {
+					fmt.Fprintf(stdout, "          → %-20s %s\n", is.Token, is.Role)
+					if is.PromptHint != "" {
+						fmt.Fprintf(stdout, "            %s\n", is.PromptHint)
+					}
+				}
+			}
 		}
 		fmt.Fprintln(stdout)
 	}

@@ -905,3 +905,17 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 		t.Errorf("frame-work adversarial step prompt_hint must say 'read derivations', got: %q", adversarialStep.PromptHint)
 	}
 }
+
+// Behavior 55: dispatch protocol point 5 requires agents to return a Derivation block and orchestrator to preserve all.
+func TestDispatchProtocolPreservesDerivationBlocks(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	if code != 0 {
+		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "## Derivation") {
+		t.Errorf("dispatch protocol point 5 must require agents to return a '## Derivation' block:\n%s", out)
+	}
+	if !strings.Contains(out, "preserve all Derivation blocks") {
+		t.Errorf("dispatch protocol point 5 must require orchestrator to 'preserve all Derivation blocks':\n%s", out)
+	}
+}

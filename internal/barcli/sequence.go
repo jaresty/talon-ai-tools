@@ -235,7 +235,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			if step.Inner != nil {
 				fmt.Fprintf(stdout, "          5. Each agent prompt must include: load the bar-workflow skill, then follow the inner sequence steps shown below using bar build for each prompt step and the action protocol for each action step.\n")
 			} else {
-				fmt.Fprintf(stdout, "          5. Each agent prompt must include: use subagent_type: bar-agent (install via 'bar install-agents'), then run bar build with the step's tokens using the assigned item as --subject and the prompt_hint as --addendum. After running bar build, the agent response must be grounded in the TASK, CONSTRAINTS, and PERSONA sections of that output — a response element not traceable to one of those three sections does not satisfy this requirement.\n")
+				fmt.Fprintf(stdout, "          5. Each agent prompt must include: use subagent_type: bar-agent (install via 'bar install-agents'), then run bar build with the step's tokens using the assigned item as --subject and the prompt_hint as --addendum. After running bar build, the agent response must be grounded in the TASK, CONSTRAINTS, and PERSONA sections of that output — a response element not traceable to one of those three sections does not satisfy this requirement. Each agent must return a ## Derivation block naming: bar tokens applied, governing goal, behavioral dimensions. The orchestrator must preserve all Derivation blocks from every agent in the join result — do not strip or summarize them.\n")
 			}
 			joinDesc := step.Join
 			switch step.Join {

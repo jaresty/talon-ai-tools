@@ -98,3 +98,23 @@ func TestBarAgentInstructionsAutopilotPrimary(t *testing.T) {
 		t.Errorf("bar-agent.md must mention bar-autopilot before bar-workflow (autopilot is primary)")
 	}
 }
+
+// Behavior 54: bar-agent.md contains a required Derivation block output section.
+func TestBarAgentDerivationBlock(t *testing.T) {
+	dir := t.TempDir()
+	_, _, code := runCLI(t, []string{"install-agents", "--location", dir})
+	if code != 0 {
+		t.Fatalf("bar install-agents failed")
+	}
+	content, err := os.ReadFile(filepath.Join(dir, "bar-agent.md"))
+	if err != nil {
+		t.Fatalf("could not read bar-agent.md: %v", err)
+	}
+	s := string(content)
+	if !strings.Contains(s, "## Derivation") {
+		t.Errorf("bar-agent.md must contain '## Derivation' output section:\n%s", s)
+	}
+	if !strings.Contains(s, "bar tokens applied") {
+		t.Errorf("bar-agent.md Derivation section must name 'bar tokens applied':\n%s", s)
+	}
+}

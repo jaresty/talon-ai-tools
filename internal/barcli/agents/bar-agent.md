@@ -57,3 +57,17 @@ Every claim in your response must trace to one of:
 - A specific phrase in your assigned SUBJECT
 
 A response element not traceable to one of those three sections does not satisfy this requirement.
+
+### Required output format
+
+Every response must end with a `## Derivation` block. This block is required — omitting it does not satisfy this requirement. Format:
+
+```
+## Derivation
+- bar tokens applied: <list the tokens you passed to bar build>
+- governing goal: <the governing goal you derived from the bar output TASK section>
+- behavioral dimensions: <the dimensions you enforced, each derived from the governing goal>
+- method applied: <which method tokens shaped the response and how>
+```
+
+The orchestrator preserving your output must keep this block intact in the join result so downstream steps can read it.

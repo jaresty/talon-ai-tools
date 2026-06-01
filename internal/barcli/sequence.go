@@ -214,7 +214,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		}
 		if step.Type == "dispatch" {
 			fmt.Fprintf(stdout, "          [dispatch protocol — required]\n")
-			fmt.Fprintf(stdout, "          1. Do NOT run bar build for this step.\n")
+			fmt.Fprintf(stdout, "          1. The orchestrator spawns Agent tool calls only for this step — do not run bar build in the orchestrator turn.\n")
 			fanOutDesc := step.FanOut
 			if step.FanOut == "enumerate" {
 				fanOutDesc = "enumerate — treat prior output as a list; send one item per agent"
@@ -232,6 +232,11 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 				fmt.Fprintf(stdout, "          3. isolation: false — agents share conversation context\n")
 			}
 			fmt.Fprintf(stdout, "          4. Spawn one Agent tool call per item. Do not batch items into a single agent — each agent must have Bash tool access and bar skills loaded to run bar commands.\n")
+			if step.Inner != nil {
+				fmt.Fprintf(stdout, "          5. Each agent prompt must include: load the bar-workflow skill, then follow the inner sequence steps shown below using bar build for each prompt step and the action protocol for each action step.\n")
+			} else {
+				fmt.Fprintf(stdout, "          5. Each agent prompt must include: load the bar-workflow skill, then run bar build with the step's tokens using the assigned item as --subject and the prompt_hint as --addendum.\n")
+			}
 			joinDesc := step.Join
 			switch step.Join {
 			case "all":
@@ -241,8 +246,8 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			case "merge":
 				joinDesc = "merge — collect all results into an array"
 			}
-			fmt.Fprintf(stdout, "          5. join: %s\n", joinDesc)
-			fmt.Fprintf(stdout, "          6. Pass the join result as --subject to the next step. Do not synthesize first.\n")
+			fmt.Fprintf(stdout, "          6. join: %s\n", joinDesc)
+			fmt.Fprintf(stdout, "          7. Pass the join result as --subject to the next step. Do not synthesize first.\n")
 			if step.Inner != nil {
 				fmt.Fprintf(stdout, "          inner mode: %s\n", step.Inner.Mode)
 				if step.Inner.StopWhen != "" {

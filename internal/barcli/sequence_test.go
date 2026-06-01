@@ -463,12 +463,13 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 	}
 	checks := []string{
 		"[dispatch protocol — required]",
-		"1. Do NOT run bar build for this step.",
+		"1. The orchestrator spawns Agent tool calls only",
 		"2. fan_out: enumerate",
 		"3. isolation: true",
 		"4. Spawn one Agent tool call per item.",
-		"5. join: all",
-		"6. Pass the join result as --subject to the next step.",
+		"5. Each agent prompt must include",
+		"6. join: all",
+		"7. Pass the join result as --subject to the next step.",
 	}
 	for _, want := range checks {
 		if !strings.Contains(out, want) {
@@ -804,5 +805,30 @@ func TestSequenceShowDispatchMentionsBarSkills(t *testing.T) {
 	}
 	if !strings.Contains(out, "bar skills loaded") {
 		t.Errorf("dispatch protocol point 4 must mention 'bar skills loaded':\n%s", out)
+	}
+}
+
+// Behavior 43: dispatch protocol clause 1 is allow-list (names what orchestrator does, not what it must not do).
+func TestSequenceShowDispatchClause1IsAllowList(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	if code != 0 {
+		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "Do NOT run bar build for this step") {
+		t.Errorf("dispatch protocol clause 1 must not be a deny-list; found deny-list form:\n%s", out)
+	}
+	if !strings.Contains(out, "spawns Agent tool calls only") {
+		t.Errorf("dispatch protocol clause 1 must contain 'spawns Agent tool calls only':\n%s", out)
+	}
+}
+
+// Behavior 44: dispatch protocol includes explicit bar command instruction for spawned agents.
+func TestSequenceShowDispatchAgentBarCommand(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	if code != 0 {
+		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Each agent prompt must include") {
+		t.Errorf("dispatch protocol must contain 'Each agent prompt must include' bar command instruction:\n%s", out)
 	}
 }

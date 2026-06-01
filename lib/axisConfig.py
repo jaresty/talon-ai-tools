@@ -189,7 +189,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
         "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Each turn produces the "
         "channel output (code, html, diagram, etc.) in its current state — not chat text. Questions are asked within the channel format (comments, placeholders, or UI hints). With "
-        "output-exclusive channel, produces the artifact. Without, conducts interactively with channel as the response medium.",
+        "output-exclusive channel, produces the artifact. Without, conducts interactively with channel as the response medium. When tools are available and the artifact is written to "
+        "disk: on the first turn, start a local server and confirm the URL; on subsequent turns, if a server is already running, note the existing URL and instruct the user to refresh. "
+        "Always confirm the current view URL before asking what to change next.",
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
         "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it "
         "without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
@@ -3734,6 +3736,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "collaborative design session",
                 "check with me before each major decision",
                 "co-design with checkpoints",
+                "start a live server",
+                "open in browser as we go",
             ],
         },
         "commit": {

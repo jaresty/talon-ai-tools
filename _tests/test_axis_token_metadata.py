@@ -403,6 +403,26 @@ class FormAxisMetadataTests(unittest.TestCase):
                 self.assertTrue(data["definition"].strip())
                 self.assertGreater(len(data["heuristics"]), 0)
 
+    def test_cocreate_live_preview_clause(self):
+        """cocreate definition must instruct model to start a server, handle existing server, and confirm URL."""
+        cocreate = self.meta.get("cocreate", {})
+        definition = cocreate.get("definition", "")
+        self.assertIn(
+            "start a local server",
+            definition,
+            "cocreate must instruct model to start a local server on first turn",
+        )
+        self.assertIn(
+            "already running",
+            definition,
+            "cocreate must handle the case where a server is already running",
+        )
+        self.assertIn(
+            "confirm the",
+            definition,
+            "cocreate must instruct model to confirm the URL before asking what to change next",
+        )
+
     def test_direct_distinguishes_from_indirect(self):
         """direct must distinguish from indirect."""
         direct = self.meta.get("direct", {})

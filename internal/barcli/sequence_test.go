@@ -908,6 +908,72 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 	}
 }
 
+// Behavior 68: frame-debug step 1 names observable frame name criteria (no verb, no causal claim).
+func TestFrameDebugStep1NamesObservableFrameNameCriteria(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "no verb") && !strings.Contains(out, "no causal claim") {
+		t.Errorf("frame-debug step 1 must name observable frame name criteria ('no verb' or 'no causal claim'):\n%s", out)
+	}
+}
+
+// Behavior 69: frame-debug dispatch prompt_hint names literal bar build form:prep per cycle.
+func TestFrameDebugDispatchPromptHintNamesBarBuildCommands(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "bar build form:prep") {
+		t.Errorf("frame-debug dispatch prompt_hint must name literal 'bar build form:prep' command:\n%s", out)
+	}
+}
+
+// Behavior 70: frame-debug dispatch point 3 names observable Agent call contents.
+func TestFrameDebugDispatchPoint3NamesAgentCallContents(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "must not contain") && !strings.Contains(out, "must include only") {
+		t.Errorf("frame-debug dispatch point 3 must name Agent call contents ('must not contain' or 'must include only'):\n%s", out)
+	}
+}
+
+// Behavior 71: frame-debug dispatch point 5 (inner) requires literal /bar-workflow in Agent call text.
+func TestFrameDebugDispatchPoint5RequiresBarWorkflowSkill(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "/bar-workflow") {
+		t.Errorf("frame-debug dispatch point 5 must require literal '/bar-workflow' in Agent call text:\n%s", out)
+	}
+}
+
+// Behavior 72: frame-debug action step names Bash tool call result as observable completion criterion.
+func TestFrameDebugActionStepNamesBashToolCallResult(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Bash tool call") {
+		t.Errorf("frame-debug action step must name 'Bash tool call' as observable completion criterion:\n%s", out)
+	}
+}
+
+// Behavior 73: frame-debug vet step names new bar build form:prep following rejection as observable.
+func TestFrameDebugVetStepNamesNewPrepAfterRejection(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "new bar build form:prep") {
+		t.Errorf("frame-debug vet step must name 'new bar build form:prep' as the observable following rejection:\n%s", out)
+	}
+}
+
 // Behavior 67: frame-synthesis dispatch prompt_hint explicitly instructs agents to read the material first.
 func TestFrameSynthesisDispatchInstructsReadFirst(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-synthesis"})

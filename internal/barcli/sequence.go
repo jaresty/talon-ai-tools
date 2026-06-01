@@ -224,7 +224,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			fmt.Fprintf(stdout, "          2. fan_out: %s\n", fanOutDesc)
 			isolationContext := "its assigned item + prompt_hint"
 			if step.Inner != nil {
-				isolationContext = "its assigned item, the inner steps, and inner stop_when — no shared history"
+				isolationContext = "its assigned item, the inner steps, and inner stop_when. The Agent tool call must include only: (a) the assigned item text, (b) the inner steps below, (c) the inner stop_when. It must not contain the full enumerated list of all items or context from other agents"
 			}
 			if step.Isolation {
 				fmt.Fprintf(stdout, "          3. isolation: true — each agent receives only %s; no shared history\n", isolationContext)
@@ -233,7 +233,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			}
 			fmt.Fprintf(stdout, "          4. Spawn one Agent tool call per item. Do not batch items into a single agent — each agent must have Bash tool access and bar skills loaded to run bar commands.\n")
 			if step.Inner != nil {
-				fmt.Fprintf(stdout, "          5. Each agent prompt must include: load the bar-workflow skill, then follow the inner sequence steps shown below using bar build for each prompt step and the action protocol for each action step.\n")
+				fmt.Fprintf(stdout, "          5. The Agent tool call text must contain: (1) the literal string `/bar-workflow` as the first skill invocation; (2) for each inner prompt step shown below, the literal `bar build <token>` command the agent must run; (3) the instruction that each `bar build` output is the agent's task instruction for that step — a response written before the `bar build` output appears does not satisfy this requirement.\n")
 			} else {
 				fmt.Fprintf(stdout, "          5. Each agent prompt must include: use subagent_type: bar-agent (install via 'bar install-agents'), then run the literal bar build command the orchestrator provides — do not discover tokens. The orchestrator must construct and include this exact command in each agent prompt: `bar build <step-token-string> --subject '<assigned-item>' --addendum '<prompt_hint>'`. After running bar build, the agent response must be grounded in the TASK, CONSTRAINTS, and PERSONA sections of that output — a response element not traceable to one of those three sections does not satisfy this requirement. Each agent must return a ## Derivation block naming: bar tokens applied, governing goal, behavioral dimensions. The orchestrator must preserve all Derivation blocks from every agent in the join result — do not strip or summarize them.\n")
 			}

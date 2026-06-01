@@ -327,7 +327,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Use this step to partition the problem into independent investigation frames as a governing artifact. A frame is WHERE to look (a system component or layer), not WHAT is wrong — each frame must be a domain that can contain multiple hypotheses, not a hypothesis itself. Name each frame as a system area (e.g. connection layer, query layer, config layer) and describe what it covers. Do not generate hypotheses yet — enumeration is the only output of this step.",
+                "prompt_hint": "Use this step to partition the problem into independent investigation frames as a governing artifact. A frame is WHERE to look — a system component or layer that can contain multiple hypotheses. Name each frame as a noun phrase naming a system area (e.g. 'connection layer', 'query layer'). A valid frame name contains no verb and makes no causal claim — a name containing 'fails', 'is slow', or 'causes' is a hypothesis, not a frame. Do not generate hypotheses yet — enumeration is the only output of this step.",
             },
             {
                 "type": "dispatch",
@@ -335,7 +335,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "first",
                 "isolation": True,
-                "prompt_hint": "Each agent receives only the subject and its assigned frame. Generate hypotheses for that frame, then cycle through prep→action→vet for each until the root cause within the frame is understood. Return a labeled block stating: frame investigated, hypotheses tried, root cause confirmed or ruled out, and evidence gathered. The first agent to confirm a root cause wins.",
+                "prompt_hint": "Each agent receives only the subject and its assigned frame. For each hypothesis: (1) run `bar build form:prep` and execute the TASK from its output; (2) run the experiment; (3) run `bar build form:vet` and execute the TASK from its output. A vet step that rejects the hypothesis requires a new `bar build form:prep` before the cycle may continue. Return a labeled block stating: frame investigated, hypotheses tried, root cause confirmed or ruled out, and evidence gathered.",
                 "inner": {
                     "mode": "cycle",
                     "stop_when": "The problem stated in the subject is understood — the root cause is identified with sufficient evidence to act on.",
@@ -348,12 +348,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "type": "action",
                             "role": "hypothesis investigation",
-                            "prompt_hint": "Run the experiment defined in the prior step: execute a command, test, or script that produces new output not already present in the transcript. Static reading of code or files is not sufficient — the experiment must produce a new tool-executed result. Record findings before proceeding to vet.",
+                            "prompt_hint": "Run the experiment defined in the prior step against the running system — execute a command, test, or script that exercises live behavior (e.g. trigger a request, run a test suite, query a running process). This step is complete only when a Bash tool call result appears in the transcript — a transcript containing only Read tool calls for this step does not satisfy this requirement. Record the Bash output before proceeding to vet.",
                         },
                         {
                             "token": "form:vet",
                             "role": "evidence evaluation",
-                            "prompt_hint": "Evaluate the evidence gathered against the hypothesis. If confirmed, apply and verify the fix. If rejected, state why and return to prep with the next hypothesis — do not stop the cycle.",
+                            "prompt_hint": "Evaluate the Bash output from the action step against the hypothesis. If confirmed, apply and verify the fix. If rejected, state why — a vet rejection is complete only when followed by a new bar build form:prep for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement.",
                         },
                     ],
                 },

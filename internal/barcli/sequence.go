@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strings"
 
 	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
 )
@@ -182,10 +183,30 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 				isolation = ", isolated"
 			}
 			tokenCol = fmt.Sprintf("dispatch [%s→%s%s]", step.FanOut, step.Join, isolation)
+		} else if step.Type == "action" {
+			tokenCol = "[action]"
 		}
 		fmt.Fprintf(stdout, "%sStep %d  %-24s %s\n", marker, i+1, tokenCol, step.Role)
 		if step.PromptHint != "" {
 			fmt.Fprintf(stdout, "          %s\n", step.PromptHint)
+		}
+		if step.Type == "action" {
+			fmt.Fprintf(stdout, "          [action protocol — required]\n")
+			fmt.Fprintf(stdout, "          Do NOT run bar build for this step.\n")
+			fmt.Fprintf(stdout, "          Execute the actions named in the prior step's output using available tools.\n")
+			fmt.Fprintf(stdout, "          Record results before proceeding to the next step.\n")
+		}
+		if step.Type != "dispatch" && step.Type != "action" {
+			hasTask := false
+			for _, tok := range strings.Fields(step.Token) {
+				if strings.HasPrefix(tok, "task:") {
+					hasTask = true
+					break
+				}
+			}
+			if !hasTask {
+				fmt.Fprintf(stdout, "          [no task token — add one before running bar build: show, make, check, fix, probe, plan, or sim]\n")
+			}
 		}
 		if step.Type == "dispatch" {
 			fmt.Fprintf(stdout, "          [dispatch protocol — required]\n")
@@ -224,9 +245,16 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 					fmt.Fprintf(stdout, "          inner stop_when: %s\n", step.Inner.StopWhen)
 				}
 				for _, is := range step.Inner.Steps {
-					fmt.Fprintf(stdout, "          → %-20s %s\n", is.Token, is.Role)
+					innerToken := is.Token
+					if is.Type == "action" {
+						innerToken = "[action]"
+					}
+					fmt.Fprintf(stdout, "          → %-20s %s\n", innerToken, is.Role)
 					if is.PromptHint != "" {
 						fmt.Fprintf(stdout, "            %s\n", is.PromptHint)
+					}
+					if is.Type == "action" {
+						fmt.Fprintf(stdout, "            [action protocol — required] Do NOT run bar build. Execute actions from prior step using tools. Record results before proceeding.\n")
 					}
 				}
 			}

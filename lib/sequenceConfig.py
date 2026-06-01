@@ -46,6 +46,11 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "token": "form:prep",
                 "role": "pre-experiment framing",
                 "prompt_hint": "Use this step to state the hypothesis and success criteria before running the experiment.",
+            },
+            {
+                "type": "action",
+                "role": "experiment execution",
+                "prompt_hint": "Run the experiment defined in the prior step. Collect results before proceeding to vet.",
                 "requires_user_input": True,  # user must run the experiment before vet
             },
             {
@@ -263,6 +268,11 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                             "prompt_hint": "Frame the hypothesis for this cycle: what would be true if the goal condition is met from this frame's angle, and what evidence would confirm or refute it.",
                         },
                         {
+                            "type": "action",
+                            "role": "experiment execution",
+                            "prompt_hint": "Execute the investigation defined in the prior step using available tools (code reads, API calls, test runs, document review). Record findings before proceeding to vet.",
+                        },
+                        {
                             "token": "form:vet",
                             "role": "evidence evaluation",
                             "prompt_hint": "Evaluate the evidence gathered against the hypothesis. State whether the goal condition is met, partially met, or unmet, and what further cycles would add.",
@@ -308,6 +318,11 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                             "token": "form:prep",
                             "role": "hypothesis framing",
                             "prompt_hint": "Frame the hypothesis as a testable claim: what would be true if this hypothesis is correct, and what evidence would confirm or reject it.",
+                        },
+                        {
+                            "type": "action",
+                            "role": "hypothesis investigation",
+                            "prompt_hint": "Execute the investigation defined in the prior step using available tools (code reads, test runs, log inspection). Record findings before proceeding to vet.",
                         },
                         {
                             "token": "form:vet",
@@ -373,6 +388,9 @@ def validate_sequences(sequences: dict[str, Any], known_tokens: set[str]) -> lis
                     errors.append(f"{name} step {i}: dispatch step missing fan_out")
                 if not step.get("join"):
                     errors.append(f"{name} step {i}: dispatch step missing join")
+            elif step_type == "action":
+                if "token" in step:
+                    errors.append(f"{name} step {i}: action step must not have a token field")
             else:
                 if not isinstance(step.get("token"), str) or not step["token"]:
                     errors.append(f"{name} step {i}: missing token")

@@ -223,9 +223,12 @@ func TestSequenceStepRequiresUserInput(t *testing.T) {
 	if !ok {
 		t.Fatal("experiment-cycle not found")
 	}
-	// form:prep step (index 0) requires user input — user must run the experiment before vet.
-	if !seq.Steps[0].RequiresUserInput {
-		t.Error("expected experiment-cycle step 0 (form:prep) RequiresUserInput=true")
+	// action step (index 1) requires user input — user must run the experiment before vet.
+	if len(seq.Steps) < 2 {
+		t.Fatal("expected experiment-cycle to have at least 2 steps")
+	}
+	if !seq.Steps[1].RequiresUserInput {
+		t.Error("expected experiment-cycle step 1 (action) RequiresUserInput=true")
 	}
 }
 
@@ -586,5 +589,107 @@ func TestHelpLLMSequencesDispatchStepShowsFanOut(t *testing.T) {
 	}
 	if !strings.Contains(out, "dispatch[enumerate→all]") {
 		t.Errorf("expected parallel-eval step summary to contain \"dispatch[enumerate→all]\":\n%s", out)
+	}
+}
+
+// Behavior 31: renderer prints action protocol block for action steps.
+func TestSequenceShowRendersActionStep(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
+	if code != 0 {
+		t.Fatalf("bar sequence show experiment-cycle exited %d: %s", code, stderr)
+	}
+	checks := []string{
+		"[action protocol — required]",
+		"Do NOT run bar build for this step.",
+		"Execute the actions",
+	}
+	for _, want := range checks {
+		if !strings.Contains(out, want) {
+			t.Errorf("bar sequence show experiment-cycle missing action rendering %q:\n%s", want, out)
+		}
+	}
+}
+
+// Behavior 32: renderer warns when step token has no task: prefix.
+func TestSequenceShowWarnsNoTaskToken(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
+	if code != 0 {
+		t.Fatalf("bar sequence show experiment-cycle exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "[no task token") {
+		t.Errorf("bar sequence show experiment-cycle missing no-task-token warning:\n%s", out)
+	}
+}
+
+// Behavior 33: validate_sequences accepts action steps without token field.
+func TestSequenceValidatorAcceptsActionStep(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["experiment-cycle"]
+	if !ok {
+		t.Fatal("experiment-cycle sequence not found")
+	}
+	var hasAction bool
+	for _, s := range seq.Steps {
+		if s.Type == "action" {
+			hasAction = true
+		}
+	}
+	if !hasAction {
+		t.Fatal("experiment-cycle has no action step — expected one after migration")
+	}
+}
+
+// Behavior 34: bar help llm --section sequences documents action step type.
+func TestHelpLLMSequencesDocumentsActionStep(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
+	if code != 0 {
+		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Action steps") {
+		t.Errorf("bar help llm --section sequences missing Action steps documentation:\n%s", out)
+	}
+}
+
+// Behavior 35: frame-debug inner steps are prep→action→vet.
+func TestFrameDebugInnerHasActionStep(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "[action protocol — required]") {
+		t.Errorf("frame-debug inner sequence missing action step:\n%s", out)
+	}
+}
+
+// Behavior 36: frame-explore inner steps are prep→action→vet.
+func TestFrameExploreInnerHasActionStep(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "[action protocol — required]") {
+		t.Errorf("frame-explore inner sequence missing action step:\n%s", out)
+	}
+}
+
+// Behavior 37: experiment-cycle action step has requires_user_input true.
+func TestExperimentCycleActionStepRequiresUserInput(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["experiment-cycle"]
+	if !ok {
+		t.Fatal("experiment-cycle sequence not found")
+	}
+	for _, s := range seq.Steps {
+		if s.Type == "action" && !s.RequiresUserInput {
+			t.Error("experiment-cycle action step must have requires_user_input: true")
+		}
 	}
 }

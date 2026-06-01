@@ -117109,7 +117109,12 @@
         {
           "token": "form:prep",
           "role": "pre-experiment framing",
-          "prompt_hint": "Use this step to state the hypothesis and success criteria before running the experiment.",
+          "prompt_hint": "Use this step to state the hypothesis and success criteria before running the experiment."
+        },
+        {
+          "type": "action",
+          "role": "experiment execution",
+          "prompt_hint": "Run the experiment defined in the prior step. Collect results before proceeding to vet.",
           "requires_user_input": true
         },
         {
@@ -117397,6 +117402,11 @@
                 "prompt_hint": "Frame the hypothesis for this cycle: what would be true if the goal condition is met from this frame's angle, and what evidence would confirm or refute it."
               },
               {
+                "type": "action",
+                "role": "experiment execution",
+                "prompt_hint": "Execute the investigation defined in the prior step using available tools (code reads, API calls, test runs, document review). Record findings before proceeding to vet."
+              },
+              {
                 "token": "form:vet",
                 "role": "evidence evaluation",
                 "prompt_hint": "Evaluate the evidence gathered against the hypothesis. State whether the goal condition is met, partially met, or unmet, and what further cycles would add."
@@ -117450,6 +117460,11 @@
                 "token": "form:prep",
                 "role": "hypothesis framing",
                 "prompt_hint": "Frame the hypothesis as a testable claim: what would be true if this hypothesis is correct, and what evidence would confirm or reject it."
+              },
+              {
+                "type": "action",
+                "role": "hypothesis investigation",
+                "prompt_hint": "Execute the investigation defined in the prior step using available tools (code reads, test runs, log inspection). Record findings before proceeding to vet."
               },
               {
                 "token": "form:vet",
@@ -117989,7 +118004,7 @@
     "slugs": "9ded63c7daa070f6e0c2f48de16c5b9019fa327f0d54b72d7a612c47a6f57536",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "1f779f51c8a4ca34cb618093d18e1bb74414477d77be2bc2e95bbc4228a0cf04",
-    "sequences": "94af1cd8a5c2427bf7ca6faad6250eb492c89595e3af42d8d77212cb78aa0169",
+    "sequences": "bcbac4a15a43b3b57595283b5ff623e8289ff2cc5c4b6eb9a685a3a78acc686b",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

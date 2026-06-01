@@ -59,7 +59,7 @@ class TestSequenceConfigStructure(unittest.TestCase):
             for i, step in enumerate(seq.get("steps", [])):
                 self.assertIsInstance(step.get("role"), str, f"{name} step {i}: role must be a string")
                 self.assertTrue(step["role"], f"{name} step {i}: role must be non-empty")
-                if step.get("type") != "dispatch":
+                if step.get("type") not in ("dispatch", "action"):
                     self.assertIsInstance(step.get("token"), str, f"{name} step {i}: token must be a string")
                     self.assertTrue(step["token"], f"{name} step {i}: token must be non-empty")
 

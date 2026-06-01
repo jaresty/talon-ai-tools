@@ -693,3 +693,14 @@ func TestExperimentCycleActionStepRequiresUserInput(t *testing.T) {
 		}
 	}
 }
+
+// Behavior 38: renderer does NOT warn when step token contains a bare task slug (no false positive).
+func TestSequenceShowNoFalsePositiveTaskWarning(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-work"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-work exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "[no task token") {
+		t.Errorf("bar sequence show frame-work emitted false-positive 'no task token' warning:\n%s", out)
+	}
+}

@@ -468,7 +468,7 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 		"1. The orchestrator spawns Agent tool calls only",
 		"2. fan_out: enumerate",
 		"3. isolation: true",
-		"4. Spawn one Agent tool call per item.",
+		"4. Spawn one Agent tool call per item using subagent_type: bar-agent",
 		"5. Each agent prompt must include",
 		"6. join: all",
 		"7. Pass the join result as --subject to the next step.",
@@ -805,8 +805,8 @@ func TestSequenceShowDispatchMentionsBarSkills(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "bar skills loaded") {
-		t.Errorf("dispatch protocol point 4 must mention 'bar skills loaded':\n%s", out)
+	if !strings.Contains(out, "subagent_type: bar-agent") {
+		t.Errorf("dispatch protocol point 4 must mention 'subagent_type: bar-agent':\n%s", out)
 	}
 }
 
@@ -905,6 +905,32 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 	}
 	if !strings.Contains(adversarialStep.PromptHint, "read derivations") {
 		t.Errorf("frame-work adversarial step prompt_hint must say 'read derivations', got: %q", adversarialStep.PromptHint)
+	}
+}
+
+// Behavior 77: dispatch protocol point 4 contains subagent_type: bar-agent (applies to all dispatch steps).
+func TestDispatchProtocolPoint4ContainsBarAgent(t *testing.T) {
+	// Use frame-debug (inner) and parallel-eval (non-inner) — both must have it in point 4.
+	for _, seq := range []string{"frame-debug", "parallel-eval"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		// Point 4 line must contain subagent_type: bar-agent.
+		var point4Line string
+		for _, line := range strings.Split(out, "\n") {
+			if strings.Contains(line, "4.") && strings.Contains(line, "Spawn") {
+				point4Line = line
+				break
+			}
+		}
+		if point4Line == "" {
+			t.Errorf("%s: could not find point 4 (Spawn) line in output", seq)
+			continue
+		}
+		if !strings.Contains(point4Line, "subagent_type: bar-agent") {
+			t.Errorf("%s: point 4 must contain 'subagent_type: bar-agent', got: %s", seq, point4Line)
+		}
 	}
 }
 

@@ -9,7 +9,7 @@ requires:
   - claude CLI with --output-format stream-json support
 args:
   - name: scenario
-    description: "Letter A–H identifying the scenario from ADR-0239"
+    description: "Letter A–K identifying the scenario from ADR-0239"
     required: true
   - name: round
     description: "Round number for the work-log entry (default: 1)"
@@ -25,6 +25,7 @@ Runs one round of the ADR-0239 craft pack compliance evaluation against a haiku 
 Invoke with `/craft-pack-eval <scenario>` when:
 - Running a periodic crank battery check (scenarios A, B, C — Critical frames only)
 - Running a full battery investigation (scenarios D–H — specific excluded frames)
+- Running non-software frame evaluation (scenarios I, J, K — no tool use required)
 - Establishing a baseline for a new haiku model version
 
 ## Execution — run these steps in order
@@ -103,7 +104,7 @@ No `PASS/FAIL` placeholder may remain in the output.
 
 ### `setup.sh`
 
-- Accepts scenario letter A–H as `$1`
+- Accepts scenario letter A–K as `$1`
 - Creates `/tmp/haiku-test-$1/`
 - Writes exact source/test files from ADR-0239 for that scenario
 - Sets `EXPECT` to the exact string the pre-state `go test` output must contain
@@ -114,7 +115,7 @@ See: `.claude/skills/craft-pack-eval/setup.sh`
 
 ### `run-agent.sh`
 
-- Accepts scenario letter A–H as `$1`
+- Accepts scenario letter A–K as `$1`
 - Loads the task prompt string for that scenario (defined inline per scenario)
 - Captures `bar build make witness ground gate falsify atomic` output as system prompt
 - Invokes `claude -p` with `--output-format stream-json --verbose`

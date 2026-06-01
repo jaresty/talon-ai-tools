@@ -282,6 +282,63 @@ To invoke the full eval skill: `/craft-pack-eval <X>`
 
 ---
 
+### Frame 21 — Non-software: Requirements Review (no tool use)
+
+**21a**
+- **SCENARIO**: Agent must implement behavior satisfying an acceptance criterion, but no test runner is available.
+- **COMPLIANT**: Writes the acceptance criterion as a checkable condition before producing any design sketch: "Criterion: the output must contain the user's name as a literal substring." Produces only the criterion list first — no design content.
+- **VIOLATION**: Writes a design sketch before stating any acceptance criterion.
+
+**21b**
+- **SCENARIO**: Agent revises a design sketch that does not satisfy a stated criterion.
+- **COMPLIANT**: States "Criterion X not yet satisfiable by this design: the sketch produces no output containing the user's name" before revising the sketch.
+- **VIOLATION**: Revises the sketch without naming which criterion it fails and why.
+
+**21c**
+- **SCENARIO**: Agent opens a completion check for a design.
+- **COMPLIANT**: Re-enumerates every stated criterion against the design and confirms each has a named design element that satisfies it. Does not close until all criteria are named as satisfied.
+- **VIOLATION**: Opens completion check before enumerating all criteria, or closes it while any criterion is unaddressed.
+
+---
+
+### Frame 22 — Non-software: Protocol Compliance (no tool use)
+
+**22a**
+- **SCENARIO**: Agent must produce prose that satisfies a rubric, but no execution environment is available.
+- **COMPLIANT**: Writes each rubric criterion as a checkable condition before any prose is produced. Produces only the criterion list first — no prose content.
+- **VIOLATION**: Produces prose before stating any rubric criterion.
+
+**22b**
+- **SCENARIO**: A prose sentence violates a stated rubric criterion.
+- **COMPLIANT**: Places an inline marker "⚠ criterion X violated here: [reason]" immediately before revising the sentence.
+- **VIOLATION**: Revises the sentence without placing a violation marker or naming which criterion was violated.
+
+**22c**
+- **SCENARIO**: Agent opens a completion check for a prose artifact.
+- **COMPLIANT**: Re-reads every stated criterion and confirms no violation markers remain. Does not close until all criteria are marked satisfied.
+- **VIOLATION**: Closes the completion check while any violation marker remains, or without re-reading all criteria.
+
+---
+
+### Frame 23 — Non-software: Formal Derivation (no tool use)
+
+**23a**
+- **SCENARIO**: Agent must derive a conclusion through a multi-step argument, but no execution environment is available.
+- **COMPLIANT**: Writes the proposition or conditional ("If P and Q, then R") before producing any derivation steps. Produces only the proposition header and named assumptions first.
+- **VIOLATION**: Produces derivation steps before writing the proposition.
+
+**23b**
+- **SCENARIO**: A derivation step cannot proceed because a required lemma is not yet established.
+- **COMPLIANT**: States "Blocked: lemma X not yet established in the chain" before proceeding past that point.
+- **VIOLATION**: Proceeds past an ungrounded step without naming the blockage.
+
+**23c**
+- **SCENARIO**: Agent opens a completion check for a derivation.
+- **COMPLIANT**: Re-enumerates all proof obligations against the chain and confirms each has a grounding step. Does not close until every obligation is consumed.
+- **VIOLATION**: Closes the completion check while any proof obligation is ungrounded, or without re-enumerating.
+
+---
+
 ## Scoring Rubric
 
 | Frame | Token(s) | Pass Criterion | Tier |
@@ -307,15 +364,18 @@ To invoke the full eval skill: `/craft-pack-eval <X>`
 | 18 | falsify+atomic minimal-state | Minimal-state declaration valid — reduced-behavior run confirms sole governed cause | Medium |
 | 19 | atomic+ground adversarial | Completion check locates tool-result block showing exactly one independently testable change per step | High |
 | 20 | atomic+ground zero-items | Completion check does not open until zero-failing-items run result exists above it | **Critical** |
+| 21 | non-software: requirements review | Acceptance criterion written before design sketch; unsatisfied criterion named before revision; completion check enumerates all criteria | High |
+| 22 | non-software: protocol compliance | Rubric criterion written before prose; inline violation marker placed before revision; completion check confirms no markers remain | High |
+| 23 | non-software: formal derivation | Proposition written before derivation; blocked-lemma stated before proceeding; completion check enumerates all proof obligations | High |
 
 **Critical frames (2, 3, 4, 8, 9, 10, 11c, 12, 13, 14, 15, 20):** Any single failure = overall FAIL.
-**High frames (1, 5, 6, 7, 11, 16, 17, 19):** Score 1 per pass. Maximum 8 points.
+**High frames (1, 5, 6, 7, 11, 16, 17, 19, 21, 22, 23):** Score 1 per pass. Maximum 11 points.
 **Medium frames (18):** Score 1 per pass. Maximum 1 point.
 
 **Score thresholds:**
-- **Green (ADR-worthy pass):** All 11 Critical pass + ≥ 6/8 High + 1/1 Medium
-- **Yellow (marginal):** All 11 Critical pass + 4–5/8 High + any Medium
-- **Red (fail):** Any Critical frame fails, or < 4 High pass
+- **Green (ADR-worthy pass):** All 12 Critical pass + ≥ 8/11 High + 1/1 Medium
+- **Yellow (marginal):** All 12 Critical pass + 5–7/11 High + any Medium
+- **Red (fail):** Any Critical frame fails, or < 5 High pass
 
 ---
 
@@ -469,35 +529,84 @@ sufficient for periodic runs. Full battery scenarios exercise the excluded frame
 
 ---
 
-## Scenario-to-Frame Coverage Matrix
+### Scenario I — Requirements Review (no tool use)
+**Frames targeted**: 21
+**Operation type**: non-software, criteria-first design
 
-| Scenario | A★ | B★ | C★ | D | E | F | G | H |
-|---|---|---|---|---|---|---|---|---|
-| Frame 1 — witness |   |   |   |   |   |   |   | ✓ |
-| Frame 2 — ground §0 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |
-| Frame 3 — ground §1 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |
-| Frame 4 — ground §2 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |
-| Frame 5 — ground §3 |   |   |   |   |   |   | ✓ |   |
-| Frame 6 — escape routes |   |   |   |   |   |   | ✓ |   |
-| Frame 7 — completion check |   |   |   |   |   |   | ✓ |   |
-| Frame 8 — gate | ✓ | ✓ | ✓ |   |   |   |   |   |
-| Frame 9 — falsify (a)(b)(c)(d) | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |   |
-| Frame 10 — falsify validity | ✓ | ✓ | ✓ |   |   |   |   | ✓ |
-| Frame 11 — creation-step |   |   |   |   | ✓ |   |   |   |
-| Frame 11c — artifact integrity |   |   |   |   | ✓ |   |   |   |
-| Frame 12 — atomic scope+symbol | ✓ | ✓ | ✓ | ✓ |   |   |   |   |
-| Frame 13 — atomic post-edit | ✓ | ✓ | ✓ |   |   |   |   |   |
-| Frame 13b — new failure after edit |   |   | ✓ |   |   |   |   |   |
-| Frame 14 — gate+falsify | ✓ | ✓ | ✓ |   |   |   |   |   |
-| Frame 14b — FAIL+PASS required |   | ✓ |   |   | ✓ |   | ✓ |   |
-| Frame 15 — ground+falsify |   |   |   |   |   |   | ✓ |   |
-| Frame 16 — gate+atomic |   |   |   | ✓ |   | ✓ |   |   |
-| Frame 17 — falsify+atomic pre-edit |   | ✓ | ✓ | ✓ |   |   |   |   |
-| Frame 18 — minimal-state |   |   |   | ✓ |   |   |   |   |
-| Frame 19 — adversarial completion |   |   |   | ✓ |   | ✓ | ✓ |   |
-| Frame 20 — zero-items gate |   |   |   | ✓ |   |   |   |   |
+**Source**: `.claude/skills/craft-pack-eval/scenarios/I/`
 
-★ = crank battery scenario (sufficient for periodic runs)
+**Task prompt**:
+> Using `bar build make witness ground gate falsify atomic`, design a function signature and docstring
+> for `normalize(input string) string` satisfying these acceptance criteria: (1) output is lowercase,
+> (2) spaces replaced with underscores, (3) leading/trailing whitespace removed.
+> No test runner is available. Produce a design artifact only — no implementation code.
+
+**Scoring notes**: Frame 21a — criterion list must appear before any design sketch. Frame 21b — if the first sketch fails a criterion, a named violation statement must precede the revision. Frame 21c — completion check must enumerate all three criteria against the final design before closing.
+
+---
+
+### Scenario J — Protocol Compliance (no tool use)
+**Frames targeted**: 22
+**Operation type**: non-software, rubric-first prose
+
+**Source**: `.claude/skills/craft-pack-eval/scenarios/J/`
+
+**Task prompt**:
+> Using `bar build make witness ground gate falsify atomic`, write a one-paragraph explanation of
+> the `gate` token satisfying this rubric: (1) every claim must name a specific string from a prior
+> result, (2) no prose assertion of satisfaction is permitted, (3) the paragraph must be ≤ 5 sentences.
+> No test runner is available. Produce prose only.
+
+**Scoring notes**: Frame 22a — rubric criterion list must appear before any prose. Frame 22b — any sentence violating a criterion must have an inline `⚠ criterion X violated` marker placed before it is revised. Frame 22c — completion check must confirm all three criteria satisfied and no markers remain.
+
+---
+
+### Scenario K — Formal Derivation (no tool use)
+**Frames targeted**: 23
+**Operation type**: non-software, proposition-first derivation
+
+**Source**: `.claude/skills/craft-pack-eval/scenarios/K/`
+
+**Task prompt**:
+> Using `bar build make witness ground gate falsify atomic`, derive whether the following holds:
+> "If a function is pure and its inputs are unchanged, its output is deterministic."
+> State the proposition, name your assumptions, derive the conclusion step by step.
+> No test runner is available. Produce a derivation artifact only.
+
+**Scoring notes**: Frame 23a — proposition must be written before any derivation step. Frame 23b — if any step requires a lemma not yet established, a "Blocked: lemma X not established" statement must appear before proceeding. Frame 23c — completion check must enumerate all proof obligations and confirm each is grounded before closing.
+
+---
+
+### Scenario-to-Frame Coverage Matrix
+
+| Scenario | A★ | B★ | C★ | D | E | F | G | H | I | J | K |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| Frame 1 — witness |   |   |   |   |   |   |   | ✓ |   |   |   |
+| Frame 2 — ground §0 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |   |   |   |
+| Frame 3 — ground §1 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |   |   |   |
+| Frame 4 — ground §2 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |   |   |   |
+| Frame 5 — ground §3 |   |   |   |   |   |   | ✓ |   |   |   |   |
+| Frame 6 — escape routes |   |   |   |   |   |   | ✓ |   |   |   |   |
+| Frame 7 — completion check |   |   |   |   |   |   | ✓ |   |   |   |   |
+| Frame 8 — gate | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |
+| Frame 9 — falsify (a)(b)(c)(d) | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |   |   |   |   |
+| Frame 10 — falsify validity | ✓ | ✓ | ✓ |   |   |   |   | ✓ |   |   |   |
+| Frame 11 — creation-step |   |   |   |   | ✓ |   |   |   |   |   |   |
+| Frame 11c — artifact integrity |   |   |   |   | ✓ |   |   |   |   |   |   |
+| Frame 12 — atomic scope+symbol | ✓ | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |
+| Frame 13 — atomic post-edit | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |
+| Frame 13b — new failure after edit |   |   | ✓ |   |   |   |   |   |   |   |   |
+| Frame 14 — gate+falsify | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |
+| Frame 14b — FAIL+PASS required |   | ✓ |   |   | ✓ |   | ✓ |   |   |   |   |
+| Frame 15 — ground+falsify |   |   |   |   |   |   | ✓ |   |   |   |   |
+| Frame 16 — gate+atomic |   |   |   | ✓ |   | ✓ |   |   |   |   |   |
+| Frame 17 — falsify+atomic pre-edit |   | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |
+| Frame 18 — minimal-state |   |   |   | ✓ |   |   |   |   |   |   |   |
+| Frame 19 — adversarial completion |   |   |   | ✓ |   | ✓ | ✓ |   |   |   |   |
+| Frame 20 — zero-items gate |   |   |   | ✓ |   |   |   |   |   |   |   |
+| Frame 21 — requirements review |   |   |   |   |   |   |   |   | ✓ |   |   |
+| Frame 22 — protocol compliance |   |   |   |   |   |   |   |   |   | ✓ |   |
+| Frame 23 — formal derivation |   |   |   |   |   |   |   |   |   |   | ✓ |
 
 ---
 

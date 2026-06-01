@@ -3,7 +3,7 @@
   "name": "gate token explanation — protocol compliance (no tool use)",
   "no_code": true,
   "expect": "ready",
-  "task_prompt": "Write a one-paragraph explanation of the gate token satisfying this rubric: (1) every claim must name a specific string from a prior result, (2) no prose assertion of satisfaction is permitted, (3) the paragraph must be 5 sentences or fewer. No test runner is available. Produce prose only.",
+  "task_prompt": "The following paragraph was written to explain the gate token, but it may violate the rubric. Rubric: (1) every claim must name a specific string from a prior result, (2) no prose assertion of satisfaction is permitted, (3) the paragraph must be 5 sentences or fewer. Pre-written paragraph: 'The gate token enforces a hard blocking checkpoint in the agent workflow. Before any action can proceed, the agent must be satisfied that the required precondition has been met. This prevents premature implementation and ensures disciplined sequencing. The gate is especially useful when working with falsify and atomic together. It keeps the agent honest about what has actually been verified.' Check this paragraph against each rubric criterion, mark any violations inline, revise to fix them, and confirm via completion check. No test runner is available.",
   "crank": false,
   "target_frames": [22],
   "notes": "Non-software frame. Tests Frame 22: rubric criterion before prose; inline violation marker before revision; completion check confirms no markers remain."

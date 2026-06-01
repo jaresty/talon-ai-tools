@@ -339,6 +339,27 @@ To invoke the full eval skill: `/craft-pack-eval <X>`
 
 ---
 
+### Frame 24 — Non-software: Observation-derived governing goal (no execution context)
+
+Analog of Frame 2 (ground §0) for non-executable subjects. Tests whether the agent adapts ground's "run the subject under observation" step when the subject is a topic, question, or document rather than an executable artifact.
+
+**24a — Refusal**
+- **SCENARIO**: Agent receives a non-executable subject (a topic, a question, a document) and a task requiring ground discipline.
+- **COMPLIANT**: Agent re-interprets "run the subject" as "examine the subject as it currently exists," produces an observation record under a literal heading, and derives the governing goal from a substring of that record.
+- **VIOLATION**: Agent states the subject is not executable and refuses to proceed — blocking itself at §0 rather than adapting.
+
+**24b — Skip**
+- **SCENARIO**: Agent receives a non-executable subject and writes a governing goal heading with no prior observation step in the transcript.
+- **COMPLIANT**: An observation section appears under a literal heading before the governing goal heading. Governing goal heading contains a literal substring from that observation.
+- **VIOLATION**: Governing goal heading appears with no preceding observation section — goal was invented rather than derived.
+
+**24c — Literal-substring miss**
+- **SCENARIO**: Agent produces an observation section but writes a governing goal heading whose text shares no literal substring with the observation record.
+- **COMPLIANT**: Governing goal heading contains a word or phrase that appears verbatim in the observation section above it.
+- **VIOLATION**: Governing goal heading uses synonyms, summaries, or re-framings — e.g., observation says "late June, day hiking, shade preferred" and governing goal says "Design a summer outdoor itinerary" with no shared substring.
+
+---
+
 ## Scoring Rubric
 
 | Frame | Token(s) | Pass Criterion | Tier |
@@ -367,14 +388,15 @@ To invoke the full eval skill: `/craft-pack-eval <X>`
 | 21 | non-software: requirements review | Acceptance criterion written before design sketch; unsatisfied criterion named before revision; completion check enumerates all criteria | High |
 | 22 | non-software: protocol compliance | Rubric criterion written before prose; inline violation marker placed before revision; completion check confirms no markers remain | High |
 | 23 | non-software: formal derivation | Proposition written before derivation; blocked-lemma stated before proceeding; completion check enumerates all proof obligations | High |
+| 24 | non-software: observation-derived goal | Agent adapts "run the subject" to examine non-executable subject; observation section appears before governing goal; governing goal heading contains a literal substring from the observation | **Critical** |
 
-**Critical frames (2, 3, 4, 8, 9, 10, 11c, 12, 13, 14, 15, 20):** Any single failure = overall FAIL.
+**Critical frames (2, 3, 4, 8, 9, 10, 11c, 12, 13, 14, 15, 20, 24):** Any single failure = overall FAIL.
 **High frames (1, 5, 6, 7, 11, 16, 17, 19, 21, 22, 23):** Score 1 per pass. Maximum 11 points.
 **Medium frames (18):** Score 1 per pass. Maximum 1 point.
 
 **Score thresholds:**
-- **Green (ADR-worthy pass):** All 12 Critical pass + ≥ 8/11 High + 1/1 Medium
-- **Yellow (marginal):** All 12 Critical pass + 5–7/11 High + any Medium
+- **Green (ADR-worthy pass):** All 13 Critical pass + ≥ 8/11 High + 1/1 Medium
+- **Yellow (marginal):** All 13 Critical pass + 5–7/11 High + any Medium
 - **Red (fail):** Any Critical frame fails, or < 5 High pass
 
 ---
@@ -577,36 +599,50 @@ sufficient for periodic runs. Full battery scenarios exercise the excluded frame
 
 ---
 
+### Scenario L — Observation-derived goal (non-executable subject)
+**Frames targeted**: 24
+**Operation type**: non-software, non-executable subject
+
+**Source**: `.claude/skills/craft-pack-eval/scenarios/L/`
+
+**Task prompt**:
+> Using `bar build make witness ground gate falsify atomic`, plan a one-day itinerary for a first-time visitor to San Francisco who wants to avoid tourist crowds, prefers walking, and has a vegetarian diet. The subject is the visitor's situation — not executable software. Produce a structured plan only.
+
+**Scoring notes**: Frame 24a — agent must not refuse on grounds that the subject is not executable; it must adapt "run the subject" to mean "examine the visitor's situation as it currently stands." Frame 24b — an observation section must appear under a literal heading before any governing goal heading. Frame 24c — the governing goal heading must contain a literal substring from the observation section (e.g., if the observation says "avoids tourist crowds," the goal heading must contain "tourist crowds" or "crowds" verbatim — not a synonym like "popular areas").
+
+---
+
 ### Scenario-to-Frame Coverage Matrix
 
-| Scenario | A★ | B★ | C★ | D | E | F | G | H | I | J | K |
-|---|---|---|---|---|---|---|---|---|---|---|---|
-| Frame 1 — witness |   |   |   |   |   |   |   | ✓ |   |   |   |
-| Frame 2 — ground §0 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |   |   |   |
-| Frame 3 — ground §1 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |   |   |   |
-| Frame 4 — ground §2 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |   |   |   |
-| Frame 5 — ground §3 |   |   |   |   |   |   | ✓ |   |   |   |   |
-| Frame 6 — escape routes |   |   |   |   |   |   | ✓ |   |   |   |   |
-| Frame 7 — completion check |   |   |   |   |   |   | ✓ |   |   |   |   |
-| Frame 8 — gate | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |
-| Frame 9 — falsify (a)(b)(c)(d) | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |   |   |   |   |
-| Frame 10 — falsify validity | ✓ | ✓ | ✓ |   |   |   |   | ✓ |   |   |   |
-| Frame 11 — creation-step |   |   |   |   | ✓ |   |   |   |   |   |   |
-| Frame 11c — artifact integrity |   |   |   |   | ✓ |   |   |   |   |   |   |
-| Frame 12 — atomic scope+symbol | ✓ | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |
-| Frame 13 — atomic post-edit | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |
-| Frame 13b — new failure after edit |   |   | ✓ |   |   |   |   |   |   |   |   |
-| Frame 14 — gate+falsify | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |
-| Frame 14b — FAIL+PASS required |   | ✓ |   |   | ✓ |   | ✓ |   |   |   |   |
-| Frame 15 — ground+falsify |   |   |   |   |   |   | ✓ |   |   |   |   |
-| Frame 16 — gate+atomic |   |   |   | ✓ |   | ✓ |   |   |   |   |   |
-| Frame 17 — falsify+atomic pre-edit |   | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |
-| Frame 18 — minimal-state |   |   |   | ✓ |   |   |   |   |   |   |   |
-| Frame 19 — adversarial completion |   |   |   | ✓ |   | ✓ | ✓ |   |   |   |   |
-| Frame 20 — zero-items gate |   |   |   | ✓ |   |   |   |   |   |   |   |
-| Frame 21 — requirements review |   |   |   |   |   |   |   |   | ✓ |   |   |
-| Frame 22 — protocol compliance |   |   |   |   |   |   |   |   |   | ✓ |   |
-| Frame 23 — formal derivation |   |   |   |   |   |   |   |   |   |   | ✓ |
+| Scenario | A★ | B★ | C★ | D | E | F | G | H | I | J | K | L |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Frame 1 — witness |   |   |   |   |   |   |   | ✓ |   |   |   |   |
+| Frame 2 — ground §0 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |   |   |   |   |
+| Frame 3 — ground §1 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |   |   |   |   |
+| Frame 4 — ground §2 | ✓ | ✓ | ✓ |   |   |   | ✓ |   |   |   |   |   |
+| Frame 5 — ground §3 |   |   |   |   |   |   | ✓ |   |   |   |   |   |
+| Frame 6 — escape routes |   |   |   |   |   |   | ✓ |   |   |   |   |   |
+| Frame 7 — completion check |   |   |   |   |   |   | ✓ |   |   |   |   |   |
+| Frame 8 — gate | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |   |
+| Frame 9 — falsify (a)(b)(c)(d) | ✓ | ✓ | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |
+| Frame 10 — falsify validity | ✓ | ✓ | ✓ |   |   |   |   | ✓ |   |   |   |   |
+| Frame 11 — creation-step |   |   |   |   | ✓ |   |   |   |   |   |   |   |
+| Frame 11c — artifact integrity |   |   |   |   | ✓ |   |   |   |   |   |   |   |
+| Frame 12 — atomic scope+symbol | ✓ | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |
+| Frame 13 — atomic post-edit | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |   |
+| Frame 13b — new failure after edit |   |   | ✓ |   |   |   |   |   |   |   |   |   |
+| Frame 14 — gate+falsify | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |   |
+| Frame 14b — FAIL+PASS required |   | ✓ |   |   | ✓ |   | ✓ |   |   |   |   |   |
+| Frame 15 — ground+falsify |   |   |   |   |   |   | ✓ |   |   |   |   |   |
+| Frame 16 — gate+atomic |   |   |   | ✓ |   | ✓ |   |   |   |   |   |   |
+| Frame 17 — falsify+atomic pre-edit |   | ✓ | ✓ | ✓ |   |   |   |   |   |   |   |   |
+| Frame 18 — minimal-state |   |   |   | ✓ |   |   |   |   |   |   |   |   |
+| Frame 19 — adversarial completion |   |   |   | ✓ |   | ✓ | ✓ |   |   |   |   |   |
+| Frame 20 — zero-items gate |   |   |   | ✓ |   |   |   |   |   |   |   |   |
+| Frame 21 — requirements review |   |   |   |   |   |   |   |   | ✓ |   |   |   |
+| Frame 22 — protocol compliance |   |   |   |   |   |   |   |   |   | ✓ |   |   |
+| Frame 23 — formal derivation |   |   |   |   |   |   |   |   |   |   | ✓ |   |
+| Frame 24 — observation-derived goal |   |   |   |   |   |   |   |   |   |   |   | ✓ |
 
 ---
 

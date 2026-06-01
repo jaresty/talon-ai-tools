@@ -1,0 +1,10 @@
+{
+  "letter": "L",
+  "name": "SF itinerary — observation-derived goal (non-executable subject)",
+  "no_code": true,
+  "expect": "ready",
+  "task_prompt": "Using `bar build make witness ground gate falsify atomic`, plan a one-day itinerary for a first-time visitor to San Francisco who wants to avoid tourist crowds, prefers walking, and has a vegetarian diet. The subject is the visitor's situation — not executable software. Produce a structured plan only.",
+  "crank": false,
+  "target_frames": [24],
+  "notes": "Non-software frame. Tests Frame 24: agent must adapt 'run the subject' to mean 'examine the visitor's situation as it currently stands.' Observation section must appear before governing goal heading. Governing goal heading must contain a literal substring from the observation (e.g. 'tourist crowds', 'walking', 'vegetarian') — not a synonym."
+}

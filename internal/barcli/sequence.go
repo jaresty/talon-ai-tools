@@ -233,7 +233,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			}
 			fmt.Fprintf(stdout, "          4. Spawn one Agent tool call per item using subagent_type: bar-agent (install via 'bar install-agents'). Do not batch items into a single agent — bar-agent has Bash access and bar-workflow pre-loaded.\n")
 			if step.Inner != nil {
-				fmt.Fprintf(stdout, "          5. The Agent tool call text must contain: (1) for each inner prompt step shown below, the literal `bar build <token>` command the agent must run; (2) the instruction that each `bar build` output is the agent's task instruction for that step — a response written before the `bar build` output appears does not satisfy this requirement. Each agent must return a ## Derivation block. The orchestrator must preserve all Derivation blocks from every agent in the join result — do not strip or summarize them.\n")
+				fmt.Fprintf(stdout, "          5. The Agent tool call text must contain: (1) for each inner prompt step shown below, the literal `bar build <token>` command the agent must run; (2) the instruction that each `bar build` output is the agent's task instruction for that step — a response written before the `bar build` output appears does not satisfy this requirement. Run only the bar build commands shown — do not run bar help llm or discover tokens. Each agent must return a ## Derivation block. The orchestrator must preserve all Derivation blocks from every agent in the join result — do not strip or summarize them.\n")
 			} else {
 				fmt.Fprintf(stdout, "          5. Each agent receives the step token string. Run: `bar build <step-token-string> --subject '<assigned-item>' --addendum '<prompt_hint>'` where step-token-string is the token string shown in this step. Each agent must return a ## Derivation block naming: bar tokens applied, governing goal, behavioral dimensions. The orchestrator must preserve all Derivation blocks from every agent in the join result — do not strip or summarize them.\n")
 			}
@@ -263,7 +263,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 						fmt.Fprintf(stdout, "            %s\n", is.PromptHint)
 					}
 					if is.Type == "action" {
-						fmt.Fprintf(stdout, "            [action protocol — required] Do NOT run bar build. Execute actions from prior step using tools. Record results before proceeding.\n")
+						fmt.Fprintf(stdout, "            [action protocol — required] Do NOT run bar build. Exercise the subject under investigation live — invoke it, run it, or send it a request using Bash. This step is complete only when a Bash tool call result appears in the transcript showing output from the running subject — a Bash call that only reads files does not satisfy this requirement. Record the output before proceeding.\n")
 					}
 				}
 			}

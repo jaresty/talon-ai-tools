@@ -1191,6 +1191,31 @@ func TestDispatchProtocolPreservesDerivationBlocks(t *testing.T) {
 	}
 }
 
+// Behavior 79: inner action protocol block explicitly requires Bash tool calls (not just "tools").
+func TestInnerActionProtocolRequiresBash(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "Execute actions from prior step using tools.") {
+		t.Errorf("inner action protocol must not say 'using tools' — must require live Bash execution:\n%s", out)
+	}
+	if !strings.Contains(out, "output from the running subject") {
+		t.Errorf("inner action protocol must require 'output from the running subject':\n%s", out)
+	}
+}
+
+// Behavior 80: inner dispatch point 5 prohibits token discovery — agents must run only the bar build commands shown.
+func TestInnerDispatchPoint5NoTokenDiscovery(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "do not run bar help llm") {
+		t.Errorf("inner dispatch point 5 must say 'do not run bar help llm':\n%s", out)
+	}
+}
+
 // Behavior 78: non-inner dispatch point 5 tells agents to run bar build with the step token string directly.
 func TestDispatchPoint5TokenString(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})

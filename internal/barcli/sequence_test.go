@@ -469,7 +469,7 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 		"2. fan_out: enumerate",
 		"3. isolation: true",
 		"4. Spawn one Agent tool call per item using subagent_type: bar-agent",
-		"5. Each agent prompt must include",
+		"5. Each agent receives the step token string",
 		"6. join: all",
 		"7. Pass the join result as --subject to the next step.",
 	}
@@ -830,19 +830,19 @@ func TestSequenceShowDispatchAgentBarCommand(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "Each agent prompt must include") {
-		t.Errorf("dispatch protocol must contain 'Each agent prompt must include' bar command instruction:\n%s", out)
+	if !strings.Contains(out, "Each agent receives the step token string") {
+		t.Errorf("dispatch protocol must contain 'Each agent receives the step token string' instruction:\n%s", out)
 	}
 }
 
-// Behavior 45: dispatch protocol point 5 includes traceability enforcement clause.
+// Behavior 45: dispatch protocol point 5 names the bar build command form with step token string.
 func TestSequenceShowDispatchPoint5TraceabilityClause(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
 	if code != 0 {
 		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "not traceable to one of those three sections does not satisfy this requirement") {
-		t.Errorf("dispatch protocol point 5 must contain traceability enforcement clause:\n%s", out)
+	if !strings.Contains(out, "bar build <step-token-string>") {
+		t.Errorf("dispatch protocol point 5 must name 'bar build <step-token-string>' command form:\n%s", out)
 	}
 }
 
@@ -1188,5 +1188,19 @@ func TestDispatchProtocolPreservesDerivationBlocks(t *testing.T) {
 	}
 	if !strings.Contains(out, "preserve all Derivation blocks") {
 		t.Errorf("dispatch protocol point 5 must require orchestrator to 'preserve all Derivation blocks':\n%s", out)
+	}
+}
+
+// Behavior 78: non-inner dispatch point 5 tells agents to run bar build with the step token string directly.
+func TestDispatchPoint5TokenString(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	if code != 0 {
+		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "The orchestrator must construct and include this exact command") {
+		t.Errorf("dispatch protocol point 5 must not contain orchestrator-constructs-literal-command prescription:\n%s", out)
+	}
+	if !strings.Contains(out, "Each agent receives the step token string") {
+		t.Errorf("dispatch protocol point 5 must say 'Each agent receives the step token string':\n%s", out)
 	}
 }

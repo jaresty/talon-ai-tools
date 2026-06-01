@@ -908,6 +908,28 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 	}
 }
 
+// Behavior 62: frame-debug step 1 defines frames as domains containing multiple hypotheses, not as hypotheses themselves.
+func TestFrameDebugStep1DefinesFrameAsMultipleHypotheses(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "multiple hypotheses") {
+		t.Errorf("frame-debug step 1 must define a frame as an investigation domain containing multiple hypotheses:\n%s", out)
+	}
+}
+
+// Behavior 63: frame-debug vet step says 'next hypothesis' on rejection, not just 'stop'.
+func TestFrameDebugVetStepContinuesToNextHypothesis(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "next hypothesis") {
+		t.Errorf("frame-debug vet step must direct agent to 'next hypothesis' on rejection — not just 'stop':\n%s", out)
+	}
+}
+
 // Behavior 58: frame-debug inner cycle action step does not list 'code reads' as a valid method.
 func TestFrameDebugActionStepNoCodeReads(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})

@@ -301,7 +301,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Use this step to partition the problem into independent investigation frames as a governing artifact. Each frame must be a distinct problem area (e.g. network layer, auth layer, data layer). Do not generate hypotheses yet — only name the frames and what each covers. Each frame must be fully investigable by a single agent using code inspection, test runs, and tool calls.",
+                "prompt_hint": "Use this step to partition the problem into independent investigation frames as a governing artifact. A frame is WHERE to look (a system component or layer), not WHAT is wrong — each frame must be a domain that can contain multiple hypotheses, not a hypothesis itself. Name each frame as a system area (e.g. connection layer, query layer, config layer) and describe what it covers. Do not generate hypotheses yet — enumeration is the only output of this step.",
             },
             {
                 "type": "dispatch",
@@ -327,7 +327,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "form:vet",
                             "role": "evidence evaluation",
-                            "prompt_hint": "Evaluate the evidence gathered against the hypothesis. If confirmed, apply and verify the fix. If rejected, state why and stop.",
+                            "prompt_hint": "Evaluate the evidence gathered against the hypothesis. If confirmed, apply and verify the fix. If rejected, state why and return to prep with the next hypothesis — do not stop the cycle.",
                         },
                     ],
                 },

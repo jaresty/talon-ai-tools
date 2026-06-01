@@ -231,7 +231,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			} else {
 				fmt.Fprintf(stdout, "          3. isolation: false — agents share conversation context\n")
 			}
-			fmt.Fprintf(stdout, "          4. Spawn one Agent tool call per item. Do not batch items into a single agent.\n")
+			fmt.Fprintf(stdout, "          4. Spawn one Agent tool call per item. Do not batch items into a single agent — each agent must have Bash tool access and bar skills loaded to run bar commands.\n")
 			joinDesc := step.Join
 			switch step.Join {
 			case "all":

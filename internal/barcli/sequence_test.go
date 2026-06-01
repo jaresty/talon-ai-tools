@@ -795,3 +795,14 @@ func TestFrameDebugInnerPrepMentionsFrameAndHypothesis(t *testing.T) {
 		t.Errorf("frame-debug inner prep prompt_hint must mention 'hypothesis', got: %q", prepStep.PromptHint)
 	}
 }
+
+// Behavior 42: dispatch protocol point 4 tells spawning agents they need Bash and bar skills.
+func TestSequenceShowDispatchMentionsBarSkills(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	if code != 0 {
+		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "bar skills loaded") {
+		t.Errorf("dispatch protocol point 4 must mention 'bar skills loaded':\n%s", out)
+	}
+}

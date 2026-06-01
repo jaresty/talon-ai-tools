@@ -974,6 +974,17 @@ func TestFrameDebugVetStepNamesNewPrepAfterRejection(t *testing.T) {
 	}
 }
 
+// Behavior 74: frame-explore action step requires Bash tool call result (live behavior, not code reads).
+func TestFrameExploreActionStepRequiresBashToolCall(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Bash tool call") {
+		t.Errorf("frame-explore action step must name 'Bash tool call' as observable (live behavior, not code reads):\n%s", out)
+	}
+}
+
 // Behavior 67: frame-synthesis dispatch prompt_hint explicitly instructs agents to read the material first.
 func TestFrameSynthesisDispatchInstructsReadFirst(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-synthesis"})

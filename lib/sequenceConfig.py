@@ -296,7 +296,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "type": "action",
                             "role": "experiment execution",
-                            "prompt_hint": "Run the experiment defined in the prior step: execute a command, API call, test, or script that produces new output not already present in the transcript. Static reading of code or documents is not sufficient — the experiment must produce a new tool-executed result. Record findings before proceeding to vet.",
+                            "prompt_hint": "Run the experiment defined in the prior step against live behavior — execute a command, API call, or test that exercises the running system (e.g. trigger a request, run a test suite, call an endpoint). This step is complete only when a Bash tool call result appears in the transcript — a transcript containing only Read tool calls for this step does not satisfy this requirement. Record the Bash output before proceeding to vet.",
                         },
                         {
                             "token": "form:vet",

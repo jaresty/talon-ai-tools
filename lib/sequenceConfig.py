@@ -294,9 +294,9 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                             "prompt_hint": "Frame the hypothesis for this cycle: what would be true if the goal condition is met from this frame's angle, what evidence would confirm or refute it, and name what to run (command, API call, or test) to produce that evidence.",
                         },
                         {
-                            "type": "action",
+                            "token": "probe survive ghost audit",
                             "role": "experiment execution",
-                            "prompt_hint": "Run the experiment defined in the prior step against live behavior — execute a command, API call, or test that exercises the running system (e.g. trigger a request, run a test suite, call an endpoint). This step is complete only when a Bash tool call result appears in the transcript — a transcript containing only Read tool calls for this step does not satisfy this requirement. Record the Bash output before proceeding to vet.",
+                            "prompt_hint": "Exercise the running system to gather evidence for the hypothesis. Write tests, invoke endpoints, run commands — use whatever tools are needed to produce live output from the running system. All cited evidence must come from tool-executed results showing live system behavior; static file reads do not satisfy this step.",
                         },
                         {
                             "token": "check form:vet",
@@ -346,9 +346,9 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                             "prompt_hint": "For this frame, identify the next untested hypothesis: what specific cause within this frame would explain the problem? State what would be true if this hypothesis is correct, what evidence would confirm or reject it, and name what to run (command, test, or script) to produce that evidence.",
                         },
                         {
-                            "type": "action",
+                            "token": "probe survive ghost audit",
                             "role": "hypothesis investigation",
-                            "prompt_hint": "Run the experiment defined in the prior step against the running system — execute a command, test, or script that exercises live behavior (e.g. trigger a request, run a test suite, query a running process). This step is complete only when a Bash tool call result appears in the transcript — a transcript containing only Read tool calls for this step does not satisfy this requirement. Record the Bash output before proceeding to vet.",
+                            "prompt_hint": "Exercise the running system to test the hypothesis. Write tests, invoke endpoints, run commands — use whatever tools are needed to produce live output from the running system. All cited evidence must come from tool-executed results showing live system behavior; static file reads do not satisfy this step.",
                         },
                         {
                             "token": "check form:vet",

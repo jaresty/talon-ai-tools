@@ -1279,6 +1279,35 @@ func TestDispatchPoint5TokenString(t *testing.T) {
 	}
 }
 
+// Behavior 85: bar sequence show renders [handoff protocol — required] block on requires_user_input (⏸) steps.
+func TestHandoffProtocolBlock(t *testing.T) {
+	for _, seq := range []string{"experiment-cycle", "probe-and-plan", "simulate-and-review"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "[handoff protocol — required]") {
+			t.Errorf("bar sequence show %s must contain '[handoff protocol — required]' on ⏸ step:\n%s", seq, out)
+		}
+		if !strings.Contains(out, "When you have results, paste them here") {
+			t.Errorf("bar sequence show %s must contain exact handoff string 'When you have results, paste them here':\n%s", seq, out)
+		}
+		// Verify handoff block appears on the ⏸ step (after its step marker)
+		pauseIdx := strings.Index(out, "⏸")
+		if pauseIdx < 0 {
+			t.Errorf("bar sequence show %s missing ⏸ step marker", seq)
+			continue
+		}
+		afterPause := out[pauseIdx:]
+		if !strings.Contains(afterPause, "[handoff protocol — required]") {
+			t.Errorf("bar sequence show %s: '[handoff protocol — required]' must appear after ⏸ marker", seq)
+		}
+		if !strings.Contains(afterPause, "When you have results, paste them here") {
+			t.Errorf("bar sequence show %s: 'When you have results, paste them here' must appear after ⏸ marker", seq)
+		}
+	}
+}
+
 // Behavior 84: bar sequence show renders [cycle protocol — required] block before first inner step when inner mode is cycle.
 func TestInnerCycleProtocolBlock(t *testing.T) {
 	for _, seq := range []string{"frame-explore", "frame-debug"} {

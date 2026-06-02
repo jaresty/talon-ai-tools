@@ -293,6 +293,19 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 				}
 			}
 		}
+		if step.RequiresUserInput {
+			fmt.Fprintf(stdout, "          [handoff protocol — required]\n")
+			fmt.Fprintf(stdout, "          This step requires real-world action by the user before the sequence can continue.\n")
+			fmt.Fprintf(stdout, "          After producing output for this step, emit exactly the following line and stop:\n")
+			fmt.Fprintf(stdout, "          When you have results, paste them here and I will continue with step %d (%s).\n", i+2, func() string {
+				if i+1 < len(seq.Steps) {
+					return seq.Steps[i+1].Role
+				}
+				return "next step"
+			}())
+			fmt.Fprintf(stdout, "          This step is complete only when the string \"When you have results, paste them here\" appears in your response — a different phrasing does not satisfy this requirement.\n")
+			fmt.Fprintf(stdout, "          Do not produce any further content after this line in the same response.\n")
+		}
 		fmt.Fprintln(stdout)
 	}
 	return 0

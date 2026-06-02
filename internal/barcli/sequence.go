@@ -211,6 +211,11 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			if !hasTask {
 				fmt.Fprintf(stdout, "          [no task token — add one before running bar build: show, make, check, fix, probe, plan, or sim]\n")
 			}
+			fmt.Fprintf(stdout, "          [bar build gate — required]\n")
+			fmt.Fprintf(stdout, "          Run bar build before producing output for this step.\n")
+			fmt.Fprintf(stdout, "          1. Execute: bar build <token-string> using the token string shown above for this step.\n")
+			fmt.Fprintf(stdout, "          2. The bar build output is your task instruction — a response written before bar build output appears in the transcript does not satisfy this gate.\n")
+			fmt.Fprintf(stdout, "          3. This step is complete only when the string \"=== TASK 任務 (DO THIS) ===\" appears in a tool call result in the transcript — prose that mentions bar build does not satisfy this gate.\n")
 		}
 		if step.Type == "dispatch" {
 			fmt.Fprintf(stdout, "          [dispatch protocol — required]\n")

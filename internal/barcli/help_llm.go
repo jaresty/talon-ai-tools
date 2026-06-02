@@ -230,7 +230,7 @@ func renderQuickStart(w io.Writer, compact bool) {
 func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	if compact {
 		fmt.Fprintf(w, "## Grammar Architecture\n\n")
-		fmt.Fprintf(w, "Order: [persona] [static] [topology] [completeness] [scope 0-2] [method 0-3] [form] [channel] [directional]\n\n")
+		fmt.Fprintf(w, "Order: [persona] [static] [topology] [completeness] [scope 0-2] [method 0-5] [form] [channel] [directional]\n\n")
 		return
 	}
 	fmt.Fprintf(w, "## Grammar Architecture\n\n")
@@ -245,7 +245,7 @@ func renderGrammarArchitecture(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "- **Topology**: 0-1 token\n")
 	fmt.Fprintf(w, "- **Completeness**: 0-1 token\n")
 	fmt.Fprintf(w, "- **Scope**: 0-2 tokens\n")
-	fmt.Fprintf(w, "- **Method**: 0-3 tokens\n")
+	fmt.Fprintf(w, "- **Method**: 0-5 tokens\n")
 	fmt.Fprintf(w, "- **Form**: 0-1 token\n")
 	fmt.Fprintf(w, "- **Channel**: 0-1 token\n")
 	fmt.Fprintf(w, "- **Directional**: 0-1 token\n")
@@ -272,7 +272,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 		fmt.Fprintf(w, "```ebnf\n")
 		fmt.Fprintf(w, "<command> ::= \"bar\" \"build\" <token-sequence> <flags>\n")
 		fmt.Fprintf(w, "<token-sequence> ::= <persona-tokens>? <static-token> <constraint-tokens> <override-tokens>*\n")
-		fmt.Fprintf(w, "<constraint-tokens> ::= <topology>? <completeness>? <scope>? <scope>? <method>? <method>? <method>? <form>? <channel>? <directional>?\n")
+		fmt.Fprintf(w, "<constraint-tokens> ::= <topology>? <completeness>? <scope>? <scope>? <method>? <method>? <method>? <method>? <method>? <form>? <channel>? <directional>?\n")
 		fmt.Fprintf(w, "```\n\n")
 		return
 	}
@@ -310,7 +310,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 
 	fmt.Fprintf(w, "<static-token>   ::= <static-value>\n\n")
 
-	fmt.Fprintf(w, "<constraint-tokens> ::= <topology-token>? <completeness-token>? <scope-token>? <scope-token>? <method-token>? <method-token>? <method-token>? <form-token>? <channel-token>? <directional-token>?\n\n")
+	fmt.Fprintf(w, "<constraint-tokens> ::= <topology-token>? <completeness-token>? <scope-token>? <scope-token>? <method-token>? <method-token>? <method-token>? <method-token>? <method-token>? <form-token>? <channel-token>? <directional-token>?\n\n")
 
 	fmt.Fprintf(w, "<topology-token>     ::= <topology-value>\n")
 	fmt.Fprintf(w, "<completeness-token> ::= <completeness-value>\n")
@@ -445,7 +445,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "**Important constraints:**\n")
 	fmt.Fprintf(w, "1. **Static token is REQUIRED** for LLM-generated commands\n")
 	fmt.Fprintf(w, "2. **Scope**: maximum 2 tokens\n")
-	fmt.Fprintf(w, "3. **Method**: maximum 3 tokens\n")
+	fmt.Fprintf(w, "3. **Method**: maximum 5 tokens\n")
 	fmt.Fprintf(w, "4. **All other constraint axes**: maximum 1 token each\n")
 	fmt.Fprintf(w, "5. **Override mode**: Once you use `key=value` syntax, ALL subsequent tokens must use `key=value` format\n")
 	fmt.Fprintf(w, "6. **Subject input**: A `bar build` invocation is valid only when it contains `--subject` or is preceded by `|` as a shell pipe operator, not both. A `bar build` invocation where `--subject` appears and `|` precedes `bar build` as a shell pipe operator in the same shell command does not satisfy this requirement.\n")
@@ -511,7 +511,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 	sort.Strings(staticNames)
 	fmt.Fprintf(w, "2. **Always include a static token** (choose from: %s)\n", strings.Join(staticNames, ", "))
 
-	fmt.Fprintf(w, "3. **Verify token counts** before outputting (scope ≤ 2, method ≤ 3, others ≤ 1)\n")
+	fmt.Fprintf(w, "3. **Verify token counts** before outputting (scope ≤ 2, method ≤ 5, others ≤ 1)\n")
 	fmt.Fprintf(w, "4. **Use slug format** for multi-word tokens (dashes, not spaces)\n")
 	fmt.Fprintf(w, "5. **Check token names** against the Token Quick Reference section below\n")
 	fmt.Fprintf(w, "6. **Do not add** comments, explanations, or text outside the grammar structure\n")
@@ -549,7 +549,7 @@ func renderTokenCheatSheet(w io.Writer, grammar *Grammar, compact bool) {
 		if axisName == "scope" {
 			capacity = "0-2"
 		} else if axisName == "method" {
-			capacity = "0-3"
+			capacity = "0-5"
 		}
 
 		tokenSlugs := make([]string, 0, len(tokens))
@@ -661,7 +661,7 @@ func renderTokenCatalog(w io.Writer, grammar *Grammar, compact bool) {
 		if axisName == "scope" {
 			capacity = "0-2"
 		} else if axisName == "method" {
-			capacity = "0-3"
+			capacity = "0-5"
 		}
 
 		fmt.Fprintf(w, "### %s (%s token)\n\n", strings.Title(axisName), capacity)
@@ -918,7 +918,7 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 
 	if compact {
 		fmt.Fprintf(w, "- Order: see Grammar Architecture\n")
-		fmt.Fprintf(w, "- Caps: scope 0-2, method 0-3, others 0-1\n")
+		fmt.Fprintf(w, "- Caps: scope 0-2, method 0-5, others 0-1\n")
 		if len(grammar.Hierarchy.AxisIncompatibilities) > 0 {
 			fmt.Fprintf(w, "- Incompatibilities exist (see full reference)\n")
 		}
@@ -940,7 +940,7 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 		}
 	} else {
 		fmt.Fprintf(w, "- Scope: maximum 2 tokens\n")
-		fmt.Fprintf(w, "- Method: maximum 3 tokens\n")
+		fmt.Fprintf(w, "- Method: maximum 5 tokens\n")
 		fmt.Fprintf(w, "- Other axes: maximum 1 token each\n")
 	}
 	fmt.Fprintf(w, "\n")

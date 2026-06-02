@@ -1527,7 +1527,7 @@ AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
     "component (rog, ong, bog) adds horizontal orientation independently — so fly-rog = abstract + structural/reflective; dip-ong = concrete + acting; fip-bog = all four directions.",
     "form": "Output structure — how the response is organised (bullets, table, recipe, story, map, etc.).",
     "intent": "The purpose of the response — the motivation the speaker has.",
-    "method": "Reasoning approach — how to think through the problem. Up to three can be combined.",
+    "method": "Reasoning approach — how to think through the problem. Up to five can be combined.",
     "persona": "Communication style — who speaks, for whom, and in what tone.",
     "persona_preset": "A bundled preset combining voice, audience, and tone in one choice.",
     "scope": "Which dimension of the topic to focus on (entities, structure, meaning, actions, quality). Up to two.",

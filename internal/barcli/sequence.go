@@ -258,6 +258,20 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 				if step.Inner.StopWhen != "" {
 					fmt.Fprintf(stdout, "          inner stop_when: %s\n", step.Inner.StopWhen)
 				}
+				if step.Inner.Mode == "cycle" {
+					fmt.Fprintf(stdout, "          [cycle protocol — required]\n")
+					fmt.Fprintf(stdout, "          All steps below form one cycle — execute them in order before checking stop_when.\n")
+					var lastPromptToken string
+					for ci, is := range step.Inner.Steps {
+						if is.Type == "action" {
+							fmt.Fprintf(stdout, "          %d. Run → [action] (action protocol applies — Bash only, no bar build).\n", ci+1)
+						} else {
+							fmt.Fprintf(stdout, "          %d. Run → %s (bar build gate applies — run bar build %s first).\n", ci+1, is.Token, is.Token)
+							lastPromptToken = is.Token
+						}
+					}
+					fmt.Fprintf(stdout, "          %d. Check stop_when. A cycle is complete only when a bar build %s tool call result appears in the transcript for this cycle. If stop_when is not met, begin a new cycle from step 1.\n", len(step.Inner.Steps)+1, lastPromptToken)
+				}
 				for _, is := range step.Inner.Steps {
 					innerToken := is.Token
 					if is.Type == "action" {

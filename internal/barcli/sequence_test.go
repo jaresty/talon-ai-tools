@@ -1279,6 +1279,37 @@ func TestDispatchPoint5TokenString(t *testing.T) {
 	}
 }
 
+// Behavior 84: bar sequence show renders [cycle protocol — required] block before first inner step when inner mode is cycle.
+func TestInnerCycleProtocolBlock(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		// The rendered inner step line has format: "\n          → make form:prep       <role>\n"
+		// The leading newline+indent distinguishes the actual step line from cycle protocol prose that also mentions "→ make form:prep"
+		prepIdx := strings.Index(out, "\n          → make form:prep")
+		if prepIdx < 0 {
+			t.Errorf("bar sequence show %s missing inner step line '→ make form:prep'", seq)
+			continue
+		}
+		// Cycle protocol block must appear between inner stop_when and first → step
+		innerStopIdx := strings.Index(out, "inner stop_when:")
+		if innerStopIdx < 0 {
+			t.Errorf("bar sequence show %s missing 'inner stop_when:'", seq)
+			continue
+		}
+		between := out[innerStopIdx:prepIdx]
+		if !strings.Contains(between, "[cycle protocol — required]") {
+			t.Errorf("bar sequence show %s: '[cycle protocol — required]' must appear between 'inner stop_when:' and '→ make form:prep':\n%s", seq, between)
+		}
+		// Cycle protocol must name the falsifiable completion condition
+		if !strings.Contains(between, "bar build check form:vet") {
+			t.Errorf("bar sequence show %s: cycle protocol must name 'bar build check form:vet' as falsifiable completion condition:\n%s", seq, between)
+		}
+	}
+}
+
 // Behavior 83: bar sequence show renders [bar build gate — required] block for inner non-action steps (prep, vet).
 func TestInnerStepBarBuildGate(t *testing.T) {
 	for _, seq := range []string{"frame-explore", "frame-debug"} {

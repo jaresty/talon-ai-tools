@@ -28,6 +28,7 @@ TASK_PROMPT=$(jq -r '.task_prompt' "$META")
 CRITERION=$(jq -r '.target_criteria' "$META")
 EVAL_GATE=$(jq -r '.eval_gate' "$META")
 SEQUENCE_NAME=$(jq -r '.sequence_name' "$META")
+INNER_SEQUENCE=$(jq -r '.inner_sequence // ""' "$META")
 
 # Build the bar-workflow system prompt — includes sequence definition
 BAR_CMD="${BAR_CMD:-bar}"
@@ -37,18 +38,37 @@ if [[ -z "$SYSTEM_PROMPT" ]]; then
   exit 1
 fi
 
+# If inner_sequence is set, extract the inner step spec dynamically from bar sequence show
+# and substitute it for the {{INNER_STEP_SPEC}} sentinel in task_prompt.
+if [[ -n "$INNER_SEQUENCE" ]]; then
+  INNER_SPEC="$("$BAR_CMD" sequence show "$INNER_SEQUENCE" 2>/dev/null \
+    | awk '/inner mode:/{found=1} found && /^  Step [0-9]/{exit} found{print}' \
+    || echo "")"
+  TASK_PROMPT="${TASK_PROMPT/\{\{INNER_STEP_SPEC\}\}/$INNER_SPEC}"
+fi
+
 # Append the sequence definition so the agent knows exactly what to run
-SEQUENCE_DEF="$("$BAR_CMD" sequence show "$SEQUENCE_NAME" 2>/dev/null || echo "")"
+SEQUENCE_DEF=""
+if [[ -n "$SEQUENCE_NAME" ]]; then
+  SEQUENCE_DEF="$("$BAR_CMD" sequence show "$SEQUENCE_NAME" 2>/dev/null || echo "")"
+fi
 
 FULL_PROMPT="Working directory: $DIR
 
-$TASK_PROMPT
+$TASK_PROMPT"
+
+if [[ -n "$SEQUENCE_DEF" ]]; then
+  FULL_PROMPT="$FULL_PROMPT
 
 You are executing a bar sequence. The sequence definition is:
 
 $SEQUENCE_DEF
 
-Follow the dispatch protocol exactly as specified in the sequence definition above.
+Follow the dispatch protocol exactly as specified in the sequence definition above."
+fi
+
+FULL_PROMPT="$FULL_PROMPT
+
 Use the craft pack discipline (witness ground gate falsify atomic) as defined in your system prompt."
 
 echo "=== Running haiku agent for scenario $SCENARIO ==="

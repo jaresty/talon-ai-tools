@@ -217,7 +217,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Use this step to enumerate the named evaluation frames as a governing artifact. Each frame must differ structurally. Do not apply any frame yet — enumeration is the only output of this step.",
+                "prompt_hint": "Enumerate independent evaluation frames that differ structurally. Each frame names a structural angle and the type of evidence or perspective it brings — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not apply any frame yet — enumeration is the only output of this step.",
             },
             {
                 "type": "dispatch",
@@ -248,7 +248,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Use this step to enumerate the named interpretation frames as a governing artifact. A frame is an interpretive lens (e.g. security, usability, performance, compliance) — not a task to perform. Each frame must yield a distinct reading of the same material. Do not apply any frame yet — enumeration is the only output of this step.",
+                "prompt_hint": "Enumerate the named interpretation frames as a governing artifact. A frame is an interpretive lens (e.g. security, usability, performance, compliance) — not a task to perform. Each frame must yield a distinct reading of the same material. Name the lens only — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Enumeration is the only output of this step.",
             },
             {
                 "type": "dispatch",
@@ -374,7 +374,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration and coordination setup",
-                "prompt_hint": "Use this step to enumerate the independent work frames as a governing artifact. Each frame must have a distinct, non-overlapping scope. Also establish the coordination store: either use nn (if available) with a shared tag, or create a temp JSON file at a deterministic path. Output: (1) named frames with scope, (2) store mechanism and path/identifier, (3) coordination protocol — what each agent must read before starting and write when claiming scope or completing work. The store path/mechanism must appear explicitly in this output so it can be passed to every dispatch agent.",
+                "prompt_hint": "Enumerate the independent work frames as a governing artifact. Each frame names a distinct, non-overlapping scope area — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also establish the coordination store: either use nn (if available) with a shared tag, or create a temp JSON file at a deterministic path. Output: (1) named frames with scope, (2) store mechanism and path/identifier, (3) coordination protocol — what each agent must read before starting and write when claiming scope or completing work. The store path/mechanism must appear explicitly in this output so it can be passed to every dispatch agent.",
             },
             {
                 "type": "dispatch",

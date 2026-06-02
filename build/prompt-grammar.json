@@ -117343,7 +117343,7 @@
         {
           "token": "make method:prism",
           "role": "frame enumeration",
-          "prompt_hint": "Use this step to enumerate the named evaluation frames as a governing artifact. Each frame must differ structurally. Do not apply any frame yet — enumeration is the only output of this step."
+          "prompt_hint": "Enumerate independent evaluation frames that differ structurally. Each frame names a structural angle and the type of evidence or perspective it brings — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not apply any frame yet — enumeration is the only output of this step."
         },
         {
           "type": "dispatch",
@@ -117382,7 +117382,7 @@
         {
           "token": "make method:prism",
           "role": "frame enumeration",
-          "prompt_hint": "Use this step to enumerate the named interpretation frames as a governing artifact. A frame is an interpretive lens (e.g. security, usability, performance, compliance) — not a task to perform. Each frame must yield a distinct reading of the same material. Do not apply any frame yet — enumeration is the only output of this step."
+          "prompt_hint": "Enumerate the named interpretation frames as a governing artifact. A frame is an interpretive lens (e.g. security, usability, performance, compliance) — not a task to perform. Each frame must yield a distinct reading of the same material. Name the lens only — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Enumeration is the only output of this step."
         },
         {
           "type": "dispatch",
@@ -117531,7 +117531,7 @@
         {
           "token": "make method:prism",
           "role": "frame enumeration and coordination setup",
-          "prompt_hint": "Use this step to enumerate the independent work frames as a governing artifact. Each frame must have a distinct, non-overlapping scope. Also establish the coordination store: either use nn (if available) with a shared tag, or create a temp JSON file at a deterministic path. Output: (1) named frames with scope, (2) store mechanism and path/identifier, (3) coordination protocol — what each agent must read before starting and write when claiming scope or completing work. The store path/mechanism must appear explicitly in this output so it can be passed to every dispatch agent."
+          "prompt_hint": "Enumerate the independent work frames as a governing artifact. Each frame names a distinct, non-overlapping scope area — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also establish the coordination store: either use nn (if available) with a shared tag, or create a temp JSON file at a deterministic path. Output: (1) named frames with scope, (2) store mechanism and path/identifier, (3) coordination protocol — what each agent must read before starting and write when claiming scope or completing work. The store path/mechanism must appear explicitly in this output so it can be passed to every dispatch agent."
         },
         {
           "type": "dispatch",
@@ -118091,7 +118091,7 @@
     "slugs": "9ded63c7daa070f6e0c2f48de16c5b9019fa327f0d54b72d7a612c47a6f57536",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "1f779f51c8a4ca34cb618093d18e1bb74414477d77be2bc2e95bbc4228a0cf04",
-    "sequences": "be3f4b80598fca9cd5d82dd35387dfc0c5073eaad640055caa58c289b0f7cbdf",
+    "sequences": "534c06635b900ea62dac54222d5984e35ea3eaf4af46227c520350a51a04bd75",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

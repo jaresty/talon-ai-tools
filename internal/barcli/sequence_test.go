@@ -1339,9 +1339,9 @@ func TestInnerCycleProtocolBlock(t *testing.T) {
 	}
 }
 
-// Behavior 86: frame-debug and frame-explore step 1 prompt_hint prohibits specific tool invocations in frame descriptions.
+// Behavior 86: all prism-step sequences prohibit backtick-wrapped text and specific tool invocations in frame descriptions.
 func TestFrameEnumerationDepthProhibition(t *testing.T) {
-	for _, seq := range []string{"frame-explore", "frame-debug"} {
+	for _, seq := range []string{"frame-explore", "frame-debug", "parallel-eval", "frame-synthesis", "frame-work"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)

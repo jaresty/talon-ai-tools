@@ -268,7 +268,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
     "frame-orbit": {
         "description": "Enumerate independent structural frames, trace behavior from each frame's vantage point, then identify invariant attractor geometry across all trajectories.",
         "example": "Exploring failure modes in a distributed payment service — each frame traces data flow from a different entry point (API gateway, queue consumer, database writer), then orbit identifies the structural pattern that recurs across all trajectories despite different starting conditions.",
-        "heuristics": ["strange attractor", "what keeps recurring", "find the invariant", "what pattern holds across different entry points", "attractor geometry", "trace from multiple angles", "what's invariant despite varied starting points", "chaotic but patterned", "what structure persists across frames"],
+        "heuristics": ["strange attractor", "what keeps recurring", "find the invariant", "what pattern holds across different entry points", "attractor geometry", "trace from multiple angles", "what's invariant despite varied starting points", "chaotic but patterned", "what structure persists across frames", "trace from multiple entry points", "what pattern emerges across starting points", "invariant across starting conditions"],
         "mode": "autonomous",
         "steps": [
             {

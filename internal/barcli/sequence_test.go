@@ -1339,6 +1339,29 @@ func TestInnerCycleProtocolBlock(t *testing.T) {
 	}
 }
 
+// Behavior 86: frame-debug and frame-explore step 1 prompt_hint prohibits specific tool invocations in frame descriptions.
+func TestFrameEnumerationDepthProhibition(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		// Step 1 is the frame enumeration step — find its output before the dispatch step
+		step1End := strings.Index(out, "dispatch [enumerate")
+		if step1End < 0 {
+			t.Errorf("bar sequence show %s missing dispatch step marker", seq)
+			continue
+		}
+		step1 := out[:step1End]
+		if !strings.Contains(step1, "belong to the dispatched agent, not this step") {
+			t.Errorf("bar sequence show %s step 1 must contain 'belong to the dispatched agent, not this step':\n%s", seq, step1)
+		}
+		if !strings.Contains(step1, "no backtick-wrapped text") {
+			t.Errorf("bar sequence show %s step 1 must contain 'no backtick-wrapped text':\n%s", seq, step1)
+		}
+	}
+}
+
 // Behavior 83: bar sequence show renders [bar build gate — required] block for inner non-action steps (prep, vet).
 func TestInnerStepBarBuildGate(t *testing.T) {
 	for _, seq := range []string{"frame-explore", "frame-debug"} {

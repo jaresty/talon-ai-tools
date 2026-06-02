@@ -117417,7 +117417,7 @@
         {
           "token": "make method:prism",
           "role": "frame enumeration",
-          "prompt_hint": "Use this step to enumerate the named exploration frames as a governing artifact. Each frame must differ structurally. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence. Do not apply any frame yet."
+          "prompt_hint": "Enumerate independent frames that differ structurally. Each frame names a structural angle and the class of evidence that would confirm or refute the goal condition from that angle — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence."
         },
         {
           "type": "dispatch",
@@ -117476,7 +117476,7 @@
         {
           "token": "make method:prism",
           "role": "frame enumeration",
-          "prompt_hint": "Use this step to partition the problem into independent investigation frames as a governing artifact. A frame is WHERE to look — a system component or layer that can contain multiple hypotheses. Name each frame as a noun phrase naming a system area (e.g. 'connection layer', 'query layer'). A valid frame name contains no verb and makes no causal claim — a name containing 'fails', 'is slow', or 'causes' is a hypothesis, not a frame. Do not generate hypotheses yet — enumeration is the only output of this step."
+          "prompt_hint": "Partition into independent investigation frames — each names a system layer or component (e.g. 'connection layer', 'query layer') that can contain multiple hypotheses. A frame name contains no verb and makes no causal claim. A frame description names a structural area and the class of evidence that would confirm or rule out problems there — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not generate hypotheses yet — enumeration is the only output of this step."
         },
         {
           "type": "dispatch",
@@ -118091,7 +118091,7 @@
     "slugs": "9ded63c7daa070f6e0c2f48de16c5b9019fa327f0d54b72d7a612c47a6f57536",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "1f779f51c8a4ca34cb618093d18e1bb74414477d77be2bc2e95bbc4228a0cf04",
-    "sequences": "2693ae11ab2b011642ab6ddad18ecca5def913235d70f90ef73ebed100a05b32",
+    "sequences": "be3f4b80598fca9cd5d82dd35387dfc0c5073eaad640055caa58c289b0f7cbdf",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

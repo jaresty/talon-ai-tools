@@ -275,7 +275,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Use this step to enumerate the named exploration frames as a governing artifact. Each frame must differ structurally. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence. Do not apply any frame yet.",
+                "prompt_hint": "Enumerate independent frames that differ structurally. Each frame names a structural angle and the class of evidence that would confirm or refute the goal condition from that angle — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence.",
             },
             {
                 "type": "dispatch",
@@ -327,7 +327,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Use this step to partition the problem into independent investigation frames as a governing artifact. A frame is WHERE to look — a system component or layer that can contain multiple hypotheses. Name each frame as a noun phrase naming a system area (e.g. 'connection layer', 'query layer'). A valid frame name contains no verb and makes no causal claim — a name containing 'fails', 'is slow', or 'causes' is a hypothesis, not a frame. Do not generate hypotheses yet — enumeration is the only output of this step.",
+                "prompt_hint": "Partition into independent investigation frames — each names a system layer or component (e.g. 'connection layer', 'query layer') that can contain multiple hypotheses. A frame name contains no verb and makes no causal claim. A frame description names a structural area and the class of evidence that would confirm or rule out problems there — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not generate hypotheses yet — enumeration is the only output of this step.",
             },
             {
                 "type": "dispatch",

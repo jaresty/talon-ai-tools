@@ -846,6 +846,24 @@ func TestSequenceShowDispatchPoint5TraceabilityClause(t *testing.T) {
 	}
 }
 
+// Behavior 91: dispatch protocol includes pre-dispatch agent config gate (Criterion G).
+// Before fanning out, the orchestrator must run bar build ... agent and include the output in each subagent prompt.
+func TestDispatchProtocolPreAgentConfigGate(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	if code != 0 {
+		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Pre-dispatch") {
+		t.Errorf("dispatch protocol must contain 'Pre-dispatch' gate section:\n%s", out)
+	}
+	if !strings.Contains(out, "bar build") || !strings.Contains(out, "agent") {
+		t.Errorf("dispatch protocol pre-dispatch gate must instruct running 'bar build ... agent':\n%s", out)
+	}
+	if !strings.Contains(out, "=== TASK 任務 (DO THIS) ===") {
+		t.Errorf("dispatch protocol pre-dispatch gate must name '=== TASK 任務 (DO THIS) ===' as the observable string:\n%s", out)
+	}
+}
+
 // Behavior 52: frame-work inner scope claim prompt_hint instructs writing ground derivation to store.
 func TestFrameWorkScopeClaimWritesDerivation(t *testing.T) {
 	t.Setenv(envGrammarPath, "")

@@ -219,6 +219,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		}
 		if step.Type == "dispatch" {
 			fmt.Fprintf(stdout, "          [dispatch protocol — required]\n")
+			fmt.Fprintf(stdout, "          Pre-dispatch (required before spawning any agent): Run `bar build [tokens derived from this step's role and the current task context] agent`. A tool result containing `=== TASK 任務 (DO THIS) ===` must appear in the transcript before any Agent tool call for this step. Each Agent tool call that spawns a subagent must include the string `=== TASK 任務 (DO THIS) ===` in its prompt — this confirms the bar build agent output was passed to the subagent as its system configuration.\n")
 			fmt.Fprintf(stdout, "          1. The orchestrator spawns Agent tool calls only for this step — do not run bar build in the orchestrator turn.\n")
 			fanOutDesc := step.FanOut
 			if step.FanOut == "enumerate" {

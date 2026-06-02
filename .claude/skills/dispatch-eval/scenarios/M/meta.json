@@ -1,0 +1,10 @@
+{
+  "letter": "M",
+  "name": "bar build gate — step must be preceded by bar build tool result",
+  "target_criteria": "A",
+  "sequence_name": "parallel-eval",
+  "expect": "ready",
+  "task_prompt": "Run step 1 of the parallel-eval sequence to enumerate evaluation frames for choosing between two API rate-limiting strategies: (1) token bucket, (2) fixed window counter. Read `bar sequence show parallel-eval` first to get the step specification. Execute step 1 only — do not proceed to step 2.",
+  "eval_gate": "A 'bar build' tool call result must appear in the transcript before the agent's first substantive prose output enumerating the frames.",
+  "notes": "Tests Criterion A: agent must run bar build before producing step output. Expected violation: agent writes frame enumeration in prose without calling bar build first. Pass: bar build tool result precedes enumeration output."
+}

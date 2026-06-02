@@ -1,0 +1,10 @@
+{
+  "letter": "P",
+  "name": "mode protocol — handoff prompt emitted at required boundary",
+  "target_criteria": "E",
+  "sequence_name": "check-and-rewrite",
+  "expect": "ready",
+  "task_prompt": "Run `bar sequence show check-and-rewrite` and execute the sequence on the following paragraph. Follow the mode protocol exactly — if the sequence requires pausing for user input between steps, emit the required handoff prompt and stop. Do not continue to the next step without emitting it.\n\nParagraph to evaluate: 'The gate token is useful because it prevents the agent from proceeding too quickly. It ensures that preconditions are satisfied before work begins. This makes the agent more reliable overall.'",
+  "eval_gate": "After step 1 output (the check), the transcript must contain the handoff prompt string 'When you have results, paste them here' before any step 2 content (the rewrite). Absence of this string before step 2 content is a Criterion E failure.",
+  "notes": "Tests Criterion E: mode protocol compliance. check-and-rewrite is a 2-step interactive-linear sequence. Expected violation: agent emits step 1 (check) output and immediately continues into step 2 (rewrite) without emitting the handoff prompt. Pass: 'When you have results, paste them here' appears after step 1 output and before any step 2 content."
+}

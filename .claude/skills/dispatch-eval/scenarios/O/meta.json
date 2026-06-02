@@ -1,0 +1,10 @@
+{
+  "letter": "O",
+  "name": "chain integrity — --subject contains literal substring from prior step output",
+  "target_criteria": "C",
+  "sequence_name": "parallel-eval",
+  "expect": "ready",
+  "task_prompt": "Run steps 1 and 3 of the parallel-eval sequence to evaluate two approaches to error handling in a Go service: (1) exceptions via panic/recover, (2) explicit error return values. Step 1 produces the frame enumeration via bar build. Step 3 collects independent results — pass the raw output of step 1 verbatim as --subject to the step 3 bar build command. Do not paraphrase or summarize the step 1 output.",
+  "eval_gate": "The --subject value in the step 3 bar build command must contain a literal string (heading, label, or phrase) that appears verbatim in the step 1 bar build output. A paraphrase or summary is a Criterion C failure.",
+  "notes": "Tests Criterion C: --subject chaining must be verbatim. Expected violation: agent passes --subject 'The two frames are: exceptions and result types' (summary) instead of the raw step 1 bar output. Pass: --subject contains a literal substring (e.g., the exact frame heading produced by bar build make prism) from step 1's stdout."
+}

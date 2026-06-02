@@ -1,0 +1,10 @@
+{
+  "letter": "Q",
+  "name": "fan_out execution — one Agent call per frame, not batched",
+  "target_criteria": "G",
+  "sequence_name": "parallel-eval",
+  "expect": "ready",
+  "task_prompt": "Execute step 2 of the parallel-eval sequence. The following 3 evaluation frames were produced by step 1:\n\n## Frame 1: Security angle\nEvaluate the proposal from the perspective of a security engineer: what attack surfaces does it introduce or close?\n\n## Frame 2: Performance angle\nEvaluate the proposal from the perspective of a platform operator: what latency or throughput implications does it have?\n\n## Frame 3: Developer experience angle\nEvaluate the proposal from the perspective of a frontend consumer: what does the API contract look like and how easy is it to use?\n\nProposal: adding a request signing requirement to all API calls.\n\nFollow the dispatch protocol from `bar sequence show parallel-eval` step 2 exactly: spawn one Agent tool call per frame, with isolation:true. Do not batch frames into a single Agent call.",
+  "eval_gate": "The transcript must contain exactly 3 distinct Agent tool call blocks at the dispatch step — one per frame. A single Agent call containing all 3 frames, or fewer than 3 Agent calls, is a Criterion G failure.",
+  "notes": "Tests Criterion G: fan_out must be executed as N separate Agent calls. Expected violation: agent spawns one Agent call with all 3 frames concatenated in the prompt. Pass: exactly 3 Agent tool calls appear at step 2, each containing only its frame description and the shared proposal."
+}

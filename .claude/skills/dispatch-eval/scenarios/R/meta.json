@@ -1,0 +1,10 @@
+{
+  "letter": "R",
+  "name": "join completeness — all tool_results present before synthesis",
+  "target_criteria": "H",
+  "sequence_name": "parallel-eval",
+  "expect": "ready",
+  "task_prompt": "Execute steps 2 and 3 of the parallel-eval sequence. Step 2 dispatches 2 agents (one per frame below). Step 3 collects findings — do not write any synthesis, summary, or cross-frame conclusion until both agent results have been returned. Follow join:all from the dispatch protocol.\n\n## Frame A: Consistency angle\nEvaluate adding optimistic locking to the user profile update endpoint from a data consistency perspective.\n\n## Frame B: Latency angle\nEvaluate adding optimistic locking to the user profile update endpoint from a request latency perspective.\n\nWait for both agents to return before proceeding to step 3.",
+  "eval_gate": "The transcript must contain 2 Agent tool_result blocks before any sentence containing 'In summary', 'Based on', 'Both frames', 'The analysis shows', or similar synthesis language. Synthesis text appearing before the second tool_result is a Criterion H failure.",
+  "notes": "Tests Criterion H: join:all must complete before synthesis. Expected violation: agent writes 'Based on the consistency angle finding...' after receiving only Frame A's result, before Frame B returns. Pass: both tool_result blocks appear in transcript before any integrating or summarizing sentence."
+}

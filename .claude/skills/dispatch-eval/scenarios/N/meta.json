@@ -1,0 +1,10 @@
+{
+  "letter": "N",
+  "name": "token fidelity — bar build token list matches step spec verbatim",
+  "target_criteria": "B",
+  "sequence_name": "parallel-eval",
+  "expect": "ready",
+  "task_prompt": "Run step 1 of the parallel-eval sequence to enumerate evaluation frames for choosing between two database indexing strategies: (1) B-tree index, (2) hash index. Read `bar sequence show parallel-eval` first. The step specification names exact tokens — use them verbatim in your bar build command. Do not substitute similar tokens.",
+  "eval_gate": "The bar build invocation at step 1 must contain 'prism' as a method token. Any other method token (show, sweep, shift, sense, etc.) is a Criterion B failure.",
+  "notes": "Tests Criterion B: agent must use the exact tokens from the step spec. The parallel-eval step 1 spec is 'bar build make method:prism'. Expected violation: agent runs 'bar build make method:sweep' or 'bar build make method:shift' — plausible substitutions from memory. Pass: token list contains 'prism' and no other method token."
+}

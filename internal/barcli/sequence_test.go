@@ -1341,7 +1341,7 @@ func TestInnerCycleProtocolBlock(t *testing.T) {
 
 // Behavior 86: all prism-step sequences prohibit backtick-wrapped text and specific tool invocations in frame descriptions.
 func TestFrameEnumerationDepthProhibition(t *testing.T) {
-	for _, seq := range []string{"frame-explore", "frame-debug", "parallel-eval", "frame-synthesis", "frame-work"} {
+	for _, seq := range []string{"frame-explore", "frame-debug", "parallel-eval", "frame-synthesis", "frame-work", "frame-orbit"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
@@ -1416,5 +1416,44 @@ func TestInnerExperimentStepUsesProbeToken(t *testing.T) {
 		if strings.Contains(out, "[action protocol — required]") {
 			t.Errorf("bar sequence show %s must not contain '[action protocol — required]' — experiment step now uses bar build:\n%s", seq, out)
 		}
+	}
+}
+
+// Behavior 88: frame-orbit appears in bar sequence list.
+func TestFrameOrbitSequenceExists(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "list"})
+	if code != 0 {
+		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "frame-orbit") {
+		t.Errorf("bar sequence list must contain 'frame-orbit':\n%s", out)
+	}
+}
+
+// Behavior 89: frame-orbit step structure: prism → dispatch[enumerate→all] → orbit synthesis.
+func TestFrameOrbitStepStructure(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-orbit"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-orbit exited %d: %s", code, stderr)
+	}
+	for _, want := range []string{
+		"make method:prism",
+		"dispatch [enumerate→all",
+		"orbit",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("frame-orbit must contain %q:\n%s", want, out)
+		}
+	}
+}
+
+// Behavior 90: frame-orbit inner dispatch step includes show method:trace for trajectory narration.
+func TestFrameOrbitInnerTraceStep(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-orbit"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-orbit exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "→ show method:trace") {
+		t.Errorf("frame-orbit inner dispatch must include 'show method:trace' step:\n%s", out)
 	}
 }

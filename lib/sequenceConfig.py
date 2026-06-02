@@ -265,6 +265,42 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "frame-orbit": {
+        "description": "Enumerate independent structural frames, trace behavior from each frame's vantage point, then identify invariant attractor geometry across all trajectories.",
+        "example": "Exploring failure modes in a distributed payment service — each frame traces data flow from a different entry point (API gateway, queue consumer, database writer), then orbit identifies the structural pattern that recurs across all trajectories despite different starting conditions.",
+        "heuristics": ["strange attractor", "what keeps recurring", "find the invariant", "what pattern holds across different entry points", "attractor geometry", "trace from multiple angles", "what's invariant despite varied starting points", "chaotic but patterned", "what structure persists across frames"],
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "make method:prism",
+                "role": "frame enumeration",
+                "prompt_hint": "Enumerate independent structural frames that differ in starting conditions — each names a distinct entry point or vantage point into the system and the class of behavior observable from there. Frames must have genuinely different named starting conditions so that a claimed attractor can be shown to hold across them — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Enumeration is the only output of this step.",
+            },
+            {
+                "type": "dispatch",
+                "role": "parallel frame tracing",
+                "fan_out": "enumerate",
+                "join": "all",
+                "isolation": True,
+                "prompt_hint": "Each agent receives only the subject and its assigned frame. Trace the control or data flow from this frame's named entry point — narrate each intermediate step and structural change until the flow terminates, loops, or reaches a boundary. Return a labeled trajectory block naming: frame entry point, sequence of steps traversed, terminal state or loop condition, and structural anomalies observed.",
+                "inner": {
+                    "mode": "autonomous",
+                    "steps": [
+                        {
+                            "token": "show method:trace",
+                            "role": "trajectory narration",
+                            "prompt_hint": "Narrate the sequential control or data progression from this frame's entry point. Make each intermediate step and structural change explicit. Name the terminal state, loop condition, or boundary reached.",
+                        },
+                    ],
+                },
+            },
+            {
+                "token": "show method:orbit",
+                "role": "attractor identification",
+                "prompt_hint": "Apply orbit across all trajectory blocks: the frame entry points are the varied initial conditions. Identify the invariant structural form that all trajectories tend toward — the attractor geometry that persists despite different starting conditions. A claimed attractor must name at least two trajectories with different entry points that both exhibit it. Name any trajectories that do not converge to the attractor and what they reveal about the attractor's boundary.",
+            },
+        ],
+    },
     "frame-explore": {
         "description": "Enumerate independent frames for a problem, run an experiment cycle within each frame until a goal is reached, then converge on findings across frames.",
         "example": "Exploring whether a proposed API simplification holds up — framed from security, usability, and performance angles — each angle running hypothesis/evidence cycles until the goal condition is satisfied.",

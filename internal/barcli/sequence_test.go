@@ -1278,3 +1278,37 @@ func TestDispatchPoint5TokenString(t *testing.T) {
 		t.Errorf("dispatch protocol point 5 must say 'Each agent receives the step token string':\n%s", out)
 	}
 }
+
+// Behavior 83: bar sequence show renders [bar build gate — required] block for inner non-action steps (prep, vet).
+func TestInnerStepBarBuildGate(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		prepIdx := strings.Index(out, "→ make form:prep")
+		vetIdx := strings.Index(out, "→ check form:vet")
+		if prepIdx < 0 {
+			t.Errorf("bar sequence show %s missing '→ make form:prep' inner step", seq)
+			continue
+		}
+		if vetIdx < 0 {
+			t.Errorf("bar sequence show %s missing '→ check form:vet' inner step", seq)
+			continue
+		}
+		// Gate block must appear in the substring after → make form:prep (i.e., inside the prep inner step section)
+		afterPrep := out[prepIdx:]
+		if !strings.Contains(afterPrep, "[bar build gate — required]") {
+			t.Errorf("bar sequence show %s: '[bar build gate — required]' must appear after '→ make form:prep':\n%s", seq, out)
+		}
+		// Gate block must appear in the substring after → check form:vet (i.e., inside the vet inner step section)
+		afterVet := out[vetIdx:]
+		if !strings.Contains(afterVet, "[bar build gate — required]") {
+			t.Errorf("bar sequence show %s: '[bar build gate — required]' must appear after '→ check form:vet':\n%s", seq, out)
+		}
+		// Action step must NOT get the gate block — verify [action protocol — required] is still present
+		if !strings.Contains(out, "[action protocol — required]") {
+			t.Errorf("bar sequence show %s must still contain '[action protocol — required]' for inner action step:\n%s", seq, out)
+		}
+	}
+}

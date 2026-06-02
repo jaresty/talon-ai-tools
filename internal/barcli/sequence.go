@@ -269,6 +269,12 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 					}
 					if is.Type == "action" {
 						fmt.Fprintf(stdout, "            [action protocol — required] Do NOT run bar build. Exercise the subject under investigation live — invoke it, run it, or send it a request using Bash. This step is complete only when a Bash tool call result appears in the transcript showing output from the running subject — a Bash call that only reads files does not satisfy this requirement. Record the output before proceeding.\n")
+					} else {
+						fmt.Fprintf(stdout, "            [bar build gate — required]\n")
+						fmt.Fprintf(stdout, "            Run bar build before producing output for this step.\n")
+						fmt.Fprintf(stdout, "            1. Execute: bar build %s using the token string shown above for this step.\n", innerToken)
+						fmt.Fprintf(stdout, "            2. The bar build output is your task instruction — a response written before bar build output appears in the transcript does not satisfy this gate.\n")
+						fmt.Fprintf(stdout, "            3. This step is complete only when the string \"=== TASK 任務 (DO THIS) ===\" appears in a tool call result in the transcript — prose that mentions bar build does not satisfy this gate.\n")
 					}
 				}
 			}

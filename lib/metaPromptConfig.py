@@ -134,12 +134,19 @@ _AXIS_FULL_TEXT = {
         "The form specifies the desired structure or presentation of the output (e.g., list, table, "
         "scaffold). It does not change the underlying reasoning, only how results are rendered. "
         "When form and channel tokens are both present, the channel defines the output format and "
-        "the form describes the conceptual organization within that format."
+        "the form describes the conceptual organization within that format. "
+        "When prep and vet appear together, an execution step must occur between them — prep designs "
+        "the experiment or plan, the action step runs it, and vet validates the results; prep+vet "
+        "without an intervening action step is a hollow cycle with no evidence to assess."
     ),
     "channel": (
         "Delivery context: platform formatting conventions only. When a channel is present, the "
         "channel mandates output format and the task becomes a content lens — ask 'what would it "
-        "mean to produce this task's output through this channel's format?'"
+        "mean to produce this task's output through this channel's format?' "
+        "When a presentation-register persona (exec, executive_brief, stakeholder_facilitator) is "
+        "active alongside an executable-output channel (shellscript, code, gherkin, codetour), "
+        "wrap the executable artifact with a prose explanation block — the channel produces the "
+        "artifact; the persona register governs the surrounding narrative."
     ),
 }
 

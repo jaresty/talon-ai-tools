@@ -151,6 +151,45 @@ Use the output to ensure each group has at least 1-2 representative tasks in the
 
 ---
 
+### Phase 1b: Sequence Routing Sample
+
+**When to run:** When the trigger condition "A new named sequence has been added" applies.
+Run after Phase 1 taxonomy generation, before Phase 2 skill application.
+
+**Purpose:** Test whether the agent routes to named sequences when they fit, rather than
+building equivalent ad hoc chains. This is a failure mode Phase 2 cannot detect because
+Phase 2 scores token quality, not sequence adoption.
+
+**Generate a targeted task set (5–8 tasks):**
+
+```bash
+bar build probe full variants --addendum \
+  "List 5-8 realistic task descriptions where using a named bar sequence \
+   (frame-debug, frame-explore, parallel-eval, frame-synthesis, frame-work, \
+   frame-orbit, experiment-cycle, or similar) would be the correct approach. \
+   For each, name the sequence that fits and the heuristic phrase that signals it."
+```
+
+**Evaluate each task:**
+
+For each task, run bar-autopilot. The correct output is:
+1. Agent runs `bar lookup "<intent>"` and observes a `kind=sequence` result
+2. Agent runs `bar sequence show <name>` to inspect the sequence
+3. Agent adopts the named sequence rather than building an ad hoc chain
+
+**Score (1–5):**
+- 5: Agent names the sequence, runs `bar sequence show`, and follows its protocol exactly
+- 4: Agent names the sequence but omits `bar sequence show`
+- 3: Agent builds an equivalent ad hoc chain without naming the sequence
+- 2: Agent builds an ad hoc chain whose steps don't match the sequence structure
+- 1: Agent ignores `bar lookup` sequence results entirely
+
+**Gap threshold:** Any task scoring ≤3 is a sequence-misrouting gap (Gap Type 6).
+
+**Output artifact:** Results appended to `docs/adr/evidence/0113/sequence-routing-eval.md`
+
+---
+
 ### Phase 2: Apply Bar Skills
 
 For each sampled task, run bar-autopilot to select tokens and construct the bar command. This
@@ -426,6 +465,41 @@ recommendation:
 evidence: [task_T28]
 ```
 
+#### Gap Type 6: Sequence Misrouting
+
+The agent completed the task with an ad hoc token chain when a named sequence exists whose
+description and heuristics match the intent. The cost: the agent reinvented a step structure
+already encoded in the sequence, likely missing mode constraints, dispatch protocol, or inner
+cycle discipline that the sequence enforces.
+
+**Diagnosis**: Check whether `bar lookup "<task intent>"` returns a `kind=sequence` result
+with heuristics matching the task. Then compare the agent's ad hoc step structure to the
+named sequence's steps — if the structure matches but the agent didn't name the sequence,
+this is a sequence misrouting gap.
+
+**Fix type**: `sequence-misrouting` — update the sequence's `heuristics` list in
+`lib/sequenceConfig.py` to surface the triggering intent, or clarify `bar help llm
+--section heuristics` to name when sequence lookup should precede ad hoc chain building.
+
+```yaml
+gap_type: sequence-misrouting
+task: T_example — Debug intermittent failure across multiple subsystems
+observation: >
+  Agent built a 3-step ad hoc chain (prism → independent evaluation → converge) without
+  naming frame-debug. bar lookup "parallel debugging" returns kind=sequence frame-debug.
+  Agent's steps match frame-debug's step structure but omit dispatch protocol and inner
+  cycle discipline.
+diagnosis: sequence-misrouting — frame-debug heuristics do not include "intermittent failure"
+recommendation:
+  action: sequence-heuristics-update
+  target: frame-debug heuristics in lib/sequenceConfig.py
+  add: ["intermittent failure", "multi-subsystem debugging"]
+evidence: [task_T_example]
+```
+
+**Distinct from category-misrouting**: category-misrouting is a wrong token within an
+ad hoc chain; sequence-misrouting is bypassing the named sequence entirely.
+
 ---
 
 ### Phase 4b: Guide Gap Check
@@ -566,6 +640,7 @@ Run this process when:
 - The skill documentation (bar-autopilot, bar-manual, bar-suggest) has changed significantly
 - A new domain of tasks is suspected to be underserved
 - ADR-0085 shuffle cycles show consistently high scores (noise is low) but user feedback suggests gaps
+- A new named sequence has been added to `lib/sequenceConfig.py` or an existing sequence's heuristics have changed — sequence routing is not covered by ADR-0085 (which tests token coherence, not sequence adoption)
 
 Steps:
 1. **Calibrate** — run calibration check with multiple evaluators to establish scoring consistency
@@ -820,6 +895,7 @@ Store: `docs/adr/evidence/0113/skill-updates/{skill-name}-{date}.md`
 - **Automated skill testing harness**: Script the bar-autopilot skill application step using the
   Claude API to allow faster, repeatable cycle runs
 - **Coverage heatmap**: Visualise which task domains are well-covered vs. gapped across cycles
+- **Sequence heatmap**: Track which named sequences are adopted vs. bypassed across eval cycles — sequences with consistently low adoption scores are candidates for heuristics updates or retirement
 - **LLM execution quality tracking**: Aggregate failure modes across cycles to identify systematic model issues
 - **Skill update impact tracking**: Measure whether skill changes improve coverage on new task samples
 

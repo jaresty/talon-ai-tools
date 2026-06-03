@@ -468,7 +468,7 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 		"1. The orchestrator spawns Agent tool calls only",
 		"2. fan_out: enumerate",
 		"3. isolation: true",
-		"4. Spawn one Agent tool call per item using subagent_type: bar-agent",
+		"4. Spawn one Agent tool call per item using subagent_type: general-purpose",
 		"5. Each agent receives the step token string",
 		"6. join: all",
 		"7. Pass the join result as --subject to the next step.",
@@ -799,14 +799,14 @@ func TestFrameDebugInnerPrepMentionsFrameAndHypothesis(t *testing.T) {
 	}
 }
 
-// Behavior 42: dispatch protocol point 4 tells spawning agents they need Bash and bar skills.
+// Behavior 42: dispatch protocol point 4 tells spawning agents not to batch items.
 func TestSequenceShowDispatchMentionsBarSkills(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
 	if code != 0 {
 		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "subagent_type: bar-agent") {
-		t.Errorf("dispatch protocol point 4 must mention 'subagent_type: bar-agent':\n%s", out)
+	if !strings.Contains(out, "subagent_type: general-purpose") {
+		t.Errorf("dispatch protocol point 4 must specify subagent_type: general-purpose:\n%s", out)
 	}
 }
 
@@ -853,14 +853,23 @@ func TestDispatchProtocolPreAgentConfigGate(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "Pre-dispatch") {
-		t.Errorf("dispatch protocol must contain 'Pre-dispatch' gate section:\n%s", out)
+	if !strings.Contains(out, "[pre-dispatch agent config gate — required]") {
+		t.Errorf("dispatch protocol must contain '[pre-dispatch agent config gate — required]' block:\n%s", out)
 	}
-	if !strings.Contains(out, "bar build") || !strings.Contains(out, "agent") {
-		t.Errorf("dispatch protocol pre-dispatch gate must instruct running 'bar build ... agent':\n%s", out)
+	if !strings.Contains(out, "bar build make [discovered-tokens] agent") {
+		t.Errorf("dispatch protocol pre-dispatch gate must name 'bar build make [discovered-tokens] agent':\n%s", out)
 	}
 	if !strings.Contains(out, "=== TASK 任務 (DO THIS) ===") {
 		t.Errorf("dispatch protocol pre-dispatch gate must name '=== TASK 任務 (DO THIS) ===' as the observable string:\n%s", out)
+	}
+	if !strings.Contains(out, "Bash tool call") {
+		t.Errorf("dispatch protocol pre-dispatch gate must specify 'Bash tool call' as the structural position:\n%s", out)
+	}
+	if !strings.Contains(out, "A response turn whose text contains this string does not satisfy this gate") {
+		t.Errorf("dispatch protocol pre-dispatch gate must close the prose-bypass escape path:\n%s", out)
+	}
+	if !strings.Contains(out, "Follow the bar build output from 0a as instructions to derive the agent prompt") {
+		t.Errorf("dispatch protocol pre-dispatch 0c must instruct following bar build output to derive agent prompt:\n%s", out)
 	}
 }
 
@@ -926,15 +935,13 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 	}
 }
 
-// Behavior 77: dispatch protocol point 4 contains subagent_type: bar-agent (applies to all dispatch steps).
+// Behavior 77: dispatch protocol point 4 references pre-dispatch derived config (applies to all dispatch steps).
 func TestDispatchProtocolPoint4ContainsBarAgent(t *testing.T) {
-	// Use frame-debug (inner) and parallel-eval (non-inner) — both must have it in point 4.
 	for _, seq := range []string{"frame-debug", "parallel-eval"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
 		}
-		// Point 4 line must contain subagent_type: bar-agent.
 		var point4Line string
 		for _, line := range strings.Split(out, "\n") {
 			if strings.Contains(line, "4.") && strings.Contains(line, "Spawn") {
@@ -946,20 +953,20 @@ func TestDispatchProtocolPoint4ContainsBarAgent(t *testing.T) {
 			t.Errorf("%s: could not find point 4 (Spawn) line in output", seq)
 			continue
 		}
-		if !strings.Contains(point4Line, "subagent_type: bar-agent") {
-			t.Errorf("%s: point 4 must contain 'subagent_type: bar-agent', got: %s", seq, point4Line)
+		if !strings.Contains(point4Line, "general-purpose") {
+			t.Errorf("%s: point 4 must specify subagent_type: general-purpose, got: %s", seq, point4Line)
 		}
 	}
 }
 
-// Behavior 75: frame-debug inner dispatch point 5 requires subagent_type: bar-agent.
+// Behavior 75: frame-debug dispatch references pre-dispatch derived agent config.
 func TestFrameDebugInnerDispatchUsesBarAgent(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "subagent_type: bar-agent") {
-		t.Errorf("frame-debug inner dispatch point 5 must require 'subagent_type: bar-agent':\n%s", out)
+	if !strings.Contains(out, "pre-dispatch agent config gate") {
+		t.Errorf("frame-debug dispatch must include pre-dispatch agent config gate:\n%s", out)
 	}
 }
 
@@ -1007,14 +1014,14 @@ func TestFrameDebugDispatchPoint3NamesAgentCallContents(t *testing.T) {
 	}
 }
 
-// Behavior 71: frame-debug dispatch point 5 (inner) requires subagent_type: bar-agent (bar-agent has bar-workflow pre-loaded).
+// Behavior 71: frame-debug dispatch point 4 says not to batch items.
 func TestFrameDebugDispatchPoint5RequiresBarWorkflowSkill(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "subagent_type: bar-agent") {
-		t.Errorf("frame-debug dispatch point 5 must require 'subagent_type: bar-agent' (bar-agent has bar-workflow pre-loaded):\n%s", out)
+	if !strings.Contains(out, "Do not batch items into a single agent") {
+		t.Errorf("frame-debug dispatch point 4 must say 'Do not batch items into a single agent':\n%s", out)
 	}
 }
 

@@ -219,7 +219,11 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		}
 		if step.Type == "dispatch" {
 			fmt.Fprintf(stdout, "          [dispatch protocol — required]\n")
-			fmt.Fprintf(stdout, "          Pre-dispatch (required before spawning any agent): Run `bar build [tokens derived from this step's role and the current task context] agent`. A tool result containing `=== TASK 任務 (DO THIS) ===` must appear in the transcript before any Agent tool call for this step. Each Agent tool call that spawns a subagent must include the string `=== TASK 任務 (DO THIS) ===` in its prompt — this confirms the bar build agent output was passed to the subagent as its system configuration.\n")
+			fmt.Fprintf(stdout, "          [pre-dispatch agent config gate — required]\n")
+			fmt.Fprintf(stdout, "          Before spawning any Agent tool call at this dispatch step:\n")
+			fmt.Fprintf(stdout, "          0a. Use the /bar-autopilot skill to select tokens that capture the investigation task and the inner step roles shown below, then execute bar build make [discovered-tokens] agent as a Bash tool call. This is a Bash tool call, not a prose step.\n")
+			fmt.Fprintf(stdout, "          0b. Gate: the string `=== TASK 任務 (DO THIS) ===` must appear as the output of a Bash tool call in the transcript before the first Agent tool call at this step. A response turn whose text contains this string does not satisfy this gate.\n")
+			fmt.Fprintf(stdout, "          0c. Follow the bar build output from 0a as instructions to derive the agent prompt for each Agent tool call.\n")
 			fmt.Fprintf(stdout, "          1. The orchestrator spawns Agent tool calls only for this step — do not run bar build in the orchestrator turn.\n")
 			fanOutDesc := step.FanOut
 			if step.FanOut == "enumerate" {
@@ -237,7 +241,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			} else {
 				fmt.Fprintf(stdout, "          3. isolation: false — agents share conversation context\n")
 			}
-			fmt.Fprintf(stdout, "          4. Spawn one Agent tool call per item using subagent_type: bar-agent (install via 'bar install-agents'). Do not batch items into a single agent — bar-agent has Bash access and bar-workflow pre-loaded.\n")
+			fmt.Fprintf(stdout, "          4. Spawn one Agent tool call per item using subagent_type: general-purpose (has Bash access and can run bar commands). Do not batch items into a single agent. Use the agent configuration derived from the pre-dispatch bar build output in step 0a–0b.\n")
 			if step.Inner != nil {
 				fmt.Fprintf(stdout, "          5. The Agent tool call text must contain: (1) for each inner prompt step shown below, the literal `bar build <token>` command the agent must run; (2) the instruction that each `bar build` output is the agent's task instruction for that step — a response written before the `bar build` output appears does not satisfy this requirement. Run only the bar build commands shown — do not run bar help llm or discover tokens. Each agent must return a ## Derivation block. The orchestrator must preserve all Derivation blocks from every agent in the join result — do not strip or summarize them.\n")
 			} else {

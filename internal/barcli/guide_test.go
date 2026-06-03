@@ -117,6 +117,33 @@ func TestLookupGuideAnnotation(t *testing.T) {
 	}
 }
 
+// Behavior 8: GuidesForToken accepts axis:token form and returns the same entries as bare token.
+func TestGuidesForTokenAxisColon(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	bare := grammar.GuidesForToken("prep")
+	colon := grammar.GuidesForToken("form:prep")
+	if len(bare) == 0 {
+		t.Fatal("GuidesForToken(prep): want ≥1 entry, got 0 — test precondition failed")
+	}
+	if len(colon) != len(bare) {
+		t.Errorf("GuidesForToken(form:prep): want %d entries (same as bare), got %d", len(bare), len(colon))
+	}
+}
+
+// Behavior 9: bar guide axis:token CLI form exits 0 and prints guide content.
+func TestRunGuideAxisColonForm(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"guide", "form:prep"})
+	if code != 0 {
+		t.Fatalf("bar guide form:prep exited %d: stderr=%s", code, stderr)
+	}
+	if !strings.Contains(out, "prep") {
+		t.Errorf("bar guide form:prep output missing 'prep':\n%s", out)
+	}
+}
+
 // Behavior 5: LookupResult.HasGuide is true for probe, which has a guide entry.
 func TestLookupResultHasGuide(t *testing.T) {
 	grammar, err := LoadGrammar("")

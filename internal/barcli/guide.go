@@ -3,6 +3,7 @@ package barcli
 import (
 	"fmt"
 	"io"
+	"strings"
 
 	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
 )
@@ -18,12 +19,17 @@ type GuideEntry struct {
 }
 
 // GuidesForToken returns all guide entries that reference the given token slug.
+// Accepts axis:token form (e.g. "form:prep") by stripping the axis prefix.
 // Returns a non-nil empty slice when no entries exist for the token.
 func (g *Grammar) GuidesForToken(token string) []GuideEntry {
+	slug := token
+	if i := strings.LastIndex(token, ":"); i >= 0 {
+		slug = token[i+1:]
+	}
 	var out []GuideEntry
 	for _, e := range g.Guides {
 		for _, t := range e.Tokens {
-			if t == token {
+			if t == slug || t == token {
 				out = append(out, e)
 				break
 			}

@@ -497,7 +497,7 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 		"1. The orchestrator spawns Agent tool calls only",
 		"2. fan_out: enumerate",
 		"3. isolation: true",
-		"4. Spawn one Agent tool call per item — all in this same response turn.",
+		"4. [DISPATCH GATE]",
 		"5. Each agent receives the step token string",
 		"6. join: all",
 		"7. Pass the join result as --subject to the next step.",
@@ -555,6 +555,26 @@ func TestSequenceShowDispatch4RequiresCountEquality(t *testing.T) {
 	}
 	if !strings.Contains(out, "number of Agent tool calls") {
 		t.Errorf("dispatch step 4 must state count-equality requirement ('number of Agent tool calls'):\n%s", out)
+	}
+}
+
+func TestSequenceShowDispatch0aSameTurnCoLocation(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "first Agent tool call must appear in the same response turn as that Bash result block") {
+		t.Errorf("dispatch step 0a must state same-turn co-location requirement:\n%s", out)
+	}
+}
+
+func TestSequenceShowDispatch4AllowListGateEntry(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "satisfies this step only when it contains at least one Agent tool call") {
+		t.Errorf("dispatch step 4 must state allow-list gate at entry ('satisfies this step only when it contains at least one Agent tool call'):\n%s", out)
 	}
 }
 

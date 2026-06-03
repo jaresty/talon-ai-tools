@@ -182,7 +182,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			if step.Isolation {
 				isolation = ", isolated"
 			}
-			tokenCol = fmt.Sprintf("dispatch [%s→%s%s]", step.FanOut, step.Join, isolation)
+			tokenCol = fmt.Sprintf("[dispatch: %s→%s%s]", step.FanOut, step.Join, isolation)
 		} else if step.Type == "action" {
 			tokenCol = "[action]"
 		}

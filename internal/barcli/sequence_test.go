@@ -1372,7 +1372,7 @@ func TestFrameEnumerationDepthProhibition(t *testing.T) {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
 		}
 		// Step 1 is the frame enumeration step — find its output before the dispatch step
-		step1End := strings.Index(out, "dispatch [enumerate")
+		step1End := strings.Index(out, "[dispatch: enumerate")
 		if step1End < 0 {
 			t.Errorf("bar sequence show %s missing dispatch step marker", seq)
 			continue
@@ -1463,7 +1463,7 @@ func TestFrameOrbitStepStructure(t *testing.T) {
 	}
 	for _, want := range []string{
 		"make method:prism",
-		"dispatch [enumerate→all",
+		"[dispatch: enumerate→all",
 		"orbit",
 	} {
 		if !strings.Contains(out, want) {

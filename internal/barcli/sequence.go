@@ -221,9 +221,9 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			fmt.Fprintf(stdout, "          [dispatch protocol — required]\n")
 			fmt.Fprintf(stdout, "          [pre-dispatch agent config gate — required]\n")
 			fmt.Fprintf(stdout, "          Before spawning any Agent tool call at this dispatch step:\n")
-			fmt.Fprintf(stdout, "          0a. Use the /bar-autopilot skill to select tokens that capture the investigation task and the inner step roles shown below, then execute bar build make [discovered-tokens] agent as a Bash tool call. This is a Bash tool call, not a prose step.\n")
-			fmt.Fprintf(stdout, "          0b. Gate: the string `=== TASK 任務 (DO THIS) ===` must appear as the output of a Bash tool call in the transcript before the first Agent tool call at this step. A response turn whose text contains this string does not satisfy this gate.\n")
-			fmt.Fprintf(stdout, "          0c. Follow the bar build output from 0a as instructions to derive the agent prompt for each Agent tool call.\n")
+			fmt.Fprintf(stdout, "          0a. Use the `/bar-autopilot` skill to select tokens appropriate to this dispatch step's role and task domain, then run `bar build [selected-tokens] agent` as a Bash tool call — the token list must include `agent` as the final token. A Bash tool call whose command does not contain the literal string `agent` among the bar build tokens does not satisfy this step.\n")
+			fmt.Fprintf(stdout, "          0b. Gate: a `## Agent Configuration` block must appear in the transcript in the same response turn as the first Agent tool call, written after the bar build tool call result from 0a. A response turn that spawns an Agent tool call without a preceding `## Agent Configuration` block in that same turn does not satisfy this gate.\n")
+			fmt.Fprintf(stdout, "          0c. Read the TASK, CONSTRAINTS, and PERSONA sections of the bar build output from 0a. Write a `## Agent Configuration` block containing exactly three labeled lines: `**Persona:**` (derived from PERSONA), `**Method:**` (derived from CONSTRAINTS), `**Behavioral goal:**` (derived from TASK). Do not copy bar build output verbatim — derive each statement from it. A `## Agent Configuration` block missing any of the three labeled lines does not satisfy this step. Pass this block inline in each Agent tool call prompt.\n")
 			fmt.Fprintf(stdout, "          1. The orchestrator spawns Agent tool calls only for this step — do not run bar build in the orchestrator turn.\n")
 			fanOutDesc := step.FanOut
 			if step.FanOut == "enumerate" {
@@ -241,7 +241,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			} else {
 				fmt.Fprintf(stdout, "          3. isolation: false — agents share conversation context\n")
 			}
-			fmt.Fprintf(stdout, "          4. Spawn one Agent tool call per item using subagent_type: general-purpose (has Bash access and can run bar commands). Do not batch items into a single agent. Use the agent configuration derived from the pre-dispatch bar build output in step 0a–0b.\n")
+			fmt.Fprintf(stdout, "          4. Spawn one Agent tool call per item — all in this same response turn. The number of Agent tool calls in this turn must equal the number of items in the enumerated list. Each Agent tool call prompt must contain the `## Agent Configuration` block from step 0c. A response turn where Agent tool call count is less than item count is non-compliant. A response turn where any Agent tool call prompt is missing the `## Agent Configuration` block is non-compliant. Use subagent_type: general-purpose (has Bash access and can run bar commands).\n")
 			if step.Inner != nil {
 				fmt.Fprintf(stdout, "          5. The Agent tool call text must contain: (1) for each inner prompt step shown below, the literal `bar build <token>` command the agent must run; (2) the instruction that each `bar build` output is the agent's task instruction for that step — a response written before the `bar build` output appears does not satisfy this requirement. Run only the bar build commands shown — do not run bar help llm or discover tokens. Each agent must return a ## Derivation block. The orchestrator must preserve all Derivation blocks from every agent in the join result — do not strip or summarize them.\n")
 			} else {

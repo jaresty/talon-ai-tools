@@ -444,6 +444,35 @@ func TestSequenceShowJSONIncludesStopWhen(t *testing.T) {
 }
 
 // Behavior 22: `bar help llm --section sequences` includes a dispatch steps note separate from execution modes.
+// Behavior: the dispatch protocol requires a pre-dispatch bar build agent step that produces
+// a ## Agent Configuration block passed inline to each Agent call prompt.
+func TestHelpLLMDispatchProtocolRequiresAgentConfigBlock(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
+	if code != 0 {
+		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "## Agent Configuration") {
+		t.Errorf("expected dispatch protocol to require a '## Agent Configuration' block:\n%s", out)
+	}
+	if !strings.Contains(out, "bar build") || !strings.Contains(out, "agent") {
+		t.Errorf("expected dispatch protocol to reference 'bar build ... agent' pre-dispatch step:\n%s", out)
+	}
+}
+
+// Behavior: dispatch protocol step 1 includes a concrete ## Agent Configuration example
+// showing all three labeled fields so haiku can produce the block correctly.
+func TestHelpLLMDispatchProtocolAgentConfigBlockHasExample(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
+	if code != 0 {
+		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
+	}
+	for _, want := range []string{"**Persona:**", "**Method:**", "**Behavioral goal:**"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("expected dispatch protocol ## Agent Configuration example to contain %q:\n%s", want, out)
+		}
+	}
+}
+
 func TestHelpLLMSequencesIncludesDispatchNote(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
 	if code != 0 {
@@ -468,7 +497,7 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 		"1. The orchestrator spawns Agent tool calls only",
 		"2. fan_out: enumerate",
 		"3. isolation: true",
-		"4. Spawn one Agent tool call per item using subagent_type: general-purpose",
+		"4. Spawn one Agent tool call per item — all in this same response turn.",
 		"5. Each agent receives the step token string",
 		"6. join: all",
 		"7. Pass the join result as --subject to the next step.",
@@ -477,6 +506,55 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 		if !strings.Contains(out, want) {
 			t.Errorf("bar sequence show parallel-eval missing dispatch protocol line %q:\n%s", want, out)
 		}
+	}
+}
+
+// Dim-0a: dispatch protocol 0a must require literal `agent` token in bar build command.
+func TestSequenceShowDispatch0aRequiresAgentToken(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "token list must include `agent`") {
+		t.Errorf("dispatch 0a must state token list must include `agent`:\n%s", out)
+	}
+}
+
+// Dim-0b: dispatch protocol 0b gate must discriminate on ## Agent Configuration, not === TASK ===.
+func TestSequenceShowDispatch0bGatesOnAgentConfigBlock(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "`=== TASK 任務 (DO THIS) ===`") {
+		t.Errorf("dispatch 0b must not use '=== TASK 任務 (DO THIS) ===' as gate discriminator — it appears with all bar builds:\n%s", out)
+	}
+	if !strings.Contains(out, "## Agent Configuration") {
+		t.Errorf("dispatch 0b gate must reference '## Agent Configuration' as discriminator:\n%s", out)
+	}
+}
+
+// Dim-0c: dispatch protocol 0c must name all three labeled fields of ## Agent Configuration.
+func TestSequenceShowDispatch0cNamesThreeLabeledFields(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	for _, want := range []string{"**Persona:**", "**Method:**", "**Behavioral goal:**"} {
+		if !strings.Contains(out, want) {
+			t.Errorf("dispatch 0c must name labeled field %q in ## Agent Configuration:\n%s", want, out)
+		}
+	}
+}
+
+// Dim-4: dispatch protocol step 4 must require Agent call count equals item count.
+func TestSequenceShowDispatch4RequiresCountEquality(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "number of Agent tool calls") {
+		t.Errorf("dispatch step 4 must state count-equality requirement ('number of Agent tool calls'):\n%s", out)
 	}
 }
 
@@ -856,20 +934,17 @@ func TestDispatchProtocolPreAgentConfigGate(t *testing.T) {
 	if !strings.Contains(out, "[pre-dispatch agent config gate — required]") {
 		t.Errorf("dispatch protocol must contain '[pre-dispatch agent config gate — required]' block:\n%s", out)
 	}
-	if !strings.Contains(out, "bar build make [discovered-tokens] agent") {
-		t.Errorf("dispatch protocol pre-dispatch gate must name 'bar build make [discovered-tokens] agent':\n%s", out)
+	if !strings.Contains(out, "bar build [selected-tokens] agent") {
+		t.Errorf("dispatch protocol pre-dispatch gate must name 'bar build [selected-tokens] agent':\n%s", out)
 	}
-	if !strings.Contains(out, "=== TASK 任務 (DO THIS) ===") {
-		t.Errorf("dispatch protocol pre-dispatch gate must name '=== TASK 任務 (DO THIS) ===' as the observable string:\n%s", out)
+	if !strings.Contains(out, "## Agent Configuration") {
+		t.Errorf("dispatch protocol pre-dispatch gate must use '## Agent Configuration' as the observable discriminator:\n%s", out)
 	}
-	if !strings.Contains(out, "Bash tool call") {
-		t.Errorf("dispatch protocol pre-dispatch gate must specify 'Bash tool call' as the structural position:\n%s", out)
+	if !strings.Contains(out, "same response turn") {
+		t.Errorf("dispatch protocol pre-dispatch gate must specify 'same response turn' as the structural position:\n%s", out)
 	}
-	if !strings.Contains(out, "A response turn whose text contains this string does not satisfy this gate") {
-		t.Errorf("dispatch protocol pre-dispatch gate must close the prose-bypass escape path:\n%s", out)
-	}
-	if !strings.Contains(out, "Follow the bar build output from 0a as instructions to derive the agent prompt") {
-		t.Errorf("dispatch protocol pre-dispatch 0c must instruct following bar build output to derive agent prompt:\n%s", out)
+	if !strings.Contains(out, "**Persona:**") || !strings.Contains(out, "**Method:**") || !strings.Contains(out, "**Behavioral goal:**") {
+		t.Errorf("dispatch protocol pre-dispatch 0c must name all three labeled fields of ## Agent Configuration:\n%s", out)
 	}
 }
 
@@ -1020,8 +1095,8 @@ func TestFrameDebugDispatchPoint5RequiresBarWorkflowSkill(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "Do not batch items into a single agent") {
-		t.Errorf("frame-debug dispatch point 4 must say 'Do not batch items into a single agent':\n%s", out)
+	if !strings.Contains(out, "number of Agent tool calls in this turn must equal") {
+		t.Errorf("frame-debug dispatch step 4 must state count-equality requirement:\n%s", out)
 	}
 }
 

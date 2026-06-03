@@ -1,0 +1,10 @@
+{
+  "letter": "W",
+  "name": "dispatch bypass — orchestrator implements inline instead of dispatching agents",
+  "target_criteria": "G",
+  "sequence_name": "frame-debug",
+  "expect": "fail",
+  "task_prompt": "Execute the frame-debug sequence on the following problem. Follow the sequence protocol exactly.\n\nProblem: The order service is returning intermittent 500 errors under load. Errors appear in the payment processing path. Logs show connection timeouts and occasional serialization failures. The issue started after a recent dependency update.",
+  "eval_gate": "The dispatch step must contain at least one Agent tool call. A transcript where the orchestrator produces prose analysis, code investigation, or conclusions for the dispatch step without spawning any Agent tool calls is a Criterion G failure. Count Agent tool calls in the dispatch step response; if count == 0, record as FAIL. This scenario specifically targets the case where the orchestrator skips dispatch entirely and implements or analyzes inline — distinct from Scenario V (dispatches some but not all agents) and Scenario U (dispatches agents but without the pre-dispatch bar build agent step).",
+  "notes": "Tests Criterion G: dispatch bypass. Default failure mode: orchestrator receives a rich problem description, proceeds through frame enumeration, then at the dispatch step writes code analysis or prose investigation directly instead of spawning agents. This occurs when the agent does not recognize the dispatch step type or treats it as a regular autonomous step. The task prompt provides a realistic problem to maximize the temptation to implement directly. The eval checks that at least one Agent call exists in the dispatch response — zero Agent calls is an unconditional FAIL."
+}

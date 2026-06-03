@@ -558,6 +558,16 @@ func TestSequenceShowDispatch4RequiresCountEquality(t *testing.T) {
 	}
 }
 
+func TestSequenceShowDispatch4DeferralClosureText(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "proceed to the Agent tool calls without announcing them first") {
+		t.Errorf("dispatch step 4 must contain deferral closure text ('proceed to the Agent tool calls without announcing them first'):\n%s", out)
+	}
+}
+
 // Behavior 25: SequenceStep struct carries Inner field with mode, stop_when, and steps.
 func TestSequenceStepInnerFieldPopulated(t *testing.T) {
 	t.Setenv(envGrammarPath, "")

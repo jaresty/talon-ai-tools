@@ -1016,3 +1016,15 @@ func TestHelpTokenAxisTokenShowsAxisDescription(t *testing.T) {
 		t.Errorf("renderHelpToken(flow) should include axis description %q\noutput:\n%s", axisDesc, output)
 	}
 }
+
+// TestLLMHelpSequencesDispatchPointer verifies that the sequences section points
+// agents to `bar help dispatch` for the live protocol instead of inlining prose steps.
+func TestLLMHelpSequencesDispatchPointer(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+	var buf bytes.Buffer
+	renderLLMHelp(&buf, grammar, "sequences", false)
+	output := buf.String()
+	if !strings.Contains(output, "bar help dispatch") {
+		t.Errorf("sequences section should reference 'bar help dispatch' as the live protocol source\noutput:\n%s", output)
+	}
+}

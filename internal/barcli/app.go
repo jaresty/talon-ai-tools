@@ -607,6 +607,21 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 			return 1
 		}
 		return 0
+	case "dispatch":
+		sequenceName := ""
+		if len(opts.Tokens) > 1 {
+			sequenceName = opts.Tokens[1]
+		}
+		grammar, err := LoadGrammar(opts.GrammarPath)
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		if err := renderDispatchHelp(stdout, grammar, sequenceName); err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		return 0
 	case "llm", "reference":
 		// Validate section if provided
 		if opts.Section != "" {

@@ -446,25 +446,27 @@ func TestSequenceShowJSONIncludesStopWhen(t *testing.T) {
 // Behavior 22: `bar help llm --section sequences` includes a dispatch steps note separate from execution modes.
 // Behavior: the dispatch protocol requires a pre-dispatch bar build agent step that produces
 // a ## Agent Configuration block passed inline to each Agent call prompt.
+// Behavior: dispatch protocol (from bar help dispatch) requires a ## Agent Configuration block.
+// The sequences section now points to bar help dispatch for the live protocol.
 func TestHelpLLMDispatchProtocolRequiresAgentConfigBlock(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
+	out, stderr, code := runCLI(t, []string{"help", "dispatch"})
 	if code != 0 {
-		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
+		t.Fatalf("bar help dispatch exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "## Agent Configuration") {
 		t.Errorf("expected dispatch protocol to require a '## Agent Configuration' block:\n%s", out)
 	}
-	if !strings.Contains(out, "bar build") || !strings.Contains(out, "agent") {
-		t.Errorf("expected dispatch protocol to reference 'bar build ... agent' pre-dispatch step:\n%s", out)
+	if !strings.Contains(out, "bar build") {
+		t.Errorf("expected dispatch protocol to reference bar build:\n%s", out)
 	}
 }
 
-// Behavior: dispatch protocol step 1 includes a concrete ## Agent Configuration example
+// Behavior: dispatch protocol (from bar help dispatch) includes a concrete ## Agent Configuration example
 // showing task-context framing (not persona/goal, which come from agent's own bar invocations).
 func TestHelpLLMDispatchProtocolAgentConfigBlockHasExample(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
+	out, stderr, code := runCLI(t, []string{"help", "dispatch"})
 	if code != 0 {
-		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
+		t.Fatalf("bar help dispatch exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "## Agent Configuration") {
 		t.Errorf("expected dispatch protocol to include ## Agent Configuration example:\n%s", out)

@@ -1,0 +1,95 @@
+package barcli
+
+import (
+	"strings"
+	"testing"
+)
+
+func TestRenderDispatchHelpBlank(t *testing.T) {
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	var buf strings.Builder
+	if err := renderDispatchHelp(&buf, g, ""); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	out := buf.String()
+	for _, want := range []string{
+		"[dispatch protocol — required]",
+		"fan_out:",
+		"join:",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("blank template: want %q in output\ngot:\n%s", want, out)
+		}
+	}
+}
+
+func TestRenderDispatchHelpNamedSequence(t *testing.T) {
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	var buf strings.Builder
+	if err := renderDispatchHelp(&buf, g, "frame-debug"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	out := buf.String()
+	for _, want := range []string{
+		"enumerate",
+		"first",
+		"inner",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("frame-debug: want %q in output\ngot:\n%s", want, out)
+		}
+	}
+}
+
+func TestRenderDispatchHelpUnknownSequence(t *testing.T) {
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	var buf strings.Builder
+	err = renderDispatchHelp(&buf, g, "no-such-sequence-xyz")
+	if err == nil {
+		t.Fatal("expected error for unknown sequence, got nil")
+	}
+	if !strings.Contains(err.Error(), "no-such-sequence-xyz") {
+		t.Errorf("error should mention the unknown sequence name, got: %v", err)
+	}
+}
+
+func TestRenderDispatchHelpMultipleDispatchSteps(t *testing.T) {
+	// Build a minimal Grammar with a sequence containing two dispatch steps.
+	g := &Grammar{
+		Sequences: map[string]Sequence{
+			"two-dispatch": {
+				Description: "test sequence with two dispatch steps",
+				Steps: []SequenceStep{
+					{Type: "dispatch", FanOut: "enumerate", Join: "all", Role: "first fan-out"},
+					{Type: "dispatch", FanOut: "replicate", Join: "first", Role: "second fan-out"},
+				},
+			},
+		},
+	}
+	var buf strings.Builder
+	if err := renderDispatchHelp(&buf, g, "two-dispatch"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	out := buf.String()
+	// Both dispatch steps should appear — check for both fan_out values.
+	if !strings.Contains(out, "enumerate") {
+		t.Errorf("two-dispatch: want 'enumerate' in output\ngot:\n%s", out)
+	}
+	if !strings.Contains(out, "replicate") {
+		t.Errorf("two-dispatch: want 'replicate' in output\ngot:\n%s", out)
+	}
+	// Both dispatch protocol headers should appear.
+	count := strings.Count(out, "[dispatch protocol — required]")
+	if count != 2 {
+		t.Errorf("two-dispatch: want 2 '[dispatch protocol — required]' blocks, got %d\nout:\n%s", count, out)
+	}
+}

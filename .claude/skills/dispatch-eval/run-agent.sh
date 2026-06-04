@@ -29,6 +29,7 @@ CRITERION=$(jq -r '.target_criteria' "$META")
 EVAL_GATE=$(jq -r '.eval_gate' "$META")
 SEQUENCE_NAME=$(jq -r '.sequence_name' "$META")
 INNER_SEQUENCE=$(jq -r '.inner_sequence // ""' "$META")
+MAX_TURNS=$(jq -r '.max_turns // ""' "$META")
 
 # Build the bar-workflow system prompt — includes sequence definition
 BAR_CMD="${BAR_CMD:-bar}"
@@ -80,6 +81,11 @@ echo "Sequence: $SEQUENCE_NAME"
 echo "Task: $TASK_PROMPT"
 echo ""
 
+MAX_TURNS_FLAG=""
+if [[ -n "$MAX_TURNS" ]]; then
+  MAX_TURNS_FLAG="--max-turns $MAX_TURNS"
+fi
+
 cd "$DIR"
 claude -p "$FULL_PROMPT" \
   --system-prompt "$SYSTEM_PROMPT" \
@@ -88,6 +94,7 @@ claude -p "$FULL_PROMPT" \
   --permission-mode bypassPermissions \
   --output-format stream-json \
   --verbose \
+  $MAX_TURNS_FLAG \
   > "$TRANSCRIPT" 2>&1
 
 echo ""

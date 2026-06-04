@@ -510,14 +510,14 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 	}
 }
 
-// Dim-0a: dispatch protocol 0a must require literal `agent` token in bar build command.
-func TestSequenceShowDispatch0aRequiresAgentToken(t *testing.T) {
+// Dim-0a: dispatch protocol 0a must prohibit channel tokens (agent/skill) in bar build command.
+func TestSequenceShowDispatch0aNoChannelToken(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "token list must include `agent`") {
-		t.Errorf("dispatch 0a must state token list must include `agent`:\n%s", out)
+	if !strings.Contains(out, "no channel token") {
+		t.Errorf("dispatch 0a must state 'no channel token' to prevent channel:agent/skill capture:\n%s", out)
 	}
 }
 
@@ -967,8 +967,8 @@ func TestDispatchProtocolPreAgentConfigGate(t *testing.T) {
 	if !strings.Contains(out, "[pre-dispatch agent config gate — required]") {
 		t.Errorf("dispatch protocol must contain '[pre-dispatch agent config gate — required]' block:\n%s", out)
 	}
-	if !strings.Contains(out, "bar build [selected-tokens] agent") {
-		t.Errorf("dispatch protocol pre-dispatch gate must name 'bar build [selected-tokens] agent':\n%s", out)
+	if !strings.Contains(out, "bar build [selected-tokens]") {
+		t.Errorf("dispatch protocol pre-dispatch gate must name 'bar build [selected-tokens]':\n%s", out)
 	}
 	if !strings.Contains(out, "## Agent Configuration") {
 		t.Errorf("dispatch protocol pre-dispatch gate must use '## Agent Configuration' as the observable discriminator:\n%s", out)

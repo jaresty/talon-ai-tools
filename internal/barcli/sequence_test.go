@@ -460,16 +460,17 @@ func TestHelpLLMDispatchProtocolRequiresAgentConfigBlock(t *testing.T) {
 }
 
 // Behavior: dispatch protocol step 1 includes a concrete ## Agent Configuration example
-// showing all three labeled fields so haiku can produce the block correctly.
+// showing task-context framing (not persona/goal, which come from agent's own bar invocations).
 func TestHelpLLMDispatchProtocolAgentConfigBlockHasExample(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
 	if code != 0 {
 		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
 	}
-	for _, want := range []string{"**Persona:**", "**Method:**", "**Behavioral goal:**"} {
-		if !strings.Contains(out, want) {
-			t.Errorf("expected dispatch protocol ## Agent Configuration example to contain %q:\n%s", want, out)
-		}
+	if !strings.Contains(out, "## Agent Configuration") {
+		t.Errorf("expected dispatch protocol to include ## Agent Configuration example:\n%s", out)
+	}
+	if !strings.Contains(out, "agent's own bar build invocations") {
+		t.Errorf("expected dispatch protocol to clarify persona/approach come from agent's bar build:\n%s", out)
 	}
 }
 
@@ -534,16 +535,18 @@ func TestSequenceShowDispatch0bGatesOnAgentConfigBlock(t *testing.T) {
 	}
 }
 
-// Dim-0c: dispatch protocol 0c must name all three labeled fields of ## Agent Configuration.
+// Dim-0c: dispatch protocol 0c must state allow-list (what block may contain) and
+// must not require persona/approach/goal (those come from agent's own bar invocations).
 func TestSequenceShowDispatch0cNamesThreeLabeledFields(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	for _, want := range []string{"**Persona:**", "**Method:**", "**Behavioral goal:**"} {
-		if !strings.Contains(out, want) {
-			t.Errorf("dispatch 0c must name labeled field %q in ## Agent Configuration:\n%s", want, out)
-		}
+	if !strings.Contains(out, "agent's own bar build invocations") {
+		t.Errorf("dispatch 0c must state that persona/approach/goal come from agent's own bar build invocations:\n%s", out)
+	}
+	if !strings.Contains(out, "assigned item") {
+		t.Errorf("dispatch 0c must name 'assigned item' as permitted content:\n%s", out)
 	}
 }
 
@@ -973,8 +976,8 @@ func TestDispatchProtocolPreAgentConfigGate(t *testing.T) {
 	if !strings.Contains(out, "same response turn") {
 		t.Errorf("dispatch protocol pre-dispatch gate must specify 'same response turn' as the structural position:\n%s", out)
 	}
-	if !strings.Contains(out, "**Persona:**") || !strings.Contains(out, "**Method:**") || !strings.Contains(out, "**Behavioral goal:**") {
-		t.Errorf("dispatch protocol pre-dispatch 0c must name all three labeled fields of ## Agent Configuration:\n%s", out)
+	if !strings.Contains(out, "agent's own bar build invocations") {
+		t.Errorf("dispatch protocol pre-dispatch 0c must state persona/approach come from agent's own bar build:\n%s", out)
 	}
 }
 

@@ -671,3 +671,31 @@ func TestBuildErrorBNFHintShowsBareTokensAsPrimary(t *testing.T) {
 		t.Errorf("BNF hint must show bare-token example with 'bar build make', got:\n%s", result.Stderr)
 	}
 }
+
+func TestChannelTokensWithFileModeHaveWriteToDiskInstruction(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	fileChannels := []string{"html", "svg", "sketch", "notebook", "codetour"}
+	for _, ch := range fileChannels {
+		t.Run(ch, func(t *testing.T) {
+			result := runBuildCLI(t, []string{"build", "make", "channel:" + ch}, nil)
+			if result.Exit != 0 {
+				t.Fatalf("expected exit 0, got %d: %s", result.Exit, result.Stderr)
+			}
+			// Check the channel constraint line specifically, not the planning directive.
+			// The constraint line contains "Channel (" + token name.
+			constraintLine := ""
+			for _, line := range strings.Split(result.Stdout, "\n") {
+				if strings.Contains(line, "Channel ("+ch) {
+					constraintLine = line
+					break
+				}
+			}
+			if constraintLine == "" {
+				t.Fatalf("could not find channel constraint line for %s", ch)
+			}
+			if !strings.Contains(strings.ToLower(constraintLine), "write") {
+				t.Errorf("channel:%s constraint line must include write-to-disk instruction, got:\n%s", ch, constraintLine)
+			}
+		})
+	}
+}

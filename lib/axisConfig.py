@@ -56,7 +56,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         ".claude/agents/<name>.md for project-scoped agents).",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or "
-        "surrounding explanation.",
+        "surrounding explanation. When tools are available, write the output to a file with a `.tour` extension rather than displaying it inline.",
         "demo": "The response produces a pull request evidence artifact. The output must contain, as literal text: (1) the action taken, and (2) the result as it appeared when captured. No "
         "execution by the reviewer is required or assumed. The artifact is the evidence; interpretation is left to the reviewer.",
         "diagram": "The response converts the input into Mermaid diagram code only: it infers the best diagram type for the task and respects Mermaid safety constraints (Mermaid diagrams do not "
@@ -71,7 +71,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`).",
         "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram "
         "channels when wrapped in markdown code blocks.",
-        "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation.",
+        "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation. When tools are available, write the output to a file with a "
+        "`.html` extension rather than displaying it inline.",
         "image": "The response consists solely of an image as the complete output — described through subject, style, composition, lighting, and technical parameters — with no surrounding prose "
         "or explanation.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
@@ -79,7 +80,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "Questions. Only content relevant to one of these categories is emitted — conversational filler and reasoning traces are excluded. When no storage tool is available, the "
         "response outputs the categorized content and notes that it should be appended to a ledger file.",
         "notebook": "The response is delivered as a valid Jupyter notebook (`.ipynb` JSON), with an ordered sequence of markdown and code cells appropriate to the task, structured for execution "
-        "and exploration. No surrounding prose outside the notebook structure.",
+        "and exploration. No surrounding prose outside the notebook structure. When tools are available, write the output to a file with a `.ipynb` extension rather than displaying "
+        "it inline.",
         "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code "
         "blocks.",
         "presenterm": 'The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: "--- newline title: <descriptive title '
@@ -106,7 +108,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "sketch": "The response emits only pure D2 diagram source as the complete output. The response must use valid D2 syntax and only documented D2 shapes (e.g., rectangle, circle, cylinder, "
         "diamond, hexagon, cloud, text). To create visually distinct boxes, use 'border-radius' or style attributes instead of non-existent shapes like 'rounded' or 'note'. "
         "Explanatory or note-like content must be modeled using shape: text or a styled standard shape. Do not include any surrounding natural language or commentary. Ensure the "
-        "output is syntactically correct and compiles successfully with the D2 CLI.",
+        "output is syntactically correct and compiles successfully with the D2 CLI. When tools are available, write the output to a file with a `.d2` extension rather than displaying "
+        "it inline.",
         "skill": "The response is structured as a reusable agent skill definition — YAML frontmatter (name, description, when_to_use, requires) followed by a markdown body with usage "
         "instructions, workflow steps, and one real worked example. The output is formatted for direct use as an installable skill in an agent harness. The skill body must: (1) "
         "identify any mechanically deterministic steps and extract them as companion scripts referenced from the skill body; (2) end with an explicit 'Write to disk' instruction naming "
@@ -116,7 +119,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "store": "The response additionally writes output to persistent storage using available tools — a file on disk, a memory system, or any other durable medium the environment supports — "
         "as the work progresses. Conversational output continues normally; storage is additive, not a replacement. When no storage tool is available, the response notes explicitly what "
         "should be saved and suggests how.",
-        "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file.",
+        "svg": "The response consists solely of SVG markup as the complete output, with no surrounding prose, remaining minimal and valid for direct use in an `.svg` file. When tools are "
+        "available, write the output to a file with a `.svg` extension rather than displaying it inline.",
         "sync": "The response takes the shape of a synchronous or live session plan (agenda, steps, cues) rather than static reference text.",
         "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding "
         "prose or explanation.",

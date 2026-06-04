@@ -30,6 +30,7 @@ EVAL_GATE=$(jq -r '.eval_gate' "$META")
 SEQUENCE_NAME=$(jq -r '.sequence_name' "$META")
 INNER_SEQUENCE=$(jq -r '.inner_sequence // ""' "$META")
 MAX_TURNS=$(jq -r '.max_turns // ""' "$META")
+MOCK_AGENTS=$(jq -r '.mock_agents // false' "$META")
 
 # Build the bar-workflow system prompt — includes sequence definition
 BAR_CMD="${BAR_CMD:-bar}"
@@ -72,12 +73,26 @@ FULL_PROMPT="$FULL_PROMPT
 
 Use the craft pack discipline (witness ground gate falsify atomic) as defined in your system prompt."
 
+# Mock agent mode: Agent tool unavailable; output <agent-call> blocks instead
+ALLOWED_TOOLS="Bash,Read,Edit,Write,Agent"
+if [[ "$MOCK_AGENTS" == "true" ]]; then
+  ALLOWED_TOOLS="Bash,Read,Edit,Write"
+  FULL_PROMPT="$FULL_PROMPT
+
+EVAL NOTE: The Agent tool is not available in this eval. When the protocol requires you to spawn an Agent tool call, instead output one XML block per agent in this exact format:
+<agent-call>
+<prompt>the full prompt you would pass to this agent</prompt>
+</agent-call>
+Output one block per frame/item. The eval checks for these blocks as evidence of correct dispatch."
+fi
+
 echo "=== Running haiku agent for scenario $SCENARIO ==="
 echo "Model: claude-haiku-4-5"
 echo "Bar binary: $BAR_CMD"
 echo "Working directory: $DIR"
 echo "Target criterion: $CRITERION"
 echo "Sequence: $SEQUENCE_NAME"
+echo "Mock agents: $MOCK_AGENTS"
 echo "Task: $TASK_PROMPT"
 echo ""
 
@@ -90,7 +105,7 @@ cd "$DIR"
 claude -p "$FULL_PROMPT" \
   --system-prompt "$SYSTEM_PROMPT" \
   --model claude-haiku-4-5 \
-  --allowedTools "Bash,Read,Edit,Write,Agent" \
+  --allowedTools "$ALLOWED_TOOLS" \
   --permission-mode bypassPermissions \
   --output-format stream-json \
   --verbose \

@@ -16,8 +16,8 @@ func TestHeuristicSuggestions(t *testing.T) {
 		unexpectInMessage []string
 	}{
 		{
-			name: "heuristic match for debug surfaces task:probe with label",
-			args: []string{"build", "debug"},
+			name: "heuristic match for troubleshoot surfaces task:probe with label",
+			args: []string{"build", "troubleshoot"},
 			expectInMessage: []string{
 				"Lookup results:",
 				"task:probe",
@@ -308,7 +308,7 @@ func TestInlineLookupResultsInBuildError(t *testing.T) {
 	}{
 		{
 			name: "token with lookup matches shows inline results header",
-			args: []string{"build", "debug"},
+			args: []string{"build", "troubleshoot"},
 			expectInMessage: []string{
 				"Lookup results:",
 				"task:probe",
@@ -344,9 +344,9 @@ func TestMultipleUnrecognizedTokensAccumulated(t *testing.T) {
 	}{
 		{
 			name: "single unrecognized token still shows its lookup hint",
-			args: []string{"build", "debug"},
+			args: []string{"build", "troubleshoot"},
 			expectInMessage: []string{
-				"bar lookup debug",
+				"bar lookup troubleshoot",
 			},
 		},
 		{

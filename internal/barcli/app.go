@@ -330,6 +330,22 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 0
 	}
 
+	// Pack expansion: single token matching a starter pack name → expand before build.
+	// Tokens take precedence: only expand if the token is not already recognized by Build.
+	if len(options.Tokens) == 1 {
+		name := options.Tokens[0]
+		if _, testErr := Build(grammar, options.Tokens); testErr != nil {
+			for _, p := range grammar.StarterPacks {
+				if p.Name == name {
+					expanded := strings.Fields(strings.TrimPrefix(p.Command, "bar build "))
+					fmt.Fprintf(stderr, "Expanding pack: %s → %s\n", name, p.Command)
+					options.Tokens = expanded
+					break
+				}
+			}
+		}
+	}
+
 	result, buildErr := Build(grammar, options.Tokens)
 	if buildErr != nil {
 		emitError(buildErr, options.JSON, stdout, stderr)

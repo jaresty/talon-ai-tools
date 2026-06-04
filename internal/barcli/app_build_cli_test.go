@@ -379,3 +379,41 @@ func TestAxisColonTokenScopedToNamedAxis(t *testing.T) {
 		t.Errorf("expected scoped error 'unrecognized token for channel', got:\n%s", result.Stderr)
 	}
 }
+
+func TestBuildPackNameExpandsToCommand(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	// "debug" is a starter pack → should expand, not error
+	result := runBuildCLI(t, []string{"build", "debug"}, nil)
+
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0 when pack name given, got %d\nstderr: %s", result.Exit, result.Stderr)
+	}
+	if !strings.Contains(result.Stderr, "Expanding pack: debug") {
+		t.Errorf("expected 'Expanding pack: debug' on stderr, got:\n%s", result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "=== TASK") {
+		t.Errorf("expected prompt output after expansion, got:\n%s", result.Stdout)
+	}
+}
+
+func TestStarterPackNamesDoNotCollideWithTokenNames(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("failed to load grammar: %v", err)
+	}
+
+	tokenNames := make(map[string]string) // name → "axis:name"
+	for _, task := range grammar.GetAllTasks() {
+		tokenNames[task] = "task:" + task
+	}
+	for _, axis := range grammar.GetAllAxisTokens() {
+		tokenNames[axis] = axis
+	}
+
+	for _, pack := range grammar.StarterPacks {
+		if where, collision := tokenNames[pack.Name]; collision {
+			t.Errorf("starter pack %q collides with token %s — pack names must not shadow token names", pack.Name, where)
+		}
+	}
+}

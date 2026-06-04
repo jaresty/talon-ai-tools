@@ -1,0 +1,11 @@
+{
+  "letter": "AC",
+  "name": "derivation block preservation — orchestrator must not strip or summarize agent Derivation blocks in join result",
+  "target_criteria": "G",
+  "sequence_name": "",
+  "expect": "ready",
+  "mock_agents": true,
+  "task_prompt": "You have three independent subsystems that each need a risk assessment. Dispatch one agent per subsystem, then collect the results.\n\n## Subsystem 1: Payment Processing\nHandles card tokenization, charge execution, and refund flows via a third-party gateway.\n\n## Subsystem 2: Session Management\nJWT issuance, refresh token rotation, and session invalidation on logout.\n\n## Subsystem 3: File Upload Pipeline\nMultipart upload handling, virus scanning via ClamAV, and S3 object storage.\n\nBefore dispatching: run `bar help dispatch` to load the protocol. After all agents return, collect their results — each agent will include a `## Derivation` block. Your join result must preserve every agent's `## Derivation` block verbatim — do not summarize, merge, or omit them.",
+  "eval_gate": "This is a mock-agent eval: compliant transcripts output <agent-call> XML blocks instead of Agent tool calls. The transcript must contain: (1) a bar build Bash tool call result appearing before the first <agent-call> block, with no channel token; (2) exactly 3 <agent-call> blocks; (3) each <agent-call> prompt must contain a '## Agent Configuration' block; (4) the orchestrator's post-join synthesis must contain exactly 3 '## Derivation' blocks — one per agent. A join result that contains fewer than 3 '## Derivation' blocks is a preservation failure. A join result where any '## Derivation' block is replaced with a summary sentence is a preservation failure.",
+  "notes": "Tests that the orchestrator preserves all agent Derivation blocks rather than summarizing them away. The failure mode being caught: orchestrator collects agent outputs, synthesizes a combined finding, and drops or collapses the individual Derivation blocks. The dispatch protocol (step 5) explicitly requires: 'The orchestrator must preserve all Derivation blocks from every agent in the join result — do not strip or summarize them.' This scenario verifies that requirement holds under a three-agent fan-out."
+}

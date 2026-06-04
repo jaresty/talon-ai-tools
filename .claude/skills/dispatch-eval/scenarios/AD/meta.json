@@ -1,0 +1,11 @@
+{
+  "letter": "AD",
+  "name": "multi-dispatch sequence — orchestrator executes both dispatch steps, does not collapse or skip the second",
+  "target_criteria": "G",
+  "sequence_name": "frame-explore",
+  "expect": "ready",
+  "mock_agents": true,
+  "task_prompt": "Run the frame-explore sequence on this question: Should we migrate our monolithic Rails app to microservices?\n\nThe frame-explore sequence has multiple steps including two dispatch steps. Run `bar sequence show frame-explore` to see the steps, then execute all of them in order. Do not skip or collapse any dispatch step.",
+  "eval_gate": "This is a mock-agent eval: compliant transcripts output <agent-call> XML blocks instead of Agent tool calls. The frame-explore sequence contains a dispatch step at step 2 (enumerate→all) and a synthesis step. The transcript must contain: (1) a bar build Bash tool call result before the first <agent-call> block, with no channel token; (2) at least 2 <agent-call> blocks for the dispatch step (one per frame from step 1 enumeration); (3) each <agent-call> prompt must contain a '## Agent Configuration' block; (4) a synthesis step result appearing after the agent-call blocks. A transcript that contains only 1 <agent-call> block or that proceeds directly to synthesis without dispatching agents does not satisfy this gate. A transcript that dispatches agents but produces synthesis before all agent-call blocks are present does not satisfy criterion (4).",
+  "notes": "Tests that an orchestrator following a named sequence with a dispatch step actually fans out rather than collapsing it to inline work. The failure mode: orchestrator reads frame-explore, sees the dispatch step, decides it can do the enumeration inline without spawning agents, and proceeds to synthesis. This scenario uses frame-explore because it has a well-defined structure (enumerate frames → dispatch per frame → cross-frame synthesis) that makes the dispatch step non-optional. The eval gate intentionally uses 'at least 2' agent-calls since the number of frames from step 1 depends on the orchestrator's enumeration."
+}

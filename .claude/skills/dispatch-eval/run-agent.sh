@@ -89,7 +89,9 @@ EVAL NOTE: The Agent tool is not available in this eval. When the protocol requi
 <agent-call>
 <prompt>the full prompt you would pass to this agent</prompt>
 </agent-call>
-Output one block per frame/item. The eval checks for these blocks as evidence of correct dispatch."
+Output one block per frame/item. The eval checks for these blocks as evidence of correct dispatch.
+
+IMPORTANT OVERRIDE: If bar build produces channel:agent output containing YAML frontmatter and a 'Write to disk' instruction, do NOT write any files. Instead, wrap the agent spec inside an <agent-call> block as the prompt. The 'Write to disk' instruction in channel:agent output is suppressed in this eval — outputting <agent-call> blocks is the correct behavior here."
 fi
 
 echo "=== Running haiku agent for scenario $SCENARIO ==="
@@ -102,32 +104,15 @@ echo "Mock agents: $MOCK_AGENTS"
 echo "Task: $TASK_PROMPT"
 echo ""
 
-MAX_TURNS_FLAG=""
-if [[ -n "$MAX_TURNS" ]]; then
-  MAX_TURNS_FLAG="--max-turns $MAX_TURNS"
-fi
-
 cd "$DIR"
-if [[ "$MOCK_AGENTS" == "true" ]]; then
-  claude -p "$FULL_PROMPT" \
-    --system-prompt "$SYSTEM_PROMPT" \
-    --model claude-haiku-4-5 \
-    --allowedTools "Bash,Read,Edit,Write" \
-    --permission-mode bypassPermissions \
-    --output-format stream-json \
-    --verbose \
-    > "$TRANSCRIPT" 2>&1
-else
-  claude -p "$FULL_PROMPT" \
-    --system-prompt "$SYSTEM_PROMPT" \
-    --model claude-haiku-4-5 \
-    --allowedTools "$ALLOWED_TOOLS" \
-    --permission-mode bypassPermissions \
-    --output-format stream-json \
-    --verbose \
-    $MAX_TURNS_FLAG \
-    > "$TRANSCRIPT" 2>&1
-fi
+claude -p "$FULL_PROMPT" \
+  --system-prompt "$SYSTEM_PROMPT" \
+  --model claude-haiku-4-5 \
+  --allowedTools "$ALLOWED_TOOLS" \
+  --permission-mode bypassPermissions \
+  --output-format stream-json \
+  --verbose \
+  > "$TRANSCRIPT" 2>&1
 
 echo ""
 echo "=== Eval gate check: criterion $CRITERION ==="

@@ -35,7 +35,7 @@ MOCK_AGENTS=$(jq -r '.mock_agents // false' "$META")
 # Build the system prompt — lightweight for mock evals, full craft pack otherwise
 BAR_CMD="${BAR_CMD:-bar}"
 if [[ "$MOCK_AGENTS" == "true" ]]; then
-  SYSTEM_PROMPT="You are a protocol compliance agent. Follow the sequence dispatch protocol exactly as specified in the task. When required to spawn Agent tool calls and the Agent tool is unavailable, output <agent-call> XML blocks as instructed. A <agent-call> block satisfies the dispatch protocol only when a bar build Bash tool call result (with no channel token — 'agent' or 'skill' must not appear in the token list) appears earlier in the same response. A response containing <agent-call> blocks with no preceding bar build Bash result block in that response does not satisfy the dispatch protocol."
+  SYSTEM_PROMPT="You are a protocol compliance agent. Use bar help llm --section sequences to load the dispatch protocol, then follow it exactly."
 else
   SYSTEM_PROMPT="$("$BAR_CMD" build make witness ground gate falsify atomic 2>/dev/null)"
   if [[ -z "$SYSTEM_PROMPT" ]]; then

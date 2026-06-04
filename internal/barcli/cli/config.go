@@ -7,6 +7,13 @@ import (
 	"strings"
 )
 
+// axisFlags is the set of bar grammar axis names that map to axis:token syntax (not CLI flags).
+var axisFlags = map[string]bool{
+	"task": true, "topology": true, "completeness": true, "scope": true,
+	"method": true, "form": true, "channel": true, "directional": true,
+	"voice": true, "audience": true, "tone": true, "intent": true,
+}
+
 // Config represents the parsed CLI state consumed by the bar command entry points.
 type Config struct {
 	Command       string
@@ -309,6 +316,13 @@ func Parse(args []string) (*Config, error) {
 		case strings.HasPrefix(arg, "--axis="):
 			cfg.Axis = strings.TrimPrefix(arg, "--axis=")
 		case strings.HasPrefix(arg, "--"):
+			flagName := strings.TrimPrefix(arg, "--")
+			if idx := strings.Index(flagName, "="); idx >= 0 {
+				flagName = flagName[:idx]
+			}
+			if axisFlags[flagName] {
+				return nil, fmt.Errorf("unknown flag %s\n  Did you mean: bar build %s:<token>\n  See valid tokens: bar help tokens %s", arg, flagName, flagName)
+			}
 			return nil, fmt.Errorf("unknown flag %s", arg)
 		default:
 			if cfg.Command == "" {

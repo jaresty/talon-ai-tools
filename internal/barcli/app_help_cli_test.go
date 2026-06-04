@@ -645,3 +645,29 @@ func TestHelpLLMLookupSectionDescribesPacksAndSequences(t *testing.T) {
 		t.Error("help llm lookup section must mention the kind field — JSON results distinguish token/pack/sequence via kind")
 	}
 }
+
+func TestHelpLLMEBNFDocumentsAxisColonShorthand(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "architecture"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "axis:token") {
+		t.Errorf("EBNF (--section architecture) must document axis:token shorthand, got:\n%s", stdout.String())
+	}
+}
+
+func TestBuildErrorBNFHintShowsBareTokensAsPrimary(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	result := runBuildCLI(t, []string{"build", "does-not-exist"}, nil)
+
+	if result.Exit == 0 {
+		t.Fatalf("expected non-zero exit with invalid token")
+	}
+	// Primary form should show bare tokens, not axis:token as the only form
+	if !strings.Contains(result.Stderr, "bar build make") {
+		t.Errorf("BNF hint must show bare-token example with 'bar build make', got:\n%s", result.Stderr)
+	}
+}

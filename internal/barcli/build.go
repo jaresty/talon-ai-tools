@@ -245,20 +245,43 @@ var knownAxes = map[string]bool{
 }
 
 func (s *buildState) applyShorthandToken(token string) *CLIError {
+	var axisHint string
 	if idx := strings.Index(token, ":"); idx > 0 {
 		prefix, suffix := token[:idx], token[idx+1:]
 		if knownAxes[prefix] {
+			axisHint = prefix
 			token = suffix
 		}
 	}
-	if s.isTask(token) {
-		if s.staticExplicit {
-			return s.errorf(errorConflict, "multiple task tokens provided")
+	if axisHint == "" {
+		if s.isTask(token) {
+			if s.staticExplicit {
+				return s.errorf(errorConflict, "multiple task tokens provided")
+			}
+			s.static = token
+			s.staticExplicit = true
+			s.addRecognized("task", token)
+			return nil
 		}
-		s.static = token
-		s.staticExplicit = true
-		s.addRecognized("task", token)
-		return nil
+	}
+
+	if axisHint != "" {
+		if axisHint == "task" {
+			if s.isTask(token) {
+				if s.staticExplicit {
+					return s.errorf(errorConflict, "multiple task tokens provided")
+				}
+				s.static = token
+				s.staticExplicit = true
+				s.addRecognized("task", token)
+				return nil
+			}
+			return s.unknownValue(axisHint, token)
+		}
+		if s.isAxisToken(axisHint, token) {
+			return s.applyShorthandAxis(axisHint, token)
+		}
+		return s.unknownValue(axisHint, token)
 	}
 
 	if axis, ok := s.resolveAxisToken(token); ok {
@@ -695,6 +718,10 @@ func formatUnrecognizedError(g *Grammar, axis, token string, recognized map[stri
 			}
 		}
 	}
+
+	// BNF grammar summary — bare tokens are the primary form; axis:token prefix is optional for scoping
+	msg.WriteString("\n\nGrammar: bar build make fog mint bullets          ← bare tokens (common form)")
+	msg.WriteString("\n         bar build make directional:fog method:mint  ← axis:token prefix (explicit scoping)")
 
 	// Catalog search hint and tip
 	msg.WriteString("\n\nTo search the full catalog:\n  bar lookup ")

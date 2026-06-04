@@ -312,13 +312,16 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 
 	fmt.Fprintf(w, "<constraint-tokens> ::= <topology-token>? <completeness-token>? <scope-token>? <scope-token>? <method-token>? <method-token>? <method-token>? <method-token>? <method-token>? <form-token>? <channel-token>? <directional-token>?\n\n")
 
-	fmt.Fprintf(w, "<topology-token>     ::= <topology-value>\n")
-	fmt.Fprintf(w, "<completeness-token> ::= <completeness-value>\n")
-	fmt.Fprintf(w, "<scope-token>        ::= <scope-value>\n")
-	fmt.Fprintf(w, "<method-token>       ::= <method-value>\n")
-	fmt.Fprintf(w, "<form-token>         ::= <form-value>\n")
-	fmt.Fprintf(w, "<channel-token>      ::= <channel-value>\n")
-	fmt.Fprintf(w, "<directional-token>  ::= <directional-value>\n\n")
+	fmt.Fprintf(w, "# Each constraint token accepts bare form or optional axis:token prefix (both are equivalent):\n")
+	fmt.Fprintf(w, "# axis:token prefix scopes lookup to that axis — e.g. channel:async, method:mint\n")
+	fmt.Fprintf(w, "# bare form resolves by lookup order — e.g. async, mint\n\n")
+	fmt.Fprintf(w, "<topology-token>     ::= <topology-value> | \"topology:\" <topology-value>\n")
+	fmt.Fprintf(w, "<completeness-token> ::= <completeness-value> | \"completeness:\" <completeness-value>\n")
+	fmt.Fprintf(w, "<scope-token>        ::= <scope-value> | \"scope:\" <scope-value>\n")
+	fmt.Fprintf(w, "<method-token>       ::= <method-value> | \"method:\" <method-value>\n")
+	fmt.Fprintf(w, "<form-token>         ::= <form-value> | \"form:\" <form-value>\n")
+	fmt.Fprintf(w, "<channel-token>      ::= <channel-value> | \"channel:\" <channel-value>\n")
+	fmt.Fprintf(w, "<directional-token>  ::= <directional-value> | \"directional:\" <directional-value>\n\n")
 
 	fmt.Fprintf(w, "<override-tokens> ::= (<axis-override> | <constraint-override> | <persona-override>)*\n\n")
 

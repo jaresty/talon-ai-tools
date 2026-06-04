@@ -334,3 +334,48 @@ func TestRunBuildWarnsWhenStateWriteFails(t *testing.T) {
 		t.Fatalf("expected warning about caching last build, got: %s", stderr.String())
 	}
 }
+
+func TestBuildErrorIncludesBNFGrammarHint(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	result := runBuildCLI(t, []string{"build", "does-not-exist"}, nil)
+
+	if result.Exit == 0 {
+		t.Fatalf("expected non-zero exit with invalid token")
+	}
+	if !strings.Contains(result.Stderr, "bar build make") {
+		t.Errorf("expected BNF grammar hint containing 'bar build' in error, got:\n%s", result.Stderr)
+	}
+	if !strings.Contains(result.Stderr, "axis:token") {
+		t.Errorf("expected BNF hint to show axis:token prefix form, got:\n%s", result.Stderr)
+	}
+}
+
+func TestAxisAsFlagProducesRedirectHint(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	result := runBuildCLI(t, []string{"build", "--channel"}, nil)
+
+	if result.Exit == 0 {
+		t.Fatalf("expected non-zero exit with axis-as-flag")
+	}
+	if !strings.Contains(result.Stderr, "channel:<token>") {
+		t.Errorf("expected redirect hint containing 'channel:<token>' in error, got:\n%s", result.Stderr)
+	}
+}
+
+func TestAxisColonTokenScopedToNamedAxis(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	// channel:fog — fog is a directional token, not a channel token.
+	// Should error scoped to "channel", not silently match directional:fog.
+	result := runBuildCLI(t, []string{"build", "make", "channel:fog"}, nil)
+
+	if result.Exit == 0 {
+		t.Fatalf("expected non-zero exit: 'fog' is not a channel token")
+	}
+	// Error must be scoped: "unrecognized token for channel"
+	if !strings.Contains(result.Stderr, "unrecognized token for channel") {
+		t.Errorf("expected scoped error 'unrecognized token for channel', got:\n%s", result.Stderr)
+	}
+}

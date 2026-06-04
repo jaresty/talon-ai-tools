@@ -2,7 +2,7 @@
   "letter": "AD",
   "name": "multi-dispatch sequence — orchestrator executes both dispatch steps, does not collapse or skip the second",
   "target_criteria": "G",
-  "sequence_name": "frame-explore",
+  "sequence_name": "",
   "expect": "ready",
   "mock_agents": true,
   "task_prompt": "Run the frame-explore sequence on this question: Should we migrate our monolithic Rails app to microservices?\n\nThe frame-explore sequence has multiple steps including two dispatch steps. Run `bar sequence show frame-explore` to see the steps, then execute all of them in order. Do not skip or collapse any dispatch step.",

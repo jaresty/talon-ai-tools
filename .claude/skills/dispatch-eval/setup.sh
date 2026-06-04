@@ -6,7 +6,7 @@ set -euo pipefail
 
 SCENARIO="${1:-}"
 if [[ -z "$SCENARIO" ]]; then
-  echo "Usage: setup.sh <M|N|O|P|Q|R|S|T|U|V|W>" >&2
+  echo "Usage: setup.sh <M|N|O|P|Q|R|S|T|U|V|W|X>" >&2
   exit 1
 fi
 

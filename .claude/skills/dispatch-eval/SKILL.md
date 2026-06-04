@@ -22,6 +22,7 @@ done
 
 | Scenario | Criterion | Tests |
 |----------|-----------|-------|
+| X | G | custom dispatch — ad hoc fan-out without a named sequence |
 | M | A | bar build gate — step must be preceded by bar build tool result |
 | N | B | token fidelity — bar build token list matches step spec verbatim |
 | O | C | chain integrity — --subject contains literal substring from prior step output |

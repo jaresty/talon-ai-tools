@@ -1,0 +1,11 @@
+{
+  "letter": "AB",
+  "name": "isolation compliance — agent prompts must not contain full item list when isolation=true",
+  "target_criteria": "G",
+  "sequence_name": "",
+  "expect": "ready",
+  "mock_agents": true,
+  "task_prompt": "You have four independent configuration files that each need a security audit. There is no named sequence for this — construct the dispatch step ad hoc with isolation=true.\n\n## Config 1: nginx.conf\nReverse proxy config for all public-facing traffic.\n\n## Config 2: postgres.conf\nDatabase server configuration including connection limits and SSL settings.\n\n## Config 3: redis.conf\nCache server config including bind address and auth settings.\n\n## Config 4: docker-compose.yml\nContainer orchestration config including port mappings and volume mounts.\n\nBefore dispatching: run `bar help dispatch` to load the dispatch protocol. Use isolation=true so each agent receives only its assigned config — do not send the full list to any agent.",
+  "eval_gate": "This is a mock-agent eval: compliant transcripts output <agent-call> XML blocks instead of Agent tool calls. The transcript must contain: (1) a bar build Bash tool call result appearing before the first <agent-call> block, with no channel token; (2) exactly 4 <agent-call> blocks, one per config file; (3) each <agent-call> prompt must contain a '## Agent Configuration' block; (4) each <agent-call> prompt must NOT contain any of the other three config file names — a prompt for nginx.conf must not mention postgres.conf, redis.conf, or docker-compose.yml, and so on for each agent. A transcript where any <agent-call> prompt contains the full enumerated list of all four configs is an isolation=true violation.",
+  "notes": "Tests isolation=true compliance: when the dispatch step specifies isolation=true, each agent prompt must contain only its assigned item and must not receive the full enumerated list. The failure mode being caught: agent correctly sets isolation=true in its plan but then sends all four configs to every agent in a shared context block or 'here is all the context' preamble. Criterion (4) is the new gate not covered by any existing scenario."
+}

@@ -60,6 +60,7 @@ if [[ -n "$SEQUENCE_NAME" ]]; then
 fi
 
 FULL_PROMPT="Working directory: $DIR
+Bar binary: $BAR_CMD (use this path for all bar commands instead of bare \`bar\`)
 
 $TASK_PROMPT"
 

@@ -29,6 +29,47 @@ func TestRenderDispatchHelpStep0aWording(t *testing.T) {
 	}
 }
 
+// TestRenderDispatchHelpBlankShowsInnerSteps verifies that the blank template
+// includes placeholder inner step lines with bar build gate text, so agents
+// have a concrete model when authoring ad hoc inner cycles.
+func TestRenderDispatchHelpBlankShowsInnerSteps(t *testing.T) {
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	var buf strings.Builder
+	if err := renderDispatchHelp(&buf, g, ""); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	out := buf.String()
+	for _, want := range []string{
+		"[bar build gate — required]",
+		"→ ",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("blank template: want %q in output (inner step gate format)\ngot:\n%s", want, out)
+		}
+	}
+}
+
+// TestRenderDispatchHelpStep0cNamesExactHeading verifies that 0c prescribes
+// the exact heading text "## Agent Configuration" to prevent agents from
+// using alternate headings like "## Assigned Endpoint".
+func TestRenderDispatchHelpStep0cNamesExactHeading(t *testing.T) {
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	var buf strings.Builder
+	if err := renderDispatchHelp(&buf, g, ""); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "exactly `## Agent Configuration`") {
+		t.Errorf("0c should prescribe exact heading 'exactly `## Agent Configuration`'\ngot:\n%s", out)
+	}
+}
+
 func TestRenderDispatchHelpBlank(t *testing.T) {
 	g, err := LoadGrammar("")
 	if err != nil {

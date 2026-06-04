@@ -17,6 +17,15 @@ func renderDispatchHelp(w io.Writer, grammar *Grammar, sequenceName string) erro
 			FanOut: "enumerate|replicate",
 			Join:   "all|first|merge",
 			Role:   "<role of this step>",
+			Inner: &InnerSequence{
+				Mode:     "autonomous|cycle",
+				StopWhen: "<prose condition — omit for autonomous>",
+				Steps: []SequenceStep{
+					{Token: "<step-1-tokens>", Role: "<step 1 role>"},
+					{Token: "<step-2-tokens>", Role: "<step 2 role>"},
+					{Token: "<step-3-tokens>", Role: "<step 3 role>"},
+				},
+			},
 		}
 		writeDispatchStepBlock(w, placeholder, 0, grammar)
 		return nil
@@ -52,7 +61,7 @@ func writeDispatchStepBlock(w io.Writer, step SequenceStep, _ int, _ *Grammar) {
 	fmt.Fprintf(w, "          Before spawning any Agent tool call at this dispatch step:\n")
 	fmt.Fprintf(w, "          0a. Run `bar build [tokens matching this dispatch step's role and task domain]` as a Bash tool call (no channel token — do not append `agent` or `skill`). Use `/bar-dictionary` to look up tokens by intent if needed (e.g. `bar lookup \"<role intent>\"`). Read the bar build output and use it to write the `## Agent Configuration` block. The first Agent tool call must appear in the same response turn as that Bash result block — an Agent tool call appearing in a response turn that contains no bar build Bash result block does not satisfy this step.\n")
 	fmt.Fprintf(w, "          0b. Gate: a `## Agent Configuration` block must appear in the transcript in the same response turn as the first Agent tool call, written after the bar build tool call result from 0a. A response turn that spawns an Agent tool call without a preceding `## Agent Configuration` block in that same turn does not satisfy this gate.\n")
-	fmt.Fprintf(w, "          0c. Write a `## Agent Configuration` block and pass it inline in each Agent tool call prompt. The block may contain: the assigned item, domain constraints, and relevant background from the orchestrator. The block must not contain persona, approach, reasoning style, or behavioral goal statements — those come from each agent's own bar build invocations. A block whose only content is persona or goal statements does not satisfy this step.\n")
+	fmt.Fprintf(w, "          0c. Write a block using exactly `## Agent Configuration` as the heading and pass it inline in each Agent tool call prompt. The block may contain: the assigned item, domain constraints, and relevant background from the orchestrator. The block must not contain persona, approach, reasoning style, or behavioral goal statements — those come from each agent's own bar build invocations. A block whose only content is persona or goal statements does not satisfy this step.\n")
 	fmt.Fprintf(w, "          1. The orchestrator spawns Agent tool calls only for this step — do not run bar build in the orchestrator turn.\n")
 	fanOutDesc := step.FanOut
 	if step.FanOut == "enumerate" {

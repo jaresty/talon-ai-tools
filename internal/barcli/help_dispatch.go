@@ -59,7 +59,7 @@ func writeDispatchStepBlock(w io.Writer, step SequenceStep, _ int, _ *Grammar) {
 	fmt.Fprintf(w, "          [dispatch protocol — required]\n")
 	fmt.Fprintf(w, "          [pre-dispatch agent config gate — required]\n")
 	fmt.Fprintf(w, "          Before spawning any Agent tool call at this dispatch step:\n")
-	fmt.Fprintf(w, "          0a. Run `bar build [tokens matching this dispatch step's role and task domain]` as a Bash tool call (no channel token — do not append `agent` or `skill`). Use `/bar-dictionary` to look up tokens by intent if needed (e.g. `bar lookup \"<role intent>\"`). Read the bar build output and use it to write the `## Agent Configuration` block. The first Agent tool call must appear in the same response turn as that Bash result block — an Agent tool call appearing in a response turn that contains no bar build Bash result block does not satisfy this step.\n")
+	fmt.Fprintf(w, "          0a. Run `bar build [tokens matching this dispatch step's role and task domain]` as a Bash tool call (no channel token — do not append `agent` or `skill`). Consider adding `topology:relay` to structure the output for agent handoff — relay makes schemas, contracts, and terminology explicit so each agent can continue without prior context. Use `/bar-dictionary` to look up tokens by intent if needed (e.g. `bar lookup \"<role intent>\"`). Read the bar build output and use it to write the `## Agent Configuration` block. The first Agent tool call must appear in the same response turn as that Bash result block — an Agent tool call appearing in a response turn that contains no bar build Bash result block does not satisfy this step.\n")
 	fmt.Fprintf(w, "          0b. Gate: a `## Agent Configuration` block must appear in the transcript in the same response turn as the first Agent tool call, written after the bar build tool call result from 0a. A response turn that spawns an Agent tool call without a preceding `## Agent Configuration` block in that same turn does not satisfy this gate.\n")
 	fmt.Fprintf(w, "          0c. Write a block using exactly `## Agent Configuration` as the heading and pass it inline in each Agent tool call prompt. The block may contain: the assigned item, domain constraints, and relevant background from the orchestrator. The block must not contain persona, approach, reasoning style, or behavioral goal statements — those come from each agent's own bar build invocations. A block whose only content is persona or goal statements does not satisfy this step.\n")
 	fmt.Fprintf(w, "          1. The orchestrator spawns Agent tool calls only for this step — do not run bar build in the orchestrator turn.\n")
@@ -96,7 +96,6 @@ func writeDispatchStepBlock(w io.Writer, step SequenceStep, _ int, _ *Grammar) {
 	}
 	fmt.Fprintf(w, "          6. join: %s\n", joinDesc)
 	fmt.Fprintf(w, "          7. Pass the join result as --subject to the next step. Do not synthesize first.\n")
-	fmt.Fprintf(w, "          Tip: add `topology:relay` to each agent's bar build token list when the agent's output will be passed as --subject to a subsequent step — it structures output for continuation (schemas, contracts, invariants explicit) rather than self-contained reading.\n")
 	if step.Inner != nil {
 		fmt.Fprintf(w, "          inner mode: %s\n", step.Inner.Mode)
 		if step.Inner.StopWhen != "" {

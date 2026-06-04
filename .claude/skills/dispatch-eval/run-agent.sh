@@ -32,12 +32,16 @@ INNER_SEQUENCE=$(jq -r '.inner_sequence // ""' "$META")
 MAX_TURNS=$(jq -r '.max_turns // ""' "$META")
 MOCK_AGENTS=$(jq -r '.mock_agents // false' "$META")
 
-# Build the bar-workflow system prompt — includes sequence definition
+# Build the system prompt — lightweight for mock evals, full craft pack otherwise
 BAR_CMD="${BAR_CMD:-bar}"
-SYSTEM_PROMPT="$("$BAR_CMD" build make witness ground gate falsify atomic 2>/dev/null)"
-if [[ -z "$SYSTEM_PROMPT" ]]; then
-  echo "Error: $BAR_CMD build produced no output." >&2
-  exit 1
+if [[ "$MOCK_AGENTS" == "true" ]]; then
+  SYSTEM_PROMPT="You are a protocol compliance agent. Follow the sequence dispatch protocol exactly as specified in the task. When required to spawn Agent tool calls and the Agent tool is unavailable, output <agent-call> XML blocks as instructed."
+else
+  SYSTEM_PROMPT="$("$BAR_CMD" build make witness ground gate falsify atomic 2>/dev/null)"
+  if [[ -z "$SYSTEM_PROMPT" ]]; then
+    echo "Error: $BAR_CMD build produced no output." >&2
+    exit 1
+  fi
 fi
 
 # If inner_sequence is set, extract the inner step spec dynamically from bar sequence show
@@ -69,9 +73,11 @@ $SEQUENCE_DEF
 Follow the dispatch protocol exactly as specified in the sequence definition above."
 fi
 
-FULL_PROMPT="$FULL_PROMPT
+if [[ "$MOCK_AGENTS" != "true" ]]; then
+  FULL_PROMPT="$FULL_PROMPT
 
 Use the craft pack discipline (witness ground gate falsify atomic) as defined in your system prompt."
+fi
 
 # Mock agent mode: Agent tool unavailable; output <agent-call> blocks instead
 ALLOWED_TOOLS="Bash,Read,Edit,Write,Agent"

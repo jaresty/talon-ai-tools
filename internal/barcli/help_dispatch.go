@@ -96,6 +96,7 @@ func writeDispatchStepBlock(w io.Writer, step SequenceStep, _ int, _ *Grammar) {
 	}
 	fmt.Fprintf(w, "          6. join: %s\n", joinDesc)
 	fmt.Fprintf(w, "          7. Pass the join result as --subject to the next step. Do not synthesize first.\n")
+	fmt.Fprintf(w, "          Tip: add `topology:relay` to each agent's bar build token list when the agent's output will be passed as --subject to a subsequent step — it structures output for continuation (schemas, contracts, invariants explicit) rather than self-contained reading.\n")
 	if step.Inner != nil {
 		fmt.Fprintf(w, "          inner mode: %s\n", step.Inner.Mode)
 		if step.Inner.StopWhen != "" {

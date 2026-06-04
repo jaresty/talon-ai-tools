@@ -5,6 +5,30 @@ import (
 	"testing"
 )
 
+// TestRenderDispatchHelpStep0aWording verifies that step 0a names bar build as the
+// primary mandatory action and /bar-dictionary as optional token lookup assistance,
+// with no reference to /bar-autopilot.
+func TestRenderDispatchHelpStep0aWording(t *testing.T) {
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	var buf strings.Builder
+	if err := renderDispatchHelp(&buf, g, ""); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	out := buf.String()
+	if strings.Contains(out, "/bar-autopilot") {
+		t.Errorf("0a should not reference /bar-autopilot; got:\n%s", out)
+	}
+	if !strings.Contains(out, "bar build") {
+		t.Errorf("0a should name bar build as the primary action; got:\n%s", out)
+	}
+	if !strings.Contains(out, "/bar-dictionary") {
+		t.Errorf("0a should reference /bar-dictionary as optional token lookup; got:\n%s", out)
+	}
+}
+
 func TestRenderDispatchHelpBlank(t *testing.T) {
 	g, err := LoadGrammar("")
 	if err != nil {

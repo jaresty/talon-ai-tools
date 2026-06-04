@@ -969,8 +969,8 @@ func TestDispatchProtocolPreAgentConfigGate(t *testing.T) {
 	if !strings.Contains(out, "[pre-dispatch agent config gate — required]") {
 		t.Errorf("dispatch protocol must contain '[pre-dispatch agent config gate — required]' block:\n%s", out)
 	}
-	if !strings.Contains(out, "bar build [selected-tokens]") {
-		t.Errorf("dispatch protocol pre-dispatch gate must name 'bar build [selected-tokens]':\n%s", out)
+	if !strings.Contains(out, "bar build [tokens") {
+		t.Errorf("dispatch protocol pre-dispatch gate must name 'bar build [tokens...]' as the required action:\n%s", out)
 	}
 	if !strings.Contains(out, "## Agent Configuration") {
 		t.Errorf("dispatch protocol pre-dispatch gate must use '## Agent Configuration' as the observable discriminator:\n%s", out)

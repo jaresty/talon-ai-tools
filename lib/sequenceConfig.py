@@ -436,14 +436,14 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 },
             },
             {
-                "token": "task:check adversarial perturb",
-                "role": "governance stress-test",
+                "token": "task:check adversarial perturb falsify",
+                "role": "stress-test",
                 "prompt_hint": "First, read derivations from the coordination store before proceeding — each frame agent wrote its governing goal, behavioral dimensions, and enforcement sequence there. Use these to validate the merged work against stated intent: check that each artifact covers its declared behavioral dimensions, and that no dimension is present in a derivation but absent from the tests. Then name every category of failure risk in the merged work (adversarial: integration gaps, assumption conflicts, coverage holes, derivation/implementation mismatches). Then introduce controlled faults — remove a function, break a dependency, corrupt a test input — and verify the test suite fires on each fault (perturb). A fault that does not produce a test failure is a governance gap requiring escalation.",
             },
             {
                 "token": "pick method:converge",
                 "role": "synthesis",
-                "prompt_hint": "Summarize what was built across all frames, which governance checks fired during stress-testing, any gaps that require follow-up, and the overall readiness of the merged work.",
+                "prompt_hint": "Summarize what was built across all frames, which falsify checks fired during stress-testing, any gaps that require follow-up, and the overall readiness of the merged work.",
             },
         ],
     },

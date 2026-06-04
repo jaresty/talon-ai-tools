@@ -186,7 +186,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		} else if step.Type == "action" {
 			tokenCol = "[action]"
 		}
-		fmt.Fprintf(stdout, "%sStep %d  %-24s %s\n", marker, i+1, tokenCol, step.Role)
+		fmt.Fprintf(stdout, "%sStep %d  %-40s — %s\n", marker, i+1, tokenCol, step.Role)
 		if step.PromptHint != "" {
 			fmt.Fprintf(stdout, "          %s\n", step.PromptHint)
 		}

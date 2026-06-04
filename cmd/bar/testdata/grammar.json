@@ -117606,14 +117606,14 @@
           }
         },
         {
-          "token": "task:check adversarial perturb",
-          "role": "governance stress-test",
+          "token": "task:check adversarial perturb falsify",
+          "role": "stress-test",
           "prompt_hint": "First, read derivations from the coordination store before proceeding — each frame agent wrote its governing goal, behavioral dimensions, and enforcement sequence there. Use these to validate the merged work against stated intent: check that each artifact covers its declared behavioral dimensions, and that no dimension is present in a derivation but absent from the tests. Then name every category of failure risk in the merged work (adversarial: integration gaps, assumption conflicts, coverage holes, derivation/implementation mismatches). Then introduce controlled faults — remove a function, break a dependency, corrupt a test input — and verify the test suite fires on each fault (perturb). A fault that does not produce a test failure is a governance gap requiring escalation."
         },
         {
           "token": "pick method:converge",
           "role": "synthesis",
-          "prompt_hint": "Summarize what was built across all frames, which governance checks fired during stress-testing, any gaps that require follow-up, and the overall readiness of the merged work."
+          "prompt_hint": "Summarize what was built across all frames, which falsify checks fired during stress-testing, any gaps that require follow-up, and the overall readiness of the merged work."
         }
       ]
     },
@@ -118140,7 +118140,7 @@
     "slugs": "9ded63c7daa070f6e0c2f48de16c5b9019fa327f0d54b72d7a612c47a6f57536",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "1f779f51c8a4ca34cb618093d18e1bb74414477d77be2bc2e95bbc4228a0cf04",
-    "sequences": "0e543315f7a72297eb20b5c503a21a3f4cad6f9df8ff84f3f9f87ec8296f4c7b",
+    "sequences": "47f5fa89eacfccbff67144d6ede2bba6b7edcc4502414308e34ea107e0464ec0",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

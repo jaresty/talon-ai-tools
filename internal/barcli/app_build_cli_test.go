@@ -417,3 +417,35 @@ func TestStarterPackNamesDoNotCollideWithTokenNames(t *testing.T) {
 		}
 	}
 }
+
+func TestPersonaAxisColonPrefixResolved(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	tests := []struct {
+		name string
+		args []string
+	}{
+		{"voice colon prefix", []string{"build", "make", "voice:as-teacher"}},
+		{"audience colon prefix", []string{"build", "make", "audience:to-ceo"}},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := runBuildCLI(t, tt.args, nil)
+			if result.Exit != 0 {
+				t.Errorf("expected exit 0, got %d\nstderr: %s", result.Exit, result.Stderr)
+			}
+		})
+	}
+}
+
+func TestPersonaAxisColonPrefixScopedError(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	result := runBuildCLI(t, []string{"build", "make", "voice:nonexistent"}, nil)
+	if result.Exit == 0 {
+		t.Fatalf("expected non-zero exit for unknown persona token")
+	}
+	if !strings.Contains(result.Stderr, "unrecognized token for voice") {
+		t.Errorf("expected scoped error 'unrecognized token for voice', got:\n%s", result.Stderr)
+	}
+}

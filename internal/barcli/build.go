@@ -244,12 +244,20 @@ var knownAxes = map[string]bool{
 	"method": true, "form": true, "channel": true, "directional": true,
 }
 
+var knownPersonaAxes = map[string]bool{
+	"voice": true, "audience": true, "tone": true, "intent": true,
+}
+
 func (s *buildState) applyShorthandToken(token string) *CLIError {
 	var axisHint string
+	var personaAxisHint string
 	if idx := strings.Index(token, ":"); idx > 0 {
 		prefix, suffix := token[:idx], token[idx+1:]
 		if knownAxes[prefix] {
 			axisHint = prefix
+			token = suffix
+		} else if knownPersonaAxes[prefix] {
+			personaAxisHint = prefix
 			token = suffix
 		}
 	}
@@ -282,6 +290,14 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 			return s.applyShorthandAxis(axisHint, token)
 		}
 		return s.unknownValue(axisHint, token)
+	}
+
+	if personaAxisHint != "" {
+		canonical := s.canonicalPersonaToken(personaAxisHint, token)
+		if canonical == "" {
+			return s.unknownValue(personaAxisHint, token)
+		}
+		return s.applyPersonaAxis(personaAxisHint, canonical, false)
 	}
 
 	if axis, ok := s.resolveAxisToken(token); ok {

@@ -112,7 +112,8 @@ if [[ "$MOCK_AGENTS" == "true" ]]; then
   claude -p "$FULL_PROMPT" \
     --system-prompt "$SYSTEM_PROMPT" \
     --model claude-haiku-4-5 \
-    --tools "" \
+    --allowedTools "Bash,Read,Edit,Write" \
+    --permission-mode bypassPermissions \
     --output-format stream-json \
     --verbose \
     > "$TRANSCRIPT" 2>&1

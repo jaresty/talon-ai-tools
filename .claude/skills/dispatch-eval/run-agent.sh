@@ -85,13 +85,11 @@ if [[ "$MOCK_AGENTS" == "true" ]]; then
   ALLOWED_TOOLS="Bash,Read,Edit,Write"
   FULL_PROMPT="$FULL_PROMPT
 
-EVAL NOTE: The Agent tool is not available in this eval. When the protocol requires you to spawn an Agent tool call, instead output one XML block per agent in this exact format:
+EVAL NOTE: The Agent tool is not available in this eval. When the protocol requires spawning Agent tool calls, output one <agent-call> block per frame instead. The <prompt> inside each block must be the verbatim system_prompt field value from the channel:agent YAML output produced by bar build — pass it through exactly as written. Do NOT write any files to disk; the 'Write to disk' instruction in channel:agent output is suppressed here. Format:
 <agent-call>
-<prompt>the full prompt you would pass to this agent</prompt>
+<prompt>verbatim system_prompt field from bar build channel:agent output for this frame</prompt>
 </agent-call>
-Output one block per frame/item. The eval checks for these blocks as evidence of correct dispatch.
-
-IMPORTANT OVERRIDE: If bar build produces channel:agent output containing YAML frontmatter and a 'Write to disk' instruction, do NOT write any files. Instead, wrap the agent spec inside an <agent-call> block as the prompt. The 'Write to disk' instruction in channel:agent output is suppressed in this eval — outputting <agent-call> blocks is the correct behavior here."
+Output one block per frame. The eval checks for these blocks as evidence of correct dispatch."
 fi
 
 echo "=== Running haiku agent for scenario $SCENARIO ==="

@@ -108,15 +108,25 @@ if [[ -n "$MAX_TURNS" ]]; then
 fi
 
 cd "$DIR"
-claude -p "$FULL_PROMPT" \
-  --system-prompt "$SYSTEM_PROMPT" \
-  --model claude-haiku-4-5 \
-  --allowedTools "$ALLOWED_TOOLS" \
-  --permission-mode bypassPermissions \
-  --output-format stream-json \
-  --verbose \
-  $MAX_TURNS_FLAG \
-  > "$TRANSCRIPT" 2>&1
+if [[ "$MOCK_AGENTS" == "true" ]]; then
+  claude -p "$FULL_PROMPT" \
+    --system-prompt "$SYSTEM_PROMPT" \
+    --model claude-haiku-4-5 \
+    --tools "" \
+    --output-format stream-json \
+    --verbose \
+    > "$TRANSCRIPT" 2>&1
+else
+  claude -p "$FULL_PROMPT" \
+    --system-prompt "$SYSTEM_PROMPT" \
+    --model claude-haiku-4-5 \
+    --allowedTools "$ALLOWED_TOOLS" \
+    --permission-mode bypassPermissions \
+    --output-format stream-json \
+    --verbose \
+    $MAX_TURNS_FLAG \
+    > "$TRANSCRIPT" 2>&1
+fi
 
 echo ""
 echo "=== Eval gate check: criterion $CRITERION ==="

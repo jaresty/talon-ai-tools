@@ -85,9 +85,9 @@ if [[ "$MOCK_AGENTS" == "true" ]]; then
   ALLOWED_TOOLS="Bash,Read,Edit,Write"
   FULL_PROMPT="$FULL_PROMPT
 
-EVAL NOTE: The Agent tool is not available in this eval. When the protocol requires spawning Agent tool calls, output one <agent-call> block per frame instead. The <prompt> inside each block must be the verbatim system_prompt field value from the channel:agent YAML output produced by bar build — pass it through exactly as written. Do NOT write any files to disk; the 'Write to disk' instruction in channel:agent output is suppressed here. Format:
+EVAL NOTE: The Agent tool is not available in this eval. When the protocol requires spawning Agent tool calls, output one <agent-call> block per frame instead. The <prompt> inside each block must be exactly the prompt you would have passed to the Agent tool — the verbatim system prompt for that subagent as determined by the sequence protocol. Do NOT write any files to disk. Format:
 <agent-call>
-<prompt>verbatim system_prompt field from bar build channel:agent output for this frame</prompt>
+<prompt>exact prompt you would pass to this Agent tool call</prompt>
 </agent-call>
 Output one block per frame. The eval checks for these blocks as evidence of correct dispatch."
 fi

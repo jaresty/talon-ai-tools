@@ -4,6 +4,7 @@
   "target_criteria": "G",
   "sequence_name": "frame-debug",
   "expect": "ready",
+  "mock_agents": true,
   "task_prompt": "Execute the dispatch step of the frame-debug sequence. The following frames were produced by step 1. Follow the dispatch protocol from `bar sequence show frame-debug` exactly.\n\n## Frame 1: Database Connection Management Layer\nConnection pool lifecycle, pool saturation, and connection allocation behavior in the order service.\n\n## Frame 2: Request Timeout and Routing Layer\nTimeout initiation in the checkout service, request queuing delays, and timing relationship between timeouts and backend resource state.",
   "eval_gate": "Before the dispatch step fans out to subagents, the transcript must contain a bar build Bash tool call result (no channel token — 'agent' or 'skill' must not appear in the token list) appearing before the first Agent tool call. Each Agent tool call prompt must contain a '## Agent Configuration' block with task-specific context (assigned item, domain constraints, relevant background) — not persona, approach, or behavioral goal statements (those come from the agent's own bar build calls). A transcript where any Agent tool call prompt lacks a '## Agent Configuration' block is a Criterion G failure. A transcript where no bar build Bash result precedes the first Agent tool call is a Criterion G failure.",
   "max_turns": 6,

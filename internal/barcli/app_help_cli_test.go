@@ -858,6 +858,19 @@ func TestHelpLLMSequencesFitJustificationDistinctStepPerPhase(t *testing.T) {
 	}
 }
 
+// Fix: acceptance gate must require mode derivation before step 1
+func TestHelpLLMSequencesAcceptanceGateRequiresModeDerivation(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, &bytes.Buffer{})
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d", exit)
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "## Sequence Derivation") {
+		t.Errorf("sequences acceptance gate must require ## Sequence Derivation block before step 1:\n%s", out)
+	}
+}
+
 // Fix A: acceptance gate must require bar sequence show after fit justification
 func TestHelpLLMSequencesAcceptanceGateRequiresSequenceShow(t *testing.T) {
 	stdout := &bytes.Buffer{}

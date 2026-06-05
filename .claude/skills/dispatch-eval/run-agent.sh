@@ -86,11 +86,10 @@ if [[ "$MOCK_AGENTS" == "true" ]]; then
   ALLOWED_TOOLS="Bash,Read,Edit,Write"
   FULL_PROMPT="$FULL_PROMPT
 
-EVAL NOTE: The Agent tool is not available in this eval. When the protocol requires spawning Agent tool calls, output one <agent-call> block per frame instead. The <prompt> inside each block must be exactly the prompt you would have passed to the Agent tool — the verbatim system prompt for that subagent as determined by the sequence protocol. Do NOT write any files to disk. Format:
+EVAL NOTE: The Agent tool is not available. At any dispatch step in the sequence, output one <agent-call> block per labeled frame from the prior step's output — the count of <agent-call> blocks must equal the count of labeled frame headings (lines matching '### Frame N:') in the prior step's output. A dispatch step is not complete until <agent-call> blocks appear in the same response turn — a response turn that reads or references the dispatch step but contains no <agent-call> blocks does not satisfy this gate. Each <prompt> must contain the inner step bar build commands listed in the sequence definition for that dispatch step. Format:
 <agent-call>
 <prompt>exact prompt you would pass to this Agent tool call</prompt>
-</agent-call>
-Output one block per frame. The eval checks for these blocks as evidence of correct dispatch."
+</agent-call>"
 fi
 
 echo "=== Running haiku agent for scenario $SCENARIO ==="

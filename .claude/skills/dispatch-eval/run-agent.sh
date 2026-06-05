@@ -104,6 +104,10 @@ echo "Task: $TASK_PROMPT"
 echo ""
 
 cd "$DIR"
+MAX_TURNS_FLAG=""
+if [[ -n "$MAX_TURNS" ]]; then
+  MAX_TURNS_FLAG="--max-turns $MAX_TURNS"
+fi
 claude -p "$FULL_PROMPT" \
   --system-prompt "$SYSTEM_PROMPT" \
   --model claude-haiku-4-5 \
@@ -111,6 +115,7 @@ claude -p "$FULL_PROMPT" \
   --permission-mode bypassPermissions \
   --output-format stream-json \
   --verbose \
+  $MAX_TURNS_FLAG \
   > "$TRANSCRIPT" 2>&1
 
 echo ""

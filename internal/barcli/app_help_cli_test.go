@@ -756,8 +756,8 @@ func TestHelpLLMSequencesMissingStepBlock(t *testing.T) {
 		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
 	}
 	out := stdout.String()
-	if !strings.Contains(out, "When a sequence fits but is missing a step:") {
-		t.Errorf("sequences section must document step insertion into named sequences, got:\n%s", out)
+	if !strings.Contains(out, "When a sequence fits but is missing an auxiliary step:") {
+		t.Errorf("sequences section must document auxiliary step insertion into named sequences, got:\n%s", out)
 	}
 	if !strings.Contains(out, "continue with ALL of the sequence's remaining canonical steps") {
 		t.Errorf("sequences section must clarify that canonical steps must still run after insertion, got:\n%s", out)
@@ -842,6 +842,43 @@ func TestHelpLLMSequencesFitJustificationPhaseMapsToStep(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), "Phase N maps to step:") {
 		t.Errorf("sequences section must require 'Phase N maps to step:' enumeration strings in fit justification:\n%s", stdout.String())
+	}
+}
+
+// Fix: fit justification must use count-based phase/step comparison, not semantic "same step"
+func TestHelpLLMSequencesFitJustificationDistinctStepPerPhase(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, &bytes.Buffer{})
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d", exit)
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "count of `Phase N maps to step:` lines") {
+		t.Errorf("sequences acceptance gate must use count-based phase/step comparison:\n%s", out)
+	}
+}
+
+// Fix: fit justification must require "because" structural reason in each Phase N maps to step: line
+func TestHelpLLMSequencesFitJustificationBecauseClause(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, &bytes.Buffer{})
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d", exit)
+	}
+	if !strings.Contains(stdout.String(), "because <structural reason>") {
+		t.Errorf("sequences acceptance gate must require 'because <structural reason>' in each Phase N maps to step: line")
+	}
+}
+
+// Fix: insertion block preamble must not use semantic "covers the task's overall shape"
+func TestHelpLLMSequencesInsertionBlockNoSemanticShape(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, &bytes.Buffer{})
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d", exit)
+	}
+	if strings.Contains(stdout.String(), "covers the task's overall shape") {
+		t.Errorf("insertion block must not use semantic 'covers the task's overall shape' — use count-based anchor instead")
 	}
 }
 

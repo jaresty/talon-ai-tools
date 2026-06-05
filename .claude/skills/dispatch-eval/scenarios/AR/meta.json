@@ -1,0 +1,12 @@
+{
+  "letter": "AR",
+  "name": "frame-debug inner cycle — agent prompt reinforces running system as validation mechanism",
+  "target_criteria": "B",
+  "sequence_name": "frame-debug",
+  "expect": "ready",
+  "mock_agents": true,
+  "max_turns": 12,
+  "task_prompt": "You are at Step 2 (dispatch) of the frame-debug sequence. Step 1 has already produced the following frame enumeration:\n\n### Frame 1: Connection Layer\nExamines whether TCP connection establishment, TLS handshake, or connection pool behavior is the source of the latency. Evidence: connection timing metrics, pool utilization logs.\n\n### Frame 2: Query Layer\nExamines whether slow or unoptimized queries, missing indexes, or table locks are causing the spike. Evidence: slow query log, EXPLAIN output, lock wait metrics.\n\nNow execute Step 2 (dispatch) of the frame-debug sequence.",
+  "eval_gate": "For PASS: the <agent-call> blocks must be present (at least two). Each <agent-call> prompt must reinforce that the probe step requires live system execution — the prompt must contain language indicating that the agent must exercise or run the system (e.g. 'exercise the running system', 'run tests', 'invoke endpoints', 'live output', 'tool-executed results') and that static file reads do not satisfy the investigation step. A prompt that only describes what to investigate without specifying that live execution is required does not satisfy this gate. A transcript with fewer than two <agent-call> blocks is a FAIL.",
+  "notes": "Tests that when frame-debug dispatches agents, each agent prompt reinforces live execution as the required validation mechanism for the probe step — not static analysis (grep, read files, inspect code). The failure mode: agent prompts say 'investigate this frame' or 'run bar build probe survive ghost audit' without specifying that the survive step requires live system output from tool-executed results. The probe token task directive ('analyzes the subject') may encourage static analysis; the sequence definition's prompt_hint ('Exercise the running system... static file reads do not satisfy this step') must be carried forward into each agent prompt. Key observable: each agent prompt includes language about running/exercising the system and that static reads do not count."
+}

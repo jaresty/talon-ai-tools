@@ -90,7 +90,7 @@ func writeDispatchStepBlock(w io.Writer, step SequenceStep, _ int, _ *Grammar) {
 	case "all":
 		joinDesc = "all — wait for every agent; fail if any fail"
 	case "first":
-		joinDesc = "first — take the first successful result; remaining agents may still complete"
+		joinDesc = "first — take the first successful result; remaining agents may still complete. Each Agent tool call prompt must contain: (a) an instruction to return the finding immediately upon confirming the result, and (b) a statement that its result will be taken as the join answer if it is first to confirm. An evaluator determines compliance by locating each Agent tool call prompt and checking whether both clauses are present as distinct sentences — a prompt containing neither clause does not satisfy this gate."
 	case "merge":
 		joinDesc = "merge — collect all results into an array"
 	}
@@ -109,7 +109,11 @@ func writeDispatchStepBlock(w io.Writer, step SequenceStep, _ int, _ *Grammar) {
 				if is.Type == "action" {
 					fmt.Fprintf(w, "          %d. Run → [action] (action protocol applies — Bash only, no bar build).\n", ci+1)
 				} else {
-					fmt.Fprintf(w, "          %d. Run → %s (bar build gate applies — run bar build %s first).\n", ci+1, is.Token, is.Token)
+					if is.PromptHint != "" {
+						fmt.Fprintf(w, "          %d. Run → %s (bar build gate applies — run bar build %s first). %s\n", ci+1, is.Token, is.Token, is.PromptHint)
+					} else {
+						fmt.Fprintf(w, "          %d. Run → %s (bar build gate applies — run bar build %s first).\n", ci+1, is.Token, is.Token)
+					}
 					lastPromptToken = is.Token
 				}
 			}

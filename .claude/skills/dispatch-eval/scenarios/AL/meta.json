@@ -1,12 +1,12 @@
 {
   "letter": "AL",
-  "name": "outer step --subject chaining — step N bar build output passed as --subject to step N+1",
+  "name": "outer step --subject chaining \u2014 step N bar build output passed as --subject to step N+1",
   "target_criteria": "B",
-  "sequence_name": "probe-and-plan",
+  "sequence_name": "make-and-review",
   "expect": "ready",
-  "mock_agents": false,
-  "max_turns": 8,
-  "task_prompt": "A microservice handles payment processing. Latency has spiked from p50=120ms to p50=800ms over the past 48 hours. No deployments occurred during that window. Use `bar help llm` and `bar sequence list` to select a sequence and execute it.",
-  "eval_gate": "For PASS: (1) the transcript must contain a bar build Bash tool call result for step 1 (probe/diagnosis); (2) the bar build call for step 2 (plan) must include --subject containing text from the step 1 bar build output or the step 1 response — a bar build call for step 2 that omits --subject does not satisfy this gate, as the plan cannot be grounded in the specific diagnostic findings without it. A transcript where step 2's bar build call contains no --subject is a FAIL.",
-  "notes": "Tests that in a linear (non-dispatch) sequence, the agent passes step N's bar build output or response as --subject to step N+1's bar build call. The failure mode: agent runs bar build for step 1 (probe), produces diagnostic output, then runs bar build for step 2 (plan) without --subject — the plan step operates on abstract tokens rather than the specific diagnostic findings. Uses probe-and-plan (2-step sequence: diagnose → plan) which has a natural --subject handoff: the diagnosis output should ground the plan. This eval tests outer step chaining, distinct from AJ which tests inner cycle chaining."
+  "mock_agents": true,
+  "max_turns": 12,
+  "task_prompt": "You are at Step 2 of the make-and-review sequence. Step 1 has already produced the following artifact:\n\n## API Rate Limiting Design\n\n### Approach\nImplement token bucket rate limiting at the API gateway layer. Each client gets a bucket of 100 tokens per minute. Each request consumes one token. Tokens replenish at a rate of 100/minute. If the bucket is empty, the request is rejected with HTTP 429.\n\n### Implementation Notes\n- Bucket state stored in Redis with TTL=60s\n- Client identified by API key from Authorization header\n- Burst allowance: up to 20 tokens can accumulate beyond the base 100 (max bucket size: 120)\n- Rejected requests return Retry-After header set to time until next token replenishment\n\nNow execute Step 2 of the make-and-review sequence.",
+  "eval_gate": "For PASS: the bar build call for step 2 (check/review) must include --subject containing text from the step 1 artifact above \u2014 specifically, text that appears verbatim in the provided artifact (e.g. 'token bucket', 'Redis', 'Retry-After', '100 tokens', or similar phrases from the design). A bar build call for step 2 that omits --subject entirely does not satisfy this gate \u2014 the review step cannot be grounded in the specific artifact without it. A transcript with no bar build call for step 2 is a FAIL.",
+  "notes": "Tests that in a linear (non-dispatch) sequence, the agent passes step N's output as --subject to step N+1's bar build call. The failure mode: agent receives the step 1 artifact, then calls bar build for step 2 (review) without --subject \u2014 the review operates on abstract tokens rather than the specific artifact. Uses make-and-review (no requires_user_input) with a compliance probe placing the agent at step 2 with step 1 output already provided. The key observable: the bar build call for step 2 includes --subject with literal text from the provided artifact."
 }

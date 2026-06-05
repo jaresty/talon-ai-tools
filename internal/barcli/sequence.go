@@ -183,7 +183,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 	fmt.Fprintf(stdout, "Before executing step 1, emit a ## Sequence Derivation block:\n")
 	fmt.Fprintf(stdout, "  - Sequence: %s (%d steps, mode: %s)\n", name, len(seq.Steps), seq.Mode)
 	fmt.Fprintf(stdout, "  - Mode means: <restate what this mode requires of you for execution>\n")
-	fmt.Fprintf(stdout, "  - Insertion needed: <yes and where, or none>\n")
+	fmt.Fprintf(stdout, "  - Insertion needed: re-read the task now — does it require any step not covered by the canonical sequence? If yes, name it and state where the insertion goes. If no, write none.\n")
 	fmt.Fprintf(stdout, "A transcript that begins step 1 without a ## Sequence Derivation block has not derived the sequence rules and does not satisfy this gate.\n")
 	fmt.Fprintln(stdout)
 	for i, step := range seq.Steps {

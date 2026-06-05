@@ -259,7 +259,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Each agent receives only the subject and its assigned frame. First, read the files or content named in the subject. Then run bar build using the frame as the interpretive lens. Return a labeled summary: what this frame reveals, what it foregrounds, and what it sets aside.",
             },
             {
-                "token": "pick method:converge",
+                "token": "probe method:converge",
                 "role": "cross-frame synthesis",
                 "prompt_hint": "Use this step to synthesize across frame summaries: what each frame revealed, where frames agree or diverge, and what the combined reading supports as a conclusion or recommendation.",
             },
@@ -348,7 +348,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Use this step to present the findings returned from each frame agent — one labeled block per frame, preserving the original framing and cycle count. Do not synthesize yet.",
             },
             {
-                "token": "pick method:converge",
+                "token": "probe method:converge",
                 "role": "cross-frame synthesis",
                 "prompt_hint": "Use this step to synthesize across frames: what each frame's experiment cycles revealed, where frames agree or diverge, and what the combined evidence supports as a conclusion.",
             },

@@ -1711,3 +1711,31 @@ func TestSequenceListModeGlossary(t *testing.T) {
 		}
 	}
 }
+
+// Behavior 90: frame-synthesis final step uses probe method:converge, not pick method:converge.
+func TestFrameSynthesisFinalStepUsesProbeConverge(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-synthesis"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-synthesis exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "pick method:converge") {
+		t.Errorf("frame-synthesis final step must not use 'pick method:converge' — use 'probe method:converge' for synthesis steps:\n%s", out)
+	}
+	if !strings.Contains(out, "probe method:converge") {
+		t.Errorf("frame-synthesis final step must use 'probe method:converge':\n%s", out)
+	}
+}
+
+// Behavior 91: frame-explore final step uses probe method:converge, not pick method:converge.
+func TestFrameExploreFinalStepUsesProbeConverge(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "pick method:converge") {
+		t.Errorf("frame-explore final step must not use 'pick method:converge' — use 'probe method:converge' for synthesis steps:\n%s", out)
+	}
+	if !strings.Contains(out, "probe method:converge") {
+		t.Errorf("frame-explore final step must use 'probe method:converge':\n%s", out)
+	}
+}

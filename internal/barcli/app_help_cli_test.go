@@ -776,7 +776,7 @@ func TestHelpLLMSequencesSingleTaskDispatchBlock(t *testing.T) {
 	}
 }
 
-// Fix A: fit justification must require one sentence per task phase
+// Fix A: fit justification must require "Phase N maps to step:" enumeration strings
 func TestHelpLLMSequencesFitJustificationPhaseMapping(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
@@ -784,8 +784,8 @@ func TestHelpLLMSequencesFitJustificationPhaseMapping(t *testing.T) {
 	if exit != 0 {
 		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "one sentence per task phase") {
-		t.Errorf("sequences section must require phase-mapping in fit justification, got:\n%s", stdout.String())
+	if !strings.Contains(stdout.String(), "Phase N maps to step:") {
+		t.Errorf("sequences section must require 'Phase N maps to step:' enumeration in fit justification, got:\n%s", stdout.String())
 	}
 }
 
@@ -830,5 +830,30 @@ func TestHelpLLMSequencesInsertionNoDenyList(t *testing.T) {
 	}
 	if strings.Contains(stdout.String(), "inserts a step but then stops without executing the canonical sequence steps has abandoned") {
 		t.Errorf("sequences section must not contain redundant deny-list insertion clause, got:\n%s", stdout.String())
+	}
+}
+
+// Fix: fit justification must require "Phase N maps to step:" enumeration strings
+func TestHelpLLMSequencesFitJustificationPhaseMapsToStep(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, &bytes.Buffer{})
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d", exit)
+	}
+	if !strings.Contains(stdout.String(), "Phase N maps to step:") {
+		t.Errorf("sequences section must require 'Phase N maps to step:' enumeration strings in fit justification:\n%s", stdout.String())
+	}
+}
+
+// Fix: single-task dispatch gate must reference Gate: yes string, not semantic condition
+func TestHelpLLMSequencesSingleTaskDispatchGateObservable(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, &bytes.Buffer{})
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d", exit)
+	}
+	out := stdout.String()
+	if strings.Contains(out, "when independent discovery dimensions exist") {
+		t.Errorf("sequences section must not use semantic 'when independent discovery dimensions exist' as dispatch gate condition:\n%s", out)
 	}
 }

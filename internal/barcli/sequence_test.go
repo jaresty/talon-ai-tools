@@ -1609,7 +1609,33 @@ func TestSequenceShowStepGateInstructsTokenAugmentation(t *testing.T) {
 	}
 }
 
-// Behavior 92: bar sequence show autonomous mode non-final steps instruct agent to proceed to next step.
+// Fix B: step gate must warn against using sequence name as token
+func TestSequenceShowStepGateNoSequenceNameAsToken(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
+	if code != 0 {
+		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Do not use the sequence name as a token") {
+		t.Errorf("bar sequence show step gate must warn against using sequence name as token:\n%s", out)
+	}
+}
+
+func TestSequenceShowModeGlossaryInShowOutput(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
+	if code != 0 {
+		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
+	}
+	for _, want := range []string{
+		"autonomous",
+		"all steps run without stopping",
+		"proceed to the next step immediately",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("bar sequence show: mode glossary must contain %q:\n%s", want, out)
+		}
+	}
+}
+
 func TestSequenceListModeGlossary(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "list"})
 	if code != 0 {

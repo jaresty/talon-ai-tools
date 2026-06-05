@@ -858,6 +858,18 @@ func TestHelpLLMSequencesFitJustificationDistinctStepPerPhase(t *testing.T) {
 	}
 }
 
+// Fix A: acceptance gate must require bar sequence show after fit justification
+func TestHelpLLMSequencesAcceptanceGateRequiresSequenceShow(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, &bytes.Buffer{})
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d", exit)
+	}
+	if !strings.Contains(stdout.String(), "bar sequence show <name>` Bash tool call result") {
+		t.Errorf("sequences acceptance gate must require bar sequence show after fit justification")
+	}
+}
+
 // Fix: fit justification must require "because" structural reason in each Phase N maps to step: line
 func TestHelpLLMSequencesFitJustificationBecauseClause(t *testing.T) {
 	stdout := &bytes.Buffer{}

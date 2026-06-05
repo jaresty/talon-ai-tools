@@ -35,7 +35,7 @@ MOCK_AGENTS=$(jq -r '.mock_agents // false' "$META")
 # Build the system prompt — lightweight for mock evals, full craft pack otherwise
 BAR_CMD="${BAR_CMD:-bar}"
 if [[ "$MOCK_AGENTS" == "true" ]]; then
-  SYSTEM_PROMPT="You are a protocol compliance agent. Use bar help llm --section sequences to load the dispatch protocol, then follow it exactly."
+  SYSTEM_PROMPT="You are a protocol compliance agent. Run \`bar help llm\` to load the bar protocol, then follow it exactly. A transcript where \`bar help llm\` does not appear as a Bash tool call result before the first \`bar build\` call has not followed this instruction."
 else
   SYSTEM_PROMPT="$("$BAR_CMD" build make witness ground gate falsify atomic 2>/dev/null)"
   if [[ -z "$SYSTEM_PROMPT" ]]; then

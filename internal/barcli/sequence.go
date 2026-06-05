@@ -175,6 +175,10 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 	if seq.StopWhen != "" {
 		fmt.Fprintf(stdout, "stop_when: %s\n", seq.StopWhen)
 	}
+	fmt.Fprintf(stdout, "Execution modes:\n")
+	fmt.Fprintf(stdout, "  autonomous  all steps run without stopping — proceed to the next step immediately after completing each step, without waiting for user input\n")
+	fmt.Fprintf(stdout, "  linear      pause after each step for user input before continuing\n")
+	fmt.Fprintf(stdout, "  cycle       repeat the step sequence until a stop condition is met\n")
 	fmt.Fprintln(stdout)
 	for i, step := range seq.Steps {
 		marker := "  "
@@ -218,7 +222,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			}
 			fmt.Fprintf(stdout, "          [bar build gate — required]\n")
 			fmt.Fprintf(stdout, "          Run bar build before producing output for this step.\n")
-			fmt.Fprintf(stdout, "          1. Execute: bar build <token-string> [+ at least one token from method/scope/completeness/form axes that reflects this step's specific task] using the token string shown above as the starting point — a bar build containing only the step token shown has not satisfied this gate.\n")
+			fmt.Fprintf(stdout, "          1. Execute: bar build <token-string> [+ at least one token from method/scope/completeness/form axes that reflects this step's specific task] using the token string shown above as the starting point — a bar build containing only the step token shown has not satisfied this gate. Do not use the sequence name as a token — the sequence name is not a valid bar build token; use the step token string shown above.\n")
 			fmt.Fprintf(stdout, "          2. The bar build output is your task instruction — a response written before bar build output appears in the transcript does not satisfy this gate.\n")
 			fmt.Fprintf(stdout, "          3. This step is complete only when the string \"=== TASK 任務 (DO THIS) ===\" appears in a tool call result in the transcript — prose that mentions bar build does not satisfy this gate.\n")
 		}

@@ -1637,6 +1637,37 @@ func TestSequenceShowRequiresDerivationBlock(t *testing.T) {
 	}
 }
 
+// Fix: derivation block insertion prompt must direct agent to re-read the task
+func TestSequenceShowDerivationInsertionPromptReadsTask(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
+	if code != 0 {
+		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "re-read the task") {
+		t.Errorf("bar sequence show derivation block must direct agent to re-read the task for missing inputs:\n%s", out)
+	}
+}
+
+func TestSequenceShowDerivationInsertionRequiresTokenString(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
+	if code != 0 {
+		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "name the bar build token string for it") {
+		t.Errorf("bar sequence show derivation block must require a bar build token string for the inserted step:\n%s", out)
+	}
+}
+
+func TestSequenceShowDerivationInsertionGate(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
+	if code != 0 {
+		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "A bar build containing that token must appear in the transcript before") {
+		t.Errorf("bar sequence show must gate inserted step execution: require bar build for it before canonical step:\n%s", out)
+	}
+}
+
 func TestSequenceShowModeGlossaryInShowOutput(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
 	if code != 0 {

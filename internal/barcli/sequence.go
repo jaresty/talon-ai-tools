@@ -183,8 +183,9 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 	fmt.Fprintf(stdout, "Before executing step 1, emit a ## Sequence Derivation block:\n")
 	fmt.Fprintf(stdout, "  - Sequence: %s (%d steps, mode: %s)\n", name, len(seq.Steps), seq.Mode)
 	fmt.Fprintf(stdout, "  - Mode means: <restate what this mode requires of you for execution>\n")
-	fmt.Fprintf(stdout, "  - Insertion needed: re-read the task now — does it require any step not covered by the canonical sequence? If yes, name it and state where the insertion goes. If no, write none.\n")
+	fmt.Fprintf(stdout, "  - Insertion needed: re-read the task now — does it require any step not covered by the canonical sequence? If yes, name the bar build token string for it (e.g., task:gather) and state where the insertion goes. If no, write none.\n")
 	fmt.Fprintf(stdout, "A transcript that begins step 1 without a ## Sequence Derivation block has not derived the sequence rules and does not satisfy this gate.\n")
+	fmt.Fprintf(stdout, "If Insertion needed names a token (not 'none'): A bar build containing that token must appear in the transcript before the first canonical step's bar build — a transcript that names an insertion but proceeds directly to step 1 without running bar build for it does not satisfy this gate.\n")
 	fmt.Fprintln(stdout)
 	for i, step := range seq.Steps {
 		marker := "  "

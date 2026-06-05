@@ -1620,6 +1620,23 @@ func TestSequenceShowStepGateNoSequenceNameAsToken(t *testing.T) {
 	}
 }
 
+// Fix: bar sequence show must prompt agent to emit ## Sequence Derivation block before step 1
+func TestSequenceShowRequiresDerivationBlock(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
+	if code != 0 {
+		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
+	}
+	for _, want := range []string{
+		"## Sequence Derivation",
+		"Before executing step 1",
+		"Mode means:",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("bar sequence show must instruct agent to emit derivation block; missing %q:\n%s", want, out)
+		}
+	}
+}
+
 func TestSequenceShowModeGlossaryInShowOutput(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
 	if code != 0 {

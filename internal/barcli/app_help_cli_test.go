@@ -755,8 +755,12 @@ func TestHelpLLMSequencesMissingStepBlock(t *testing.T) {
 	if exit != 0 {
 		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
 	}
-	if !strings.Contains(stdout.String(), "When a sequence fits but is missing a step:") {
-		t.Errorf("sequences section must document step insertion into named sequences, got:\n%s", stdout.String())
+	out := stdout.String()
+	if !strings.Contains(out, "When a sequence fits but is missing a step:") {
+		t.Errorf("sequences section must document step insertion into named sequences, got:\n%s", out)
+	}
+	if !strings.Contains(out, "continue with ALL of the sequence's remaining canonical steps") {
+		t.Errorf("sequences section must clarify that canonical steps must still run after insertion, got:\n%s", out)
 	}
 }
 
@@ -769,5 +773,62 @@ func TestHelpLLMSequencesSingleTaskDispatchBlock(t *testing.T) {
 	}
 	if !strings.Contains(stdout.String(), "When to dispatch for a single task:") {
 		t.Errorf("sequences section must document dispatch for single-task discovery, got:\n%s", stdout.String())
+	}
+}
+
+// Fix A: fit justification must require one sentence per task phase
+func TestHelpLLMSequencesFitJustificationPhaseMapping(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "one sentence per task phase") {
+		t.Errorf("sequences section must require phase-mapping in fit justification, got:\n%s", stdout.String())
+	}
+}
+
+// Fix B: dispatch gate must require literal "Gate: yes" or "Gate: no" string
+func TestHelpLLMSequencesDispatchGateAnswerString(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "Gate: yes") || !strings.Contains(out, "Gate: no") {
+		t.Errorf("sequences section must require literal 'Gate: yes' or 'Gate: no' string in transcript, got:\n%s", out)
+	}
+}
+
+// Fix C: ordering gate must reference bar lookup tool call result, not semantic "candidate step structure"
+func TestHelpLLMSequencesOrderingGateUsesBarLookup(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	out := stdout.String()
+	if strings.Contains(out, "candidate step structure appears in the text") {
+		t.Errorf("sequences section must not use semantic 'candidate step structure appears in the text' as ordering criterion, got:\n%s", out)
+	}
+	if !strings.Contains(out, "bar lookup") || !strings.Contains(out, "Bash tool call result") {
+		t.Errorf("sequences section ordering gate must reference bar lookup Bash tool call result, got:\n%s", out)
+	}
+}
+
+// Fix D: insertion block must not contain redundant deny-list clause
+func TestHelpLLMSequencesInsertionNoDenyList(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if strings.Contains(stdout.String(), "inserts a step but then stops without executing the canonical sequence steps has abandoned") {
+		t.Errorf("sequences section must not contain redundant deny-list insertion clause, got:\n%s", stdout.String())
 	}
 }

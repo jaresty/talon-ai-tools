@@ -37,6 +37,7 @@ cd "$DIR"
 echo "=== Scenario $SCENARIO: $NAME ==="
 echo "Directory: $DIR"
 echo ""
+
 echo "ready"
 echo ""
 echo "Setup complete: $DIR"

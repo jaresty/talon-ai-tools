@@ -103,4 +103,10 @@ STARTER_PACKS: list[StarterPack] = [
         command="bar build make chain atomic",
         heuristics=("one change at a time", "incremental revision", "atomic changes", "small focused edits", "step by step changes", "traceable edits", "refactor incrementally", "one thing at a time"),
     ),
+    StarterPack(
+        name="assay",
+        framing="Behavioral eval suite from a prompt or instruction",
+        command="bar build make method:hollow method:prism form:test completeness:triage",
+        heuristics=("write evals for this", "generate eval cases", "evaluate this prompt", "behavioral coverage", "what evals should I write", "test this prompt", "prompt audit", "generate test cases for this instruction", "eval suite", "how do I know this prompt works"),
+    ),
 ]

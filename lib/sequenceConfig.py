@@ -466,6 +466,49 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "assay-cycle": {
+        "description": "Enumerate behavioral frames of a prompt or instruction, run a hollow-audit cycle within each frame to find structural escape routes, then converge on a ranked eval suite.",
+        "example": "Auditing a dispatch protocol instruction — framing behavioral dimensions (parallel spawning, join semantics, --subject chaining) and cycling through each to surface all hollow clauses and generate a falsifiable test case per escape route.",
+        "heuristics": ["write evals for this", "generate eval cases", "evaluate this prompt", "behavioral coverage", "what evals should I write", "test this prompt", "prompt audit", "generate test cases for this instruction", "eval suite", "how do I know this prompt works", "audit this instruction for compliance theater"],
+        "mode": "autonomous",
+        "stop_when": "Each behavioral frame has been fully audited and has at least one falsifiable, addressable test case.",
+        "steps": [
+            {
+                "token": "make method:prism",
+                "role": "behavioral frame enumeration",
+                "prompt_hint": "Enumerate the independent behavioral dimensions of the prompt or instruction — each frame names one distinct behavior the instruction is trying to enforce (e.g. 'parallel spawning', 'join:first race semantics', '--subject chaining'). Each frame description names the behavior and the structural property in a compliant transcript that would confirm or refute it. Do not generate test cases yet — enumeration is the only output of this step.",
+            },
+            {
+                "type": "dispatch",
+                "role": "parallel frame hollow audits",
+                "fan_out": "enumerate",
+                "join": "all",
+                "isolation": True,
+                "prompt_hint": "Each agent receives only the assigned frame and the original prompt text. Run the hollow audit cycle for the assigned frame until all structural escape routes have been identified and each has a corresponding addressable test case. Return a labeled block per frame: escape routes found, test cases written, and a pass/fail verdict on each clause.",
+                "inner": {
+                    "mode": "cycle",
+                    "stop_when": "No further structural escape routes exist in this frame — every clause either names an addressable string/structural property or has been rewritten to do so, and a falsifiable test case exists for each escape route found.",
+                    "steps": [
+                        {
+                            "token": "make method:hollow form:test",
+                            "role": "escape route identification and test case generation",
+                            "prompt_hint": "Apply the hollow root criterion to the next unaudited clause in this frame: does the clause name, within its own text, the specific string or structural property that would be present in a compliant transcript and absent in a non-compliant one? If not, identify the escape route and draft a falsifiable test case that exercises it — the test case must name the specific string or property an evaluator checks.",
+                        },
+                        {
+                            "token": "check method:hollow",
+                            "role": "test case addressability verification",
+                            "prompt_hint": "Verify the test case drafted in the previous step is itself hollow-compliant: does the eval gate name a specific string or structural property an evaluator can check without semantic inference? A test case whose gate requires semantic interpretation is itself hollow and must be rewritten before this cycle may close.",
+                        },
+                    ],
+                },
+            },
+            {
+                "token": "probe method:converge completeness:triage",
+                "role": "ranked eval suite",
+                "prompt_hint": "Synthesize the escape routes and test cases from all frames into a ranked eval suite. Order by consequence × uncertainty — high-stakes behavioral gaps first. For each eval case: name the frame, the escape route, the specific string the gate checks, and the pass/fail criterion. Omit low-stakes gaps where the consequence of missing the behavior is negligible.",
+            },
+        ],
+    },
 }
 
 

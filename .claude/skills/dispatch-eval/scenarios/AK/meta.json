@@ -1,0 +1,12 @@
+{
+  "letter": "AK",
+  "name": "join no-synthesis — orchestrator passes raw join result as --subject without synthesizing first",
+  "target_criteria": "B",
+  "sequence_name": "frame-synthesis",
+  "expect": "ready",
+  "mock_agents": true,
+  "max_turns": 6,
+  "task_prompt": "You are at Step 3 of the frame-synthesis sequence. Step 2 (dispatch) has completed and returned the following join result from all agents:\n\n## Frame 1: Security\nThe API exposes user IDs in response bodies. Enumeration attack surface is present. No rate limiting on the user lookup endpoint.\n\n## Frame 2: Usability\nThe pagination model uses cursor-based navigation but the cursor format is undocumented. Error messages are generic (400 Bad Request) with no actionable detail.\n\n## Frame 3: Performance\nThe N+1 query pattern appears in the user listing endpoint — each user record triggers a separate permissions lookup. No caching layer.\n\nNow proceed to Step 3 of the frame-synthesis sequence.",
+  "eval_gate": "For PASS: the bar build call for step 3 must include --subject containing text from the join result above (e.g. --subject with Security, Usability, or Performance frame content). A bar build call for step 3 that omits --subject entirely does not satisfy this gate — running bar build without --subject means the step operates on abstract tokens rather than the actual frame summaries. A response that synthesizes across the frame summaries in prose before calling bar build, then calls bar build without --subject, does not satisfy this gate. A transcript with no bar build call for step 3 is a FAIL.",
+  "notes": "Tests that after dispatch+join, the orchestrator passes the raw join result as --subject to the next step's bar build call rather than synthesizing first. The failure mode: orchestrator reads the join result, produces a synthesis in prose ('across these three frames, the main issues are...'), then calls bar build without --subject. Without --subject, the bar build step operates abstractly rather than on the actual frame output — the synthesis step cannot be grounded in the concrete agent findings. The dispatch protocol step 7 states: 'Pass the join result as --subject to the next step. Do not synthesize first.' This eval uses a compliance probe placing the agent at the post-dispatch point with a pre-built join result."
+}

@@ -1,0 +1,12 @@
+{
+  "letter": "AN",
+  "name": "linear mode handoff — requires_user_input step emits exact handoff phrase and stops",
+  "target_criteria": "B",
+  "sequence_name": "experiment-cycle",
+  "expect": "ready",
+  "mock_agents": false,
+  "max_turns": 6,
+  "task_prompt": "Hypothesis to test: adding an index on the `created_at` column of the `events` table will reduce the p95 query time for the dashboard query from >2s to <500ms. The database is PostgreSQL and is accessible in this environment. Use `bar help llm` and `bar sequence list` to select a sequence and execute it.",
+  "eval_gate": "For PASS: the transcript must contain the exact string 'When you have results, paste them here' in an assistant response. The response containing this string must not contain any further substantive content after it — the handoff line must be the last meaningful content in that response. A transcript where the agent produces step 2 output (experiment execution instructions) but does not emit 'When you have results, paste them here' does not satisfy this gate. A transcript where the agent emits the handoff phrase but continues with additional analysis in the same response does not satisfy this gate.",
+  "notes": "Tests that at a requires_user_input step, the agent correctly emits the exact handoff phrase and stops. The failure mode: (1) agent skips the handoff phrase and proceeds to step 3 as if it had results; (2) agent emits a paraphrase ('please paste your results when ready') instead of the exact required string; (3) agent emits the handoff phrase but continues with additional content in the same response. Uses experiment-cycle which has an action step (step 2) with requires_user_input: true and the handoff protocol."
+}

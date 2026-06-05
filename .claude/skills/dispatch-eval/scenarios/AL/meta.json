@@ -1,0 +1,12 @@
+{
+  "letter": "AL",
+  "name": "outer step --subject chaining — step N bar build output passed as --subject to step N+1",
+  "target_criteria": "B",
+  "sequence_name": "probe-and-plan",
+  "expect": "ready",
+  "mock_agents": false,
+  "max_turns": 8,
+  "task_prompt": "A microservice handles payment processing. Latency has spiked from p50=120ms to p50=800ms over the past 48 hours. No deployments occurred during that window. Use `bar help llm` and `bar sequence list` to select a sequence and execute it.",
+  "eval_gate": "For PASS: (1) the transcript must contain a bar build Bash tool call result for step 1 (probe/diagnosis); (2) the bar build call for step 2 (plan) must include --subject containing text from the step 1 bar build output or the step 1 response — a bar build call for step 2 that omits --subject does not satisfy this gate, as the plan cannot be grounded in the specific diagnostic findings without it. A transcript where step 2's bar build call contains no --subject is a FAIL.",
+  "notes": "Tests that in a linear (non-dispatch) sequence, the agent passes step N's bar build output or response as --subject to step N+1's bar build call. The failure mode: agent runs bar build for step 1 (probe), produces diagnostic output, then runs bar build for step 2 (plan) without --subject — the plan step operates on abstract tokens rather than the specific diagnostic findings. Uses probe-and-plan (2-step sequence: diagnose → plan) which has a natural --subject handoff: the diagnosis output should ground the plan. This eval tests outer step chaining, distinct from AJ which tests inner cycle chaining."
+}

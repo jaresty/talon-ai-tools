@@ -1,0 +1,12 @@
+{
+  "letter": "AM",
+  "name": "Sequence Derivation block — agent emits ## Sequence Derivation before step 1",
+  "target_criteria": "B",
+  "sequence_name": "check-and-rewrite",
+  "expect": "ready",
+  "mock_agents": false,
+  "max_turns": 8,
+  "task_prompt": "Review the following API error handling design and rewrite any sections that don't hold up:\n\n---\n# Error Handling Design\n\n## Approach\nAll errors return HTTP 500. The response body contains the raw exception message and stack trace for debugging. Authentication failures return 500 with the message 'auth failed'. Rate limiting returns 500 with 'too many requests'.\n\n## Rationale\nUsing a single status code simplifies client error handling — clients only need to check for 500.\n---\n\nUse `bar help llm` and `bar sequence list` to select a sequence and execute it.",
+  "eval_gate": "For PASS: the transcript must contain a '## Sequence Derivation' block appearing before the first bar build Bash tool call result. The ## Sequence Derivation block must name: (1) the selected sequence; (2) the step count and mode; (3) a 'Mode means:' line restating what the mode requires. A transcript where the first bar build tool call result appears before any '## Sequence Derivation' block does not satisfy this gate — the derivation block is required before step 1 begins. A transcript with no '## Sequence Derivation' block at all is a FAIL.",
+  "notes": "Tests that the agent emits a ## Sequence Derivation block before beginning step 1 of any sequence. The failure mode: agent selects a sequence, then immediately runs bar build for step 1 without emitting the derivation block. The derivation block is required by bar sequence show output: 'Before executing step 1, emit a ## Sequence Derivation block' — it ensures the agent has read and internalized the sequence rules before executing. Uses check-and-rewrite as a simple 2-step sequence with no dispatch complexity."
+}

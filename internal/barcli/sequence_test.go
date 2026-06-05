@@ -503,7 +503,7 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 		"4. [DISPATCH GATE]",
 		"5. Each agent receives the step token string",
 		"6. join: all",
-		"7. Pass the join result as --subject to the next step.",
+		"7. Before running bar build for the next step: reproduce each ## Derivation block",
 	}
 	for _, want := range checks {
 		if !strings.Contains(out, want) {
@@ -1086,8 +1086,8 @@ func TestFrameDebugInnerDispatchPreservesDerivationBlocks(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "preserve all Derivation blocks") {
-		t.Errorf("frame-debug inner dispatch point 5 must require orchestrator to 'preserve all Derivation blocks':\n%s", out)
+	if !strings.Contains(out, "## Derivation block per agent") {
+		t.Errorf("frame-debug inner dispatch point 5 must require orchestrator to preserve one '## Derivation block per agent':\n%s", out)
 	}
 }
 
@@ -1321,8 +1321,8 @@ func TestDispatchProtocolPreservesDerivationBlocks(t *testing.T) {
 	if !strings.Contains(out, "## Derivation") {
 		t.Errorf("dispatch protocol point 5 must require agents to return a '## Derivation' block:\n%s", out)
 	}
-	if !strings.Contains(out, "preserve all Derivation blocks") {
-		t.Errorf("dispatch protocol point 5 must require orchestrator to 'preserve all Derivation blocks':\n%s", out)
+	if !strings.Contains(out, "## Derivation block per agent") {
+		t.Errorf("dispatch protocol point 5 must require orchestrator to preserve one '## Derivation block per agent':\n%s", out)
 	}
 }
 

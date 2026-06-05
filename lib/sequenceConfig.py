@@ -261,7 +261,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "probe method:converge",
                 "role": "cross-frame synthesis",
-                "prompt_hint": "Use this step to synthesize across frame summaries: what each frame revealed, where frames agree or diverge, and what the combined reading supports as a conclusion or recommendation.",
+                "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to synthesize across frame summaries: what each frame revealed, where frames agree or diverge, and what the combined reading supports as a conclusion or recommendation.",
             },
         ],
     },
@@ -350,7 +350,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "probe method:converge",
                 "role": "cross-frame synthesis",
-                "prompt_hint": "Use this step to synthesize across frames: what each frame's experiment cycles revealed, where frames agree or diverge, and what the combined evidence supports as a conclusion.",
+                "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to synthesize across frames: what each frame's experiment cycles revealed, where frames agree or diverge, and what the combined evidence supports as a conclusion.",
             },
         ],
     },
@@ -397,7 +397,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "pick method:converge",
                 "role": "resolution explanation",
-                "prompt_hint": "Use this step to explain the winning fix: what hypothesis was confirmed, what the fix was, what evidence verified it, and why the other hypotheses were not the cause (if known).",
+                "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to explain the winning fix: what hypothesis was confirmed, what the fix was, what evidence verified it, and why the other hypotheses were not the cause (if known).",
             },
         ],
     },

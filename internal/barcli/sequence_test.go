@@ -1592,3 +1592,38 @@ func TestFrameOrbitInnerTraceStep(t *testing.T) {
 		t.Errorf("frame-orbit inner dispatch must include 'show method:trace' step:\n%s", out)
 	}
 }
+
+// Behavior 91: bar sequence show step gate instructs agent to augment step token with additional tokens.
+func TestSequenceShowStepGateInstructsTokenAugmentation(t *testing.T) {
+	for _, seq := range []string{"check-and-rewrite", "make-and-review"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "at least one token from method/scope/completeness/form axes") {
+			t.Errorf("bar sequence show %s: step gate must instruct token augmentation:\n%s", seq, out)
+		}
+		if !strings.Contains(out, "starting point") {
+			t.Errorf("bar sequence show %s: step gate must describe step token as 'starting point':\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 92: bar sequence show autonomous mode non-final steps instruct agent to proceed to next step.
+func TestSequenceListModeGlossary(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "list"})
+	if code != 0 {
+		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
+	}
+	for _, want := range []string{
+		"Execution modes:",
+		"autonomous",
+		"proceed to the next step immediately without waiting for user input",
+		"linear",
+		"cycle",
+	} {
+		if !strings.Contains(out, want) {
+			t.Errorf("bar sequence list: glossary must contain %q:\n%s", want, out)
+		}
+	}
+}

@@ -1,0 +1,11 @@
+{
+  "letter": "AE",
+  "name": "dispatch auto-discovery — agent recognizes fan-out is warranted for single-story planning without being prompted",
+  "target_criteria": "G",
+  "sequence_name": "",
+  "expect": "ready",
+  "mock_agents": true,
+  "task_prompt": "We need to add rate limiting to our public API. The feature needs to cover per-user and per-IP limits, integrate with existing middleware, and not break any existing authentication flows. Help me plan the implementation work.\n\nUse `bar help llm` to understand what tools are available before proceeding.",
+  "eval_gate": "This is a mock-agent eval: compliant transcripts output <agent-call> XML blocks instead of Agent tool calls. The transcript must contain: (1) a `bar help dispatch` Bash tool call result — a transcript that produces a prose plan or runs a named sequence without ever calling `bar help dispatch` is non-compliant; (2) a bar build Bash tool call result appearing before the first <agent-call> block, with no channel token (agent or skill must not appear in the token list); (3) at least 2 <agent-call> blocks scoped to distinct discovery dimensions (e.g. existing middleware, data model, authentication flow, API surface); (4) each <agent-call> prompt must contain a '## Agent Configuration' block naming the assigned discovery dimension. A transcript that produces a prose implementation plan without dispatching is a Criterion G failure. A transcript where bar help llm is read but bar help dispatch is never called is non-compliant regardless of plan quality.",
+  "notes": "Tests that the agent recognizes dispatch is warranted for single-story planning without being explicitly told. The failure mode being caught: agent reads bar help llm, finds named sequences, picks make-and-review or frame-work, and produces a plan — never recognizing that parallel discovery agents (one per dimension: middleware, data model, auth flow) would produce a better-informed plan than solo planning. The task prompt deliberately omits any mention of dispatch, fan-out, parallel, or agents — the agent must infer the value of parallelism from the task structure alone. The hint is only 'use bar help llm to understand available tools' — not 'use dispatch'."
+}

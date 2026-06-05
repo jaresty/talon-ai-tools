@@ -525,7 +525,18 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 	}
 	if len(results) > 0 {
 		fmt.Fprintln(stdout)
-		fmt.Fprintln(stdout, "Tip: bar help token <name> shows the full definition, heuristics, and distinctions for any token. For sequences: bar sequence show <name>. For disambiguation: bar guide <name>.")
+		hasSequence := false
+		for _, r := range results {
+			if r.Kind == "sequence" {
+				hasSequence = true
+				break
+			}
+		}
+		tip := "Tip: bar help token <name> shows the full definition, heuristics, and distinctions for any token. For sequences: bar sequence show <name>. For disambiguation: bar guide <name>."
+		if hasSequence {
+			tip += " If the task requires exploration before planning, run bar help dispatch — parallel discovery can precede sequence execution."
+		}
+		fmt.Fprintln(stdout, tip)
 	}
 	return 0
 }

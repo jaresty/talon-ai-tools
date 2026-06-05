@@ -699,3 +699,75 @@ func TestChannelTokensWithFileModeHaveWriteToDiskInstruction(t *testing.T) {
 		})
 	}
 }
+
+func TestHelpLLMHeuristicsWorkflowStructureBlock(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "heuristics"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "Choosing Workflow Structure") {
+		t.Errorf("heuristics section must contain 'Choosing Workflow Structure' gate block, got:\n%s", stdout.String())
+	}
+}
+
+func TestLookupDispatchHintWhenSequencesPresent(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"lookup", "plan implementation"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "If the task requires exploration before planning, run bar help dispatch") {
+		t.Errorf("lookup tip must include dispatch hint when sequences present, got:\n%s", stdout.String())
+	}
+}
+
+func TestHelpLLMSequencesDispatchGateInFitCheck(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "Before accepting a named sequence match, answer this gate:") {
+		t.Errorf("sequences section must contain dispatch gate in fit-check instruction, got:\n%s", stdout.String())
+	}
+}
+
+func TestHelpLLMSequencesNoFitBlock(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "When no named sequence fits:") {
+		t.Errorf("sequences section must document custom sequence construction when no named sequence fits, got:\n%s", stdout.String())
+	}
+}
+
+func TestHelpLLMSequencesMissingStepBlock(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "When a sequence fits but is missing a step:") {
+		t.Errorf("sequences section must document step insertion into named sequences, got:\n%s", stdout.String())
+	}
+}
+
+func TestHelpLLMSequencesSingleTaskDispatchBlock(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "When to dispatch for a single task:") {
+		t.Errorf("sequences section must document dispatch for single-task discovery, got:\n%s", stdout.String())
+	}
+}

@@ -1286,6 +1286,15 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	}
 	fmt.Fprintf(w, "## Token Selection Heuristics\n\n")
 
+	fmt.Fprintf(w, "### Choosing Workflow Structure\n\n")
+	fmt.Fprintf(w, "Before selecting tokens, apply this gate:\n\n")
+	fmt.Fprintf(w, "**Gate: Do I need to explore before I can plan?**\n")
+	fmt.Fprintf(w, "Ask: \"Can I name at least two independent areas I would need to investigate before my plan would be trustworthy?\" Record your answer before proceeding.\n\n")
+	fmt.Fprintf(w, "- If **no** and the task fits one step → pick tokens and run `bar build`\n")
+	fmt.Fprintf(w, "- If **no** and the task fits a multi-step pattern → run `bar help llm --section sequences`, produce an explicit fit-check naming why the sequence's canonical step structure matches your task, then proceed\n")
+	fmt.Fprintf(w, "- If **yes** → run `bar help dispatch` and follow the dispatch protocol. A transcript where the gate answer was yes but the agent ran `bar help dispatch` and then proceeded to a named sequence or single `bar build` without dispatching has not followed this gate — reading the protocol is not sufficient; the dispatch structure must be executed.\n\n")
+	fmt.Fprintf(w, "The gate answer (\"yes\" or \"no\") must appear in the transcript before any `bar build` or `bar sequence show` call — a transcript where no gate answer appears has not applied this heuristic.\n\n")
+
 	// "Choosing Task" routing is carried by the Token Catalog's heuristics[] metadata.
 
 	fmt.Fprintf(w, "### Choosing Persona\n\n")
@@ -1583,6 +1592,7 @@ func renderLLMSequencesSection(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "aligns with what you already generated. A transcript that runs `bar sequence list` before\n")
 	fmt.Fprintf(w, "any candidate step structure appears in the text has not satisfied this ordering.\n")
 	fmt.Fprintf(w, "Use `bar sequence show <name>` for steps, mode, and example.\n\n")
+	fmt.Fprintf(w, "**Before accepting a named sequence match, answer this gate:** Does this task require parallel exploration of independent areas before its first step can produce useful output? If yes, the sequence's first step should be a dispatch step — run `bar help dispatch` to author it and follow the dispatch protocol before proceeding to the sequence's remaining steps. A transcript that accepts a named sequence fit and proceeds to step 1 without answering this gate has not completed the fit check.\n\n")
 	fmt.Fprintf(w, "**A sequence defines step roles and order, not the complete token set.** For each step,\n")
 	fmt.Fprintf(w, "select at least one additional token (completeness, scope, method, or form) appropriate\n")
 	fmt.Fprintf(w, "to that step's role — a `bar build` command containing only the sequence's step token\n")
@@ -1592,9 +1602,11 @@ func renderLLMSequencesSection(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "still fits: [reason]\" or \"step N role no longer fits: [reason] — switching to [ad hoc\n")
 	fmt.Fprintf(w, "token or stopping]\". A transcript that advances to step N without this line has not\n")
 	fmt.Fprintf(w, "performed the check. If fit is lost, switch to an ad hoc chain for remaining steps.\n\n")
+	fmt.Fprintf(w, "**When a sequence fits but is missing a step:** If a named sequence covers the task's overall shape but the task requires a step the canonical list omits, insert that step at the appropriate position with a one-line justification immediately before the `bar build` call naming why the canonical sequence omits it. Insertion is not abandonment — it is adaptation within the sequence. A transcript that advances past an information gap without inserting a gathering step, where the task explicitly names information the agent does not have, has not adapted the sequence.\n\n")
 	fmt.Fprintf(w, "**When to prefer a named sequence over an ad hoc chain:**\n")
 	fmt.Fprintf(w, "- Any step requires real-world action between LLM steps (experiment, deploy, gather data)\n")
 	fmt.Fprintf(w, "- The pattern recurs and ordering is non-obvious\n\n")
+	fmt.Fprintf(w, "**When no named sequence fits:** If `bar sequence list` reveals no sequence whose canonical step structure matches your task's phases, construct a custom ad hoc chain — name each step explicitly by role, one `bar build` per step. A transcript that selects a named sequence without a fit justification naming why that sequence's canonical step structure matches the task's phases has not satisfied this gate.\n\n")
 	fmt.Fprintf(w, "**Execution modes:** `autonomous` (all steps run cold) | `linear` (pause for user input) | `cycle` (repeat until user ends)\n\n")
 	fmt.Fprintf(w, "**Dispatch steps:** Any sequence may contain steps of type `dispatch` (shown as `dispatch[fan_out→join]` in `bar sequence show`). A dispatch step fans out to isolated subagents — one per frame — then joins their results before the next step. Dispatch steps are not a sequence mode; they can appear within any execution mode.\n\n")
 	fmt.Fprintf(w, "**Action steps:** A step with `type: action` marks an autonomous execution slot — no `bar build`, no subagent. The agent executes the actions named in the prior step's output using available tools (code reads, test runs, API calls, file writes), records the results, then proceeds to the next step. Action steps may have `requires_user_input: true` for interactive sequences where a human must perform the action. `bar sequence show` renders them as `[action]` in the token column with an inline execution note.\n\n")
@@ -1603,6 +1615,7 @@ func renderLLMSequencesSection(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "**Authoring a custom dispatch step** — run `bar help dispatch` (no sequence name) to get a blank template showing `fan_out`, `join`, `isolation`, and `inner` placeholders. For a named sequence, run `bar help dispatch <name>` to see the actual values filled in. Declare your values before spawning agents; `fan_out: enumerate` sends one item per agent from the prior output; `fan_out: replicate` sends the full input to every agent with differentiation in each agent's configuration.\n\n")
 	fmt.Fprintf(w, "**Embedding inner steps in agent prompts** — run `bar help dispatch <name>` for any sequence with inner steps; the output shows each inner step's token string and bar build gate instructions ready to copy into agent prompts. Every inner step requires its own bar build gate — not just the first step.\n\n")
 	fmt.Fprintf(w, "**Parallelization:** When planning multiple sequences, those where neither sequence names the other's output among its inputs may be run as parallel agents — each agent runs its full sequence independently, and results are synthesized afterward. This is a judgment call: parallelize when you can name a specific cost that sequential execution would incur that parallel execution avoids; otherwise run sequentially.\n\n")
+	fmt.Fprintf(w, "**When to dispatch for a single task:** Dispatch is not only for executing an already-enumerated list. If a single task has multiple independent dimensions that need to be explored or understood before planning can proceed effectively, run `bar help dispatch` before planning — dispatch discovery agents across those dimensions and synthesize results first. Ask: 'Can I name at least two independent things I would need to investigate before I could write a good plan?' If yes, dispatch. A transcript that proceeds directly to planning without running `bar help dispatch` when independent discovery dimensions exist has skipped this gate.\n\n")
 
 	if compact {
 		fmt.Fprintf(w, "Run `bar sequence list` for available sequences.\n\n")

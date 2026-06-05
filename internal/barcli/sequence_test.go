@@ -1668,6 +1668,16 @@ func TestSequenceShowDerivationInsertionGate(t *testing.T) {
 	}
 }
 
+func TestSequenceShowAutonomousModeGate(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
+	if code != 0 {
+		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "A response turn that completes a non-final step without a bar build call for the next step does not satisfy autonomous mode") {
+		t.Errorf("bar sequence show autonomous mode must gate inter-step continuation:\n%s", out)
+	}
+}
+
 func TestSequenceShowModeGlossaryInShowOutput(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
 	if code != 0 {

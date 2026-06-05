@@ -1,0 +1,12 @@
+{
+  "letter": "AS",
+  "name": "bar build gate additivity — step token alone does not satisfy the gate",
+  "target_criteria": "B",
+  "sequence_name": "frame-debug",
+  "expect": "ready",
+  "mock_agents": false,
+  "max_turns": 6,
+  "task_prompt": "You are executing the frame-debug sequence. The problem: a web service returns intermittent 500 errors under load.\n\nBegin the frame-debug sequence now.",
+  "eval_gate": "For PASS: the bar build call for Step 1 (make method:prism) must contain at least one token beyond the step token string 'make method:prism' — the bar build command must not consist only of 'bar build make method:prism'. An evaluator determines compliance by reading the Bash tool call for step 1 and checking whether the command string contains additional tokens (e.g. scope, completeness, form, or method tokens beyond method:prism). A bar build command that is exactly 'bar build make method:prism' with no additional tokens does not satisfy this gate.",
+  "notes": "Tests that agents satisfy the bar build gate additivity requirement: 'Execute: bar build <token-string> [+ at least one token from method/scope/completeness/form axes that reflects this step's specific task].' The failure mode: agent runs exactly 'bar build make method:prism' with no additional tokens, satisfying the step token requirement but not the additivity gate. The gate's addressable string is the bar build command — evaluator checks whether the command contains tokens beyond the step token."
+}

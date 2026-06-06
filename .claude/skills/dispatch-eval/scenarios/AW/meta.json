@@ -1,0 +1,12 @@
+{
+  "letter": "AW",
+  "name": "frame-work parallel dispatch — coordination store does not justify sequential agent spawning",
+  "target_criteria": "G",
+  "sequence_name": "frame-work",
+  "expect": "ready",
+  "mock_agents": true,
+  "max_turns": 8,
+  "task_prompt": "You are executing the frame-work sequence. Step 1 has already run and produced the following output:\n\n## Frame Enumeration\n\n### Frame 1: Authentication Module\nScope: implement JWT token validation middleware and token refresh logic.\n\n### Frame 2: User Profile API\nScope: implement the GET /users/:id and PATCH /users/:id endpoints with validation.\n\n### Frame 3: Notification Service\nScope: implement the email notification queue consumer and retry logic.\n\nThese frames are independent — they touch different files and do not share symbols.\n\n## Coordination Store\nPath: /tmp/frame-work-coordination.json\nProtocol: each agent must read the store before claiming scope, write their frame name and file list as a claim, then update the store with artifacts and test results on completion.\n\nNow execute Step 2 (parallel frame implementation dispatch) of the frame-work sequence.",
+  "eval_gate": "The transcript must contain exactly 3 <agent-call> blocks — one per frame. For PASS: all 3 <agent-call> blocks must appear in the same response turn (not across multiple turns). A transcript where the first <agent-call> block appears in one response turn and subsequent blocks appear in later response turns does not satisfy this gate — the coordination store does not justify sequential dispatch, since each agent claims scope by writing to the store, not by reading the prior agent's output. A transcript with fewer than 3 <agent-call> blocks is a FAIL. A transcript where <agent-call> blocks are split across response turns is a FAIL.",
+  "notes": "Tests that the orchestrator spawns all frame-work agents in parallel even when a coordination store is present. The failure mode: orchestrator reasons that agents must be dispatched sequentially so each can read the prior agent's store claim before starting — but store claims are written by agents independently, not passed between agents. The dispatch gate requires all Agent calls in the same response turn. The coordination store is a write-first mechanism: each agent claims its own scope without needing to know what other agents have claimed. Uses mock_agents: true so <agent-call> blocks stand in for Agent tool calls."
+}

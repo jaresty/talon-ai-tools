@@ -33,6 +33,10 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as Kent Beck": "The response channels Kent Beck's pragmatic, iterative style with an emphasis on tests and simplicity.",
         "as future historian": "The response speaks as a future historian looking back at the present, treating current events and decisions as already-settled historical record with the benefit of hindsight.",
         "as storyteller": "The response speaks as a storyteller, inventing vivid metaphors and fantastical scenarios to make ideas engaging and memorable.",
+        "as Yoda": "The response channels Yoda's inverted syntax and aphoristic wisdom — short declarative reversals, patience with difficulty, and insight that arrives sideways.",
+        "as Buddha": "The response speaks as Buddha, reframing problems as states of mind, using paradox and non-attachment, and pointing toward the question beneath the question.",
+        "as pirate": "The response speaks as a pirate — nautical metaphors, irreverent swagger, and enthusiasm for plunder (of ideas).",
+        "as enthusiast": "The response speaks with maximum enthusiasm — everything is exciting, possibilities are boundless, and energy is contagious.",
     },
     "audience": {
         "to managers": "The response addresses managers, naming outcomes, risk, and staffing.",
@@ -50,6 +54,8 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "to platform team": "The response addresses a platform team, emphasising reliability, leverage, and paved-path fit.",
         "to stream aligned team": "The response addresses a stream-aligned team, emphasising flow, delivery, and local ownership.",
         "to XP enthusiast": "The response addresses an XP enthusiast, valuing small batches, social programming, and production validation.",
+        "to 5 year old": "The response addresses a five-year-old — simple words, concrete analogies, no assumed knowledge, and genuine delight in the subject.",
+        "to rubber duck": "The response addresses a rubber duck — the subject is explained aloud as if to an inanimate listener that cannot respond, surfacing hidden assumptions through the act of narration.",
     },
     "tone": {
         "casually": "The response uses a casual, conversational tone.",
@@ -57,6 +63,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "directly": "The response speaks directly and straightforwardly while remaining respectful.",
         "gently": "The response keeps the tone gentle and supportive.",
         "kindly": "The response uses a kind, warm tone.",
+        "wittily": "The response uses a witty tone — dry humor, wordplay, and light absurdity woven into the substance.",
     },
     "intent": {
         "inform": "Provide clear, relevant information the audience needs.",
@@ -85,6 +92,10 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "as Kent Beck": "Kent Beck pragmatic style",
         "as future historian": "Future historian retrospective",
         "as storyteller": "Fantastical metaphor and story",
+        "as Yoda": "Yoda inverted wisdom",
+        "as Buddha": "Buddhist reframing",
+        "as pirate": "Pirate swagger",
+        "as enthusiast": "Maximum enthusiasm",
     },
     "audience": {
         "to managers": "Outcome-focused for managers",
@@ -102,6 +113,8 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "to platform team": "Reliability and paved path",
         "to stream aligned team": "Flow and local ownership",
         "to XP enthusiast": "Small batches, XP values",
+        "to 5 year old": "Five-year-old audience",
+        "to rubber duck": "Rubber duck narration",
     },
     "tone": {
         "casually": "Casual, conversational",
@@ -109,6 +122,7 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "directly": "Direct, straightforward",
         "gently": "Gentle, supportive",
         "kindly": "Kind, warm",
+        "wittily": "Witty, dry humor",
     },
     "intent": {
         "inform": "Convey information clearly",
@@ -139,6 +153,10 @@ PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "as teacher":            "Teacher voice",
         "as writer":             "Writer voice",
         "as storyteller":        "Storyteller voice",
+        "as Yoda":               "Yoda voice",
+        "as Buddha":             "Buddha voice",
+        "as pirate":             "Pirate voice",
+        "as enthusiast":         "Enthusiast voice",
     },
     "audience": {
         "to CEO":                 "CEO audience",
@@ -156,6 +174,8 @@ PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "to stakeholders":        "Stakeholder audience",
         "to stream aligned team": "Stream-aligned team",
         "to team":                "Team audience",
+        "to 5 year old":          "Five-year-old audience",
+        "to rubber duck":         "Rubber duck narration",
     },
     "tone": {
         "casually": "Casual tone",
@@ -163,6 +183,7 @@ PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "formally": "Formal tone",
         "gently":   "Gentle tone",
         "kindly":   "Kind tone",
+        "wittily":  "Witty tone",
     },
     "intent": {
         "announce":   "Share news",
@@ -200,6 +221,10 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "as teacher": "教",
         "as writer": "著",
         "as storyteller": "語",
+        "as Yoda": "逆",
+        "as Buddha": "禅",
+        "as pirate": "海",
+        "as enthusiast": "熱",
     },
     "audience": {
         "to managers": "監",
@@ -217,6 +242,8 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "to platform team": "基",
         "to stream aligned team": "流",
         "to XP enthusiast": "好",
+        "to 5 year old": "童",
+        "to rubber duck": "鴨",
     },
     "tone": {
         "casually": "軽",
@@ -224,6 +251,7 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "formally": "式",
         "gently": "優",
         "kindly": "慈",
+        "wittily": "笑",
     },
     "intent": {
         "inform": "知",
@@ -572,6 +600,31 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 },
             ],
         },
+        "wittily": {
+            "definition": "Use a witty tone: dry humor, wordplay, and light absurdity woven into the substance — the wit serves the content rather than distracting from it.",
+            "heuristics": [
+                "be witty",
+                "make it funny",
+                "add humor",
+                "dry humor",
+                "witty",
+                "playful",
+                "clever",
+                "with jokes",
+                "humorous",
+                "make me laugh",
+            ],
+            "distinctions": [
+                {
+                    "token": "casually",
+                    "note": "wittily = humor and wordplay woven in; casually = informal register without the comedic intent",
+                },
+                {
+                    "token": "as enthusiast",
+                    "note": "wittily = dry wit, often understated; as enthusiast = high energy excitement without the comedic register",
+                },
+            ],
+        },
     },
     "audience": {
         "to managers": {
@@ -820,6 +873,43 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 {
                     "token": "to Kent Beck",
                     "note": "to XP enthusiast = general XP community; to Kent Beck = specifically Kent Beck's philosophy and style",
+                },
+            ],
+        },
+        "to 5 year old": {
+            "definition": "Address a five-year-old: simple words, concrete analogies, no assumed knowledge, and genuine delight in the subject.",
+            "heuristics": [
+                "explain like I'm five",
+                "ELI5",
+                "simple explanation",
+                "for a child",
+                "five year old",
+                "no jargon",
+                "explain simply",
+                "dumbed down",
+            ],
+            "distinctions": [
+                {
+                    "token": "to junior engineer",
+                    "note": "to 5 year old = no assumed knowledge, child-level vocabulary and analogies; to junior engineer = technical foundation present, needs scaffolding not simplification",
+                },
+            ],
+        },
+        "to rubber duck": {
+            "definition": "Address a rubber duck: explain the subject aloud as if to an inanimate listener that cannot respond, surfacing hidden assumptions through the act of narration.",
+            "heuristics": [
+                "rubber duck debugging",
+                "explain out loud",
+                "talk through it",
+                "rubber duck",
+                "narrate the problem",
+                "explain to yourself",
+                "think aloud",
+            ],
+            "distinctions": [
+                {
+                    "token": "to 5 year old",
+                    "note": "to rubber duck = narration for the purpose of surfacing assumptions, listener is passive; to 5 year old = simplification for a real audience's comprehension",
                 },
             ],
         },
@@ -1078,6 +1168,89 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 {
                     "token": "as scientist",
                     "note": "as storyteller = invents and imagines freely; as scientist = evidence-first, grounded in rigor — avoid storyteller for factual or analytical tasks",
+                },
+            ],
+        },
+        "as Yoda": {
+            "definition": "Channel Yoda's inverted syntax and aphoristic wisdom: short declarative reversals, patience with difficulty, and insight that arrives sideways through unusual word order.",
+            "heuristics": [
+                "speak like Yoda",
+                "Yoda voice",
+                "inverted syntax",
+                "Star Wars",
+                "wise and backwards",
+                "do or do not",
+            ],
+            "distinctions": [
+                {
+                    "token": "as teacher",
+                    "note": "as Yoda = inverted syntax and aphoristic indirection; as teacher = structured pedagogy without stylistic inversion",
+                },
+                {
+                    "token": "as storyteller",
+                    "note": "as Yoda = specific syntactic style and brief aphorisms; as storyteller = extended narrative and metaphor without the syntactic constraint",
+                },
+            ],
+        },
+        "as Buddha": {
+            "definition": "Speak as Buddha: reframe problems as states of mind, use paradox and non-attachment, and point toward the question beneath the question — calm, aphoristic, and unhurried.",
+            "heuristics": [
+                "speak like Buddha",
+                "Buddhist perspective",
+                "philosophical reframing",
+                "non-attachment",
+                "koan",
+                "zen",
+                "mindful framing",
+                "wisdom tradition",
+            ],
+            "distinctions": [
+                {
+                    "token": "as teacher",
+                    "note": "as Buddha = reframes toward the question beneath the question; as teacher = scaffolds toward an answer",
+                },
+                {
+                    "token": "gently",
+                    "note": "as Buddha = philosophical reframing and paradox; gently = tone softening for difficult subjects without rhetorical persona",
+                },
+            ],
+        },
+        "as pirate": {
+            "definition": "Speak as a pirate: nautical metaphors, irreverent swagger, and enthusiasm for the plunder of ideas — arrr-energy throughout.",
+            "heuristics": [
+                "speak like a pirate",
+                "pirate voice",
+                "talk like a pirate",
+                "nautical",
+                "swashbuckling",
+                "arrr",
+            ],
+            "distinctions": [
+                {
+                    "token": "as enthusiast",
+                    "note": "as pirate = nautical register and irreverent swagger; as enthusiast = unbounded excitement without the thematic pirate frame",
+                },
+            ],
+        },
+        "as enthusiast": {
+            "definition": "Speak with maximum enthusiasm: everything is exciting, possibilities are boundless, and energy is contagious — exclamation points earned by genuine excitement.",
+            "heuristics": [
+                "be enthusiastic",
+                "excited tone",
+                "hype it up",
+                "maximum energy",
+                "make it exciting",
+                "enthusiastic",
+                "pumped up",
+            ],
+            "distinctions": [
+                {
+                    "token": "wittily",
+                    "note": "as enthusiast = high energy and excitement; wittily = dry humor and wordplay, often low-key rather than high-energy",
+                },
+                {
+                    "token": "casually",
+                    "note": "as enthusiast = maximum energy and excitement; casually = relaxed register without the intensity",
                 },
             ],
         },

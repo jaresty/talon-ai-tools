@@ -120,6 +120,7 @@ if bootstrap is not None:
                     "directly",
                     "gently",
                     "kindly",
+                    "wittily",
                 },
             )
 

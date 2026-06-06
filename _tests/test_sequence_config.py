@@ -112,12 +112,12 @@ class TestSequenceConfigStructure(unittest.TestCase):
         self.assertTrue(any("fan_out" in e or "join" in e for e in errors),
                         f"Expected error about missing fan_out/join, got: {errors}")
 
-    # Behavior: parallel-eval has a dispatch step
+    # Behavior: frame-eval has a dispatch step
     def test_parallel_eval_has_dispatch_step(self):
-        seq = self.sequences.get("parallel-eval")
-        self.assertIsNotNone(seq, "parallel-eval sequence must exist")
+        seq = self.sequences.get("frame-eval")
+        self.assertIsNotNone(seq, "frame-eval sequence must exist")
         dispatch_steps = [s for s in seq["steps"] if s.get("type") == "dispatch"]
-        self.assertGreater(len(dispatch_steps), 0, "parallel-eval must have at least one dispatch step")
+        self.assertGreater(len(dispatch_steps), 0, "frame-eval must have at least one dispatch step")
 
     # Behavior: cycle-mode sequences have a non-empty stop_when predicate
     def test_cycle_sequences_have_stop_when(self):

@@ -104,8 +104,10 @@ if bootstrap is not None:
                         # Skip key=value overrides like scope=act or completeness=deep
                         if "=" in word:
                             continue
+                        # Strip optional axis: qualifier (e.g. method:hollow → hollow)
+                        token = word.split(":")[-1] if ":" in word else word
                         self.assertIn(
-                            word, valid_tokens,
+                            token, valid_tokens,
                             f"pack '{pack.name}': token '{word}' not found in registry — "
                             f"deprecated or misspelled? Command: {pack.command!r}"
                         )

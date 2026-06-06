@@ -439,6 +439,46 @@ class FormAxisMetadataTests(unittest.TestCase):
             "questions", distinction_tokens, "socratic must distinguish from questions"
         )
 
+    def test_quiz_definition_encodes_information_gap_root_criterion(self):
+        """quiz definition must encode root criterion: information gap before filling."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "information gap for the reader",
+            definition,
+            "quiz definition must name the root criterion: creating an information gap before filling it",
+        )
+
+    def test_quiz_definition_encodes_enumeration_instruction(self):
+        """quiz definition must instruct model to enumerate escape routes with named literal strings."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "enumerate every path",
+            definition,
+            "quiz definition must instruct model to enumerate escape routes before generating questions",
+        )
+
+    def test_quiz_definition_encodes_gap_reveal_structural_artifact(self):
+        """quiz definition must name a structural sentence type for gap-reveal (not a cognitive act)."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "gap-reveal sentence",
+            definition,
+            "quiz definition must name 'gap-reveal sentence' as a structural artifact, not a cognitive act",
+        )
+
+    def test_quiz_definition_encodes_association_structural_artifact(self):
+        """quiz definition must name a structural sentence type for association."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "association sentence",
+            definition,
+            "quiz definition must name 'association sentence' as a structural artifact",
+        )
+
 
 class MethodAxisMetadataTests(unittest.TestCase):
     """ADR-0155 T-8: method axis has structured metadata for all 99 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out)."""

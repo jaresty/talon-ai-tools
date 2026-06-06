@@ -491,9 +491,9 @@ func TestHelpLLMSequencesIncludesDispatchNote(t *testing.T) {
 
 // Behavior 23: `bar sequence show` renders the dispatch execution protocol inline for dispatch steps.
 func TestSequenceShowDispatchProtocolInline(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
-		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
 	}
 	checks := []string{
 		"[dispatch protocol — required]",
@@ -507,7 +507,7 @@ func TestSequenceShowDispatchProtocolInline(t *testing.T) {
 	}
 	for _, want := range checks {
 		if !strings.Contains(out, want) {
-			t.Errorf("bar sequence show parallel-eval missing dispatch protocol line %q:\n%s", want, out)
+			t.Errorf("bar sequence show frame-eval missing dispatch protocol line %q:\n%s", want, out)
 		}
 	}
 }
@@ -697,14 +697,14 @@ func TestFrameExploreDispatchUsesInner(t *testing.T) {
 	}
 }
 
-// Behavior 24: `bar help llm --section sequences` step summary for parallel-eval shows dispatch fan-out/join.
+// Behavior 24: `bar help llm --section sequences` step summary for frame-eval shows dispatch fan-out/join.
 func TestHelpLLMSequencesDispatchStepShowsFanOut(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
 	if code != 0 {
 		t.Fatalf("bar help llm --section sequences exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "dispatch[enumerate→all]") {
-		t.Errorf("expected parallel-eval step summary to contain \"dispatch[enumerate→all]\":\n%s", out)
+		t.Errorf("expected frame-eval step summary to contain \"dispatch[enumerate→all]\":\n%s", out)
 	}
 }
 
@@ -914,9 +914,9 @@ func TestFrameDebugInnerPrepMentionsFrameAndHypothesis(t *testing.T) {
 
 // Behavior 42: dispatch protocol point 4 tells spawning agents not to batch items.
 func TestSequenceShowDispatchMentionsBarSkills(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
-		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "subagent_type: general-purpose") {
 		t.Errorf("dispatch protocol point 4 must specify subagent_type: general-purpose:\n%s", out)
@@ -925,9 +925,9 @@ func TestSequenceShowDispatchMentionsBarSkills(t *testing.T) {
 
 // Behavior 43: dispatch protocol clause 1 is allow-list (names what orchestrator does, not what it must not do).
 func TestSequenceShowDispatchClause1IsAllowList(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
-		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
 	}
 	if strings.Contains(out, "Do NOT run bar build for this step") {
 		t.Errorf("dispatch protocol clause 1 must not be a deny-list; found deny-list form:\n%s", out)
@@ -939,9 +939,9 @@ func TestSequenceShowDispatchClause1IsAllowList(t *testing.T) {
 
 // Behavior 44: dispatch protocol includes explicit bar command instruction for spawned agents.
 func TestSequenceShowDispatchAgentBarCommand(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
-		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "Each agent receives the step token string") {
 		t.Errorf("dispatch protocol must contain 'Each agent receives the step token string' instruction:\n%s", out)
@@ -950,9 +950,9 @@ func TestSequenceShowDispatchAgentBarCommand(t *testing.T) {
 
 // Behavior 45: dispatch protocol point 5 names the bar build command form with step token string.
 func TestSequenceShowDispatchPoint5TraceabilityClause(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
-		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "bar build <step-token-string>") {
 		t.Errorf("dispatch protocol point 5 must name 'bar build <step-token-string>' command form:\n%s", out)
@@ -962,9 +962,9 @@ func TestSequenceShowDispatchPoint5TraceabilityClause(t *testing.T) {
 // Behavior 91: dispatch protocol includes pre-dispatch agent config gate (Criterion G).
 // Before fanning out, the orchestrator must run bar build ... agent and include the output in each subagent prompt.
 func TestDispatchProtocolPreAgentConfigGate(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
-		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "[pre-dispatch agent config gate — required]") {
 		t.Errorf("dispatch protocol must contain '[pre-dispatch agent config gate — required]' block:\n%s", out)
@@ -1047,7 +1047,7 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 
 // Behavior 77: dispatch protocol point 4 references pre-dispatch derived config (applies to all dispatch steps).
 func TestDispatchProtocolPoint4ContainsBarAgent(t *testing.T) {
-	for _, seq := range []string{"frame-debug", "parallel-eval"} {
+	for _, seq := range []string{"frame-debug", "frame-eval"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
@@ -1283,9 +1283,9 @@ func TestFrameExplorePrepRequiresRunnableExperiment(t *testing.T) {
 
 // Behavior 56: dispatch protocol point 5 tells orchestrator to construct and include a literal bar build command.
 func TestDispatchProtocolLiteralBarCommand(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
-		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "bar build <step-token-string>") {
 		t.Errorf("dispatch protocol point 5 must include literal command template 'bar build <step-token-string>':\n%s", out)
@@ -1314,9 +1314,9 @@ func TestBarAgentNoDiscovery(t *testing.T) {
 
 // Behavior 55: dispatch protocol point 5 requires agents to return a Derivation block and orchestrator to preserve all.
 func TestDispatchProtocolPreservesDerivationBlocks(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
-		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
 	}
 	if !strings.Contains(out, "## Derivation") {
 		t.Errorf("dispatch protocol point 5 must require agents to return a '## Derivation' block:\n%s", out)
@@ -1402,9 +1402,9 @@ func TestPrepVetPromptHintsHaveTaskPrefix(t *testing.T) {
 
 // Behavior 78: non-inner dispatch point 5 tells agents to run bar build with the step token string directly.
 func TestDispatchPoint5TokenString(t *testing.T) {
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "parallel-eval"})
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
-		t.Fatalf("bar sequence show parallel-eval exited %d: %s", code, stderr)
+		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
 	}
 	if strings.Contains(out, "The orchestrator must construct and include this exact command") {
 		t.Errorf("dispatch protocol point 5 must not contain orchestrator-constructs-literal-command prescription:\n%s", out)
@@ -1476,7 +1476,7 @@ func TestInnerCycleProtocolBlock(t *testing.T) {
 
 // Behavior 86: all prism-step sequences prohibit backtick-wrapped text and specific tool invocations in frame descriptions.
 func TestFrameEnumerationDepthProhibition(t *testing.T) {
-	for _, seq := range []string{"frame-explore", "frame-debug", "parallel-eval", "frame-synthesis", "frame-work", "frame-orbit"} {
+	for _, seq := range []string{"frame-explore", "frame-debug", "frame-eval", "frame-synthesis", "frame-work", "frame-orbit"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
@@ -1723,6 +1723,34 @@ func TestFrameSynthesisFinalStepUsesProbeConverge(t *testing.T) {
 	}
 	if !strings.Contains(out, "probe method:converge") {
 		t.Errorf("frame-synthesis final step must use 'probe method:converge':\n%s", out)
+	}
+}
+
+// Behavior 92: all frame sequences have an optional terminal form:quiz step for knowledge transfer.
+func TestFrameSequencesHaveOptionalQuizStep(t *testing.T) {
+	sequences := []string{"frame-synthesis", "frame-explore", "frame-debug", "frame-work", "frame-eval"}
+	for _, seq := range sequences {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "form:quiz") {
+			t.Errorf("sequence %s must have a terminal form:quiz step for knowledge transfer:\n%s", seq, out)
+		}
+		if !strings.Contains(out, "optional") {
+			t.Errorf("sequence %s quiz step must be marked optional:\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 93: frame-eval is renamed to frame-eval.
+func TestFrameEvalSequenceExists(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "frame-eval") {
+		t.Errorf("frame-eval sequence must exist and render its name:\n%s", out)
 	}
 }
 

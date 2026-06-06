@@ -208,7 +208,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
-    "parallel-eval": {
+    "frame-eval": {
         "description": "Enumerate independent evaluation frames, execute each in isolation, then converge on a recommendation.",
         "example": "Evaluating a proposed API design from the perspectives of a security engineer, a frontend consumer, and a platform operator — each independently, with no shared priors.",
         "heuristics": ["evaluate independently", "multiple independent perspectives", "parallel evaluation", "isolated ideation", "spin up subagents", "evaluate from each angle separately", "no shared context between evaluators", "independent assessments then merge"],
@@ -237,6 +237,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "role": "synthesis",
                 "prompt_hint": "Use this step to narrow from the independent frame results to a recommendation, naming what each frame contributed and what was excluded.",
             },
+            {
+                "token": "show form:quiz",
+                "role": "knowledge transfer",
+                "optional": True,
+                "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked.",
+            },
         ],
     },
     "frame-synthesis": {
@@ -262,6 +268,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "token": "probe method:converge",
                 "role": "cross-frame synthesis",
                 "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to synthesize across frame summaries: what each frame revealed, where frames agree or diverge, and what the combined reading supports as a conclusion or recommendation.",
+            },
+            {
+                "token": "show form:quiz",
+                "role": "knowledge transfer",
+                "optional": True,
+                "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked.",
             },
         ],
     },
@@ -352,6 +364,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "role": "cross-frame synthesis",
                 "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to synthesize across frames: what each frame's experiment cycles revealed, where frames agree or diverge, and what the combined evidence supports as a conclusion.",
             },
+            {
+                "token": "show form:quiz",
+                "role": "knowledge transfer",
+                "optional": True,
+                "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked.",
+            },
         ],
     },
     "frame-debug": {
@@ -399,6 +417,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "role": "resolution explanation",
                 "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to explain the winning fix: what hypothesis was confirmed, what the fix was, what evidence verified it, and why the other hypotheses were not the cause (if known).",
             },
+            {
+                "token": "show form:quiz",
+                "role": "knowledge transfer",
+                "optional": True,
+                "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked.",
+            },
         ],
     },
     "frame-work": {
@@ -444,6 +468,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "token": "pick method:converge",
                 "role": "synthesis",
                 "prompt_hint": "Summarize what was built across all frames, which falsify checks fired during stress-testing, any gaps that require follow-up, and the overall readiness of the merged work.",
+            },
+            {
+                "token": "show form:quiz",
+                "role": "knowledge transfer",
+                "optional": True,
+                "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked.",
             },
         ],
     },

@@ -117342,7 +117342,7 @@
         }
       ]
     },
-    "parallel-eval": {
+    "frame-eval": {
       "description": "Enumerate independent evaluation frames, execute each in isolation, then converge on a recommendation.",
       "example": "Evaluating a proposed API design from the perspectives of a security engineer, a frontend consumer, and a platform operator — each independently, with no shared priors.",
       "heuristics": [
@@ -117379,6 +117379,12 @@
           "token": "pick method:converge",
           "role": "synthesis",
           "prompt_hint": "Use this step to narrow from the independent frame results to a recommendation, naming what each frame contributed and what was excluded."
+        },
+        {
+          "token": "show form:quiz",
+          "role": "knowledge transfer",
+          "optional": true,
+          "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked."
         }
       ]
     },
@@ -117413,6 +117419,12 @@
           "token": "probe method:converge",
           "role": "cross-frame synthesis",
           "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to synthesize across frame summaries: what each frame revealed, where frames agree or diverge, and what the combined reading supports as a conclusion or recommendation."
+        },
+        {
+          "token": "show form:quiz",
+          "role": "knowledge transfer",
+          "optional": true,
+          "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked."
         }
       ]
     },
@@ -117523,6 +117535,12 @@
           "token": "probe method:converge",
           "role": "cross-frame synthesis",
           "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to synthesize across frames: what each frame's experiment cycles revealed, where frames agree or diverge, and what the combined evidence supports as a conclusion."
+        },
+        {
+          "token": "show form:quiz",
+          "role": "knowledge transfer",
+          "optional": true,
+          "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked."
         }
       ]
     },
@@ -117577,6 +117595,12 @@
           "token": "pick method:converge",
           "role": "resolution explanation",
           "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to explain the winning fix: what hypothesis was confirmed, what the fix was, what evidence verified it, and why the other hypotheses were not the cause (if known)."
+        },
+        {
+          "token": "show form:quiz",
+          "role": "knowledge transfer",
+          "optional": true,
+          "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked."
         }
       ]
     },
@@ -117631,6 +117655,12 @@
           "token": "pick method:converge",
           "role": "synthesis",
           "prompt_hint": "Summarize what was built across all frames, which falsify checks fired during stress-testing, any gaps that require follow-up, and the overall readiness of the merged work."
+        },
+        {
+          "token": "show form:quiz",
+          "role": "knowledge transfer",
+          "optional": true,
+          "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked."
         }
       ]
     },
@@ -118212,7 +118242,7 @@
     "slugs": "9ded63c7daa070f6e0c2f48de16c5b9019fa327f0d54b72d7a612c47a6f57536",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "3966245d962d6c1f32e6e0867828b5fac133f92d8f50868433ec0f03755f3f94",
+    "sequences": "ed04bb0769883b4db16b38d8e413760bad2934ecb7e49cd131e8e15b97d63762",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

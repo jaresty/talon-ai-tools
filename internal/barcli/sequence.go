@@ -25,6 +25,7 @@ type SequenceStep struct {
 	Role              string         `json:"role"`
 	PromptHint        string         `json:"prompt_hint,omitempty"`
 	RequiresUserInput bool           `json:"requires_user_input,omitempty"` // ADR-0226
+	Optional          bool           `json:"optional,omitempty"`            // step may be skipped; renders [optional] marker
 	Type              string         `json:"type,omitempty"`                // ADR-0238: "prompt" | "dispatch"
 	FanOut            string         `json:"fan_out,omitempty"`             // ADR-0238: "replicate" | "enumerate"
 	Join              string         `json:"join,omitempty"`                // ADR-0238: "all" | "first" | "merge"
@@ -137,6 +138,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 			Role              string         `json:"role"`
 			PromptHint        string         `json:"prompt_hint,omitempty"`
 			RequiresUserInput bool           `json:"requires_user_input,omitempty"`
+			Optional          bool           `json:"optional,omitempty"`
 			Type              string         `json:"type,omitempty"`
 			FanOut            string         `json:"fan_out,omitempty"`
 			Join              string         `json:"join,omitempty"`
@@ -153,7 +155,7 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		}
 		steps := make([]jsonStep, len(seq.Steps))
 		for i, s := range seq.Steps {
-			steps[i] = jsonStep{Token: s.Token, Role: s.Role, PromptHint: s.PromptHint, RequiresUserInput: s.RequiresUserInput, Type: s.Type, FanOut: s.FanOut, Join: s.Join, Isolation: s.Isolation, Inner: s.Inner}
+			steps[i] = jsonStep{Token: s.Token, Role: s.Role, PromptHint: s.PromptHint, RequiresUserInput: s.RequiresUserInput, Optional: s.Optional, Type: s.Type, FanOut: s.FanOut, Join: s.Join, Isolation: s.Isolation, Inner: s.Inner}
 		}
 		out := jsonSeq{Name: name, Description: seq.Description, Example: seq.Example, Mode: seq.Mode, StopWhen: seq.StopWhen, Steps: steps}
 		enc := json.NewEncoder(stdout)
@@ -191,6 +193,9 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		marker := "  "
 		if step.RequiresUserInput {
 			marker = "⏸ "
+		}
+		if step.Optional {
+			marker = "? "
 		}
 		tokenCol := step.Token
 		if step.Type == "dispatch" {
@@ -235,6 +240,9 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		}
 		if step.Type == "dispatch" {
 			writeDispatchStepBlock(stdout, step, i+1, g)
+		}
+		if step.Optional {
+			fmt.Fprintf(stdout, "          [optional — skip this step if knowledge transfer is not needed for this run]\n")
 		}
 		if step.RequiresUserInput {
 			fmt.Fprintf(stdout, "          [handoff protocol — required]\n")

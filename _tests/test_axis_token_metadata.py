@@ -440,23 +440,23 @@ class FormAxisMetadataTests(unittest.TestCase):
         )
 
     def test_quiz_definition_encodes_information_gap_root_criterion(self):
-        """quiz definition must encode root criterion: information gap before filling."""
+        """quiz definition must encode root criterion: genuine retrieval demand requiring explicit commitment."""
         quiz = self.meta.get("quiz", {})
         definition = quiz.get("definition", "")
         self.assertIn(
-            "information gap for the reader",
+            "genuine retrieval demand for every concept",
             definition,
-            "quiz definition must name the root criterion: creating an information gap before filling it",
+            "quiz definition must name the root criterion: genuine retrieval demand requiring reader commitment",
         )
 
     def test_quiz_definition_encodes_enumeration_instruction(self):
-        """quiz definition must instruct model to enumerate escape routes with named literal strings."""
+        """quiz definition must instruct model to enumerate named structural escape-route paths."""
         quiz = self.meta.get("quiz", {})
         definition = quiz.get("definition", "")
         self.assertIn(
-            "enumerate every path",
+            "enumerate every named structural path",
             definition,
-            "quiz definition must instruct model to enumerate escape routes before generating questions",
+            "quiz definition must instruct model to enumerate named structural paths before generating questions",
         )
 
     def test_quiz_definition_encodes_gap_reveal_structural_artifact(self):
@@ -500,13 +500,13 @@ class FormAxisMetadataTests(unittest.TestCase):
         )
 
     def test_quiz_definition_encodes_termination_criterion(self):
-        """quiz definition must encode termination: all ✓ markers present or explicit decline."""
+        """quiz definition must encode termination: every concept has either ✓ or gap-reveal, or explicit decline."""
         quiz = self.meta.get("quiz", {})
         definition = quiz.get("definition", "")
         self.assertIn(
-            "every concept in the opening list has a",
+            "every concept in the opening list has either a",
             definition,
-            "quiz definition must name the termination criterion: all concepts confirmed in transcript",
+            "quiz definition must name the dual termination criterion: ✓ marker or gap-reveal sentence per concept",
         )
 
     def test_quiz_definition_encodes_terminal_declaration(self):
@@ -517,6 +517,46 @@ class FormAxisMetadataTests(unittest.TestCase):
             "terminal declaration listing all confirmed concepts",
             definition,
             "quiz definition must require a terminal declaration as a closing structural artifact",
+        )
+
+    def test_quiz_definition_encodes_predict_line(self):
+        """quiz definition must name Predict: as the structural commitment artifact (GP2 fix)."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "Predict: line",
+            definition,
+            "quiz definition must name 'Predict: line' as the structural commitment point artifact",
+        )
+
+    def test_quiz_definition_encodes_mutual_exclusion(self):
+        """quiz definition must use 'no gap-reveal sentence was written for this concept' not 'was needed' (GP3 fix)."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "no gap-reveal sentence was written for this concept",
+            definition,
+            "quiz definition must name the mutual-exclusion condition using structural language, not cognitive 'needed'",
+        )
+
+    def test_quiz_definition_encodes_dual_termination_path(self):
+        """quiz definition must allow termination when every concept has either ✓ or a gap-reveal (GP3 fix)."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "either a '✓ [concept name]' marker or a gap-reveal sentence",
+            definition,
+            "quiz definition must name both termination paths: ✓ marker OR gap-reveal sentence per concept",
+        )
+
+    def test_quiz_definition_encodes_first_concept_exemption(self):
+        """quiz definition must specify first-concept association behavior (Agent 3 failure fix)."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "for the first concept, name the first concept whose understanding it enables",
+            definition,
+            "quiz definition must handle the first concept's association sentence — no prior concept exists",
         )
 
 

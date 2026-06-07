@@ -215,14 +215,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "prep": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code "
         "structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
-        "quiz": "The response creates an information gap for the reader before filling it — each concept is preceded by a question that names what is unknown without revealing the answer, followed "
-        "by the explanation only after the reader's commitment point. Before generating any question, name the concepts to be covered as a numbered list, then enumerate every path by which "
-        "a question could appear in the transcript without creating a genuine retrieval demand (question whose phrasing reveals the answer; question immediately followed by its answer with "
-        "no structural separation; question that recaps rather than elicits); for each path, name the literal string in the transcript that closes it; proceed only when no open path "
-        "remains. After each answer: a gap-reveal sentence comparing what the reader would likely have recalled against what is correct or complete; then an association sentence naming a "
-        "concept from earlier in the transcript and its relationship to the current gap; then, if no gap-reveal sentence was needed, emit '✓ [concept name]' to mark that concept confirmed. "
-        "Continue until every concept in the opening list has a '✓ [concept name]' marker in the transcript, or the user explicitly declines to continue; then close with a terminal "
-        "declaration listing all confirmed concepts. With an output-exclusive channel, structure the output as a quiz document with each question immediately before its answer per topic.",
+        "quiz": "The response creates genuine retrieval demand for every concept by requiring the reader to commit to an explicit expectation before the answer is available. Before generating any "
+        "question, name the concepts to be covered as a numbered list, then enumerate every named structural path by which a question could appear without creating genuine retrieval demand "
+        "— path (a): question phrasing reveals the answer; path (b): question is immediately followed by its answer with no structural gap; path (c): question recaps rather than elicits — "
+        "for each named path, name the literal string in the transcript that closes it; proceed only when no open path remains. For each concept: write the question, then require a "
+        "Predict: line (the reader names their expectation before the answer is shown); then write the answer. After each answer: a gap-reveal sentence comparing what the Predict: line "
+        "stated against what is correct or complete; then an association sentence naming a concept from earlier in the transcript (for the first concept, name the first concept whose "
+        "understanding it enables) and its relationship to the current concept. If a Predict: line is present and no gap-reveal sentence was written for this concept, emit '✓ [concept "
+        "name]' to mark that concept confirmed. Continue until every concept in the opening list has either a '✓ [concept name]' marker or a gap-reveal sentence in the transcript, or the "
+        "user explicitly declines to continue; then close with a terminal declaration listing all confirmed concepts. With an output-exclusive channel, structure the output as a quiz "
+        "document with each question immediately before its answer per topic.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "

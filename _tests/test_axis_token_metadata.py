@@ -629,6 +629,16 @@ class FormAxisMetadataTests(unittest.TestCase):
             "quiz definition must require 'Hook:' line naming an opening-list concept not yet covered",
         )
 
+    def test_quiz_definition_encodes_hook_quotes_phrase_from_answer(self):
+        """Hook: clause must require quoting a specific phrase from the current answer, not just naming a concept."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "quoting a specific phrase from the current answer",
+            definition,
+            "Hook: clause must require quoting a specific phrase from the current answer to prevent inert concept announcements",
+        )
+
 
 class MethodAxisMetadataTests(unittest.TestCase):
     """ADR-0155 T-8: method axis has structured metadata for all 99 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out)."""

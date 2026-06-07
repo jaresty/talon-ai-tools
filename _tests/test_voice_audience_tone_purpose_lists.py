@@ -129,6 +129,26 @@ if bootstrap is not None:
                 "as wild definition must name the 'Voice:' literal string as the chosen-figure line",
             )
 
+        def test_as_wild_definition_encodes_register_line(self) -> None:
+            """as wild definition must require a Register: line naming the figure's specific verbal property."""
+            from lib.personaConfig import PERSONA_TOKEN_METADATA
+            definition = PERSONA_TOKEN_METADATA.get("voice", {}).get("as wild", {}).get("definition", "")
+            self.assertIn(
+                "Register:",
+                definition,
+                "as wild definition must name the 'Register:' literal string as the voice-enactment anchor",
+            )
+
+        def test_as_wild_main_definition_encodes_register_line(self) -> None:
+            """as wild PERSONA_KEY_TO_VALUE definition must include Register: line (GP1 fix)."""
+            from lib.personaConfig import PERSONA_KEY_TO_VALUE
+            definition = PERSONA_KEY_TO_VALUE.get("voice", {}).get("as wild", "")
+            self.assertIn(
+                "Register:",
+                definition,
+                "as wild main definition must require 'Register:' line as the third structural artifact",
+            )
+
         def test_model_tone_list_trimmed_and_neutral_is_default(self) -> None:
             keys = set(self.persona_map["tone"].keys())
 

@@ -554,9 +554,29 @@ class FormAxisMetadataTests(unittest.TestCase):
         quiz = self.meta.get("quiz", {})
         definition = quiz.get("definition", "")
         self.assertIn(
-            "for the first concept, name the first concept whose understanding it enables",
+            "name the opening-list number of the first concept whose understanding it enables",
             definition,
             "quiz definition must handle the first concept's association sentence — no prior concept exists",
+        )
+
+    def test_quiz_definition_encodes_association_tracking_prompt(self):
+        """quiz definition must include tracking prompt before association sentence (Agent 2 failure fix)."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "name the numbers already used in prior association sentences",
+            definition,
+            "quiz definition must include tracking prompt to prevent number reuse in association sentences",
+        )
+
+    def test_quiz_main_definition_encodes_association_tracking_prompt(self):
+        """quiz AXIS_KEY_TO_VALUE definition must include association tracking prompt."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "name the numbers already used in prior association sentences",
+            definition,
+            "quiz main definition must include tracking prompt to prevent number reuse in association sentences",
         )
 
 

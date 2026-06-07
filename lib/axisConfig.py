@@ -220,11 +220,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "— path (a): question phrasing reveals the answer; path (b): question is immediately followed by its answer with no structural gap; path (c): question recaps rather than elicits — "
         "for each named path, name the literal string in the transcript that closes it; proceed only when no open path remains. For each concept: write the question, then require a "
         "Predict: line (the reader names their expectation before the answer is shown); then write the answer. After each answer: a gap-reveal sentence comparing what the Predict: line "
-        "stated against what is correct or complete; then an association sentence naming a concept from earlier in the transcript (for the first concept, name the first concept whose "
-        "understanding it enables) and its relationship to the current concept. If a Predict: line is present and no gap-reveal sentence was written for this concept, emit '✓ [concept "
-        "name]' to mark that concept confirmed. Continue until every concept in the opening list has either a '✓ [concept name]' marker or a gap-reveal sentence in the transcript, or the "
-        "user explicitly declines to continue; then close with a terminal declaration listing all confirmed concepts. With an output-exclusive channel, structure the output as a quiz "
-        "document with each question immediately before its answer per topic.",
+        "stated against what is correct or complete; then an association sentence — before writing it, name the numbers already used in prior association sentences — naming the "
+        "opening-list number of a prior concept whose number has not appeared in any earlier association sentence in this quiz, and stating that concept's relationship to the current "
+        "concept (for the first concept, name the opening-list number of the first concept whose understanding it enables). If a Predict: line is present and no gap-reveal sentence was "
+        "written for this concept, emit '✓ [concept name]' to mark that concept confirmed. Continue until every concept in the opening list has either a '✓ [concept name]' marker or a "
+        "gap-reveal sentence in the transcript, or the user explicitly declines to continue; then close with a terminal declaration listing all confirmed concepts. With an output-exclusive "
+        "channel, structure the output as a quiz document with each question immediately before its answer per topic.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "

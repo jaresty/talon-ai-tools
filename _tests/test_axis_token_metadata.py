@@ -479,6 +479,46 @@ class FormAxisMetadataTests(unittest.TestCase):
             "quiz definition must name 'association sentence' as a structural artifact",
         )
 
+    def test_quiz_definition_encodes_concept_list(self):
+        """quiz definition must require pre-declaring a numbered concept list before the first question."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "name the concepts to be covered as a numbered list",
+            definition,
+            "quiz definition must require enumerating concepts as a named list before the first question",
+        )
+
+    def test_quiz_definition_encodes_confirmation_marker(self):
+        """quiz definition must name the structural confirmation marker string."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "✓ [concept name]",
+            definition,
+            "quiz definition must name '✓ [concept name]' as the addressable confirmation marker",
+        )
+
+    def test_quiz_definition_encodes_termination_criterion(self):
+        """quiz definition must encode termination: all ✓ markers present or explicit decline."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "every concept in the opening list has a",
+            definition,
+            "quiz definition must name the termination criterion: all concepts confirmed in transcript",
+        )
+
+    def test_quiz_definition_encodes_terminal_declaration(self):
+        """quiz definition must require a terminal declaration listing confirmed concepts."""
+        quiz = self.meta.get("quiz", {})
+        definition = quiz.get("definition", "")
+        self.assertIn(
+            "terminal declaration listing all confirmed concepts",
+            definition,
+            "quiz definition must require a terminal declaration as a closing structural artifact",
+        )
+
 
 class MethodAxisMetadataTests(unittest.TestCase):
     """ADR-0155 T-8: method axis has structured metadata for all 99 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out)."""

@@ -679,6 +679,26 @@ class FormAxisMetadataTests(unittest.TestCase):
             "quiz Hook: scoping must explicitly prohibit Hook: after the last concept's answer",
         )
 
+    def test_quiz_definition_encodes_goal_framing_cycle(self):
+        """quiz opening must state the goal as a prediction/reveal/hook cycle."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "the goal is a cycle where each prediction creates a gap to resolve",
+            definition,
+            "quiz definition must name the goal as a prediction/reveal/hook cycle",
+        )
+
+    def test_quiz_definition_encodes_hook_purpose_not_announcement(self):
+        """quiz definition must state Hook: opens the next gap rather than announcing the next concept."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "opens the next gap rather than announcing the next concept",
+            definition,
+            "quiz definition must state Hook: purpose as opening next gap, not announcing next concept",
+        )
+
 
 class MethodAxisMetadataTests(unittest.TestCase):
     """ADR-0155 T-8: method axis has structured metadata for all 99 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out)."""

@@ -530,13 +530,13 @@ class FormAxisMetadataTests(unittest.TestCase):
         )
 
     def test_quiz_definition_encodes_mutual_exclusion(self):
-        """quiz definition must use 'no gap-reveal sentence was written for this concept' not 'was needed' (GP3 fix)."""
+        """quiz ✓ trigger must use allow-list condition (complete/correct prediction), not deny-list 'no gap-reveal written'."""
         quiz = self.meta.get("quiz", {})
         definition = quiz.get("definition", "")
         self.assertIn(
-            "no gap-reveal sentence was written for this concept",
+            "write a gap-reveal sentence instead of",
             definition,
-            "quiz definition must name the mutual-exclusion condition using structural language, not cognitive 'needed'",
+            "quiz ✓ trigger must name the allow-list condition and explicitly redirect to gap-reveal when any gap exists",
         )
 
     def test_quiz_definition_encodes_dual_termination_path(self):
@@ -657,6 +657,26 @@ class FormAxisMetadataTests(unittest.TestCase):
             "Before writing any question, name the concept",
             definition,
             "quiz definition must require naming the Misconception/Why concept before the first question",
+        )
+
+    def test_quiz_definition_encodes_confirmation_marker_allowlist(self):
+        """✓ marker must use an allow-list condition (complete/correct prediction), not a deny-list trigger."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "only when the Predict: line states the complete and correct answer with no correction, addition, or nuance needed",
+            definition,
+            "quiz ✓ marker must fire on allow-list condition (complete/correct prediction), not deny-list ('no gap-reveal written')",
+        )
+
+    def test_quiz_definition_encodes_hook_last_concept_prohibition(self):
+        """Hook: scoping must include explicit prohibition after the last concept's answer."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "a Hook: line must not appear after the last concept's answer",
+            definition,
+            "quiz Hook: scoping must explicitly prohibit Hook: after the last concept's answer",
         )
 
 

@@ -62,7 +62,7 @@ PROMPT_REFERENCE_KEY: dict = {
         "Communication identity shaping expression, not reasoning. "
         "Applied after task and constraints are satisfied. "
         "For each active persona token, before the first sentence of prose, write a Style: line "
-        "naming the specific observable property that token produces in this response — "
+        "naming the specific verbal or linguistic property that token produces in this response — "
         "the property that would be absent from a response with no persona tokens active."
     ),
     "subject": (

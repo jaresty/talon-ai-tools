@@ -159,6 +159,16 @@ if bootstrap is not None:
                 "PROMPT_REFERENCE_KEY persona contract must contain 'Style:' instruction for observable property naming",
             )
 
+        def test_persona_contract_requires_verbal_linguistic_property(self) -> None:
+            """Style: instruction must require a verbal or linguistic property, not just any observable property."""
+            from lib.metaPromptConfig import PROMPT_REFERENCE_KEY
+            contract = PROMPT_REFERENCE_KEY.get("persona", "")
+            self.assertIn(
+                "verbal or linguistic property",
+                contract,
+                "PROMPT_REFERENCE_KEY persona contract must require 'verbal or linguistic property' in Style: instruction",
+            )
+
         def test_model_tone_list_trimmed_and_neutral_is_default(self) -> None:
             keys = set(self.persona_map["tone"].keys())
 

@@ -37,6 +37,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as Buddha": "The response speaks as Buddha, reframing problems as states of mind, using paradox and non-attachment, and pointing toward the question beneath the question.",
         "as pirate": "The response speaks as a pirate — nautical metaphors, irreverent swagger, and enthusiasm for plunder (of ideas).",
         "as enthusiast": "The response speaks with maximum enthusiasm — everything is exciting, possibilities are boundless, and energy is contagious.",
+        "as wild": "The response adopts the voice of a specific figure chosen for subject-relative surprise. Before the response content, write two lines: `Obvious: [the figure most associated with this subject]` and `Voice: [a different figure whose perspective is unexpected for this subject but illuminating]`. Then respond entirely in the chosen figure's voice, sustaining their characteristic register, concerns, and manner of reasoning throughout.",
     },
     "audience": {
         "to managers": "The response addresses managers, naming outcomes, risk, and staffing.",
@@ -96,6 +97,7 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "as Buddha": "Buddhist reframing",
         "as pirate": "Pirate swagger",
         "as enthusiast": "Maximum enthusiasm",
+        "as wild": "Surprising subject-relative voice",
     },
     "audience": {
         "to managers": "Outcome-focused for managers",
@@ -157,6 +159,7 @@ PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "as Buddha":             "Buddha voice",
         "as pirate":             "Pirate voice",
         "as enthusiast":         "Enthusiast voice",
+        "as wild":               "Wild voice",
     },
     "audience": {
         "to CEO":                 "CEO audience",
@@ -225,6 +228,7 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "as Buddha": "禅",
         "as pirate": "海",
         "as enthusiast": "熱",
+        "as wild": "野",
     },
     "audience": {
         "to managers": "監",
@@ -1251,6 +1255,28 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 {
                     "token": "casually",
                     "note": "as enthusiast = maximum energy and excitement; casually = relaxed register without the intensity",
+                },
+            ],
+        },
+        "as wild": {
+            "definition": "Before the response, write two lines: `Obvious: [the figure most associated with this subject]` and `Voice: [a different figure whose perspective is unexpected for this subject but illuminating]`. Then respond entirely in the chosen figure's voice, sustaining their characteristic register, concerns, and manner of reasoning throughout.",
+            "heuristics": [
+                "surprise me with the voice",
+                "unexpected voice",
+                "wild take",
+                "unusual perspective",
+                "pick a surprising voice",
+                "unconventional voice",
+                "random voice",
+            ],
+            "distinctions": [
+                {
+                    "token": "as enthusiast",
+                    "note": "as wild = selects a subject-relative surprising figure and responds in their voice; as enthusiast = fixed high-energy register regardless of subject",
+                },
+                {
+                    "token": "as storyteller",
+                    "note": "as wild = picks an unexpected real or fictional figure as the speaker; as storyteller = narrates through invented metaphor and scenario without a named persona",
                 },
             ],
         },

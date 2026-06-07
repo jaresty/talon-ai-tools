@@ -109,6 +109,26 @@ if bootstrap is not None:
                     f"Deprecated audience token {token!r} should have been removed",
                 )
 
+        def test_as_wild_definition_encodes_obvious_line(self) -> None:
+            """as wild definition must require an Obvious: line naming the rejected figure."""
+            from lib.personaConfig import PERSONA_TOKEN_METADATA
+            definition = PERSONA_TOKEN_METADATA.get("voice", {}).get("as wild", {}).get("definition", "")
+            self.assertIn(
+                "Obvious:",
+                definition,
+                "as wild definition must name the 'Obvious:' literal string as the rejected-figure line",
+            )
+
+        def test_as_wild_definition_encodes_voice_line(self) -> None:
+            """as wild definition must require a Voice: line naming the chosen figure."""
+            from lib.personaConfig import PERSONA_TOKEN_METADATA
+            definition = PERSONA_TOKEN_METADATA.get("voice", {}).get("as wild", {}).get("definition", "")
+            self.assertIn(
+                "Voice:",
+                definition,
+                "as wild definition must name the 'Voice:' literal string as the chosen-figure line",
+            )
+
         def test_model_tone_list_trimmed_and_neutral_is_default(self) -> None:
             keys = set(self.persona_map["tone"].keys())
 

@@ -1088,6 +1088,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
             "as scientist": "科",
             "as storyteller": "語",
             "as teacher": "教",
+            "as wild": "野",
             "as writer": "著",
         },
     },

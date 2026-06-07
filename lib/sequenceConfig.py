@@ -539,6 +539,62 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "token-rewrite": {
+        "description": "Audit a token definition for structural addressability gaps, derive a new root-criterion definition, verify behavioral compliance across diverse subjects in parallel, then implement with falsifiable tests.",
+        "example": "Rewriting the quiz token definition — characterizing why each clause was encoded the way it was, auditing for hollow clauses where cognitive acts replace structural artifacts, drafting a new definition with a self-applicable derivation instruction, verifying parallel haiku agents perform the enumeration step before any content, then implementing in axisConfig.py with tests that FAIL against the old definition.",
+        "heuristics": [
+            "rewrite this token",
+            "fix this token definition",
+            "this token definition is too long",
+            "hollow audit this token",
+            "token definition has escape routes",
+            "procedural token needs rewriting",
+            "simplify this token definition",
+            "token definition is a clause list",
+            "token definition grew by patching",
+        ],
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "show mean abduce",
+                "role": "root criterion characterization",
+                "prompt_hint": "Generate competing hypotheses for why each structural decision in the token definition was encoded the way it was — each hypothesis names the specific evidence it explains that the alternatives do not. Identify the minimal root criterion: the single generative assumption from which all current clauses derive. Name which clauses are derivable from that criterion and which require explicit encoding to close escape routes.",
+            },
+            {
+                "token": "show mean mint hollow",
+                "role": "assumption derivation and addressability audit",
+                "prompt_hint": "Construct the generative assumptions and trace each current clause to a specific assumption such that removing that assumption breaks the derivation. Then audit each clause for addressability: name the literal string distinguishing a compliant transcript from a non-compliant one without semantic inference. Flag clauses that name cognitive acts rather than structural artifacts. If two or more gaps share the same mechanism, state a single general principle rather than per-clause rewrites.",
+            },
+            {
+                "token": "make",
+                "role": "new definition drafting",
+                "prompt_hint": "Write the new definition starting with 'The response'. Encode only the root criterion and a derivation instruction. The derivation instruction must embed sufficient hollow logic for self-application: the model names the root criterion, enumerates every path a transcript could satisfy the criterion without actually governing it, names the literal string in the transcript that closes each path, and proceeds only when no open path remains. Each added clause must close a named gap from the audit step — name the gap before adding the clause. The definition may not be longer than the original unless each added word closes a named gap.",
+            },
+            {
+                "token": "make method:prism",
+                "role": "test subject enumeration",
+                "prompt_hint": "Enumerate exactly 3 diverse test subjects for the new token definition — choose subjects from different domains so that any domain-specific assumption baked into the definition would surface. Each subject is one sentence naming what the response should cover. The subjects must differ structurally, not just topically: one concrete procedural subject, one abstract conceptual subject, one interpersonal or social subject.",
+            },
+            {
+                "type": "dispatch",
+                "role": "parallel behavioral verification",
+                "fan_out": "enumerate",
+                "join": "all",
+                "isolation": True,
+                "prompt_hint": "Each agent receives the new token definition and one test subject. Apply the definition to the subject exactly as written — do not interpret or adjust. Return a labeled block containing: (1) whether the derivation phase appeared before any content (quote the first derivation line verbatim), (2) whether each named structural artifact from the definition appeared in the correct position (name the literal string and its position), (3) a pass or fail verdict with the specific string evidence for each requirement. A pass verdict requires every named structural artifact to be present and correctly positioned.",
+            },
+            {
+                "token": "pick method:converge",
+                "role": "verification synthesis",
+                "prompt_hint": "Synthesize the pass/fail verdicts from all agents. If any agent returned a fail verdict: name the specific structural artifact that was absent or mispositioned, and halt — the definition must be revised before proceeding to implementation. Do not proceed to the next step until all agents returned pass. If all passed: confirm with the specific string evidence from each agent and proceed.",
+            },
+            {
+                "token": "make witness ground gate falsify atomic",
+                "role": "implementation with falsifiable tests",
+                "prompt_hint": "Implement the new definition in the appropriate config file. Before any file-modifying call: write tests asserting the key literal strings from the definition (root criterion phrase, derivation instruction phrase, structural artifact names). Each test must FAIL against the old definition before the edit and PASS after. One file-modifying call per independently testable change.",
+            },
+        ],
+    },
 }
 
 

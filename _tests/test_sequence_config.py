@@ -112,6 +112,17 @@ class TestSequenceConfigStructure(unittest.TestCase):
         self.assertTrue(any("fan_out" in e or "join" in e for e in errors),
                         f"Expected error about missing fan_out/join, got: {errors}")
 
+    # Behavior: token-rewrite sequence exists
+    def test_token_rewrite_exists(self):
+        self.assertIn("token-rewrite", self.sequences, "token-rewrite sequence must exist")
+
+    # Behavior: token-rewrite has a dispatch step for parallel behavioral verification
+    def test_token_rewrite_has_dispatch_step(self):
+        seq = self.sequences.get("token-rewrite")
+        self.assertIsNotNone(seq, "token-rewrite sequence must exist")
+        dispatch_steps = [s for s in seq["steps"] if s.get("type") == "dispatch"]
+        self.assertGreater(len(dispatch_steps), 0, "token-rewrite must have a dispatch step for parallel behavioral verification")
+
     # Behavior: frame-eval has a dispatch step
     def test_parallel_eval_has_dispatch_step(self):
         seq = self.sequences.get("frame-eval")

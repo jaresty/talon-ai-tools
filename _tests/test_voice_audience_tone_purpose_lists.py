@@ -129,24 +129,34 @@ if bootstrap is not None:
                 "as wild definition must name the 'Voice:' literal string as the chosen-figure line",
             )
 
-        def test_as_wild_definition_encodes_register_line(self) -> None:
-            """as wild definition must require a Register: line naming the figure's specific verbal property."""
+        def test_as_wild_definition_does_not_encode_register_line(self) -> None:
+            """as wild PERSONA_TOKEN_METADATA definition must not contain Register: — Style: in metaprompt covers it."""
             from lib.personaConfig import PERSONA_TOKEN_METADATA
             definition = PERSONA_TOKEN_METADATA.get("voice", {}).get("as wild", {}).get("definition", "")
-            self.assertIn(
+            self.assertNotIn(
                 "Register:",
                 definition,
-                "as wild definition must name the 'Register:' literal string as the voice-enactment anchor",
+                "as wild metadata definition must not contain 'Register:' — Style: in metaprompt covers observable property naming",
             )
 
-        def test_as_wild_main_definition_encodes_register_line(self) -> None:
-            """as wild PERSONA_KEY_TO_VALUE definition must include Register: line (GP1 fix)."""
+        def test_as_wild_main_definition_does_not_encode_register_line(self) -> None:
+            """as wild PERSONA_KEY_TO_VALUE definition must not contain Register: — Style: in metaprompt covers it."""
             from lib.personaConfig import PERSONA_KEY_TO_VALUE
             definition = PERSONA_KEY_TO_VALUE.get("voice", {}).get("as wild", "")
-            self.assertIn(
+            self.assertNotIn(
                 "Register:",
                 definition,
-                "as wild main definition must require 'Register:' line as the third structural artifact",
+                "as wild main definition must not contain 'Register:' — Style: in metaprompt covers observable property naming",
+            )
+
+        def test_persona_contract_encodes_style_line_instruction(self) -> None:
+            """PROMPT_REFERENCE_KEY persona contract must include Style: instruction."""
+            from lib.metaPromptConfig import PROMPT_REFERENCE_KEY
+            contract = PROMPT_REFERENCE_KEY.get("persona", "")
+            self.assertIn(
+                "Style:",
+                contract,
+                "PROMPT_REFERENCE_KEY persona contract must contain 'Style:' instruction for observable property naming",
             )
 
         def test_model_tone_list_trimmed_and_neutral_is_default(self) -> None:

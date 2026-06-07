@@ -37,7 +37,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as Buddha": "The response speaks as Buddha, reframing problems as states of mind, using paradox and non-attachment, and pointing toward the question beneath the question.",
         "as pirate": "The response speaks as a pirate — nautical metaphors, irreverent swagger, and enthusiasm for plunder (of ideas).",
         "as enthusiast": "The response speaks with maximum enthusiasm — everything is exciting, possibilities are boundless, and energy is contagious.",
-        "as wild": "The response adopts the voice of a specific figure chosen for subject-relative surprise. Before the response content, write three lines: `Obvious: [the figure most associated with this subject]`; `Voice: [a different figure whose perspective is unexpected for this subject but illuminating]`; `Register: [one sentence naming the specific verbal or reasoning property this figure enacts — the property that would be absent from a generic analytical response on the same subject]`. Then respond entirely in the chosen figure's voice, ensuring the specific property named in the Register: line is present in the prose.",
+        "as wild": "The response adopts the voice of a specific figure chosen for subject-relative surprise. Before the response content, write two lines: `Obvious: [the figure most associated with this subject]`; `Voice: [a different figure whose perspective is unexpected for this subject but illuminating]`. Then respond entirely in the chosen figure's voice.",
     },
     "audience": {
         "to managers": "The response addresses managers, naming outcomes, risk, and staffing.",
@@ -1259,7 +1259,7 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
             ],
         },
         "as wild": {
-            "definition": "Before the response, write three lines: `Obvious: [the figure most associated with this subject]`; `Voice: [a different figure whose perspective is unexpected for this subject but illuminating]`; `Register: [one sentence naming the specific verbal or reasoning property this figure enacts — the property that would be absent from a generic analytical response on the same subject]`. Then respond entirely in the chosen figure's voice, ensuring the specific property named in the Register: line is present in the prose.",
+            "definition": "Before the response, write two lines: `Obvious: [the figure most associated with this subject]`; `Voice: [a different figure whose perspective is unexpected for this subject but illuminating]`. Then respond entirely in the chosen figure's voice.",
             "heuristics": [
                 "surprise me with the voice",
                 "unexpected voice",

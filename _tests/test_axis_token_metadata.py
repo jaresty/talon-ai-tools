@@ -554,7 +554,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         quiz = self.meta.get("quiz", {})
         definition = quiz.get("definition", "")
         self.assertIn(
-            "name the opening-list number of the first concept whose understanding it enables",
+            "naming the opening-list number and name of the first concept whose understanding it enables",
             definition,
             "quiz definition must handle the first concept's association sentence — no prior concept exists",
         )
@@ -577,6 +577,46 @@ class FormAxisMetadataTests(unittest.TestCase):
             "name the numbers already used in prior association sentences",
             definition,
             "quiz main definition must include tracking prompt to prevent number reuse in association sentences",
+        )
+
+    def test_quiz_definition_encodes_following_from_line(self):
+        """quiz definition must require Following from: line before each question after the first."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "Following from:",
+            definition,
+            "quiz definition must require 'Following from:' line to chain questions into a sequence",
+        )
+
+    def test_quiz_definition_encodes_misconception_line(self):
+        """quiz definition must require at least one Misconception: line per quiz."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "Misconception:",
+            definition,
+            "quiz definition must require 'Misconception:' line naming the specific incorrect belief",
+        )
+
+    def test_quiz_definition_encodes_why_line(self):
+        """quiz definition must require a Why: line paired with Misconception:."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "Why:",
+            definition,
+            "quiz definition must require 'Why:' line stating the structural reason the misconception is wrong",
+        )
+
+    def test_quiz_definition_encodes_association_name_format(self):
+        """quiz definition must require #N (Name): format for association sentences."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "#N (Name):",
+            definition,
+            "quiz definition must require '#N (Name):' format to include concept name alongside number",
         )
 
 

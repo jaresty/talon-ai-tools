@@ -639,6 +639,26 @@ class FormAxisMetadataTests(unittest.TestCase):
             "Hook: clause must require quoting a specific phrase from the current answer to prevent inert concept announcements",
         )
 
+    def test_quiz_definition_encodes_path_audit_per_question_check(self):
+        """Path audit must require per-question check strings for paths (a) and (c), not global pre-closing intentions."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "before each question",
+            definition,
+            "quiz path audit must require a per-question check before each question for paths (a) and (c)",
+        )
+
+    def test_quiz_definition_encodes_misconception_precommitment(self):
+        """Misconception/Why must be pre-committed before the first question to prevent silent omission."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "Before writing any question, name the concept",
+            definition,
+            "quiz definition must require naming the Misconception/Why concept before the first question",
+        )
+
 
 class MethodAxisMetadataTests(unittest.TestCase):
     """ADR-0155 T-8: method axis has structured metadata for all 99 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out)."""

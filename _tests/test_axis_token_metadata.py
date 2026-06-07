@@ -915,6 +915,46 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "hollow root criterion must name its domain of application within the criterion sentence itself",
         )
 
+    def test_mu_heuristics_include_structural_contradiction_trigger(self):
+        """mu must be discoverable via structural contradiction queries — heuristic for code/design diagnosis."""
+        mu = self.meta.get("mu", {})
+        heuristics = mu.get("heuristics", [])
+        self.assertIn(
+            "what's the structural contradiction here",
+            heuristics,
+            "mu must include 'what's the structural contradiction here' as a heuristic for diagnostic discoverability",
+        )
+
+    def test_mu_heuristics_include_requirements_conflict_trigger(self):
+        """mu must surface when two requirements can't both be true."""
+        mu = self.meta.get("mu", {})
+        heuristics = mu.get("heuristics", [])
+        self.assertIn(
+            "find where two requirements can't both be true",
+            heuristics,
+            "mu must include requirements-conflict heuristic for code/design diagnosis",
+        )
+
+    def test_mu_heuristics_include_design_forces_trigger(self):
+        """mu must surface when forces are fighting each other in a design."""
+        mu = self.meta.get("mu", {})
+        heuristics = mu.get("heuristics", [])
+        self.assertIn(
+            "what forces are fighting each other in this design",
+            heuristics,
+            "mu must include design-forces heuristic for structural tension diagnosis",
+        )
+
+    def test_mu_heuristics_include_condition_naming_trigger(self):
+        """mu must surface when the task is to name conditions under which each side breaks the other."""
+        mu = self.meta.get("mu", {})
+        heuristics = mu.get("heuristics", [])
+        self.assertIn(
+            "name the condition under which each side breaks the other",
+            heuristics,
+            "mu must include condition-naming heuristic for structural contradiction analysis",
+        )
+
 
 if __name__ == "__main__":
     unittest.main()

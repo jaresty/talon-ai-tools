@@ -130,6 +130,16 @@ class TestSequenceConfigStructure(unittest.TestCase):
         dispatch_steps = [s for s in seq["steps"] if s.get("type") == "dispatch"]
         self.assertGreater(len(dispatch_steps), 0, "frame-eval must have at least one dispatch step")
 
+    # Behavior: contradiction-scan sequence exists
+    def test_contradiction_scan_exists(self):
+        self.assertIn("contradiction-scan", self.sequences, "contradiction-scan sequence must exist")
+
+    # Behavior: contradiction-scan has at least 3 steps (decompose, surface, recommend)
+    def test_contradiction_scan_has_three_steps(self):
+        seq = self.sequences.get("contradiction-scan")
+        self.assertIsNotNone(seq, "contradiction-scan sequence must exist")
+        self.assertGreaterEqual(len(seq.get("steps", [])), 3, "contradiction-scan must have at least 3 steps")
+
     # Behavior: cycle-mode sequences have a non-empty stop_when predicate
     def test_cycle_sequences_have_stop_when(self):
         for name, seq in self.sequences.items():

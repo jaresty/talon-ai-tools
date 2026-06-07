@@ -5783,6 +5783,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "don't name the paradox, make the reader feel it",
                 "write it so thinking harder doesn't help",
                 "hold the irresolution without explaining it away",
+                "what's the structural contradiction here",
+                "find where two requirements can't both be true",
+                "what forces are fighting each other in this design",
+                "name the condition under which each side breaks the other",
             ],
         },
         "objectivity": {

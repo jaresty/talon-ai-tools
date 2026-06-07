@@ -595,6 +595,37 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "contradiction-scan": {
+        "description": "Decompose a subject into structural parts, surface where those parts create irresolvable tensions, then recommend which tension to address first.",
+        "example": "Reviewing a service architecture where the ownership model requires each team to own its data store but the reporting requirements demand cross-store joins — decompose the structural concerns, surface the irresolvable tension between ownership isolation and query access, then recommend the first tension to address.",
+        "heuristics": [
+            "find the contradiction in this design",
+            "what's fighting each other structurally",
+            "structural tensions in this code",
+            "what can't both be true here",
+            "irresolvable design conflict",
+            "surface the structural contradiction",
+        ],
+        "mode": "linear",
+        "steps": [
+            {
+                "token": "show method:split method:clash",
+                "role": "structural decomposition and conflict identification",
+                "prompt_hint": "Decompose the subject into its structural parts (modules, interfaces, invariants, lifecycle, ownership boundaries). For each part, name its structural commitment — the constraint it places on the rest of the system. Then identify where two or more parts have commitments that are locally valid but globally inconsistent: name both sides of each conflict and the condition under which each side breaks the other.",
+            },
+            {
+                "token": "show method:mu method:operations",
+                "role": "irresolution surface and tradeoff structure",
+                "prompt_hint": "For each conflict identified in the prior step: enact the irresolution structurally so the reader cannot reason past it (mu) — present both claims from the subject's own text such that no amount of thinking harder resolves the tension. Then name the objective being optimized, the constraints that bound it, and the tradeoffs that must be navigated (operations) — making the structural tension explicit so decisions can be evaluated against it.",
+            },
+            {
+                "token": "pick",
+                "role": "resolution recommendation",
+                "requires_user_input": True,
+                "prompt_hint": "Given the visible tensions, select which contradiction to address first. Name the tension chosen, why it has the highest leverage or lowest cost to resolve, and what the first concrete action is. If the user wants to explore a different tension, restart from this step.",
+            },
+        ],
+    },
 }
 
 

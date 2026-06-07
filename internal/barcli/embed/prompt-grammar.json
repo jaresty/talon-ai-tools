@@ -63753,7 +63753,11 @@
             "let the subject's own structure create the tension",
             "don't name the paradox, make the reader feel it",
             "write it so thinking harder doesn't help",
-            "hold the irresolution without explaining it away"
+            "hold the irresolution without explaining it away",
+            "what's the structural contradiction here",
+            "find where two requirements can't both be true",
+            "what forces are fighting each other in this design",
+            "name the condition under which each side breaks the other"
           ],
           "definition": "The response enacts the subject's central irresolution rather than describing or resolving it. The tension must arise from the subject's own internal structure — not imported from general discourse about the domain. The irresolution is not a tone or atmosphere — it is structural: the reader cannot resolve it by thinking harder. Do not name the tension or state that something cannot be resolved. The response succeeds if it presents at least two claims each of which names a proposition from the subject's stated text and names at least one condition stated in the subject's own text under which the other claim's proposition does not hold.",
           "embedding": [
@@ -121126,6 +121130,37 @@
           "prompt_hint": "Implement the new definition in the appropriate config file. Before any file-modifying call: write tests asserting the key literal strings from the definition (root criterion phrase, derivation instruction phrase, structural artifact names). Each test must FAIL against the old definition before the edit and PASS after. One file-modifying call per independently testable change."
         }
       ]
+    },
+    "contradiction-scan": {
+      "description": "Decompose a subject into structural parts, surface where those parts create irresolvable tensions, then recommend which tension to address first.",
+      "example": "Reviewing a service architecture where the ownership model requires each team to own its data store but the reporting requirements demand cross-store joins — decompose the structural concerns, surface the irresolvable tension between ownership isolation and query access, then recommend the first tension to address.",
+      "heuristics": [
+        "find the contradiction in this design",
+        "what's fighting each other structurally",
+        "structural tensions in this code",
+        "what can't both be true here",
+        "irresolvable design conflict",
+        "surface the structural contradiction"
+      ],
+      "mode": "linear",
+      "steps": [
+        {
+          "token": "show method:split method:clash",
+          "role": "structural decomposition and conflict identification",
+          "prompt_hint": "Decompose the subject into its structural parts (modules, interfaces, invariants, lifecycle, ownership boundaries). For each part, name its structural commitment — the constraint it places on the rest of the system. Then identify where two or more parts have commitments that are locally valid but globally inconsistent: name both sides of each conflict and the condition under which each side breaks the other."
+        },
+        {
+          "token": "show method:mu method:operations",
+          "role": "irresolution surface and tradeoff structure",
+          "prompt_hint": "For each conflict identified in the prior step: enact the irresolution structurally so the reader cannot reason past it (mu) — present both claims from the subject's own text such that no amount of thinking harder resolves the tension. Then name the objective being optimized, the constraints that bound it, and the tradeoffs that must be navigated (operations) — making the structural tension explicit so decisions can be evaluated against it."
+        },
+        {
+          "token": "pick",
+          "role": "resolution recommendation",
+          "requires_user_input": true,
+          "prompt_hint": "Given the visible tensions, select which contradiction to address first. Name the tension chosen, why it has the highest leverage or lowest cost to resolve, and what the first concrete action is. If the user wants to explore a different tension, restart from this step."
+        }
+      ]
     }
   },
   "compositions": [
@@ -121618,14 +121653,14 @@
     }
   ],
   "checksums": {
-    "axes": "ea3f6add84239269e53e864468478ceaa033ae083d937cf5c5e4eeac2638f98b",
+    "axes": "693e7f8548f3c09898a28401dcf27cb41840a0e43ad407d97c7bcf3eeae41528",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "9d8eb7a2b2c2deedc8060de49a22641b3e38106d77cd67e01efcfe5358ab2f4e",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",
     "slugs": "034b17731a7a56a96be749f0fb5d27ea3ac13b8d48eeab9a3650a8eede4b0b36",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "442ab85d722d45d686549c7acb7f6dcfa0ff2d43313155e298241552ec7fd434",
+    "sequences": "99fea9c2fb5119d988216978a0b84157b4376181383ad7a52c243fd7c998e1a2",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

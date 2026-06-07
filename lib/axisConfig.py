@@ -221,14 +221,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "for each named path, name the literal string in the transcript that closes it; proceed only when no open path remains. For each concept after the first, begin with a Following "
         "from: line quoting a specific phrase from the preceding answer, making explicit what the previous reveal established. Then write the question, require a Predict: line (the reader "
         "names their expectation before the answer is shown), then write the answer. After each answer: a gap-reveal sentence comparing what the Predict: line stated against what is "
-        "correct or complete; then for at least one concept per quiz, a Misconception: line naming the specific incorrect belief that would lead a reader to predict the wrong answer, and a "
-        "Why: line stating the structural reason that belief is wrong; then an association sentence — before writing it, name the numbers already used in prior association sentences — "
-        "using the format '#N (Name): [relationship]' where N is the opening-list number of a prior concept whose number has not appeared in any earlier association sentence in this quiz "
-        "and Name is that concept's name from the opening list (for the first concept, use the format '#N (Name): [relationship]' naming the opening-list number and name of the first "
-        "concept whose understanding it enables). If a Predict: line is present and no gap-reveal sentence was written for this concept, emit '✓ [concept name]' to mark that concept "
-        "confirmed. Continue until every concept in the opening list has either a '✓ [concept name]' marker or a gap-reveal sentence in the transcript, or the user explicitly declines to "
-        "continue; then close with a terminal declaration listing all confirmed concepts. With an output-exclusive channel, structure the output as a quiz document with each question "
-        "immediately before its answer per topic.",
+        "correct or complete; then for every concept except the first and the last, a Hook: line naming an opening-list concept not yet covered as the subject of a question (evaluator "
+        "check: the named concept appears in the opening list and has not yet been questioned in the transcript); then for at least one concept per quiz, a Misconception: line naming the "
+        "specific incorrect belief that would lead a reader to predict the wrong answer, and a Why: line stating the structural reason that belief is wrong; then an association sentence — "
+        "before writing it, name the numbers already used in prior association sentences — using the format '#N (Name): [relationship]' where N is the opening-list number of a prior "
+        "concept whose number has not appeared in any earlier association sentence in this quiz and Name is that concept's name from the opening list (for the first concept, use the format "
+        "'#N (Name): [relationship]' naming the opening-list number and name of the first concept whose understanding it enables). If a Predict: line is present and no gap-reveal sentence "
+        "was written for this concept, emit '✓ [concept name]' to mark that concept confirmed. Continue until every concept in the opening list has either a '✓ [concept name]' marker or a "
+        "gap-reveal sentence in the transcript, or the user explicitly declines to continue; then close with a terminal declaration listing all confirmed concepts. With an output-exclusive "
+        "channel, structure the output as a quiz document with each question immediately before its answer per topic.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "

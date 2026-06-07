@@ -619,6 +619,16 @@ class FormAxisMetadataTests(unittest.TestCase):
             "quiz definition must require '#N (Name):' format to include concept name alongside number",
         )
 
+    def test_quiz_definition_encodes_hook_line(self):
+        """quiz definition must require Hook: line for every concept except the first and the last."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "Hook:",
+            definition,
+            "quiz definition must require 'Hook:' line naming an opening-list concept not yet covered",
+        )
+
 
 class MethodAxisMetadataTests(unittest.TestCase):
     """ADR-0155 T-8: method axis has structured metadata for all 99 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out)."""

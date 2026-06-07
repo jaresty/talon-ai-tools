@@ -212,7 +212,7 @@ SUBJECT_FRAMING: str = (
 EXECUTION_REMINDER: str = """Execute the TASK specified above. All reasoning, planning, and response construction must satisfy the CONSTRAINTS before producing content. Apply the PERSONA as defined. A response satisfies the TASK only when each of its claims can be traced to a specific string in the TASK section, a specific string in the ADDENDUM section, a named token constraint in CONSTRAINTS, or a specific phrase in SUBJECT — a claim that cannot be traced to one of these four sources does not satisfy this requirement regardless of whether it resembles what a correct response would look like.\n\nThis prompt was produced by a bar build tool call — a response that produces substantive task content without the string "=== TASK 任務 (DO THIS) ===" appearing in a tool call result earlier in the same transcript has not been generated from a bar build invocation and does not satisfy this requirement."""
 
 PLANNING_DIRECTIVE: str = (
-    "Your response to this prompt must contain exactly the four sections below and nothing else — no tool calls, no sentences outside the four sections, no preamble, no protocols block. "
+    "The planning portion of your response must contain exactly the four sections below — no tool calls, no sentences outside the four sections, no preamble, no protocols block. Task execution begins in Section 4 and continues after the four-section planning block closes. "
     "A response containing any text that does not belong to one of the four named sections does not satisfy this requirement. "
     "Write all four sections as text now.\n\n"
     "SECTION 1 — TOKEN DERIVATIONS:\n"

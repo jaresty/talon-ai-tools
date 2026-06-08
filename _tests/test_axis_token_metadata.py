@@ -589,6 +589,16 @@ class FormAxisMetadataTests(unittest.TestCase):
             "quiz definition must require 'Following from:' line to chain questions into a sequence",
         )
 
+    def test_quiz_definition_following_from_requires_restatement(self):
+        """Following from: line must require a restatement of what the preceding reveal established, not just a quote."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+        definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
+        self.assertIn(
+            "a one-sentence restatement of what that reveal established",
+            definition,
+            "quiz Following from: line must require a restatement, making it self-contained without scrolling back",
+        )
+
     def test_quiz_definition_encodes_misconception_line(self):
         """quiz definition must require at least one Misconception: line per quiz."""
         from lib.axisConfig import AXIS_KEY_TO_VALUE

@@ -1788,8 +1788,8 @@ func TestDispatchStepBlockRendersDuringDispatch(t *testing.T) {
 	if !strings.Contains(out, "immediately after spawning") {
 		t.Errorf("dispatch block must instruct LLM to run during_dispatch immediately after spawning agents:\n%s", out)
 	}
-	if !strings.Contains(out, "wait for both") {
-		t.Errorf("dispatch block must instruct LLM to wait for both quiz and agents before joining:\n%s", out)
+	if !strings.Contains(out, "background agent completion notifications") {
+		t.Errorf("dispatch block must instruct LLM to wait for background agent completion notifications before joining:\n%s", out)
 	}
 }
 
@@ -1879,6 +1879,45 @@ func TestFrameSynthesisDispatchStepHasDuringDispatch(t *testing.T) {
 		}
 	}
 	t.Error("frame-synthesis has no dispatch step")
+}
+
+// Behavior 101: when DuringDispatch is set, dispatch gate instructs run_in_background: true on Agent calls.
+func TestDispatchStepBlockRunsAgentsInBackgroundWhenDuringDispatchSet(t *testing.T) {
+	step := SequenceStep{
+		Token:          "prism",
+		Role:           "dispatch frames",
+		Type:           "dispatch",
+		FanOut:         "enumerate",
+		Join:           "all",
+		DuringDispatch: "show form:quiz",
+	}
+	var buf strings.Builder
+	writeDispatchStepBlock(&buf, step, 1, nil)
+	out := buf.String()
+	if !strings.Contains(out, "run_in_background: true") {
+		t.Errorf("dispatch block with during_dispatch must instruct run_in_background: true on Agent calls:\n%s", out)
+	}
+}
+
+// Behavior 102: when DuringDispatch is set, during_dispatch instruction tells LLM to wait for all background agent notifications before joining.
+func TestDispatchStepBlockWaitsForBackgroundNotificationsBeforeJoin(t *testing.T) {
+	step := SequenceStep{
+		Token:          "prism",
+		Role:           "dispatch frames",
+		Type:           "dispatch",
+		FanOut:         "enumerate",
+		Join:           "all",
+		DuringDispatch: "show form:quiz",
+	}
+	var buf strings.Builder
+	writeDispatchStepBlock(&buf, step, 1, nil)
+	out := buf.String()
+	if !strings.Contains(out, "background agent") {
+		t.Errorf("dispatch block with during_dispatch must reference background agent notifications:\n%s", out)
+	}
+	if !strings.Contains(out, "notif") {
+		t.Errorf("dispatch block with during_dispatch must instruct waiting for agent completion notifications:\n%s", out)
+	}
 }
 
 // Behavior 91: frame-explore final step uses probe method:converge, not pick method:converge.

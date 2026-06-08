@@ -188,8 +188,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "session agenda.",
         "bullets": "The response organizes ideas as concise bullet points, avoiding long paragraphs.",
         "cards": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
-        "case": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a clear "
-        "recommendation that addresses objections and constraints.",
+        "case": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a "
+        "clearrecommendation that addresses objections and constraints.",
+        "cheatsheet": "The response is structured as a quick-reference where each entry occupies exactly one line: a label of 2–5 words, followed by ' — ' or ': ', followed by the explanation on "
+        "the same line. Each entry line contains exactly one delimiter; no newline appears before the next entry begins. A multi-line entry does not satisfy this token. When the "
+        "response contains more than 8 entries, entries are grouped under named headings.",
         "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
         "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Each turn produces the "
         "channel output (code, html, diagram, etc.) in its current state — not chat text. Questions are asked within the channel format (comments, placeholders, or UI hints). With "
@@ -680,6 +683,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "bullets": "Concise bullet points",
         "cards": "Discrete cards with headings",
         "case": "Build the case before the conclusion",
+        "cheatsheet": "Scannable single-line quick-reference",
         "checklist": "Actionable checklist",
         "cocreate": "Collaborative small-move process",
         "commit": "Conventional commit message",
@@ -909,6 +913,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "bullets": "列",
         "cards": "卡",
         "case": "策",
+        "cheatsheet": "覧",
         "checklist": "検",
         "cocreate": "共",
         "commit": "提",
@@ -1348,6 +1353,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "bullets": "Bullet points",
         "cards": "Cards/items",
         "case": "Decision documentation",
+        "cheatsheet": "Quick-reference lookup",
         "checklist": "Actionable next steps",
         "cocreate": "Collaborative process",
         "commit": "Commit message",
@@ -3734,6 +3740,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "present the case",
                 "evidence then conclusion",
                 "case for X",
+            ],
+        },
+        "cheatsheet": {
+            "distinctions": [
+                {
+                    "note": "bullets = unstructured list items, may be multi-line; cheatsheet = strict single-line label — delimiter — explanation, optimized for lookup not "
+                    "reading",
+                    "token": "bullets",
+                },
+                {
+                    "note": "cards = discrete units with headings and prose body; cheatsheet = single-line entries only, no prose body permitted",
+                    "token": "cards",
+                },
+            ],
+            "heuristics": [
+                "cheatsheet",
+                "quick reference",
+                "quick-reference",
+                "reference card",
+                "scannable list",
+                "lookup table",
+                "at a glance",
+                "reference sheet",
+                "crib sheet",
             ],
         },
         "checklist": {

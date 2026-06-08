@@ -344,6 +344,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "bullets",
         "cards",
         "case",
+        "cheatsheet",
         "checklist",
         "cocreate",
         "commit",

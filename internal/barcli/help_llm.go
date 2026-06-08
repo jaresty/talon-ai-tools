@@ -125,6 +125,8 @@ func renderNavigationGuide(w io.Writer, grammar *Grammar) {
 	fmt.Fprintf(w, "5. **Plan a workflow**: `bar help llm --section heuristics` — loads choosing-X guidance\n")
 	fmt.Fprintf(w, "6. **Full reference**: `bar help llm --section tokens` — loads complete token catalog\n\n")
 	fmt.Fprintf(w, "Use `bar help llm --section <name>` or `bar help token <slug>` rather than loading the full reference.\n")
+	fmt.Fprintf(w, "\n## Context window\n\n")
+	fmt.Fprintf(w, "If the conversation is long or context feels dense, run `/compact` before invoking bar commands. Dispatch steps are especially high-leverage — each spawned agent inherits the full context overhead, so compacting before a dispatch step multiplies the savings.\n")
 }
 
 // renderLLMHelp generates a comprehensive Markdown reference document optimized for LLM consumption.

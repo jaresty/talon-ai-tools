@@ -907,6 +907,22 @@ func TestHelpLLMSequencesInsertionBlockNoSemanticShape(t *testing.T) {
 	}
 }
 
+// Behavior 100: bar help llm Quick Start section includes /compact suggestion before bar commands.
+func TestHelpLLMQuickStartIncludesCompactSuggestion(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	exit := Run([]string{"help", "llm"}, os.Stdin, stdout, &bytes.Buffer{})
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d", exit)
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "/compact") {
+		t.Errorf("bar help llm Quick Start must include /compact suggestion:\n%s", out[:min(500, len(out))])
+	}
+	if !strings.Contains(out, "dispatch") || !strings.Contains(out, "compact") {
+		t.Errorf("bar help llm Quick Start must call out dispatch steps as high-leverage for compaction:\n%s", out[:min(500, len(out))])
+	}
+}
+
 // Fix: single-task dispatch gate must reference Gate: yes string, not semantic condition
 func TestHelpLLMSequencesSingleTaskDispatchGateObservable(t *testing.T) {
 	stdout := &bytes.Buffer{}

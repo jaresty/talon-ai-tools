@@ -31,6 +31,7 @@ type SequenceStep struct {
 	Join              string         `json:"join,omitempty"`                // ADR-0238: "all" | "first" | "merge"
 	Isolation         bool           `json:"isolation,omitempty"`           // ADR-0238: strip shared context
 	Inner             *InnerSequence `json:"inner,omitempty"`               // inline sub-sequence for dispatch steps
+	DuringDispatch    string         `json:"during_dispatch,omitempty"`     // bar command to run in foreground while dispatch agents execute
 }
 
 // Sequence is a named, directed multi-step workflow pattern.

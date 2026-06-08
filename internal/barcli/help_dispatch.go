@@ -95,6 +95,9 @@ func writeDispatchStepBlock(w io.Writer, step SequenceStep, _ int, _ *Grammar) {
 		joinDesc = "merge — collect all results into an array"
 	}
 	fmt.Fprintf(w, "          6. join: %s\n", joinDesc)
+	if step.DuringDispatch != "" {
+		fmt.Fprintf(w, "          during_dispatch: immediately after spawning all agents in step 4, run `%s` as a bar build Bash tool call in the foreground — do not wait for agents to return first. wait for both this command and all agents to complete before proceeding to the join in step 6.\n", step.DuringDispatch)
+	}
 	fmt.Fprintf(w, "          7. Before running bar build for the next step: reproduce each ## Derivation block from the join result verbatim in the output. An evaluator determines compliance by counting ## Derivation headings in the join result passed as --subject and confirming the same count appears in the output before the first bar build call for the next step — a count mismatch does not satisfy this gate. Then run bar build with the full join result as --subject.\n")
 	if step.Inner != nil {
 		fmt.Fprintf(w, "          inner mode: %s\n", step.Inner.Mode)

@@ -1754,6 +1754,133 @@ func TestFrameEvalSequenceExists(t *testing.T) {
 	}
 }
 
+// Behavior 94: SequenceStep DuringDispatch field is parsed from JSON.
+func TestSequenceStepDuringDispatchFieldParsed(t *testing.T) {
+	raw := `{"token":"prism","role":"prism","type":"dispatch","fan_out":"enumerate","join":"all","during_dispatch":"explain form:quiz"}`
+	var step SequenceStep
+	if err := json.Unmarshal([]byte(raw), &step); err != nil {
+		t.Fatalf("failed to parse SequenceStep with during_dispatch: %v", err)
+	}
+	if step.DuringDispatch != "explain form:quiz" {
+		t.Errorf("DuringDispatch: got %q, want %q", step.DuringDispatch, "explain form:quiz")
+	}
+}
+
+// Behavior 95: writeDispatchStepBlock renders during_dispatch instruction when field is set.
+func TestDispatchStepBlockRendersDuringDispatch(t *testing.T) {
+	step := SequenceStep{
+		Token:         "prism",
+		Role:          "dispatch frames",
+		Type:          "dispatch",
+		FanOut:        "enumerate",
+		Join:          "all",
+		DuringDispatch: "explain form:quiz",
+	}
+	var buf strings.Builder
+	writeDispatchStepBlock(&buf, step, 1, nil)
+	out := buf.String()
+	if !strings.Contains(out, "during_dispatch") {
+		t.Errorf("dispatch block must contain 'during_dispatch' when field is set:\n%s", out)
+	}
+	if !strings.Contains(out, "explain form:quiz") {
+		t.Errorf("dispatch block must contain the during_dispatch command 'explain form:quiz':\n%s", out)
+	}
+	if !strings.Contains(out, "immediately after spawning") {
+		t.Errorf("dispatch block must instruct LLM to run during_dispatch immediately after spawning agents:\n%s", out)
+	}
+	if !strings.Contains(out, "wait for both") {
+		t.Errorf("dispatch block must instruct LLM to wait for both quiz and agents before joining:\n%s", out)
+	}
+}
+
+// Behavior 96: frame-debug dispatch step has during_dispatch set to show form:quiz.
+func TestFrameDebugDispatchStepHasDuringDispatch(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-debug"]
+	if !ok {
+		t.Fatal("frame-debug sequence not found")
+	}
+	for _, step := range seq.Steps {
+		if step.Type == "dispatch" {
+			if step.DuringDispatch != "show form:quiz" {
+				t.Errorf("frame-debug dispatch step DuringDispatch: got %q, want %q", step.DuringDispatch, "show form:quiz")
+			}
+			return
+		}
+	}
+	t.Error("frame-debug has no dispatch step")
+}
+
+// Behavior 97: frame-explore dispatch step has during_dispatch set to show form:quiz.
+func TestFrameExploreDispatchStepHasDuringDispatch(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-explore"]
+	if !ok {
+		t.Fatal("frame-explore sequence not found")
+	}
+	for _, step := range seq.Steps {
+		if step.Type == "dispatch" {
+			if step.DuringDispatch != "show form:quiz" {
+				t.Errorf("frame-explore dispatch step DuringDispatch: got %q, want %q", step.DuringDispatch, "show form:quiz")
+			}
+			return
+		}
+	}
+	t.Error("frame-explore has no dispatch step")
+}
+
+// Behavior 98: frame-eval dispatch step has during_dispatch set to show form:quiz.
+func TestFrameEvalDispatchStepHasDuringDispatch(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-eval"]
+	if !ok {
+		t.Fatal("frame-eval sequence not found")
+	}
+	for _, step := range seq.Steps {
+		if step.Type == "dispatch" {
+			if step.DuringDispatch != "show form:quiz" {
+				t.Errorf("frame-eval dispatch step DuringDispatch: got %q, want %q", step.DuringDispatch, "show form:quiz")
+			}
+			return
+		}
+	}
+	t.Error("frame-eval has no dispatch step")
+}
+
+// Behavior 99: frame-synthesis dispatch step has during_dispatch set to show form:quiz.
+func TestFrameSynthesisDispatchStepHasDuringDispatch(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-synthesis"]
+	if !ok {
+		t.Fatal("frame-synthesis sequence not found")
+	}
+	for _, step := range seq.Steps {
+		if step.Type == "dispatch" {
+			if step.DuringDispatch != "show form:quiz" {
+				t.Errorf("frame-synthesis dispatch step DuringDispatch: got %q, want %q", step.DuringDispatch, "show form:quiz")
+			}
+			return
+		}
+	}
+	t.Error("frame-synthesis has no dispatch step")
+}
+
 // Behavior 91: frame-explore final step uses probe method:converge, not pick method:converge.
 func TestFrameExploreFinalStepUsesProbeConverge(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})

@@ -225,6 +225,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "all",
                 "isolation": True,
+                "during_dispatch": "show form:quiz",
                 "prompt_hint": "Each agent receives only the subject and its assigned frame description as full context — no shared history, no cross-frame information. Return findings in a labeled block.",
             },
             {
@@ -262,6 +263,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "all",
                 "isolation": True,
+                "during_dispatch": "show form:quiz",
                 "prompt_hint": "Each agent receives only the subject and its assigned frame. First, read the files or content named in the subject. Then run bar build using the frame as the interpretive lens. Return a labeled summary: what this frame reveals, what it foregrounds, and what it sets aside.",
             },
             {
@@ -331,6 +333,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "all",
                 "isolation": True,
+                "during_dispatch": "show form:quiz",
                 "prompt_hint": "Each agent receives only the subject, its assigned frame description, and the goal condition. Execute the inner sequence until stop_when is met. Return findings in a labeled block with the number of cycles run.",
                 "inner": {
                     "mode": "cycle",
@@ -389,6 +392,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "first",
                 "isolation": True,
+                "during_dispatch": "show form:quiz",
                 "prompt_hint": "Each agent receives only the subject and its assigned frame. For each hypothesis: (1) run `bar build make form:prep` and execute the TASK from its output; (2) run the experiment; (3) run `bar build check form:vet` and execute the TASK from its output. A vet step that rejects the hypothesis requires a new `bar build make form:prep` before the cycle may continue. Return a labeled block stating: frame investigated, hypotheses tried, root cause confirmed or ruled out, and evidence gathered.",
                 "inner": {
                     "mode": "cycle",

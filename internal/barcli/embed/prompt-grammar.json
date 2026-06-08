@@ -121118,6 +121118,7 @@
           "fan_out": "enumerate",
           "join": "all",
           "isolation": true,
+          "during_dispatch": "show form:quiz",
           "prompt_hint": "Each agent receives only the subject and its assigned frame description as full context — no shared history, no cross-frame information. Return findings in a labeled block."
         },
         {
@@ -121163,6 +121164,7 @@
           "fan_out": "enumerate",
           "join": "all",
           "isolation": true,
+          "during_dispatch": "show form:quiz",
           "prompt_hint": "Each agent receives only the subject and its assigned frame. First, read the files or content named in the subject. Then run bar build using the frame as the interpretive lens. Return a labeled summary: what this frame reveals, what it foregrounds, and what it sets aside."
         },
         {
@@ -121253,6 +121255,7 @@
           "fan_out": "enumerate",
           "join": "all",
           "isolation": true,
+          "during_dispatch": "show form:quiz",
           "prompt_hint": "Each agent receives only the subject, its assigned frame description, and the goal condition. Execute the inner sequence until stop_when is met. Return findings in a labeled block with the number of cycles run.",
           "inner": {
             "mode": "cycle",
@@ -121318,6 +121321,7 @@
           "fan_out": "enumerate",
           "join": "first",
           "isolation": true,
+          "during_dispatch": "show form:quiz",
           "prompt_hint": "Each agent receives only the subject and its assigned frame. For each hypothesis: (1) run `bar build make form:prep` and execute the TASK from its output; (2) run the experiment; (3) run `bar build check form:vet` and execute the TASK from its output. A vet step that rejects the hypothesis requires a new `bar build make form:prep` before the cycle may continue. Return a labeled block stating: frame investigated, hypotheses tried, root cause confirmed or ruled out, and evidence gathered.",
           "inner": {
             "mode": "cycle",
@@ -122079,7 +122083,7 @@
     "slugs": "174c0e82f8f36b764ca7e7e04044c7a6a73c4bdf064adf70ff46a37e8b9f2ccc",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "99fea9c2fb5119d988216978a0b84157b4376181383ad7a52c243fd7c998e1a2",
+    "sequences": "7096e5ebca9bfdc272bd38241ff6e82d7da2e7150cc24f6d767372e902fba4fe",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

@@ -15,6 +15,11 @@ class MakeAxisRegenerateApplyTests(unittest.TestCase):
         axis_config = repo_root / "lib" / "axisConfig.py"
         generated = repo_root / "tmp" / "axisConfig.generated.py"
 
+        # Introduce deliberate drift so the apply step always has work to do.
+        original_text = axis_config.read_text(encoding="utf-8")
+        axis_config.write_text(original_text + "\n# _test_drift_marker\n", encoding="utf-8")
+        self.addCleanup(axis_config.write_text, original_text, "utf-8")
+
         result = subprocess.run(
             ["make", "axis-regenerate-apply"],
             cwd=repo_root,
@@ -38,6 +43,11 @@ class MakeAxisRegenerateApplyTests(unittest.TestCase):
             axis_text,
             gen_text,
             "axisConfig.py should match the generated axisConfig output after apply",
+        )
+        self.assertNotIn(
+            "_test_drift_marker",
+            axis_text,
+            "apply should have overwritten the drift marker",
         )
 
     def test_axis_regenerate_apply_is_idempotent_when_already_synced(self):

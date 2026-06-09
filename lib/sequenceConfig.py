@@ -217,7 +217,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Enumerate independent evaluation frames that differ structurally. Each frame names a structural angle and the type of evidence or perspective it brings — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not apply any frame yet — enumeration is the only output of this step.",
+                "prompt_hint": "Enumerate independent evaluation frames that differ structurally. A frame name contains no verb and makes no causal claim. Each frame names a structural angle and the type of evidence or perspective it brings — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not apply any frame yet — enumeration is the only output of this step.",
             },
             {
                 "type": "dispatch",
@@ -255,7 +255,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Enumerate the named interpretation frames as a governing artifact. A frame is an interpretive lens (e.g. security, usability, performance, compliance) — not a task to perform. Each frame must yield a distinct reading of the same material. Name the lens only — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Enumeration is the only output of this step.",
+                "prompt_hint": "Enumerate the named interpretation frames as a governing artifact. A frame is an interpretive lens (e.g. security, usability, performance, compliance) — not a task to perform. A frame name contains no verb and makes no causal claim. Each frame must yield a distinct reading of the same material. Name the lens only — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Enumeration is the only output of this step.",
             },
             {
                 "type": "dispatch",
@@ -288,7 +288,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Enumerate independent structural frames that differ in starting conditions — each names a distinct entry point or vantage point into the system and the class of behavior observable from there. Frames must have genuinely different named starting conditions so that a claimed attractor can be shown to hold across them — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Enumeration is the only output of this step.",
+                "prompt_hint": "Enumerate independent structural frames that differ in starting conditions — each names a distinct entry point or vantage point into the system and the class of behavior observable from there. A frame name contains no verb and makes no causal claim. Frames must have genuinely different named starting conditions so that a claimed attractor can be shown to hold across them — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Enumeration is the only output of this step.",
             },
             {
                 "type": "dispatch",
@@ -325,7 +325,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Enumerate independent frames that differ structurally. Each frame names a structural angle and the class of evidence that would confirm or refute the goal condition from that angle — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence.",
+                "prompt_hint": "Enumerate independent frames that differ structurally. A frame name contains no verb and makes no causal claim. Each frame names a structural angle and the class of evidence that would confirm or refute the goal condition from that angle — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence.",
             },
             {
                 "type": "dispatch",

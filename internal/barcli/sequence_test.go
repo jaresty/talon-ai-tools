@@ -1920,6 +1920,32 @@ func TestDispatchStepBlockWaitsForBackgroundNotificationsBeforeJoin(t *testing.T
 	}
 }
 
+// Behavior 103: when DuringDispatch is set, during_dispatch Bash instruction appears before Agent spawning instruction.
+func TestDispatchStepBlockDuringDispatchBeforeAgentSpawn(t *testing.T) {
+	step := SequenceStep{
+		Token:          "prism",
+		Role:           "dispatch frames",
+		Type:           "dispatch",
+		FanOut:         "enumerate",
+		Join:           "all",
+		DuringDispatch: "show form:quiz",
+	}
+	var buf strings.Builder
+	writeDispatchStepBlock(&buf, step, 1, nil)
+	out := buf.String()
+	bashIdx := strings.Index(out, "show form:quiz")
+	spawnIdx := strings.Index(out, "Spawn one Agent tool call")
+	if bashIdx == -1 {
+		t.Fatalf("dispatch block must contain during_dispatch command 'show form:quiz':\n%s", out)
+	}
+	if spawnIdx == -1 {
+		t.Fatalf("dispatch block must contain Agent spawning instruction 'Spawn one Agent tool call':\n%s", out)
+	}
+	if bashIdx > spawnIdx {
+		t.Errorf("during_dispatch Bash instruction must appear before Agent spawning instruction: bashIdx=%d spawnIdx=%d\n%s", bashIdx, spawnIdx, out)
+	}
+}
+
 // Behavior 91: frame-explore final step uses probe method:converge, not pick method:converge.
 func TestFrameExploreFinalStepUsesProbeConverge(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})

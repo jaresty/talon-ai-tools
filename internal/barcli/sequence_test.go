@@ -1785,8 +1785,8 @@ func TestDispatchStepBlockRendersDuringDispatch(t *testing.T) {
 	if !strings.Contains(out, "explain form:quiz") {
 		t.Errorf("dispatch block must contain the during_dispatch command 'explain form:quiz':\n%s", out)
 	}
-	if !strings.Contains(out, "immediately after spawning") {
-		t.Errorf("dispatch block must instruct LLM to run during_dispatch immediately after spawning agents:\n%s", out)
+	if !strings.Contains(out, "same response turn as the Agent tool calls") {
+		t.Errorf("dispatch block must instruct LLM to run during_dispatch in the same turn as Agent calls:\n%s", out)
 	}
 	if !strings.Contains(out, "background agent completion notifications") {
 		t.Errorf("dispatch block must instruct LLM to wait for background agent completion notifications before joining:\n%s", out)

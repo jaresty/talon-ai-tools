@@ -190,9 +190,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "cards": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
         "case": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a "
         "clearrecommendation that addresses objections and constraints.",
-        "cheatsheet": "The response is structured as a quick-reference where each entry occupies exactly one line: a label of 2–5 words, followed by ' — ' or ': ', followed by the explanation on "
-        "the same line. Each entry line contains exactly one delimiter; no newline appears before the next entry begins. A multi-line entry does not satisfy this token. When the "
-        "response contains more than 8 entries, entries are grouped under named headings.",
+        "cheatsheet": "The response is structured as a quick-reference where each entry is a single line: a label of 2–5 words, followed by exactly one ' — ' or ': ', followed by the explanation. "
+        "Each entry line is immediately followed by the next entry line or a heading. When the response contains more than 8 entries, entries are grouped under headings; a heading is "
+        "a line containing no ' — ' or ': ' delimiter.",
         "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
         "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Each turn produces the "
         "channel output (code, html, diagram, etc.) in its current state — not chat text. Questions are asked within the channel format (comments, placeholders, or UI hints). With "

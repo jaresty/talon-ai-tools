@@ -588,8 +588,8 @@ func TestSequenceShowDispatch4DeferralClosureText(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "proceed to the Agent tool calls without announcing them first") {
-		t.Errorf("dispatch step 4 must contain deferral closure text ('proceed to the Agent tool calls without announcing them first'):\n%s", out)
+	if !strings.Contains(out, "Proceed to the Agent tool calls without announcing them first") {
+		t.Errorf("dispatch step 4 must contain deferral closure text ('Proceed to the Agent tool calls without announcing them first'):\n%s", out)
 	}
 }
 
@@ -1779,8 +1779,8 @@ func TestDispatchStepBlockRendersDuringDispatch(t *testing.T) {
 	var buf strings.Builder
 	writeDispatchStepBlock(&buf, step, 1, nil)
 	out := buf.String()
-	if !strings.Contains(out, "during_dispatch") {
-		t.Errorf("dispatch block must contain 'during_dispatch' when field is set:\n%s", out)
+	if !strings.Contains(out, "Dispatching N agents:") {
+		t.Errorf("dispatch block must contain cardinality declaration 'Dispatching N agents:' when field is set:\n%s", out)
 	}
 	if !strings.Contains(out, "explain form:quiz") {
 		t.Errorf("dispatch block must contain the during_dispatch command 'explain form:quiz':\n%s", out)
@@ -1788,8 +1788,8 @@ func TestDispatchStepBlockRendersDuringDispatch(t *testing.T) {
 	if !strings.Contains(out, "same response turn as the Agent tool calls") {
 		t.Errorf("dispatch block must instruct LLM to run during_dispatch in the same turn as Agent calls:\n%s", out)
 	}
-	if !strings.Contains(out, "background agent completion notifications") {
-		t.Errorf("dispatch block must instruct LLM to wait for background agent completion notifications before joining:\n%s", out)
+	if !strings.Contains(out, "result block for each Agent tool call") {
+		t.Errorf("dispatch block must instruct waiting via result block presence before joining:\n%s", out)
 	}
 }
 
@@ -1899,7 +1899,7 @@ func TestDispatchStepBlockRunsAgentsInBackgroundWhenDuringDispatchSet(t *testing
 	}
 }
 
-// Behavior 102: when DuringDispatch is set, during_dispatch instruction tells LLM to wait for all background agent notifications before joining.
+// Behavior 102: when DuringDispatch is set, during_dispatch instruction tells LLM to wait for all background agents before joining.
 func TestDispatchStepBlockWaitsForBackgroundNotificationsBeforeJoin(t *testing.T) {
 	step := SequenceStep{
 		Token:          "prism",
@@ -1913,10 +1913,10 @@ func TestDispatchStepBlockWaitsForBackgroundNotificationsBeforeJoin(t *testing.T
 	writeDispatchStepBlock(&buf, step, 1, nil)
 	out := buf.String()
 	if !strings.Contains(out, "background agent") {
-		t.Errorf("dispatch block with during_dispatch must reference background agent notifications:\n%s", out)
+		t.Errorf("dispatch block with during_dispatch must reference background agents:\n%s", out)
 	}
-	if !strings.Contains(out, "notif") {
-		t.Errorf("dispatch block with during_dispatch must instruct waiting for agent completion notifications:\n%s", out)
+	if !strings.Contains(out, "result block for each Agent tool call") {
+		t.Errorf("dispatch block with during_dispatch must instruct waiting via result block presence:\n%s", out)
 	}
 }
 

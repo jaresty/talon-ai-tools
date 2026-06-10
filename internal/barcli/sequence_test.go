@@ -2081,3 +2081,35 @@ func TestSurvivePromptHintRequiresLiveOutput(t *testing.T) {
 		}
 	}
 }
+
+// Behavior 115: frame-explore prism prompt_hint names what the live system would show and rejects frameless descriptions.
+func TestFrameExplorePrismRequiresLiveSignal(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "what the live system would show") {
+		t.Errorf("frame-explore prism prompt_hint must contain 'what the live system would show':\n%s", out)
+	}
+	if !strings.Contains(out, "a frame whose description contains no claim about live system output is not a valid frame") {
+		t.Errorf("frame-explore prism prompt_hint must contain rejection criterion 'a frame whose description contains no claim about live system output is not a valid frame':\n%s", out)
+	}
+}
+
+// Behavior 116: frame-debug prism prompt_hint names what the live system would show, rejects frameless descriptions,
+// and scopes delegation to commands only (not signal identification).
+func TestFrameDebugPrismRequiresLiveSignalAndScopesDelegation(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "what the live system would show") {
+		t.Errorf("frame-debug prism prompt_hint must contain 'what the live system would show':\n%s", out)
+	}
+	if !strings.Contains(out, "a frame whose description names no live system output is not a valid frame") {
+		t.Errorf("frame-debug prism prompt_hint must contain rejection criterion 'a frame whose description names no live system output is not a valid frame':\n%s", out)
+	}
+	if strings.Contains(out, "commands and investigation methods are the agent's job during hypothesis cycles, not the frame definition's job") {
+		t.Errorf("frame-debug prism prompt_hint must not contain broad delegation phrase — delegation must be scoped to commands only:\n%s", out)
+	}
+}

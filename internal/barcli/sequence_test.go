@@ -2091,8 +2091,8 @@ func TestFrameExplorePrismRequiresLiveSignal(t *testing.T) {
 	if !strings.Contains(out, "what the live system would show") {
 		t.Errorf("frame-explore prism prompt_hint must contain 'what the live system would show':\n%s", out)
 	}
-	if !strings.Contains(out, "a frame whose description contains no claim about live system output is not a valid frame") {
-		t.Errorf("frame-explore prism prompt_hint must contain rejection criterion 'a frame whose description contains no claim about live system output is not a valid frame':\n%s", out)
+	if !strings.Contains(out, "a live signal answerable without running the system is not a valid live signal") {
+		t.Errorf("frame-explore prism prompt_hint must contain rejection criterion 'a live signal answerable without running the system is not a valid live signal':\n%s", out)
 	}
 }
 
@@ -2106,10 +2106,38 @@ func TestFrameDebugPrismRequiresLiveSignalAndScopesDelegation(t *testing.T) {
 	if !strings.Contains(out, "what the live system would show") {
 		t.Errorf("frame-debug prism prompt_hint must contain 'what the live system would show':\n%s", out)
 	}
-	if !strings.Contains(out, "a frame whose description names no live system output is not a valid frame") {
-		t.Errorf("frame-debug prism prompt_hint must contain rejection criterion 'a frame whose description names no live system output is not a valid frame':\n%s", out)
+	if !strings.Contains(out, "a live signal answerable without running the system is not a valid live signal") {
+		t.Errorf("frame-debug prism prompt_hint must contain rejection criterion 'a live signal answerable without running the system is not a valid live signal':\n%s", out)
 	}
 	if strings.Contains(out, "commands and investigation methods are the agent's job during hypothesis cycles, not the frame definition's job") {
 		t.Errorf("frame-debug prism prompt_hint must not contain broad delegation phrase — delegation must be scoped to commands only:\n%s", out)
+	}
+}
+
+// Behavior 117: frame-explore prism prompt_hint contains the minimal live-signal rejection clause.
+func TestFrameExplorePrismLiveSignalRejectionClause(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "output produced by running the system") {
+		t.Errorf("frame-explore prism must contain 'output produced by running the system':\n%s", out)
+	}
+	if !strings.Contains(out, "a live signal answerable without running the system is not a valid live signal") {
+		t.Errorf("frame-explore prism must contain rejection clause 'a live signal answerable without running the system is not a valid live signal':\n%s", out)
+	}
+}
+
+// Behavior 118: frame-debug prism prompt_hint contains the minimal live-signal rejection clause.
+func TestFrameDebugPrismLiveSignalRejectionClause(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "output produced by running the system") {
+		t.Errorf("frame-debug prism must contain 'output produced by running the system':\n%s", out)
+	}
+	if !strings.Contains(out, "a live signal answerable without running the system is not a valid live signal") {
+		t.Errorf("frame-debug prism must contain rejection clause 'a live signal answerable without running the system is not a valid live signal':\n%s", out)
 	}
 }

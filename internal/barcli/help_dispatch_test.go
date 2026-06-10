@@ -158,3 +158,26 @@ func TestRenderDispatchHelpMultipleDispatchSteps(t *testing.T) {
 		t.Errorf("two-dispatch: want 2 '[dispatch protocol — required]' blocks, got %d\nout:\n%s", count, out)
 	}
 }
+
+// TestDispatchStepBlockDuringDispatchAbsenceClause asserts that the during_dispatch
+// instruction names the non-compliant state explicitly and removes the conflicting
+// "same response turn as the Agent tool calls" phrase.
+func TestDispatchStepBlockDuringDispatchAbsenceClause(t *testing.T) {
+	step := SequenceStep{
+		Token:          "prism",
+		Role:           "dispatch frames",
+		Type:           "dispatch",
+		FanOut:         "enumerate",
+		Join:           "all",
+		DuringDispatch: "show form:quiz",
+	}
+	var buf strings.Builder
+	writeDispatchStepBlock(&buf, step, 1, nil)
+	out := buf.String()
+	if !strings.Contains(out, "deferred execution does not satisfy this requirement") {
+		t.Errorf("during_dispatch instruction must contain absence clause 'deferred execution does not satisfy this requirement':\n%s", out)
+	}
+	if strings.Contains(out, "in the same response turn as the Agent tool calls") {
+		t.Errorf("during_dispatch instruction must not contain conflicting phrase 'in the same response turn as the Agent tool calls' — it permits deferred execution:\n%s", out)
+	}
+}

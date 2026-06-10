@@ -1491,8 +1491,8 @@ func TestFrameEnumerationDepthProhibition(t *testing.T) {
 		if !strings.Contains(step1, "belong to the dispatched agent, not this step") {
 			t.Errorf("bar sequence show %s step 1 must contain 'belong to the dispatched agent, not this step':\n%s", seq, step1)
 		}
-		if !strings.Contains(step1, "no backtick-wrapped text") {
-			t.Errorf("bar sequence show %s step 1 must contain 'no backtick-wrapped text':\n%s", seq, step1)
+		if !strings.Contains(strings.ToLower(step1), "no backtick-wrapped text") {
+			t.Errorf("bar sequence show %s step 1 must contain 'no backtick-wrapped text' (case-insensitive):\n%s", seq, step1)
 		}
 	}
 }

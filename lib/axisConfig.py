@@ -212,6 +212,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
         "trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
+        "interactive": "The response is the first turn of an exchange — present content and end without offering any further content.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
@@ -697,6 +698,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "formats": "Document types and writing formats",
         "ghost": "Workflow execution trace",
         "indirect": "Background first, conclusion last",
+        "interactive": "Multi-turn exchange",
         "log": "Work or research log entry",
         "merge": "Combine multiple sources coherently",
         "prep": "Experiment design write-up",
@@ -927,6 +929,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "formats": "様",
         "ghost": "幽",
         "indirect": "間",
+        "interactive": "対",
         "log": "誌",
         "merge": "合",
         "prep": "備",
@@ -1367,6 +1370,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "formats": "Format comparison",
         "ghost": "Workflow execution trace",
         "indirect": "Background then conclusion",
+        "interactive": "Multi-turn exchange",
         "log": "Work log entry",
         "merge": "Combine sources",
         "prep": "Experiment design",
@@ -3976,6 +3980,31 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "show your thinking before the conclusion",
                 "give me the context before the answer",
                 "reasoning before conclusion",
+            ],
+        },
+        "interactive": {
+            "distinctions": [
+                {
+                    "note": "cocreate = multi-turn converging toward a finished artifact; interactive = multi-turn where the exchange itself is the terminal state",
+                    "token": "cocreate",
+                },
+                {
+                    "note": "socratic = LLM questions user to surface existing reasoning; interactive = general pause-and-respond with no prescribed agenda",
+                    "token": "socratic",
+                },
+            ],
+            "heuristics": [
+                "interactively",
+                "make it interactive",
+                "interactive mode",
+                "pause for my response",
+                "wait for me before continuing",
+                "one step at a time with my input",
+                "interactive session",
+                "teach me interactively",
+                "don't continue until I respond",
+                "multi-turn",
+                "step by step with my input",
             ],
         },
         "log": {

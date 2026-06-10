@@ -1989,3 +1989,53 @@ func TestFrameExploreFinalStepUsesProbeConverge(t *testing.T) {
 		t.Errorf("frame-explore final step must use 'probe method:converge':\n%s", out)
 	}
 }
+
+// Behavior 108: frame-explore inner stop_when gates on literal string "Goal condition: met" in vet output.
+func TestFrameExploreInnerStopWhenGatesOnLiteralString(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Goal condition: met") {
+		t.Errorf("frame-explore inner stop_when must gate on literal string 'Goal condition: met':\n%s", out)
+	}
+	if !strings.Contains(out, "does not contain this exact string") {
+		t.Errorf("frame-explore inner stop_when must name the absent-string consequence:\n%s", out)
+	}
+}
+
+// Behavior 109: frame-explore vet prompt_hint requires ending with "Goal condition: met" or "Goal condition: unmet".
+func TestFrameExploreVetPromptHintRequiresGoalConditionString(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Goal condition: unmet") {
+		t.Errorf("frame-explore vet prompt_hint must require 'Goal condition: unmet' output when not met:\n%s", out)
+	}
+}
+
+// Behavior 110: frame-debug inner stop_when gates on literal string "Root cause: confirmed" in vet output.
+func TestFrameDebugInnerStopWhenGatesOnLiteralString(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Root cause: confirmed") {
+		t.Errorf("frame-debug inner stop_when must gate on literal string 'Root cause: confirmed':\n%s", out)
+	}
+	if !strings.Contains(out, "does not contain this exact string") {
+		t.Errorf("frame-debug inner stop_when must name the absent-string consequence:\n%s", out)
+	}
+}
+
+// Behavior 111: frame-debug vet prompt_hint requires ending with "Root cause: confirmed" or "Root cause: unconfirmed".
+func TestFrameDebugVetPromptHintRequiresRootCauseString(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
+	if code != 0 {
+		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "Root cause: unconfirmed") {
+		t.Errorf("frame-debug vet prompt_hint must require 'Root cause: unconfirmed' output when not confirmed:\n%s", out)
+	}
+}

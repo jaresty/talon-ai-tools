@@ -337,7 +337,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Each agent receives only the subject, its assigned frame description, and the goal condition. Execute the inner sequence until stop_when is met. Return findings in a labeled block with the number of cycles run.",
                 "inner": {
                     "mode": "cycle",
-                    "stop_when": "The goal condition stated in the subject is satisfied from this frame's perspective — evidence is sufficient for a confident verdict.",
+                    "stop_when": "The vet output for this cycle contains the literal string 'Goal condition: met' — a vet output that does not contain this exact string does not satisfy stop_when and a new cycle must begin.",
                     "steps": [
                         {
                             "token": "make form:prep",
@@ -352,7 +352,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "check form:vet",
                             "role": "evidence evaluation",
-                            "prompt_hint": "Evaluate the evidence gathered against the hypothesis. State whether the goal condition is met, partially met, or unmet, and what further cycles would add. If the experiment execution step produced only static analysis, reject the evidence and require a live invocation before accepting a verdict.",
+                            "prompt_hint": "Evaluate the evidence gathered against the hypothesis. End with exactly one of: 'Goal condition: met' (if the goal is fully satisfied from this frame's evidence) or 'Goal condition: unmet — [one sentence naming what further cycles must produce]'. If the experiment execution step produced only static analysis, reject the evidence and require a live invocation before accepting a verdict.",
                         },
                     ],
                 },
@@ -396,7 +396,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Each agent receives only the subject and its assigned frame. For each hypothesis: (1) run `bar build make form:prep` and execute the TASK from its output; (2) run the experiment; (3) run `bar build check form:vet` and execute the TASK from its output. A vet step that rejects the hypothesis requires a new `bar build make form:prep` before the cycle may continue. Return a labeled block stating: frame investigated, hypotheses tried, root cause confirmed or ruled out, and evidence gathered.",
                 "inner": {
                     "mode": "cycle",
-                    "stop_when": "The problem stated in the subject is understood — the root cause is identified with sufficient evidence to act on.",
+                    "stop_when": "The vet output for this cycle contains the literal string 'Root cause: confirmed' — a vet output that does not contain this exact string does not satisfy stop_when and a new cycle must begin.",
                     "steps": [
                         {
                             "token": "make form:prep",
@@ -411,7 +411,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "check form:vet",
                             "role": "evidence evaluation",
-                            "prompt_hint": "Evaluate the Bash output from the action step against the hypothesis. If confirmed, apply and verify the fix. If rejected, state why — a vet rejection is complete only when followed by a new bar build make form:prep for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement. If the investigation step produced only static analysis, reject the evidence and require a live invocation before accepting any verdict.",
+                            "prompt_hint": "Evaluate the Bash output from the action step against the hypothesis. If rejected, state why and name the next hypothesis to investigate — a vet rejection is complete only when followed by a new bar build make form:prep for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement. If the investigation step produced only static analysis, reject the evidence and require a live invocation before accepting any verdict. End with exactly one of: 'Root cause: confirmed' (if the root cause is identified with sufficient evidence to act) or 'Root cause: unconfirmed — [one sentence naming what further cycles must produce]'.",
                         },
                     ],
                 },

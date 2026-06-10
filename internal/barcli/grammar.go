@@ -361,8 +361,28 @@ func LoadGrammar(path string) (*Grammar, error) {
 	if err := grammar.validateNoPersonaCollisions(); err != nil {
 		return nil, err
 	}
+	if err := grammar.validateAutonomousSequences(); err != nil {
+		return nil, err
+	}
 
 	return grammar, nil
+}
+
+func (g *Grammar) validateAutonomousSequences() error {
+	for name, seq := range g.Sequences {
+		if seq.Mode != "autonomous" {
+			continue
+		}
+		for _, step := range seq.Steps {
+			if step.RequiresUserInput {
+				return fmt.Errorf("sequence %q is autonomous but step %q has requires_user_input: autonomous sequences must not contain interactive steps", name, step.Token)
+			}
+			if step.DuringDispatch != "" {
+				return fmt.Errorf("sequence %q is autonomous but step %q has during_dispatch: autonomous sequences must not contain during_dispatch steps", name, step.Token)
+			}
+		}
+	}
+	return nil
 }
 
 func loadGrammarBytes(requestedPath string) ([]byte, error) {

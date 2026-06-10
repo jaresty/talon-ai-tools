@@ -116,8 +116,8 @@ func runSequenceList(g *Grammar, asJSON bool, stdout, stderr io.Writer) int {
 	}
 
 	fmt.Fprintf(stdout, "Execution modes:\n")
-	fmt.Fprintf(stdout, "  autonomous  all steps run without stopping — after each step's output, proceed to the next step immediately without waiting for user input\n")
-	fmt.Fprintf(stdout, "  linear      pause after each step for user input before continuing\n")
+	fmt.Fprintf(stdout, "  autonomous  all steps run without stopping — no requires_user_input steps; proceed to the next step immediately without waiting for user input\n")
+	fmt.Fprintf(stdout, "  linear      pause after each step for user input before continuing — may contain requires_user_input steps that require real-world action\n")
 	fmt.Fprintf(stdout, "  cycle       repeat the step sequence until a stop condition is met\n")
 	fmt.Fprintln(stdout)
 	for _, n := range names {
@@ -179,8 +179,8 @@ func runSequenceShow(g *Grammar, name string, asJSON bool, stdout, stderr io.Wri
 		fmt.Fprintf(stdout, "stop_when: %s\n", seq.StopWhen)
 	}
 	fmt.Fprintf(stdout, "Execution modes:\n")
-	fmt.Fprintf(stdout, "  autonomous  all steps run without stopping — proceed to the next step immediately after completing each step, without waiting for user input. A response turn that completes a non-final step without a bar build call for the next step does not satisfy autonomous mode.\n")
-	fmt.Fprintf(stdout, "  linear      pause after each step for user input before continuing\n")
+	fmt.Fprintf(stdout, "  autonomous  all steps run without stopping — autonomous sequences contain no requires_user_input steps and no during_dispatch steps; proceed to the next step immediately after completing each step, without waiting for user input. A response turn that completes a non-final step without a bar build call for the next step does not satisfy autonomous mode.\n")
+	fmt.Fprintf(stdout, "  linear      pause after each step for user input before continuing — linear sequences may contain requires_user_input steps that require real-world action by the user before the sequence can continue\n")
 	fmt.Fprintf(stdout, "  cycle       repeat the step sequence until a stop condition is met\n")
 	fmt.Fprintln(stdout)
 	fmt.Fprintf(stdout, "Before executing step 1, emit a ## Sequence Derivation block:\n")

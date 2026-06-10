@@ -1946,6 +1946,36 @@ func TestDispatchStepBlockDuringDispatchBeforeAgentSpawn(t *testing.T) {
 	}
 }
 
+// Behavior 107: frame dispatch sequences (frame-eval, frame-explore, frame-synthesis, frame-debug) have mode linear, not autonomous — they contain during_dispatch steps which are user-interactive.
+func TestFrameDispatchSequencesAreLinear(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	for _, name := range []string{"frame-eval", "frame-explore", "frame-synthesis", "frame-debug"} {
+		seq, ok := g.Sequences[name]
+		if !ok {
+			t.Errorf("sequence %q not found", name)
+			continue
+		}
+		if seq.Mode != "linear" {
+			t.Errorf("sequence %q mode: got %q, want %q — sequences with during_dispatch steps must be linear", name, seq.Mode, "linear")
+		}
+	}
+}
+
+// Behavior 104: bar sequence list autonomous description states that autonomous sequences contain no requires_user_input steps.
+func TestSequenceListAutonomousNoRequiresUserInput(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "list"})
+	if code != 0 {
+		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "no requires_user_input steps") {
+		t.Errorf("bar sequence list autonomous description must state 'no requires_user_input steps':\n%s", out)
+	}
+}
+
 // Behavior 91: frame-explore final step uses probe method:converge, not pick method:converge.
 func TestFrameExploreFinalStepUsesProbeConverge(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})

@@ -2,6 +2,7 @@ package barcli
 
 import (
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"strings"
 	"testing"
@@ -477,4 +478,86 @@ func TestLoadGrammarExplicitPathOverridesEnv(t *testing.T) {
 	if _, err := LoadGrammar(overridePath); err != nil {
 		t.Fatalf("expected explicit path override to succeed, got %v", err)
 	}
+}
+
+// Behavior 105: LoadGrammar returns an error if an autonomous sequence contains a requires_user_input step.
+func TestLoadGrammarRejectsAutonomousSequenceWithRequiresUserInput(t *testing.T) {
+	g := minimalGrammarJSON(t)
+	g["sequences"] = map[string]interface{}{
+		"bad-seq": map[string]interface{}{
+			"description": "test sequence",
+			"mode":        "autonomous",
+			"steps": []interface{}{
+				map[string]interface{}{
+					"token":               "task:make",
+					"role":                "produce",
+					"requires_user_input": true,
+				},
+			},
+		},
+	}
+	path := writeGrammarJSON(t, g)
+	_, err := LoadGrammar(path)
+	if err == nil {
+		t.Fatal("expected error: autonomous sequence must not contain requires_user_input steps")
+	}
+	if !strings.Contains(err.Error(), "requires_user_input") {
+		t.Errorf("error must mention requires_user_input, got: %v", err)
+	}
+}
+
+// Behavior 106: LoadGrammar returns an error if an autonomous sequence contains a during_dispatch step.
+func TestLoadGrammarRejectsAutonomousSequenceWithDuringDispatch(t *testing.T) {
+	g := minimalGrammarJSON(t)
+	g["sequences"] = map[string]interface{}{
+		"bad-seq": map[string]interface{}{
+			"description": "test sequence",
+			"mode":        "autonomous",
+			"steps": []interface{}{
+				map[string]interface{}{
+					"token":           "task:make",
+					"role":            "produce",
+					"type":            "dispatch",
+					"fan_out":         "enumerate",
+					"join":            "all",
+					"during_dispatch": "show form:quiz",
+				},
+			},
+		},
+	}
+	path := writeGrammarJSON(t, g)
+	_, err := LoadGrammar(path)
+	if err == nil {
+		t.Fatal("expected error: autonomous sequence must not contain during_dispatch steps")
+	}
+	if !strings.Contains(err.Error(), "during_dispatch") {
+		t.Errorf("error must mention during_dispatch, got: %v", err)
+	}
+}
+
+func minimalGrammarJSON(t *testing.T) map[string]interface{} {
+	t.Helper()
+	base := filepath.Join("..", "..", "cmd", "bar", "testdata", "grammar.json")
+	data, err := os.ReadFile(base)
+	if err != nil {
+		t.Fatalf("read base grammar: %v", err)
+	}
+	var g map[string]interface{}
+	if err := json.Unmarshal(data, &g); err != nil {
+		t.Fatalf("parse base grammar: %v", err)
+	}
+	return g
+}
+
+func writeGrammarJSON(t *testing.T, g map[string]interface{}) string {
+	t.Helper()
+	data, err := json.Marshal(g)
+	if err != nil {
+		t.Fatalf("marshal grammar: %v", err)
+	}
+	path := filepath.Join(t.TempDir(), "grammar.json")
+	if err := os.WriteFile(path, data, 0o600); err != nil {
+		t.Fatalf("write grammar: %v", err)
+	}
+	return path
 }

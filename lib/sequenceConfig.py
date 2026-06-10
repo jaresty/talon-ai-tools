@@ -212,7 +212,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "description": "Enumerate independent evaluation frames, execute each in isolation, then converge on a recommendation.",
         "example": "Evaluating a proposed API design from the perspectives of a security engineer, a frontend consumer, and a platform operator — each independently, with no shared priors.",
         "heuristics": ["evaluate independently", "multiple independent perspectives", "parallel evaluation", "isolated ideation", "spin up subagents", "evaluate from each angle separately", "no shared context between evaluators", "independent assessments then merge"],
-        "mode": "autonomous",
+        "mode": "linear",
         "steps": [
             {
                 "token": "make method:prism",
@@ -250,7 +250,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "description": "Enumerate interpretation frames, read and summarize from each frame in parallel, then converge on a multi-perspective synthesis.",
         "example": "Reviewing a proposed API design from a security frame, a usability frame, and a performance frame — each agent reads the same material and returns a framed summary, then the results are synthesized.",
         "heuristics": ["read from multiple angles", "summarize from different perspectives", "parallel frame reading", "multi-stakeholder review", "lens-based analysis", "interpret from each angle", "no experimentation needed"],
-        "mode": "autonomous",
+        "mode": "linear",
         "steps": [
             {
                 "token": "make method:prism",
@@ -319,7 +319,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "description": "Enumerate independent frames for a problem, run an experiment cycle within each frame until a goal is reached, then converge on findings across frames.",
         "example": "Exploring whether a proposed API simplification holds up — framed from security, usability, and performance angles — each angle running hypothesis/evidence cycles until the goal condition is satisfied.",
         "heuristics": ["explore from multiple angles", "parallel frame exploration", "hypothesis cycles per frame", "experiment across frames", "multi-frame investigation", "test each angle independently", "explore then converge"],
-        "mode": "autonomous",
+        "mode": "linear",
         "stop_when": "Each frame's experiment cycle has reached the goal condition stated in the original subject.",
         "steps": [
             {
@@ -379,7 +379,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "description": "Partition a problem into independent investigation frames, assign one agent per frame to cycle through hypotheses until the root cause is understood, then converge on the first confirmed explanation.",
         "example": "A service is returning intermittent 500s — partition into frames (connection layer, query layer, config layer), each agent generates and cycles through hypotheses for its frame until the root cause is identified.",
         "heuristics": ["parallel debugging", "parallel root cause analysis", "frame-per-area debugging", "independent investigation frames", "divide and diagnose", "parallel hypothesis testing"],
-        "mode": "autonomous",
+        "mode": "linear",
         "steps": [
             {
                 "token": "make method:prism",

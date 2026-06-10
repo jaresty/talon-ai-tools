@@ -121526,7 +121526,7 @@
         "no shared context between evaluators",
         "independent assessments then merge"
       ],
-      "mode": "autonomous",
+      "mode": "linear",
       "steps": [
         {
           "token": "make method:prism",
@@ -121572,7 +121572,7 @@
         "interpret from each angle",
         "no experimentation needed"
       ],
-      "mode": "autonomous",
+      "mode": "linear",
       "steps": [
         {
           "token": "make method:prism",
@@ -121662,7 +121662,7 @@
         "test each angle independently",
         "explore then converge"
       ],
-      "mode": "autonomous",
+      "mode": "linear",
       "stop_when": "Each frame's experiment cycle has reached the goal condition stated in the original subject.",
       "steps": [
         {
@@ -121729,7 +121729,7 @@
         "divide and diagnose",
         "parallel hypothesis testing"
       ],
-      "mode": "autonomous",
+      "mode": "linear",
       "steps": [
         {
           "token": "make method:prism",
@@ -122504,7 +122504,7 @@
     "slugs": "c8606e67cb05de82a74e07e21b1f22e7cb7b3c4fd3c9656dcf78d7fbc5a30cb8",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "d0a1ea0619828610571ec700349c19483db1d7eeb54d16ab6f560914b40e00f6",
+    "sequences": "e4f50de50eb29bc1140865d36d0212445a0025e3a023284ea48236ee4ce046a9",
     "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

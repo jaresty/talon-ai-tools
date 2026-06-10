@@ -60,6 +60,33 @@ def test_grammar_json_contains_compositions():
     assert len(data["compositions"]) >= 4, "must have at least 4 compositions"
 
 
+def test_falsify_atomic_prose_contains_per_call_marker():
+    from lib.compositionConfig import COMPOSITIONS
+    entry = next(c for c in COMPOSITIONS if c["name"] == "falsify+atomic")
+    assert "Pre-edit [N]:" in entry["prose"], (
+        "falsify+atomic prose must contain 'Pre-edit [N]:' — the structural marker "
+        "that fires at each file-modifying tool call boundary"
+    )
+
+
+def test_falsify_atomic_prose_contains_root_criterion():
+    from lib.compositionConfig import COMPOSITIONS
+    entry = next(c for c in COMPOSITIONS if c["name"] == "falsify+atomic")
+    assert "each file-modifying tool call is governed independently" in entry["prose"], (
+        "falsify+atomic prose must contain root criterion phrase "
+        "'each file-modifying tool call is governed independently'"
+    )
+
+
+def test_falsify_atomic_prose_contains_per_call_independence_clause():
+    from lib.compositionConfig import COMPOSITIONS
+    entry = next(c for c in COMPOSITIONS if c["name"] == "falsify+atomic")
+    assert "regardless of whether a pre-edit block for a prior call appears above it" in entry["prose"], (
+        "falsify+atomic prose must contain per-call independence clause "
+        "'regardless of whether a pre-edit block for a prior call appears above it'"
+    )
+
+
 def test_grammar_json_composition_entries_have_required_fields():
     grammar_path = ROOT / "build" / "prompt-grammar.json"
     data = json.loads(grammar_path.read_text())

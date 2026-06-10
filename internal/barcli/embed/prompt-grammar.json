@@ -121247,7 +121247,7 @@
         {
           "token": "make method:prism",
           "role": "frame enumeration",
-          "prompt_hint": "Enumerate independent frames that differ structurally. A frame name contains no verb and makes no causal claim. Each frame names a structural angle and the class of evidence that would confirm or refute the goal condition from that angle — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence."
+          "prompt_hint": "Enumerate independent frames that differ structurally. A frame name contains no verb and makes no causal claim. Each frame names a structural angle and the observable runtime behavior from that vantage point that would confirm or refute the goal condition — observable runtime behavior is what the live system does when viewed from this angle, not which commands to run or which files to read; commands and investigation methods are the agent's job during the cycle, not the frame definition's job. No backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also extract and state the goal condition from the subject — this becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence."
         },
         {
           "type": "dispatch",
@@ -121313,7 +121313,7 @@
         {
           "token": "make method:prism",
           "role": "frame enumeration",
-          "prompt_hint": "Partition into independent investigation frames — each names a system layer or component (e.g. 'connection layer', 'query layer') that can contain multiple hypotheses. A frame name contains no verb and makes no causal claim. A frame description names a structural area and the class of evidence that would confirm or rule out problems there — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not generate hypotheses yet — enumeration is the only output of this step."
+          "prompt_hint": "Partition into independent investigation frames — each names a system layer or component (e.g. 'connection layer', 'query layer') that can contain multiple hypotheses. A frame name contains no verb and makes no causal claim. A frame description names a structural area and the observable runtime behavior visible from that layer when a problem is present — observable runtime behavior is what the live system exhibits when viewed from this layer, not which commands to run or which files to read; commands and investigation methods are the agent's job during hypothesis cycles, not the frame definition's job. No backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not generate hypotheses yet — enumeration is the only output of this step."
         },
         {
           "type": "dispatch",
@@ -122083,7 +122083,7 @@
     "slugs": "174c0e82f8f36b764ca7e7e04044c7a6a73c4bdf064adf70ff46a37e8b9f2ccc",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "eeb032fea478482f0f716c0b72604be22531b98e4bb6d2ffc73745fc1efb9c85",
+    "sequences": "563d1ceff25ba0d3dc13d5f91fcb941b8181ccfb84b82db614705f47b0beca9a",
     "compositions": "ddcdfd438ec30667a177d4b857c65f8e06699823fe580c6a84455fd0613bfe56",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

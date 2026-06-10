@@ -2141,3 +2141,16 @@ func TestFrameDebugPrismLiveSignalRejectionClause(t *testing.T) {
 		t.Errorf("frame-debug prism must contain rejection clause 'a live signal answerable without running the system is not a valid live signal':\n%s", out)
 	}
 }
+
+// Behavior 119: both prism prompt_hints require a class of output, not a single specific instance.
+func TestPrismLiveSignalRequiresClassOfOutput(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "a class of output produced by running the system") {
+			t.Errorf("%s prism must contain 'a class of output produced by running the system':\n%s", seq, out)
+		}
+	}
+}

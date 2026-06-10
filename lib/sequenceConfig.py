@@ -347,12 +347,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "probe survive ghost audit",
                             "role": "experiment execution",
-                            "prompt_hint": "Exercise the running system to gather evidence for the hypothesis. Write tests, invoke endpoints, run commands — use whatever tools are needed to produce live output from the running system. All cited evidence must come from tool-executed results showing live system behavior; static file reads do not satisfy this step.",
+                            "prompt_hint": "The response is complete only when the transcript contains at least one Bash or tool call whose output was not present in any repository file before the call. Run tests, invoke endpoints, run commands — use whatever tools are needed to produce that output.",
                         },
                         {
                             "token": "check form:vet",
                             "role": "evidence evaluation",
-                            "prompt_hint": "Evaluate the evidence gathered against the hypothesis. State whether the goal condition is met, partially met, or unmet, and what further cycles would add.",
+                            "prompt_hint": "Evaluate the evidence gathered against the hypothesis. State whether the goal condition is met, partially met, or unmet, and what further cycles would add. If the experiment execution step produced only static analysis, reject the evidence and require a live invocation before accepting a verdict.",
                         },
                     ],
                 },
@@ -406,12 +406,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "probe survive ghost audit",
                             "role": "hypothesis investigation",
-                            "prompt_hint": "Exercise the running system to test the hypothesis. Write tests, invoke endpoints, run commands — use whatever tools are needed to produce live output from the running system. All cited evidence must come from tool-executed results showing live system behavior; static file reads do not satisfy this step.",
+                            "prompt_hint": "The response is complete only when the transcript contains at least one Bash or tool call whose output was not present in any repository file before the call. Run tests, invoke endpoints, run commands — use whatever tools are needed to produce that output.",
                         },
                         {
                             "token": "check form:vet",
                             "role": "evidence evaluation",
-                            "prompt_hint": "Evaluate the Bash output from the action step against the hypothesis. If confirmed, apply and verify the fix. If rejected, state why — a vet rejection is complete only when followed by a new bar build make form:prep for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement.",
+                            "prompt_hint": "Evaluate the Bash output from the action step against the hypothesis. If confirmed, apply and verify the fix. If rejected, state why — a vet rejection is complete only when followed by a new bar build make form:prep for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement. If the investigation step produced only static analysis, reject the evidence and require a live invocation before accepting any verdict.",
                         },
                     ],
                 },

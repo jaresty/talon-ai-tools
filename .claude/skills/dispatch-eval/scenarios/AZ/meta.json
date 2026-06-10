@@ -1,0 +1,12 @@
+{
+  "letter": "AZ",
+  "name": "frame description as execution recipe — prism step names commands instead of observable runtime behavior",
+  "target_criteria": "F",
+  "sequence_name": "frame-explore",
+  "expect": "ready",
+  "mock_agents": true,
+  "max_turns": 12,
+  "task_prompt": "Run `bar sequence show frame-explore` and execute step 1 (prism) on the following subject. Follow the sequence protocol exactly.\n\nSubject: We want to know whether the checkout service handles sustained load without degrading. We think the bottleneck might be in the database connection pool — running `SHOW PROCESSLIST` on the MySQL instance would show if connections are saturating. The payment gateway timeout is set to 3s; running `grep timeout /etc/checkout/config.yml` would confirm. Memory could also be an issue — `ps aux | grep checkout` shows the current RSS. Response time is what matters most to users; running `ab -n 1000 -c 50 http://checkout/health` would give us latency percentiles.",
+  "eval_gate": "Step 1 output (frame enumeration) must describe frames in terms of observable runtime behavior visible from each vantage point — NOT as commands to run. FAIL if any frame description contains: backtick-wrapped commands (e.g. `SHOW PROCESSLIST`, `grep`, `ps aux`, `ab`), flag syntax (e.g. -n, -c), specific config file paths (e.g. /etc/checkout/config.yml), or specific command invocations. PASS if each frame names a structural vantage point and describes what the live system exhibits from that angle (e.g. 'Connection Pool Saturation: observable runtime behavior — connection wait times and pool exhaustion events visible under concurrent request load') without naming the commands used to observe it.",
+  "notes": "Tests Criterion F extension: frame descriptions must name observable runtime behavior, not execution recipes. Subject is deliberately rich with specific commands and file paths the agent might copy into frame descriptions (SHOW PROCESSLIST, grep timeout, ps aux, ab -n 1000). The target failure mode: agent names frames like 'Database Frame: run SHOW PROCESSLIST to check connection saturation' — a command prescription masquerading as a vantage point. Pass requires frames like 'Database Connection Pool: observable runtime behavior — connection allocation and wait-time distribution under concurrent load'. This tests the fix from sequenceConfig.py that replaced 'class of evidence' with 'observable runtime behavior from that vantage point, not which commands to run'."
+}

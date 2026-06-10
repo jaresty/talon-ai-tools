@@ -121690,7 +121690,7 @@
               {
                 "token": "probe survive ghost audit",
                 "role": "experiment execution",
-                "prompt_hint": "The response is complete only when the transcript contains at least one Bash or tool call whose output was not present in any repository file before the call. Run tests, invoke endpoints, run commands — use whatever tools are needed to produce that output."
+                "prompt_hint": "This step is complete only when the transcript contains at least one Bash tool call whose output shows live execution results — stdout or stderr from running the subject under investigation. A response in which every tool call is a Read tool call does not satisfy this step. Run tests, invoke endpoints, execute commands — the Bash output must be produced by running something, not by reading files."
               },
               {
                 "token": "check form:vet",
@@ -121756,7 +121756,7 @@
               {
                 "token": "probe survive ghost audit",
                 "role": "hypothesis investigation",
-                "prompt_hint": "The response is complete only when the transcript contains at least one Bash or tool call whose output was not present in any repository file before the call. Run tests, invoke endpoints, run commands — use whatever tools are needed to produce that output."
+                "prompt_hint": "This step is complete only when the transcript contains at least one Bash tool call whose output shows live execution results — stdout or stderr from running the subject under investigation. A response in which every tool call is a Read tool call does not satisfy this step. Run tests, invoke endpoints, execute commands — the Bash output must be produced by running something, not by reading files."
               },
               {
                 "token": "check form:vet",
@@ -122504,7 +122504,7 @@
     "slugs": "c8606e67cb05de82a74e07e21b1f22e7cb7b3c4fd3c9656dcf78d7fbc5a30cb8",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "19dcde814ed9112d2c3d1785b4d3e4fdaa7c052484f43070aba7828eecc44ebc",
+    "sequences": "f1329fc0561d3c49c727d212b0415e76895475aa5ca91a463319a68066c77d4e",
     "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

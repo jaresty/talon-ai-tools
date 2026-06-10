@@ -1141,8 +1141,8 @@ func TestFrameDebugActionStepNamesBashToolCallResult(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "whose output was not present in any repository file before the call") {
-		t.Errorf("frame-debug experiment step must require structural gate condition as evidence standard:\n%s", out)
+	if !strings.Contains(out, "stdout or stderr from running the subject under investigation") {
+		t.Errorf("frame-debug experiment step must require live output (stdout or stderr) as evidence standard:\n%s", out)
 	}
 }
 
@@ -1163,8 +1163,8 @@ func TestFrameExploreActionStepRequiresBashToolCall(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "whose output was not present in any repository file before the call") {
-		t.Errorf("frame-explore experiment step must require structural gate condition as evidence standard:\n%s", out)
+	if !strings.Contains(out, "stdout or stderr from running the subject under investigation") {
+		t.Errorf("frame-explore experiment step must require live output (stdout or stderr) as evidence standard:\n%s", out)
 	}
 }
 
@@ -1335,8 +1335,8 @@ func TestInnerActionProtocolRequiresBash(t *testing.T) {
 	if strings.Contains(out, "Execute actions from prior step using tools.") {
 		t.Errorf("inner action protocol must not say 'using tools' — must require live Bash execution:\n%s", out)
 	}
-	if !strings.Contains(out, "whose output was not present in any repository file before the call") {
-		t.Errorf("inner action protocol must require structural gate condition:\n%s", out)
+	if !strings.Contains(out, "stdout or stderr from running the subject under investigation") {
+		t.Errorf("inner action protocol must require live output (stdout or stderr):\n%s", out)
 	}
 }
 
@@ -2037,5 +2037,47 @@ func TestFrameDebugVetPromptHintRequiresRootCauseString(t *testing.T) {
 	}
 	if !strings.Contains(out, "Root cause: unconfirmed") {
 		t.Errorf("frame-debug vet prompt_hint must require 'Root cause: unconfirmed' output when not confirmed:\n%s", out)
+	}
+}
+
+// Behavior 112: survive step prompt_hint names Bash tool calls exclusively — "Bash or tool call" must not appear.
+func TestSurvivePromptHintNamesBashExclusively(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if strings.Contains(out, "Bash or tool call") {
+			t.Errorf("%s survive prompt_hint must not contain 'Bash or tool call' — Read tool calls must be excluded explicitly:\n%s", seq, out)
+		}
+		if !strings.Contains(out, "Bash tool call") {
+			t.Errorf("%s survive prompt_hint must name 'Bash tool call' exclusively:\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 113: survive step prompt_hint contains absence clause naming Read-only transcripts as non-compliant.
+func TestSurvivePromptHintContainsReadAbsenceClause(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "every tool call is a Read tool call does not satisfy") {
+			t.Errorf("%s survive prompt_hint must contain absence clause 'every tool call is a Read tool call does not satisfy':\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 114: survive step prompt_hint requires live execution output (stdout or stderr).
+func TestSurvivePromptHintRequiresLiveOutput(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "stdout or stderr") {
+			t.Errorf("%s survive prompt_hint must require live output named as 'stdout or stderr':\n%s", seq, out)
+		}
 	}
 }

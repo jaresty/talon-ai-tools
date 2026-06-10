@@ -347,7 +347,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "probe survive ghost audit",
                             "role": "experiment execution",
-                            "prompt_hint": "The response is complete only when the transcript contains at least one Bash or tool call whose output was not present in any repository file before the call. Run tests, invoke endpoints, run commands — use whatever tools are needed to produce that output.",
+                            "prompt_hint": "This step is complete only when the transcript contains at least one Bash tool call whose output shows live execution results — stdout or stderr from running the subject under investigation. A response in which every tool call is a Read tool call does not satisfy this step. Run tests, invoke endpoints, execute commands — the Bash output must be produced by running something, not by reading files.",
                         },
                         {
                             "token": "check form:vet",
@@ -406,7 +406,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "probe survive ghost audit",
                             "role": "hypothesis investigation",
-                            "prompt_hint": "The response is complete only when the transcript contains at least one Bash or tool call whose output was not present in any repository file before the call. Run tests, invoke endpoints, run commands — use whatever tools are needed to produce that output.",
+                            "prompt_hint": "This step is complete only when the transcript contains at least one Bash tool call whose output shows live execution results — stdout or stderr from running the subject under investigation. A response in which every tool call is a Read tool call does not satisfy this step. Run tests, invoke endpoints, execute commands — the Bash output must be produced by running something, not by reading files.",
                         },
                         {
                             "token": "check form:vet",

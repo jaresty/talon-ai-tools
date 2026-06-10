@@ -1135,14 +1135,14 @@ func TestFrameDebugDispatchPoint5RequiresBarWorkflowSkill(t *testing.T) {
 	}
 }
 
-// Behavior 72: frame-debug action step names Bash tool call result as observable completion criterion.
+// Behavior 72: frame-debug action step names structural gate condition as observable completion criterion.
 func TestFrameDebugActionStepNamesBashToolCallResult(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "live system behavior") {
-		t.Errorf("frame-debug experiment step must require 'live system behavior' as evidence standard:\n%s", out)
+	if !strings.Contains(out, "whose output was not present in any repository file before the call") {
+		t.Errorf("frame-debug experiment step must require structural gate condition as evidence standard:\n%s", out)
 	}
 }
 
@@ -1157,14 +1157,14 @@ func TestFrameDebugVetStepNamesNewPrepAfterRejection(t *testing.T) {
 	}
 }
 
-// Behavior 74: frame-explore experiment step requires live system behavior evidence (not static reads).
+// Behavior 74: frame-explore experiment step requires structural gate condition (not static reads).
 func TestFrameExploreActionStepRequiresBashToolCall(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "live system behavior") {
-		t.Errorf("frame-explore experiment step must require 'live system behavior' as evidence standard:\n%s", out)
+	if !strings.Contains(out, "whose output was not present in any repository file before the call") {
+		t.Errorf("frame-explore experiment step must require structural gate condition as evidence standard:\n%s", out)
 	}
 }
 
@@ -1326,7 +1326,7 @@ func TestDispatchProtocolPreservesDerivationBlocks(t *testing.T) {
 	}
 }
 
-// Behavior 79: inner action protocol block explicitly requires Bash tool calls (not just "tools").
+// Behavior 79: inner action protocol block explicitly requires structural gate condition (not just "tools").
 func TestInnerActionProtocolRequiresBash(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
@@ -1335,8 +1335,8 @@ func TestInnerActionProtocolRequiresBash(t *testing.T) {
 	if strings.Contains(out, "Execute actions from prior step using tools.") {
 		t.Errorf("inner action protocol must not say 'using tools' — must require live Bash execution:\n%s", out)
 	}
-	if !strings.Contains(out, "live system behavior") {
-		t.Errorf("inner action protocol must require 'live system behavior':\n%s", out)
+	if !strings.Contains(out, "whose output was not present in any repository file before the call") {
+		t.Errorf("inner action protocol must require structural gate condition:\n%s", out)
 	}
 }
 

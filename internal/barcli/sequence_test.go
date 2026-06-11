@@ -1785,8 +1785,8 @@ func TestDispatchStepBlockRendersDuringDispatch(t *testing.T) {
 	if !strings.Contains(out, "explain form:quiz") {
 		t.Errorf("dispatch block must contain the during_dispatch command 'explain form:quiz':\n%s", out)
 	}
-	if !strings.Contains(out, "Before spawning any agents") {
-		t.Errorf("dispatch block must instruct LLM to run during_dispatch before spawning agents:\n%s", out)
+	if !strings.Contains(out, "After spawning all agents") {
+		t.Errorf("dispatch block must instruct LLM to run during_dispatch after spawning agents:\n%s", out)
 	}
 	if !strings.Contains(out, "result block for each Agent tool call") {
 		t.Errorf("dispatch block must instruct waiting via result block presence before joining:\n%s", out)
@@ -1941,8 +1941,29 @@ func TestDispatchStepBlockDuringDispatchBeforeAgentSpawn(t *testing.T) {
 	if spawnIdx == -1 {
 		t.Fatalf("dispatch block must contain Agent spawning instruction 'Spawn one Agent tool call':\n%s", out)
 	}
-	if bashIdx > spawnIdx {
-		t.Errorf("during_dispatch Bash instruction must appear before Agent spawning instruction: bashIdx=%d spawnIdx=%d\n%s", bashIdx, spawnIdx, out)
+	if spawnIdx > bashIdx {
+		t.Errorf("Agent spawning instruction must appear before during_dispatch Bash instruction: spawnIdx=%d bashIdx=%d\n%s", spawnIdx, bashIdx, out)
+	}
+}
+
+// Behavior 106: when DuringDispatch is set, dispatch block contains explicit interruption contract — agents returning mid-task is expected.
+func TestDispatchStepBlockInterruptionContractPresent(t *testing.T) {
+	step := SequenceStep{
+		Token:          "prism",
+		Role:           "dispatch frames",
+		Type:           "dispatch",
+		FanOut:         "enumerate",
+		Join:           "all",
+		DuringDispatch: "show form:quiz",
+	}
+	var buf strings.Builder
+	writeDispatchStepBlock(&buf, step, 1, nil)
+	out := buf.String()
+	if !strings.Contains(out, "agents may return") {
+		t.Errorf("dispatch block with during_dispatch must contain interruption contract ('agents may return'):\n%s", out)
+	}
+	if !strings.Contains(out, "stop the during_dispatch task") {
+		t.Errorf("dispatch block with during_dispatch must instruct stopping during_dispatch when agents return:\n%s", out)
 	}
 }
 
@@ -2082,63 +2103,60 @@ func TestSurvivePromptHintRequiresLiveOutput(t *testing.T) {
 	}
 }
 
-// Behavior 115: frame-explore prism prompt_hint names what the live system would show and rejects frameless descriptions.
+// Behavior 115: frame-explore prism prompt_hint names the root criterion and names valid signal classes.
 func TestFrameExplorePrismRequiresLiveSignal(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "what the live system would show") {
-		t.Errorf("frame-explore prism prompt_hint must contain 'what the live system would show':\n%s", out)
+	if !strings.Contains(out, "cannot exist in the repository at rest") {
+		t.Errorf("frame-explore prism prompt_hint must contain root criterion 'cannot exist in the repository at rest':\n%s", out)
 	}
-	if !strings.Contains(out, "a live signal answerable without running the system is not a valid live signal") {
-		t.Errorf("frame-explore prism prompt_hint must contain rejection criterion 'a live signal answerable without running the system is not a valid live signal':\n%s", out)
+	if !strings.Contains(out, "stdout lines, stderr lines, log entries, test result records, application trace") {
+		t.Errorf("frame-explore prism prompt_hint must contain valid signal class enumeration:\n%s", out)
 	}
 }
 
-// Behavior 116: frame-debug prism prompt_hint names what the live system would show, rejects frameless descriptions,
-// and scopes delegation to commands only (not signal identification).
+// Behavior 116: frame-debug prism prompt_hint names the root criterion, names valid signal classes,
+// and contains the code-artifact exclusion list.
 func TestFrameDebugPrismRequiresLiveSignalAndScopesDelegation(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "what the live system would show") {
-		t.Errorf("frame-debug prism prompt_hint must contain 'what the live system would show':\n%s", out)
+	if !strings.Contains(out, "cannot exist in the repository at rest") {
+		t.Errorf("frame-debug prism prompt_hint must contain root criterion 'cannot exist in the repository at rest':\n%s", out)
 	}
-	if !strings.Contains(out, "a live signal answerable without running the system is not a valid live signal") {
-		t.Errorf("frame-debug prism prompt_hint must contain rejection criterion 'a live signal answerable without running the system is not a valid live signal':\n%s", out)
-	}
-	if strings.Contains(out, "commands and investigation methods are the agent's job during hypothesis cycles, not the frame definition's job") {
-		t.Errorf("frame-debug prism prompt_hint must not contain broad delegation phrase — delegation must be scoped to commands only:\n%s", out)
+	if !strings.Contains(out, "type definitions, mapping tables, switch branches, schema files, function signatures") {
+		t.Errorf("frame-debug prism prompt_hint must contain code-artifact exclusion list:\n%s", out)
 	}
 }
 
-// Behavior 117: frame-explore prism prompt_hint contains the minimal live-signal rejection clause.
+// Behavior 117: frame-explore prism prompt_hint contains the live-signal derivation instruction.
 func TestFrameExplorePrismLiveSignalRejectionClause(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "output produced by running the system") {
-		t.Errorf("frame-explore prism must contain 'output produced by running the system':\n%s", out)
+	if !strings.Contains(out, "invoking the system") {
+		t.Errorf("frame-explore prism must contain 'invoking the system':\n%s", out)
 	}
-	if !strings.Contains(out, "a live signal answerable without running the system is not a valid live signal") {
-		t.Errorf("frame-explore prism must contain rejection clause 'a live signal answerable without running the system is not a valid live signal':\n%s", out)
+	if !strings.Contains(out, "would show, would appear, could be observed as") {
+		t.Errorf("frame-explore prism must contain conditional-prediction closure strings:\n%s", out)
 	}
 }
 
-// Behavior 118: frame-debug prism prompt_hint contains the minimal live-signal rejection clause.
+// Behavior 118: frame-debug prism prompt_hint contains the live-signal derivation instruction.
 func TestFrameDebugPrismLiveSignalRejectionClause(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "output produced by running the system") {
-		t.Errorf("frame-debug prism must contain 'output produced by running the system':\n%s", out)
+	if !strings.Contains(out, "invoking the system") {
+		t.Errorf("frame-debug prism must contain 'invoking the system':\n%s", out)
 	}
-	if !strings.Contains(out, "a live signal answerable without running the system is not a valid live signal") {
-		t.Errorf("frame-debug prism must contain rejection clause 'a live signal answerable without running the system is not a valid live signal':\n%s", out)
+	if !strings.Contains(out, "would show, would appear, could be observed as") {
+		t.Errorf("frame-debug prism must contain conditional-prediction closure strings:\n%s", out)
 	}
 }
 
@@ -2149,8 +2167,8 @@ func TestPrismLiveSignalRequiresClassOfOutput(t *testing.T) {
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
 		}
-		if !strings.Contains(out, "a class of output produced by running the system") {
-			t.Errorf("%s prism must contain 'a class of output produced by running the system':\n%s", seq, out)
+		if !strings.Contains(out, "cannot exist in the repository at rest") {
+			t.Errorf("%s prism must contain root criterion 'cannot exist in the repository at rest':\n%s", seq, out)
 		}
 	}
 }
@@ -2189,8 +2207,8 @@ func TestPrismNamesApplicationTraceAsValidOutput(t *testing.T) {
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
 		}
-		if !strings.Contains(out, "application trace (stack frames from a running process)") {
-			t.Errorf("%s prism must name 'application trace (stack frames from a running process)' as a valid output class:\n%s", seq, out)
+		if !strings.Contains(out, "application trace") {
+			t.Errorf("%s prism must name 'application trace' as a valid output class:\n%s", seq, out)
 		}
 	}
 }

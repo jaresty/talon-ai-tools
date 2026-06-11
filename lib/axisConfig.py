@@ -371,13 +371,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "governed action): Name — (a) the assertion-failure marker: the string in a result that signals the artifact detected the behavior's absence; (b) the string in a result that "
         "signals a governed behavior is present; (c) the string identifying each governed behavior in a result; (d) the string identifying the governed action. A result satisfies this "
         "token if and only if: a line where (a) immediately precedes (c) appears in the transcript, at least one line where (b) immediately precedes a governed behavior identifier "
-        "appears, and the result was produced by a tool call whose text names (d) directly. A result produced by a disposable artifact — one that will not persist in the work product "
-        "— does not satisfy this token. A result where any governed behavior identifier appears under a signal other than (a) or (b) does not satisfy this token for that behavior; "
-        "bring the system to a state where every governed behavior can produce either (a) or (b) before proceeding. Proceed to the governed action only when the derivation and the "
-        "satisfying result are present as text above this point in the transcript. Exception: the result-block requirement does not apply to the single governed action whose effect "
-        "introduces (c) as a new string — a governed action is the creation step only if (c) is absent before the action and present after it (equivalently: the governing criterion "
-        "string is absent from the file before the call and present after it); any other governed action is not exempt. After all governed actions complete, the persistent artifact "
-        "must contain at least one statement referencing (c) whose outcome would change if the governed behavior were reversed.",
+        "appears, and the result was produced by a tool call whose text names (d) directly. A result satisfies this token only when produced by an artifact whose file path exists in "
+        "the work product at the time of the governed action. A result where any governed behavior identifier appears under a signal other than (a) or (b) does not satisfy this token "
+        "for that behavior; bring the system to a state where every governed behavior can produce either (a) or (b) before proceeding. If implementation already exists when this token "
+        "is invoked: revert the implementation, run the artifact to produce a result where (a) precedes (c), then restore the implementation and run again to produce a result where "
+        "(b) precedes the governed behavior identifier — both results must appear in the transcript before the governed action. Exception: the result-block requirement does not apply "
+        "to the single governed action whose effect introduces (c) as a new string — a governed action is the creation step only if (c) is absent before the action and present after "
+        "it (equivalently: the governing criterion string is absent from the file before the call and present after it); any other governed action is not exempt. Proceed to the "
+        "governed action only when the derivation and the satisfying result are present as text above this point in the transcript.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

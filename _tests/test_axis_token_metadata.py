@@ -1050,25 +1050,25 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_governing_artifact_not_disposable(self):
-        """falsify must require the governing artifact to persist in the work product — a disposable artifact (/tmp) does not satisfy this token regardless of whether it produces the correct signals (hollow audit finding)."""
+        """falsify must require the governing artifact to persist in the work product — an allow-list clause naming file path existence closes the disposable-artifact gap (hollow audit fix: deny-list replaced with allow-list)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "will not persist in the work product",
+            "file path exists in the work product",
             definition,
-            "falsify must prohibit disposable governing artifacts — 'will not persist in the work product' must appear in the definition",
+            "falsify must require artifacts to exist in the work product by file path — 'file path exists in the work product' must appear in the definition",
         )
 
     def test_falsify_disposable_artifact_constraint_in_primary_condition(self):
-        """falsify's PRIMARY condition must name the disposable-artifact constraint — it must appear before 'Exception:' so /tmp-based governing artifacts are excluded from the primary condition (hollow audit finding)."""
+        """falsify's PRIMARY condition must name the persistent-artifact requirement — allow-list clause must appear before 'Exception:' so /tmp-based governing artifacts are excluded (hollow audit fix: allow-list replaces deny-list)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         exception_start = definition.find("Exception:")
         primary_condition = definition[:exception_start] if exception_start != -1 else definition
         self.assertIn(
-            "disposable artifact",
+            "file path exists in the work product",
             primary_condition,
-            "falsify primary condition must prohibit disposable governing artifacts — 'disposable artifact' must appear before 'Exception:'",
+            "falsify primary condition must require artifacts to exist in the work product by file path — allow-list clause must appear before 'Exception:'",
         )
 
     def test_falsify_governed_action_boundary_named(self):

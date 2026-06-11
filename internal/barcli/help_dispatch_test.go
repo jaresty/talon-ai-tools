@@ -181,3 +181,24 @@ func TestDispatchStepBlockDuringDispatchAbsenceClause(t *testing.T) {
 		t.Errorf("during_dispatch instruction must not contain conflicting phrase 'in the same response turn as the Agent tool calls' — it permits deferred execution:\n%s", out)
 	}
 }
+
+// TestDispatchStep0cPermitsCapabilityRequirements verifies that step 0c names
+// capability requirements as permitted content in the Agent Configuration block,
+// with a Bash access example, so orchestrators can signal tool requirements to agents.
+func TestDispatchStep0cPermitsCapabilityRequirements(t *testing.T) {
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("LoadGrammar: %v", err)
+	}
+	var buf strings.Builder
+	if err := renderDispatchHelp(&buf, g, ""); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	out := buf.String()
+	if !strings.Contains(out, "capability requirements") {
+		t.Errorf("step 0c must name 'capability requirements' as permitted content in ## Agent Configuration block:\n%s", out)
+	}
+	if !strings.Contains(out, "Bash tool call access") {
+		t.Errorf("step 0c must include 'Bash tool call access' as a concrete capability example:\n%s", out)
+	}
+}

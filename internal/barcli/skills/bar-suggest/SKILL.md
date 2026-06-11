@@ -181,6 +181,12 @@ Use AskUserQuestion with:
 **If AskUserQuestion is unavailable (Mode B):**
 Write a numbered list in your response with the same information — option name, trade-off description, and the bar command that would be used. After emitting the numbered list and selection prompt, produce no further content in the same response — additional content after the selection prompt in the same response does not satisfy this requirement.
 
+**If the selected option is a named sequence or multi-step sequence**, do not execute it as a single `bar build` command. Instead, invoke bar-workflow:
+1. Run `bar sequence show <sequence-name>` to load the full sequence definition
+2. Hand off execution to bar-workflow, which will execute each step in order
+
+**If the selected option is a single bar build command** (not a sequence), execute it directly:
+
 When user selects, build and execute the corresponding bar command with discovered tokens.
 
 Explain: "You chose [option], so I used `bar build [tokens]` to [reason]"

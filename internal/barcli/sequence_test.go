@@ -776,8 +776,8 @@ func TestFrameDebugInnerHasActionStep(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "→ probe survive ghost audit") {
-		t.Errorf("frame-debug inner sequence missing experiment execution step (probe survive ghost audit):\n%s", out)
+	if !strings.Contains(out, "→ probe survive ghost") {
+		t.Errorf("frame-debug inner sequence missing experiment execution step (probe survive ghost):\n%s", out)
 	}
 }
 
@@ -787,8 +787,8 @@ func TestFrameExploreInnerHasActionStep(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "→ probe survive ghost audit") {
-		t.Errorf("frame-explore inner sequence missing experiment execution step (probe survive ghost audit):\n%s", out)
+	if !strings.Contains(out, "→ probe survive ghost") {
+		t.Errorf("frame-explore inner sequence missing experiment execution step (probe survive ghost):\n%s", out)
 	}
 }
 
@@ -1524,28 +1524,28 @@ func TestInnerStepBarBuildGate(t *testing.T) {
 		if !strings.Contains(afterVet, "[bar build gate — required]") {
 			t.Errorf("bar sequence show %s: '[bar build gate — required]' must appear after '→ check form:vet':\n%s", seq, out)
 		}
-		// Experiment execution step uses probe survive ghost audit and gets the bar build gate
-		probeIdx := strings.Index(out, "→ probe survive ghost audit")
+		// Experiment execution step uses probe survive ghost and gets the bar build gate
+		probeIdx := strings.Index(out, "→ probe survive ghost")
 		if probeIdx < 0 {
-			t.Errorf("bar sequence show %s missing inner step '→ probe survive ghost audit':\n%s", seq, out)
+			t.Errorf("bar sequence show %s missing inner step '→ probe survive ghost':\n%s", seq, out)
 			continue
 		}
 		afterProbe := out[probeIdx:]
 		if !strings.Contains(afterProbe, "[bar build gate — required]") {
-			t.Errorf("bar sequence show %s: '[bar build gate — required]' must appear after '→ probe survive ghost audit':\n%s", seq, afterProbe[:min(len(afterProbe), 500)])
+			t.Errorf("bar sequence show %s: '[bar build gate — required]' must appear after '→ probe survive ghost':\n%s", seq, afterProbe[:min(len(afterProbe), 500)])
 		}
 	}
 }
 
-// Behavior 87: inner experiment execution step uses probe survive ghost audit token (not Bash-only action).
+// Behavior 87: inner experiment execution step uses probe survive ghost token (not Bash-only action).
 func TestInnerExperimentStepUsesProbeToken(t *testing.T) {
 	for _, seq := range []string{"frame-explore", "frame-debug"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
 		}
-		if !strings.Contains(out, "→ probe survive ghost audit") {
-			t.Errorf("bar sequence show %s inner experiment step must use 'probe survive ghost audit' token:\n%s", seq, out)
+		if !strings.Contains(out, "→ probe survive ghost") {
+			t.Errorf("bar sequence show %s inner experiment step must use 'probe survive ghost' token:\n%s", seq, out)
 		}
 		// Must not use the old Bash-only action protocol
 		if strings.Contains(out, "[action protocol — required]") {

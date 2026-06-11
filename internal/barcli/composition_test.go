@@ -175,11 +175,8 @@ func TestFalsifyDefinition_FiredBeforeImplementation(t *testing.T) {
 func TestFalsifyDefinition_ImplementationStepConstraint(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "disposable artifact") {
-		t.Error("falsify definition must prohibit disposable governing artifacts")
-	}
-	if !strings.Contains(def, "will not persist in the work product") {
-		t.Error("falsify definition must name 'will not persist in the work product' as the disposable-artifact criterion")
+	if !strings.Contains(def, "file path exists in the work product") {
+		t.Error("falsify definition must require artifact file path to exist in work product")
 	}
 }
 

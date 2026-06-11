@@ -183,6 +183,22 @@ class TestSequenceConfigStructure(unittest.TestCase):
         self.assertIn("A conditional statement", hint,
                       "'A conditional statement' not found in frame-explore prism prompt_hint")
 
+    # Behavior: token-rewrite step 2 uses gap between mint and hollow
+    def test_token_rewrite_step2_includes_gap_token(self):
+        seq = self.sequences.get("token-rewrite")
+        self.assertIsNotNone(seq, "token-rewrite sequence must exist")
+        step2 = seq["steps"][1]
+        self.assertIn("show mean mint gap hollow", step2.get("token", ""),
+                      "'show mean mint gap hollow' not found in token-rewrite step 2 token")
+
+    # Behavior: token-rewrite step 2 prompt_hint states the step's purpose
+    def test_token_rewrite_step2_prompt_hint_states_purpose(self):
+        seq = self.sequences.get("token-rewrite")
+        self.assertIsNotNone(seq, "token-rewrite sequence must exist")
+        step2 = seq["steps"][1]
+        self.assertIn("cannot nominally satisfy", step2.get("prompt_hint", ""),
+                      "'cannot nominally satisfy' not found in token-rewrite step 2 prompt_hint")
+
     def _frame_explore_vet_prompt_hint(self) -> str:
         seq = self.sequences.get("frame-explore")
         self.assertIsNotNone(seq, "frame-explore sequence must exist")

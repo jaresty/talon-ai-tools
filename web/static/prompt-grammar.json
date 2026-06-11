@@ -121941,9 +121941,9 @@
           "prompt_hint": "Generate competing hypotheses for why each structural decision in the token definition was encoded the way it was — each hypothesis names the specific evidence it explains that the alternatives do not. Identify the minimal root criterion: the single generative assumption from which all current clauses derive. Name which clauses are derivable from that criterion and which require explicit encoding to close escape routes."
         },
         {
-          "token": "show mean mint hollow",
+          "token": "show mean mint gap hollow",
           "role": "assumption derivation and addressability audit",
-          "prompt_hint": "Construct the generative assumptions and trace each current clause to a specific assumption such that removing that assumption breaks the derivation. Then audit each clause for addressability: name the literal string distinguishing a compliant transcript from a non-compliant one without semantic inference. Flag clauses that name cognitive acts rather than structural artifacts. If two or more gaps share the same mechanism, state a single general principle rather than per-clause rewrites."
+          "prompt_hint": "Produce a rewritten definition that an agent cannot nominally satisfy."
         },
         {
           "token": "make",
@@ -122504,7 +122504,7 @@
     "slugs": "c8606e67cb05de82a74e07e21b1f22e7cb7b3c4fd3c9656dcf78d7fbc5a30cb8",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "1a9f7a3c996d55003dda165eceb134e7de3798223af2fd6b624b8919dbf41f45",
+    "sequences": "7c28cfe5f175b7c8c0c8a7550b3ae0d8ac315656865d87fd17908c2fb4c60333",
     "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

@@ -565,9 +565,9 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Generate competing hypotheses for why each structural decision in the token definition was encoded the way it was — each hypothesis names the specific evidence it explains that the alternatives do not. Identify the minimal root criterion: the single generative assumption from which all current clauses derive. Name which clauses are derivable from that criterion and which require explicit encoding to close escape routes.",
             },
             {
-                "token": "show mean mint hollow",
+                "token": "show mean mint gap hollow",
                 "role": "assumption derivation and addressability audit",
-                "prompt_hint": "Construct the generative assumptions and trace each current clause to a specific assumption such that removing that assumption breaks the derivation. Then audit each clause for addressability: name the literal string distinguishing a compliant transcript from a non-compliant one without semantic inference. Flag clauses that name cognitive acts rather than structural artifacts. If two or more gaps share the same mechanism, state a single general principle rather than per-clause rewrites.",
+                "prompt_hint": "Produce a rewritten definition that an agent cannot nominally satisfy.",
             },
             {
                 "token": "make",

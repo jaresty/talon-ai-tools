@@ -148,5 +148,36 @@ class TestSequenceConfigStructure(unittest.TestCase):
                 self.assertTrue(seq["stop_when"], f"{name}: stop_when must be non-empty")
 
 
+    def _frame_explore_prism_prompt_hint(self) -> str:
+        seq = self.sequences.get("frame-explore")
+        self.assertIsNotNone(seq, "frame-explore sequence must exist")
+        prism_step = seq["steps"][0]
+        return prism_step.get("prompt_hint", "")
+
+    # Behavior: frame-explore prism states goal condition must be a coverage criterion
+    def test_frame_explore_prism_states_coverage_criterion(self):
+        hint = self._frame_explore_prism_prompt_hint()
+        self.assertIn("coverage criterion", hint,
+                      "'coverage criterion' not found in frame-explore prism prompt_hint")
+
+    # Behavior: frame-explore prism requires Goal condition: heading label
+    def test_frame_explore_prism_requires_goal_condition_heading(self):
+        hint = self._frame_explore_prism_prompt_hint()
+        self.assertIn("Goal condition:", hint,
+                      "'Goal condition:' not found in frame-explore prism prompt_hint")
+
+    # Behavior: frame-explore prism requires enumerable set of cases
+    def test_frame_explore_prism_requires_enumerable_set(self):
+        hint = self._frame_explore_prism_prompt_hint()
+        self.assertIn("enumerable set of cases", hint,
+                      "'enumerable set of cases' not found in frame-explore prism prompt_hint")
+
+    # Behavior: frame-explore prism names conditional statement as invalid
+    def test_frame_explore_prism_rejects_conditional(self):
+        hint = self._frame_explore_prism_prompt_hint()
+        self.assertIn("A conditional statement", hint,
+                      "'A conditional statement' not found in frame-explore prism prompt_hint")
+
+
 if __name__ == "__main__":
     unittest.main()

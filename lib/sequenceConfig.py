@@ -352,7 +352,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "check form:vet audit adversarial",
                             "role": "evidence evaluation",
-                            "prompt_hint": "Evaluate the evidence gathered against the hypothesis. End with exactly one of: 'Goal condition: met' (if the goal is fully satisfied from this frame's evidence) or 'Goal condition: unmet — [one sentence naming what further cycles must produce]'. If the experiment execution step produced only static analysis, reject the evidence and require a live invocation before accepting a verdict.",
+                            "prompt_hint": "Before evaluating evidence: identify the tool call type the probe step used to produce it — a Bash tool call executing a command (live execution) satisfies this step; a Read tool call or a Bash call using cat, head, tail, or equivalent (file read) does not. If the probe step used only file reads, the evidence is invalid — reject it and require a live invocation before continuing. Otherwise: evaluate the live output against the hypothesis. End with exactly one of: 'Goal condition: met' (if the goal is fully satisfied from this frame's evidence) or 'Goal condition: unmet — [one sentence naming what further cycles must produce]'.",
                         },
                     ],
                 },
@@ -411,7 +411,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "check form:vet audit adversarial",
                             "role": "evidence evaluation",
-                            "prompt_hint": "Evaluate the Bash output from the action step against the hypothesis. If rejected, state why and name the next hypothesis to investigate — a vet rejection is complete only when followed by a new bar build make form:prep verify for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement. If the investigation step produced only static analysis, reject the evidence and require a live invocation before accepting any verdict. End with exactly one of: 'Root cause: confirmed' (if the root cause is identified with sufficient evidence to act) or 'Root cause: unconfirmed — [one sentence naming what further cycles must produce]'.",
+                            "prompt_hint": "Before evaluating evidence: identify the tool call type the probe step used to produce it — a Bash tool call executing a command (live execution) satisfies this step; a Read tool call or a Bash call using cat, head, tail, or equivalent (file read) does not. If the probe step used only file reads, the evidence is invalid — reject it and require a live invocation. Otherwise: evaluate the live Bash output against the hypothesis. If rejected, state why and name the next hypothesis to investigate — a vet rejection is complete only when followed by a new bar build make form:prep verify for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement. End with exactly one of: 'Root cause: confirmed' (if the root cause is identified with sufficient evidence to act) or 'Root cause: unconfirmed — [one sentence naming what further cycles must produce]'.",
                         },
                     ],
                 },

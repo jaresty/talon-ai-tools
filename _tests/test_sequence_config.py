@@ -183,6 +183,56 @@ class TestSequenceConfigStructure(unittest.TestCase):
         self.assertIn("A conditional statement", hint,
                       "'A conditional statement' not found in frame-explore prism prompt_hint")
 
+    def _frame_explore_vet_prompt_hint(self) -> str:
+        seq = self.sequences.get("frame-explore")
+        self.assertIsNotNone(seq, "frame-explore sequence must exist")
+        dispatch_step = seq["steps"][1]
+        vet_step = dispatch_step["inner"]["steps"][2]
+        return vet_step.get("prompt_hint", "")
+
+    def _frame_debug_vet_prompt_hint(self) -> str:
+        seq = self.sequences.get("frame-debug")
+        self.assertIsNotNone(seq, "frame-debug sequence must exist")
+        dispatch_step = seq["steps"][1]
+        vet_step = dispatch_step["inner"]["steps"][2]
+        return vet_step.get("prompt_hint", "")
+
+    # Behavior: frame-explore vet names allowed tool call type for live execution
+    def test_frame_explore_vet_names_allowed_tool_call_type(self):
+        hint = self._frame_explore_vet_prompt_hint()
+        self.assertIn("a Bash tool call executing a command (live execution) satisfies this step", hint,
+                      "'a Bash tool call executing a command (live execution) satisfies this step' not found in frame-explore vet prompt_hint")
+
+    # Behavior: frame-explore vet names denied tool call type for file reads
+    def test_frame_explore_vet_names_denied_tool_call_type(self):
+        hint = self._frame_explore_vet_prompt_hint()
+        self.assertIn("a Read tool call or a Bash call using", hint,
+                      "'a Read tool call or a Bash call using' not found in frame-explore vet prompt_hint")
+
+    # Behavior: frame-explore vet declares file-read evidence invalid
+    def test_frame_explore_vet_declares_file_read_evidence_invalid(self):
+        hint = self._frame_explore_vet_prompt_hint()
+        self.assertIn("If the probe step used only file reads, the evidence is invalid", hint,
+                      "'If the probe step used only file reads, the evidence is invalid' not found in frame-explore vet prompt_hint")
+
+    # Behavior: frame-debug vet names allowed tool call type for live execution
+    def test_frame_debug_vet_names_allowed_tool_call_type(self):
+        hint = self._frame_debug_vet_prompt_hint()
+        self.assertIn("a Bash tool call executing a command (live execution) satisfies this step", hint,
+                      "'a Bash tool call executing a command (live execution) satisfies this step' not found in frame-debug vet prompt_hint")
+
+    # Behavior: frame-debug vet names denied tool call type for file reads
+    def test_frame_debug_vet_names_denied_tool_call_type(self):
+        hint = self._frame_debug_vet_prompt_hint()
+        self.assertIn("a Read tool call or a Bash call using", hint,
+                      "'a Read tool call or a Bash call using' not found in frame-debug vet prompt_hint")
+
+    # Behavior: frame-debug vet declares file-read evidence invalid
+    def test_frame_debug_vet_declares_file_read_evidence_invalid(self):
+        hint = self._frame_debug_vet_prompt_hint()
+        self.assertIn("If the probe step used only file reads, the evidence is invalid", hint,
+                      "'If the probe step used only file reads, the evidence is invalid' not found in frame-debug vet prompt_hint")
+
 
 if __name__ == "__main__":
     unittest.main()

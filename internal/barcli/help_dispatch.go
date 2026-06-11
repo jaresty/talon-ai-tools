@@ -121,7 +121,7 @@ func writeDispatchStepBlock(w io.Writer, step SequenceStep, _ int, _ *Grammar) {
 					lastPromptToken = is.Token
 				}
 			}
-			fmt.Fprintf(w, "          %d. Check stop_when. A cycle is complete only when a bar build %s tool call result appears in the transcript for this cycle. If stop_when is not met, begin a new cycle from step 1.\n", len(step.Inner.Steps)+1, lastPromptToken)
+			fmt.Fprintf(w, "          %d. Check stop_when. A cycle is complete only when a bar build %s tool call result appears in the transcript for this cycle. The Findings block is permitted only when the final step result for this cycle contains the literal stop_when string. A final step result that does not contain that literal string requires a new cycle beginning from step 1 — the Findings block must not appear before the literal stop_when string appears in a bar build %s tool call result.\n", len(step.Inner.Steps)+1, lastPromptToken, lastPromptToken)
 		}
 		for _, is := range step.Inner.Steps {
 			innerToken := is.Token

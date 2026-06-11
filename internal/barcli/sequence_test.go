@@ -2219,6 +2219,66 @@ func TestExperimentCyclePrepIncludesVerify(t *testing.T) {
 	}
 }
 
+// Behavior 126: inner cycle stop_when check uses allow-list gate naming the Findings block permission condition.
+func TestCycleStopWhenPermissionString(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "The Findings block is permitted only when") {
+			t.Errorf("bar sequence show %s: cycle stop_when check must contain 'The Findings block is permitted only when':\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 127: inner cycle stop_when check names positional constraint on Findings block.
+func TestCycleStopWhenMustNotAppear(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "must not appear before the literal stop_when string") {
+			t.Errorf("bar sequence show %s: cycle stop_when check must contain 'must not appear before the literal stop_when string':\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 128: inner cycle stop_when check does not use the old deny-list re-entry clause.
+func TestCycleStopWhenOldStringAbsent(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if strings.Contains(out, "If stop_when is not met, begin a new cycle") {
+			t.Errorf("bar sequence show %s: cycle stop_when check must not contain old deny-list clause 'If stop_when is not met, begin a new cycle':\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 129: inner cycle stop_when check uses token-agnostic language, not token-specific 'vet output'.
+func TestCycleStopWhenNoVetOutputReference(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		// Locate only the cycle protocol block — starts at [cycle protocol — required], ends before the first inner step line.
+		cycleProtoIdx := strings.Index(out, "[cycle protocol — required]")
+		firstStepIdx := strings.Index(out, "\n          → ")
+		if cycleProtoIdx < 0 || firstStepIdx < 0 || firstStepIdx < cycleProtoIdx {
+			t.Errorf("bar sequence show %s: could not locate cycle protocol block", seq)
+			continue
+		}
+		cycleBlock := out[cycleProtoIdx:firstStepIdx]
+		if strings.Contains(cycleBlock, "vet output") || strings.Contains(cycleBlock, "vet tool call result") {
+			t.Errorf("bar sequence show %s: cycle stop_when block must not contain token-specific 'vet output' or 'vet tool call result':\n%s", seq, cycleBlock)
+		}
+	}
+}
+
 // Behavior 125: experiment-cycle, make-and-vet, and plan-and-retrospect vet steps include audit.
 func TestVetStepsIncludeAuditAcrossSequences(t *testing.T) {
 	for _, seq := range []string{"experiment-cycle", "make-and-review", "plan-and-retrospect"} {

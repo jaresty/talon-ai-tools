@@ -78,12 +78,17 @@ class TestSequenceConfigStructure(unittest.TestCase):
         errors = self.validate(self.sequences, known_tokens=set())
         self.assertEqual(errors, [], f"validate_sequences reported errors: {errors}")
 
-    # Behavior: linear/cycle sequences have at least one step with requires_user_input
+    # Behavior: linear/cycle sequences have at least one step with requires_user_input or during_dispatch
+    # A dispatch step with during_dispatch is structurally equivalent to requires_user_input:
+    # the user engages with the during_dispatch task while agents run, which is the pause.
     def test_interactive_sequences_have_pause_step(self):
         for name, seq in self.sequences.items():
             if seq.get("mode") in ("linear", "cycle"):
-                has_pause = any(step.get("requires_user_input") for step in seq.get("steps", []))
-                self.assertTrue(has_pause, f"{name} (mode={seq['mode']}): must have at least one step with requires_user_input=True")
+                has_pause = any(
+                    step.get("requires_user_input") or step.get("during_dispatch")
+                    for step in seq.get("steps", [])
+                )
+                self.assertTrue(has_pause, f"{name} (mode={seq['mode']}): must have at least one step with requires_user_input=True or during_dispatch")
 
 
     # Behavior: dispatch steps are allowed to omit token field

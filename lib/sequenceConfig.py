@@ -340,7 +340,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                     "stop_when": "The vet output for this cycle contains the literal string 'Goal condition: met' — a vet output that does not contain this exact string does not satisfy stop_when and a new cycle must begin.",
                     "steps": [
                         {
-                            "token": "make form:prep",
+                            "token": "make form:prep verify",
                             "role": "experiment framing",
                             "prompt_hint": "Frame the hypothesis for this cycle: what would be true if the goal condition is met from this frame's angle, what evidence would confirm or refute it, and name what to run (command, API call, or test) to produce that evidence.",
                         },
@@ -350,7 +350,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                             "prompt_hint": "This step is complete only when the transcript contains at least one Bash tool call whose output shows live execution results — stdout, stderr, or runtime trace (stack frames captured from a running process, not code inspection) from running the subject under investigation. A response in which every tool call is a Read tool call does not satisfy this step. Run tests, invoke endpoints, execute commands — the Bash output must be produced by running something, not by reading files.",
                         },
                         {
-                            "token": "check form:vet",
+                            "token": "check form:vet audit",
                             "role": "evidence evaluation",
                             "prompt_hint": "Evaluate the evidence gathered against the hypothesis. End with exactly one of: 'Goal condition: met' (if the goal is fully satisfied from this frame's evidence) or 'Goal condition: unmet — [one sentence naming what further cycles must produce]'. If the experiment execution step produced only static analysis, reject the evidence and require a live invocation before accepting a verdict.",
                         },
@@ -399,7 +399,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                     "stop_when": "The vet output for this cycle contains the literal string 'Root cause: confirmed' — a vet output that does not contain this exact string does not satisfy stop_when and a new cycle must begin.",
                     "steps": [
                         {
-                            "token": "make form:prep",
+                            "token": "make form:prep verify",
                             "role": "hypothesis framing",
                             "prompt_hint": "For this frame, identify the next untested hypothesis: what specific cause within this frame would explain the problem? State what would be true if this hypothesis is correct, what evidence would confirm or reject it, and name what to run (command, test, or script) to produce that evidence.",
                         },
@@ -409,9 +409,9 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                             "prompt_hint": "This step is complete only when the transcript contains at least one Bash tool call whose output shows live execution results — stdout, stderr, or runtime trace (stack frames captured from a running process, not code inspection) from running the subject under investigation. A response in which every tool call is a Read tool call does not satisfy this step. Run tests, invoke endpoints, execute commands — the Bash output must be produced by running something, not by reading files.",
                         },
                         {
-                            "token": "check form:vet",
+                            "token": "check form:vet audit",
                             "role": "evidence evaluation",
-                            "prompt_hint": "Evaluate the Bash output from the action step against the hypothesis. If rejected, state why and name the next hypothesis to investigate — a vet rejection is complete only when followed by a new bar build make form:prep for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement. If the investigation step produced only static analysis, reject the evidence and require a live invocation before accepting any verdict. End with exactly one of: 'Root cause: confirmed' (if the root cause is identified with sufficient evidence to act) or 'Root cause: unconfirmed — [one sentence naming what further cycles must produce]'.",
+                            "prompt_hint": "Evaluate the Bash output from the action step against the hypothesis. If rejected, state why and name the next hypothesis to investigate — a vet rejection is complete only when followed by a new bar build make form:prep verify for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement. If the investigation step produced only static analysis, reject the evidence and require a live invocation before accepting any verdict. End with exactly one of: 'Root cause: confirmed' (if the root cause is identified with sufficient evidence to act) or 'Root cause: unconfirmed — [one sentence naming what further cycles must produce]'.",
                         },
                     ],
                 },

@@ -896,7 +896,7 @@ func TestFrameDebugInnerPrepMentionsFrameAndHypothesis(t *testing.T) {
 	}
 	var prepStep *SequenceStep
 	for i := range dispatchStep.Inner.Steps {
-		if dispatchStep.Inner.Steps[i].Token == "make form:prep" {
+		if dispatchStep.Inner.Steps[i].Token == "make form:prep verify" {
 			prepStep = &dispatchStep.Inner.Steps[i]
 			break
 		}
@@ -2151,6 +2151,32 @@ func TestPrismLiveSignalRequiresClassOfOutput(t *testing.T) {
 		}
 		if !strings.Contains(out, "a class of output produced by running the system") {
 			t.Errorf("%s prism must contain 'a class of output produced by running the system':\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 122: prep step token includes verify to enforce falsification criterion before running.
+func TestPrepStepIncludesVerify(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "make form:prep verify") {
+			t.Errorf("%s prep step must use token 'make form:prep verify' to enforce falsification criterion:\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 123: vet step token includes audit to enforce locally-defensible verdicts.
+func TestVetStepIncludesAudit(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "check form:vet audit") {
+			t.Errorf("%s vet step must use token 'check form:vet audit' to enforce adversarial verdict scrutiny:\n%s", seq, out)
 		}
 	}
 }

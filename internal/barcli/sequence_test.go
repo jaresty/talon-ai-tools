@@ -1141,8 +1141,8 @@ func TestFrameDebugActionStepNamesBashToolCallResult(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "stdout, stderr, or runtime trace (stack frames captured from a running process, not code inspection) from running the subject under investigation") {
-		t.Errorf("frame-debug experiment step must require live output (stdout or stderr) as evidence standard:\n%s", out)
+	if !strings.Contains(out, "output that could not exist in the repository at rest") {
+		t.Errorf("frame-debug experiment step must require live output via permit condition 'output that could not exist in the repository at rest':\n%s", out)
 	}
 }
 
@@ -1163,8 +1163,8 @@ func TestFrameExploreActionStepRequiresBashToolCall(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "stdout, stderr, or runtime trace (stack frames captured from a running process, not code inspection) from running the subject under investigation") {
-		t.Errorf("frame-explore experiment step must require live output (stdout or stderr) as evidence standard:\n%s", out)
+	if !strings.Contains(out, "output that could not exist in the repository at rest") {
+		t.Errorf("frame-explore experiment step must require live output via permit condition 'output that could not exist in the repository at rest':\n%s", out)
 	}
 }
 
@@ -1335,8 +1335,8 @@ func TestInnerActionProtocolRequiresBash(t *testing.T) {
 	if strings.Contains(out, "Execute actions from prior step using tools.") {
 		t.Errorf("inner action protocol must not say 'using tools' — must require live Bash execution:\n%s", out)
 	}
-	if !strings.Contains(out, "stdout, stderr, or runtime trace (stack frames captured from a running process, not code inspection) from running the subject under investigation") {
-		t.Errorf("inner action protocol must require live output (stdout or stderr):\n%s", out)
+	if !strings.Contains(out, "output that could not exist in the repository at rest") {
+		t.Errorf("inner action protocol must require live output via permit condition 'output that could not exist in the repository at rest':\n%s", out)
 	}
 }
 
@@ -2084,8 +2084,8 @@ func TestSurvivePromptHintContainsReadAbsenceClause(t *testing.T) {
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
 		}
-		if !strings.Contains(out, "every tool call is a Read tool call does not satisfy") {
-			t.Errorf("%s survive prompt_hint must contain absence clause 'every tool call is a Read tool call does not satisfy':\n%s", seq, out)
+		if !strings.Contains(out, "identify every factual claim") {
+			t.Errorf("%s survive prompt_hint must contain precondition verification clause 'identify every factual claim':\n%s", seq, out)
 		}
 	}
 }
@@ -2097,8 +2097,8 @@ func TestSurvivePromptHintRequiresLiveOutput(t *testing.T) {
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
 		}
-		if !strings.Contains(out, "stdout, stderr, or runtime trace") {
-			t.Errorf("%s survive prompt_hint must require live output named as 'stdout, stderr, or runtime trace':\n%s", seq, out)
+		if !strings.Contains(out, "stdout lines, stderr lines, log entries, test result records, application trace") {
+			t.Errorf("%s survive prompt_hint must contain valid-class enumeration 'stdout lines, stderr lines, log entries, test result records, application trace':\n%s", seq, out)
 		}
 	}
 }
@@ -2220,8 +2220,8 @@ func TestSurviveNamesRuntimeTraces(t *testing.T) {
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
 		}
-		if !strings.Contains(out, "runtime trace") {
-			t.Errorf("%s survive step must name 'runtime trace' as valid live execution output:\n%s", seq, out)
+		if !strings.Contains(out, "run a Bash command whose output would differ if the claim were false") {
+			t.Errorf("%s survive step must name precondition verification requirement 'run a Bash command whose output would differ if the claim were false':\n%s", seq, out)
 		}
 	}
 }

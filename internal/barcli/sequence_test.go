@@ -2207,3 +2207,27 @@ func TestSurviveNamesRuntimeTraces(t *testing.T) {
 		}
 	}
 }
+
+// Behavior 124: experiment-cycle prep step includes verify.
+func TestExperimentCyclePrepIncludesVerify(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
+	if code != 0 {
+		t.Fatalf("bar sequence show experiment-cycle exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "make form:prep verify") {
+		t.Errorf("experiment-cycle prep step must use token 'make form:prep verify':\n%s", out)
+	}
+}
+
+// Behavior 125: experiment-cycle, make-and-vet, and plan-and-retrospect vet steps include audit.
+func TestVetStepsIncludeAuditAcrossSequences(t *testing.T) {
+	for _, seq := range []string{"experiment-cycle", "make-and-review", "plan-and-retrospect"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "check form:vet audit") {
+			t.Errorf("%s vet step must use token 'check form:vet audit':\n%s", seq, out)
+		}
+	}
+}

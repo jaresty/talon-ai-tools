@@ -43,7 +43,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "stop_when": "The hypothesis has been confirmed or falsified — further iterations would not change the conclusion.",
         "steps": [
             {
-                "token": "make form:prep",
+                "token": "make form:prep verify",
                 "role": "pre-experiment framing",
                 "prompt_hint": "Use this step to state the hypothesis and success criteria before running the experiment.",
             },
@@ -54,7 +54,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "requires_user_input": True,  # user must run the experiment before vet
             },
             {
-                "token": "check form:vet",
+                "token": "check form:vet audit",
                 "role": "post-experiment review",
                 "prompt_hint": "Use this step to evaluate the evidence against the original hypothesis.",
             },
@@ -127,7 +127,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Use this step to produce the artifact — document, plan, design, or code.",
             },
             {
-                "token": "check form:vet",
+                "token": "check form:vet audit",
                 "role": "critical review",
                 "prompt_hint": "Use this step to review the artifact: what was produced, how it compares to intent, what is missing or weak.",
             },
@@ -166,7 +166,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "requires_user_input": True,  # user must implement before retrospective
             },
             {
-                "token": "check form:vet",
+                "token": "check form:vet audit",
                 "role": "retrospective review",
                 "prompt_hint": "Use this step to evaluate what worked, what didn't, and what to adjust in the next cycle.",
             },

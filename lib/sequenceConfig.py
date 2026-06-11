@@ -347,7 +347,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "probe survive ghost",
                             "role": "experiment execution",
-                            "prompt_hint": "This step is complete only when the transcript contains at least one Bash tool call whose output shows live execution results — stdout, stderr, or runtime trace (stack frames captured from a running process, not code inspection) from running the subject under investigation. A response in which every tool call is a Read tool call does not satisfy this step. Run tests, invoke endpoints, execute commands — the Bash output must be produced by running something, not by reading files.",
+                            "prompt_hint": "Before running any command: identify every factual claim about the subject's current state that this hypothesis depends on (e.g., 'fixture X has property Y', 'file Z contains value W'). For each claim, run a Bash command whose output would differ if the claim were false — a claim not verified by such a command is not a valid precondition and must not be used as the basis for a conclusion. This step is complete only when the transcript contains at least one Bash tool call producing output that could not exist in the repository at rest — one of: stdout lines, stderr lines, log entries, test result records, application trace. A Bash call using cat, head, tail, sed, awk, or equivalent file-reading operations does not satisfy this step regardless of the tool type used.",
                         },
                         {
                             "token": "check form:vet audit adversarial",
@@ -406,7 +406,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                         {
                             "token": "probe survive ghost",
                             "role": "hypothesis investigation",
-                            "prompt_hint": "This step is complete only when the transcript contains at least one Bash tool call whose output shows live execution results — stdout, stderr, or runtime trace (stack frames captured from a running process, not code inspection) from running the subject under investigation. A response in which every tool call is a Read tool call does not satisfy this step. Run tests, invoke endpoints, execute commands — the Bash output must be produced by running something, not by reading files.",
+                            "prompt_hint": "Before running any command: identify every factual claim about the subject's current state that this hypothesis depends on (e.g., 'fixture X has property Y', 'file Z contains value W'). For each claim, run a Bash command whose output would differ if the claim were false — a claim not verified by such a command is not a valid precondition and must not be used as the basis for a conclusion. This step is complete only when the transcript contains at least one Bash tool call producing output that could not exist in the repository at rest — one of: stdout lines, stderr lines, log entries, test result records, application trace. A Bash call using cat, head, tail, sed, awk, or equivalent file-reading operations does not satisfy this step regardless of the tool type used.",
                         },
                         {
                             "token": "check form:vet audit adversarial",

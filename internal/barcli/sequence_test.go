@@ -1141,7 +1141,7 @@ func TestFrameDebugActionStepNamesBashToolCallResult(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "stdout or stderr from running the subject under investigation") {
+	if !strings.Contains(out, "stdout, stderr, or runtime trace (stack frames captured from a running process, not code inspection) from running the subject under investigation") {
 		t.Errorf("frame-debug experiment step must require live output (stdout or stderr) as evidence standard:\n%s", out)
 	}
 }
@@ -1163,7 +1163,7 @@ func TestFrameExploreActionStepRequiresBashToolCall(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "stdout or stderr from running the subject under investigation") {
+	if !strings.Contains(out, "stdout, stderr, or runtime trace (stack frames captured from a running process, not code inspection) from running the subject under investigation") {
 		t.Errorf("frame-explore experiment step must require live output (stdout or stderr) as evidence standard:\n%s", out)
 	}
 }
@@ -1335,7 +1335,7 @@ func TestInnerActionProtocolRequiresBash(t *testing.T) {
 	if strings.Contains(out, "Execute actions from prior step using tools.") {
 		t.Errorf("inner action protocol must not say 'using tools' — must require live Bash execution:\n%s", out)
 	}
-	if !strings.Contains(out, "stdout or stderr from running the subject under investigation") {
+	if !strings.Contains(out, "stdout, stderr, or runtime trace (stack frames captured from a running process, not code inspection) from running the subject under investigation") {
 		t.Errorf("inner action protocol must require live output (stdout or stderr):\n%s", out)
 	}
 }
@@ -2076,8 +2076,8 @@ func TestSurvivePromptHintRequiresLiveOutput(t *testing.T) {
 		if code != 0 {
 			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
 		}
-		if !strings.Contains(out, "stdout or stderr") {
-			t.Errorf("%s survive prompt_hint must require live output named as 'stdout or stderr':\n%s", seq, out)
+		if !strings.Contains(out, "stdout, stderr, or runtime trace") {
+			t.Errorf("%s survive prompt_hint must require live output named as 'stdout, stderr, or runtime trace':\n%s", seq, out)
 		}
 	}
 }
@@ -2151,6 +2151,33 @@ func TestPrismLiveSignalRequiresClassOfOutput(t *testing.T) {
 		}
 		if !strings.Contains(out, "a class of output produced by running the system") {
 			t.Errorf("%s prism must contain 'a class of output produced by running the system':\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 120: frame-explore and frame-debug prism prompt_hints name application trace
+// (stack frames from a running process) as a valid live-signal output class.
+func TestPrismNamesApplicationTraceAsValidOutput(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "application trace (stack frames from a running process)") {
+			t.Errorf("%s prism must name 'application trace (stack frames from a running process)' as a valid output class:\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 121: survive step prompt_hints name runtime traces alongside stdout/stderr.
+func TestSurviveNamesRuntimeTraces(t *testing.T) {
+	for _, seq := range []string{"frame-explore", "frame-debug"} {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
+		if code != 0 {
+			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
+		}
+		if !strings.Contains(out, "runtime trace") {
+			t.Errorf("%s survive step must name 'runtime trace' as valid live execution output:\n%s", seq, out)
 		}
 	}
 }

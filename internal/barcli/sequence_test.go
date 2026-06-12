@@ -1962,8 +1962,26 @@ func TestDispatchStepBlockInterruptionContractPresent(t *testing.T) {
 	if !strings.Contains(out, "agents may return") {
 		t.Errorf("dispatch block with during_dispatch must contain interruption contract ('agents may return'):\n%s", out)
 	}
-	if !strings.Contains(out, "stop the during_dispatch task") {
-		t.Errorf("dispatch block with during_dispatch must instruct stopping during_dispatch when agents return:\n%s", out)
+	if !strings.Contains(out, "complete the current question-answer exchange") {
+		t.Errorf("dispatch block with during_dispatch must instruct completing the current question-answer exchange before stopping:\n%s", out)
+	}
+}
+
+// Behavior 108: when DuringDispatch is set, the stop instruction names a permit-condition (complete the current question-answer exchange) rather than an unconditional stop command.
+func TestDispatchStepBlockInterruptionContractPermitCondition(t *testing.T) {
+	step := SequenceStep{
+		Token:          "prism",
+		Role:           "dispatch frames",
+		Type:           "dispatch",
+		FanOut:         "enumerate",
+		Join:           "all",
+		DuringDispatch: "show form:quiz",
+	}
+	var buf strings.Builder
+	writeDispatchStepBlock(&buf, step, 1, nil)
+	out := buf.String()
+	if !strings.Contains(out, "complete the current question-answer exchange") {
+		t.Errorf("during_dispatch stop instruction must name a permit-condition ('complete the current question-answer exchange') rather than an unconditional stop:\n%s", out)
 	}
 }
 

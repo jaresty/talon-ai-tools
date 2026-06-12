@@ -1962,12 +1962,12 @@ func TestDispatchStepBlockInterruptionContractPresent(t *testing.T) {
 	if !strings.Contains(out, "agents may return") {
 		t.Errorf("dispatch block with during_dispatch must contain interruption contract ('agents may return'):\n%s", out)
 	}
-	if !strings.Contains(out, "complete the current question-answer exchange") {
-		t.Errorf("dispatch block with during_dispatch must instruct completing the current question-answer exchange before stopping:\n%s", out)
+	if !strings.Contains(out, "human-turn message appears in the transcript after that prompt") {
+		t.Errorf("dispatch block with during_dispatch must instruct waiting for human-turn message before marking step complete:\n%s", out)
 	}
 }
 
-// Behavior 108: when DuringDispatch is set, the stop instruction names a permit-condition (complete the current question-answer exchange) rather than an unconditional stop command.
+// Behavior 108: when DuringDispatch is set, the stop instruction names a structural permit-condition (human-turn message) rather than a semantic phrase or unconditional stop command.
 func TestDispatchStepBlockInterruptionContractPermitCondition(t *testing.T) {
 	step := SequenceStep{
 		Token:          "prism",
@@ -1980,8 +1980,8 @@ func TestDispatchStepBlockInterruptionContractPermitCondition(t *testing.T) {
 	var buf strings.Builder
 	writeDispatchStepBlock(&buf, step, 1, nil)
 	out := buf.String()
-	if !strings.Contains(out, "complete the current question-answer exchange") {
-		t.Errorf("during_dispatch stop instruction must name a permit-condition ('complete the current question-answer exchange') rather than an unconditional stop:\n%s", out)
+	if !strings.Contains(out, "human-turn message appears in the transcript after that prompt") {
+		t.Errorf("during_dispatch stop instruction must name a structural permit-condition ('human-turn message appears in the transcript after that prompt') rather than a semantic phrase:\n%s", out)
 	}
 }
 

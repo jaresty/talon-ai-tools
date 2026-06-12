@@ -2372,6 +2372,24 @@ func TestFramePrismPreExistingFileRejection(t *testing.T) {
 	}
 }
 
+// Behavior 122: during_dispatch rendering instructs orchestrator to pass enumerated items as --subject to scope the task.
+func TestDispatchDuringDispatchSubjectInstruction(t *testing.T) {
+	step := SequenceStep{
+		Token:          "prism",
+		Role:           "dispatch frames",
+		Type:           "dispatch",
+		FanOut:         "enumerate",
+		Join:           "all",
+		DuringDispatch: "show form:quiz",
+	}
+	var buf strings.Builder
+	writeDispatchStepBlock(&buf, step, 1, nil)
+	out := buf.String()
+	if !strings.Contains(out, "pass the enumerated items from the prior step as --subject") {
+		t.Errorf("during_dispatch rendering must instruct orchestrator to pass enumerated items as --subject:\n%s", out)
+	}
+}
+
 // Behavior 120: frame-explore has a check scope:good quality gate step at index 1 (between prism and dispatch).
 func TestFrameExploreHasQualityGateStep(t *testing.T) {
 	t.Setenv(envGrammarPath, "")

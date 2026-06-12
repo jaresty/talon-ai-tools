@@ -121671,6 +121671,11 @@
           "prompt_hint": "Enumerate independent frames that differ structurally. A frame name contains no verb and makes no causal claim. Each frame names a structural angle and what the live system would show from that vantage point that would confirm or refute the goal condition — observable runtime behavior is what the live system does when viewed from this angle, not which commands to run or which files to read; commands and investigation methods are the agent's job during the cycle, not the frame definition's job. Each frame description must name a class of output whose instances cannot exist in the repository at rest — produced only by invoking the system, not readable from source files. Before naming a signal class: (1) state the root criterion; (2) enumerate paths that could nominally satisfy without governing — naming a code artifact with runtime language (type definitions, mapping tables, switch branches, schema files, function signatures), or naming a conditional prediction (would show, would appear, could be observed as) — and name the literal string closing each path; (3) proceed only when no open path remains. A valid signal class is one of: stdout lines, stderr lines, log entries, test result records, application trace. Any claimed class not in this list must demonstrate it cannot exist in the repository at rest. No backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also state the goal condition from the subject as a coverage criterion under the heading `Goal condition:` — a coverage criterion names an enumerable set of cases (a plural noun phrase naming multiple items to be checked) and names what evidence for each case would look like. A conditional statement ('if X then Y') is not a valid coverage criterion. This `Goal condition:` block becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence."
         },
         {
+          "token": "check scope:good",
+          "role": "frame quality gate",
+          "prompt_hint": "Evaluate each frame from the prior step against these criteria: (1) the frame name contains no verb and makes no causal claim; (2) the frame description names a class of observable runtime output — one of: stdout lines, stderr lines, log entries, test result records, application trace — whose instances cannot exist in the repository at rest; (3) the frame description contains no backtick-wrapped text, file paths, function names, or test names; (4) the frame leaves hypothesis generation and command selection entirely to the dispatched agent. For any frame that fails any criterion: rewrite it in place before proceeding. A frame that cannot be made to satisfy all criteria must be replaced with a new structurally distinct frame that does. Do not proceed to dispatch until every frame passes every criterion."
+        },
+        {
           "type": "dispatch",
           "role": "parallel frame experiment cycles",
           "fan_out": "enumerate",
@@ -121740,6 +121745,11 @@
           "token": "make method:prism",
           "role": "frame enumeration",
           "prompt_hint": "Partition into independent investigation frames — each names a system layer or component (e.g. 'connection layer', 'query layer') that can contain multiple hypotheses. A frame name contains no verb and makes no causal claim. A frame description names a structural area. Each frame description must name a class of output whose instances cannot exist in the repository at rest — produced only by invoking the system, not readable from source files. Before naming a signal class: (1) state the root criterion; (2) enumerate paths that could nominally satisfy without governing — naming a code artifact with runtime language (type definitions, mapping tables, switch branches, schema files, function signatures), or naming a conditional prediction (would show, would appear, could be observed as) — and name the literal string closing each path; (3) proceed only when no open path remains. A valid signal class is one of: stdout lines, stderr lines, log entries, test result records, application trace. Any claimed class not in this list must demonstrate it cannot exist in the repository at rest. No backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not generate hypotheses yet — enumeration is the only output of this step."
+        },
+        {
+          "token": "check scope:good",
+          "role": "frame quality gate",
+          "prompt_hint": "Evaluate each frame from the prior step against these criteria: (1) the frame name contains no verb and makes no causal claim; (2) the frame description names a class of observable runtime output — one of: stdout lines, stderr lines, log entries, test result records, application trace — whose instances cannot exist in the repository at rest; (3) the frame description contains no backtick-wrapped text, file paths, function names, or test names; (4) the frame leaves hypothesis generation and command selection entirely to the dispatched agent. For any frame that fails any criterion: rewrite it in place before proceeding. A frame that cannot be made to satisfy all criteria must be replaced with a new structurally distinct frame that does. Do not proceed to dispatch until every frame passes every criterion."
         },
         {
           "type": "dispatch",
@@ -122515,7 +122525,7 @@
     "slugs": "c8606e67cb05de82a74e07e21b1f22e7cb7b3c4fd3c9656dcf78d7fbc5a30cb8",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "11e3126e4f0d1d61ff24b0e6a57f8dbb06fbd1081ae6471a551f43ee1d923a6d",
+    "sequences": "077ab8309586dc3e935298554a633a3c776680fad12f5928887a49aab64b0e78",
     "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

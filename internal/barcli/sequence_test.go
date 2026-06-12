@@ -2327,3 +2327,90 @@ func TestVetStepsIncludeAuditAcrossSequences(t *testing.T) {
 		}
 	}
 }
+
+// Behavior 120: frame-explore has a check scope:good quality gate step at index 1 (between prism and dispatch).
+func TestFrameExploreHasQualityGateStep(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-explore"]
+	if !ok {
+		t.Fatal("frame-explore sequence not found")
+	}
+	if len(seq.Steps) < 2 {
+		t.Fatal("frame-explore has fewer than 2 steps")
+	}
+	step1 := seq.Steps[1]
+	if !strings.Contains(step1.Token, "check") || !strings.Contains(step1.Token, "scope:good") {
+		t.Errorf("frame-explore step 2 must have token containing 'check' and 'scope:good', got: %q", step1.Token)
+	}
+}
+
+// Behavior 120: frame-debug has a check scope:good quality gate step at index 1 (between prism and dispatch).
+func TestFrameDebugHasQualityGateStep(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	seq, ok := g.Sequences["frame-debug"]
+	if !ok {
+		t.Fatal("frame-debug sequence not found")
+	}
+	if len(seq.Steps) < 2 {
+		t.Fatal("frame-debug has fewer than 2 steps")
+	}
+	step1 := seq.Steps[1]
+	if !strings.Contains(step1.Token, "check") || !strings.Contains(step1.Token, "scope:good") {
+		t.Errorf("frame-debug step 2 must have token containing 'check' and 'scope:good', got: %q", step1.Token)
+	}
+}
+
+// Behavior 120: the quality gate step role is "frame quality gate" in both sequences.
+func TestFrameQualityGateRoleIsFrameQualityGate(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	for _, name := range []string{"frame-explore", "frame-debug"} {
+		seq, ok := g.Sequences[name]
+		if !ok {
+			t.Fatalf("%s sequence not found", name)
+		}
+		if len(seq.Steps) < 2 {
+			t.Fatalf("%s has fewer than 2 steps", name)
+		}
+		step1 := seq.Steps[1]
+		if step1.Role != "frame quality gate" {
+			t.Errorf("%s step 2 role must be 'frame quality gate', got: %q", name, step1.Role)
+		}
+	}
+}
+
+// Behavior 120: the quality gate prompt_hint instructs autonomous rewrite of failing frames before dispatch.
+func TestFrameQualityGatePromptHintNamesRewriteCriteria(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	for _, name := range []string{"frame-explore", "frame-debug"} {
+		seq, ok := g.Sequences[name]
+		if !ok {
+			t.Fatalf("%s sequence not found", name)
+		}
+		if len(seq.Steps) < 2 {
+			t.Fatalf("%s has fewer than 2 steps", name)
+		}
+		hint := seq.Steps[1].PromptHint
+		if !strings.Contains(hint, "rewrite") {
+			t.Errorf("%s quality gate prompt_hint must contain 'rewrite', got: %q", name, hint)
+		}
+		if !strings.Contains(hint, "dispatch") {
+			t.Errorf("%s quality gate prompt_hint must contain 'dispatch', got: %q", name, hint)
+		}
+	}
+}

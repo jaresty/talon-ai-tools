@@ -82,7 +82,7 @@ def test_frame_debug_abduce_between_probe_and_vet():
 # BD3: frame-explore vet hint gates on abduce block
 def test_frame_explore_vet_hint_gates_on_abduce():
     hint = _get_vet_hint("frame-explore")
-    assert "abduce block" in hint, (
+    assert "abduce output block" in hint, (
         f"frame-explore vet prompt_hint missing abduce gate clause. Got: {hint[:300]}"
     )
 
@@ -90,6 +90,6 @@ def test_frame_explore_vet_hint_gates_on_abduce():
 # BD4: frame-debug vet hint gates on abduce block
 def test_frame_debug_vet_hint_gates_on_abduce():
     hint = _get_vet_hint("frame-debug")
-    assert "abduce block" in hint, (
+    assert "abduce output block" in hint, (
         f"frame-debug vet prompt_hint missing abduce gate clause. Got: {hint[:300]}"
     )

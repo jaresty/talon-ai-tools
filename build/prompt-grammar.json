@@ -121804,6 +121804,7 @@
           "fan_out": "enumerate",
           "join": "all",
           "isolation": true,
+          "during_dispatch": "show form:quiz",
           "prompt_hint": "Each agent receives its assigned frame, the store path/mechanism, and the coordination protocol from step 1. Execute the inner sequence. The store is a live coordination channel — agents must read it before claiming scope and may read it during work to detect conflicts.",
           "inner": {
             "mode": "autonomous",
@@ -122504,7 +122505,7 @@
     "slugs": "c8606e67cb05de82a74e07e21b1f22e7cb7b3c4fd3c9656dcf78d7fbc5a30cb8",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "acd393fc56e1a0b04dd99d43d937542b637fce63b8ba8270f461fea55a4bd5e0",
+    "sequences": "c8b6b02cdba6ffc8d6b3a2919b270c0baf4b4ac678f506e1bcb8afbc70b3c654",
     "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

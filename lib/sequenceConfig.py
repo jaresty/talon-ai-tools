@@ -446,6 +446,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "all",
                 "isolation": True,
+                "during_dispatch": "show form:quiz",
                 "prompt_hint": "Each agent receives its assigned frame, the store path/mechanism, and the coordination protocol from step 1. Execute the inner sequence. The store is a live coordination channel — agents must read it before claiming scope and may read it during work to detect conflicts.",
                 "inner": {
                     "mode": "autonomous",

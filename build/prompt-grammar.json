@@ -121693,9 +121693,14 @@
                 "prompt_hint": "Before running any command: identify every factual claim about the subject's current state that this hypothesis depends on (e.g., 'fixture X has property Y', 'file Z contains value W'). For each claim, run a Bash command whose output would differ if the claim were false — a claim not verified by such a command is not a valid precondition and must not be used as the basis for a conclusion. This step is complete only when the transcript contains at least one Bash tool call producing output that could not exist in the repository at rest — one of: stdout lines, stderr lines, log entries, test result records, application trace. A Bash call using cat, head, tail, sed, awk, or equivalent file-reading operations does not satisfy this step regardless of the tool type used."
               },
               {
+                "token": "show abduce",
+                "role": "alternative explanation enumeration",
+                "prompt_hint": "Given the live output just produced: enumerate at least two alternative explanations consistent with the observed output that would not satisfy the goal condition from this frame's angle. For each alternative, name the specific additional evidence that would distinguish it from the current hypothesis."
+              },
+              {
                 "token": "check form:vet audit adversarial",
                 "role": "evidence evaluation",
-                "prompt_hint": "Before evaluating evidence: identify the tool call type the probe step used to produce it — a Bash tool call executing a command (live execution) satisfies this step; a Read tool call or a Bash call using cat, head, tail, or equivalent (file read) does not. If the probe step used only file reads, the evidence is invalid — reject it and require a live invocation before continuing. Otherwise: evaluate the live output against the hypothesis. End with exactly one of: 'Goal condition: met' (if the goal is fully satisfied from this frame's evidence) or 'Goal condition: unmet — [one sentence naming what further cycles must produce]'."
+                "prompt_hint": "Before evaluating: confirm the abduce block from this cycle appears in the transcript above, naming at least two alternatives. A vet step with no preceding abduce block in this cycle does not satisfy this gate. Then: identify the tool call type the probe step used to produce it — a Bash tool call executing a command (live execution) satisfies this step; a Read tool call or a Bash call using cat, head, tail, or equivalent (file read) does not. If the probe step used only file reads, the evidence is invalid — reject it and require a live invocation before continuing. Otherwise: evaluate the live output against the hypothesis. End with exactly one of: 'Goal condition: met' (if the goal is fully satisfied from this frame's evidence) or 'Goal condition: unmet — [one sentence naming what further cycles must produce]'."
               }
             ]
           }
@@ -121759,9 +121764,14 @@
                 "prompt_hint": "Before running any command: identify every factual claim about the subject's current state that this hypothesis depends on (e.g., 'fixture X has property Y', 'file Z contains value W'). For each claim, run a Bash command whose output would differ if the claim were false — a claim not verified by such a command is not a valid precondition and must not be used as the basis for a conclusion. This step is complete only when the transcript contains at least one Bash tool call producing output that could not exist in the repository at rest — one of: stdout lines, stderr lines, log entries, test result records, application trace. A Bash call using cat, head, tail, sed, awk, or equivalent file-reading operations does not satisfy this step regardless of the tool type used."
               },
               {
+                "token": "show abduce",
+                "role": "alternative root cause enumeration",
+                "prompt_hint": "Given the live output just produced: enumerate at least two alternative root causes consistent with the observed output that would point to a different fix. For each alternative, name the specific additional evidence that would distinguish it from the current hypothesis."
+              },
+              {
                 "token": "check form:vet audit adversarial",
                 "role": "evidence evaluation",
-                "prompt_hint": "Before evaluating evidence: identify the tool call type the probe step used to produce it — a Bash tool call executing a command (live execution) satisfies this step; a Read tool call or a Bash call using cat, head, tail, or equivalent (file read) does not. If the probe step used only file reads, the evidence is invalid — reject it and require a live invocation. Otherwise: evaluate the live Bash output against the hypothesis. If rejected, state why and name the next hypothesis to investigate — a vet rejection is complete only when followed by a new bar build make form:prep verify for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement. End with exactly one of: 'Root cause: confirmed' (if the root cause is identified with sufficient evidence to act) or 'Root cause: unconfirmed — [one sentence naming what further cycles must produce]'."
+                "prompt_hint": "Before evaluating: confirm the abduce block from this cycle appears in the transcript above, naming at least two alternatives. A vet step with no preceding abduce block in this cycle does not satisfy this gate. Then: identify the tool call type the probe step used to produce it — a Bash tool call executing a command (live execution) satisfies this step; a Read tool call or a Bash call using cat, head, tail, or equivalent (file read) does not. If the probe step used only file reads, the evidence is invalid — reject it and require a live invocation. Otherwise: evaluate the live Bash output against the hypothesis. If rejected, state why and name the next hypothesis to investigate — a vet rejection is complete only when followed by a new bar build make form:prep verify for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement. End with exactly one of: 'Root cause: confirmed' (if the root cause is identified with sufficient evidence to act) or 'Root cause: unconfirmed — [one sentence naming what further cycles must produce]'."
               }
             ]
           }
@@ -122505,7 +122515,7 @@
     "slugs": "c8606e67cb05de82a74e07e21b1f22e7cb7b3c4fd3c9656dcf78d7fbc5a30cb8",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "b4587809c949d8f1f265f937196b7154d2e82cb2b2ff2b69b7e0be823a133fd7",
+    "sequences": "11e3126e4f0d1d61ff24b0e6a57f8dbb06fbd1081ae6471a551f43ee1d923a6d",
     "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

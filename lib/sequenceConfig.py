@@ -433,7 +433,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "description": "Decompose a task into independent work frames, implement each in isolation using craft discipline with live coordination, then adversarially stress-test the merged result.",
         "example": "Building three independent features in parallel — each agent claims its scope in a shared coordination store, implements with full TDD discipline, and the merged result is stress-tested before converging.",
         "heuristics": ["parallel implementation", "parallel craft", "independent work streams", "parallel TDD", "coordinated parallel work", "implement in parallel then merge", "multi-agent coding"],
-        "mode": "autonomous",
+        "mode": "linear",
         "steps": [
             {
                 "token": "make method:prism",

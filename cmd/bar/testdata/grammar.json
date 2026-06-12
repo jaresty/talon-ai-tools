@@ -121791,7 +121791,7 @@
         "implement in parallel then merge",
         "multi-agent coding"
       ],
-      "mode": "autonomous",
+      "mode": "linear",
       "steps": [
         {
           "token": "make method:prism",
@@ -122505,7 +122505,7 @@
     "slugs": "c8606e67cb05de82a74e07e21b1f22e7cb7b3c4fd3c9656dcf78d7fbc5a30cb8",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "c8b6b02cdba6ffc8d6b3a2919b270c0baf4b4ac678f506e1bcb8afbc70b3c654",
+    "sequences": "b4587809c949d8f1f265f937196b7154d2e82cb2b2ff2b69b7e0be823a133fd7",
     "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
     "guidebook": "0f456d82ea0259f2f23d03655fc48eb9b391c7a3b4963df6272da88005686fc5"
   }

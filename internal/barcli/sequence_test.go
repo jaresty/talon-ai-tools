@@ -2156,8 +2156,8 @@ func TestFrameExplorePrismLiveSignalRejectionClause(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "invoking the system") {
-		t.Errorf("frame-explore prism must contain 'invoking the system':\n%s", out)
+	if !strings.Contains(out, "executing a command, test run, or API call") {
+		t.Errorf("frame-explore prism must contain 'executing a command, test run, or API call':\n%s", out)
 	}
 	if !strings.Contains(out, "would show, would appear, could be observed as") {
 		t.Errorf("frame-explore prism must contain conditional-prediction closure strings:\n%s", out)
@@ -2170,8 +2170,8 @@ func TestFrameDebugPrismLiveSignalRejectionClause(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "invoking the system") {
-		t.Errorf("frame-debug prism must contain 'invoking the system':\n%s", out)
+	if !strings.Contains(out, "executing a command, test run, or API call") {
+		t.Errorf("frame-debug prism must contain 'executing a command, test run, or API call':\n%s", out)
 	}
 	if !strings.Contains(out, "would show, would appear, could be observed as") {
 		t.Errorf("frame-debug prism must contain conditional-prediction closure strings:\n%s", out)
@@ -2324,6 +2324,50 @@ func TestVetStepsIncludeAuditAcrossSequences(t *testing.T) {
 		}
 		if !strings.Contains(out, "check form:vet audit") {
 			t.Errorf("%s vet step must use token 'check form:vet audit':\n%s", seq, out)
+		}
+	}
+}
+
+// Behavior 121: frame-explore and frame-debug quality gate prompt_hint names executability criterion — no credentials, no pre-existing output files.
+func TestFrameExecutabilityGateInQualityGate(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	for _, name := range []string{"frame-explore", "frame-debug"} {
+		seq, ok := g.Sequences[name]
+		if !ok {
+			t.Fatalf("%s sequence not found", name)
+		}
+		if len(seq.Steps) < 2 {
+			t.Fatalf("%s has fewer than 2 steps", name)
+		}
+		hint := seq.Steps[1].PromptHint
+		if !strings.Contains(hint, "no credentials, no pre-existing output files") {
+			t.Errorf("%s quality gate prompt_hint must contain 'no credentials, no pre-existing output files', got: %q", name, hint)
+		}
+	}
+}
+
+// Behavior 121: frame-explore and frame-debug prism prompt_hint rules out pre-existing files, recordings, and snapshots.
+func TestFramePrismPreExistingFileRejection(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	for _, name := range []string{"frame-explore", "frame-debug"} {
+		seq, ok := g.Sequences[name]
+		if !ok {
+			t.Fatalf("%s sequence not found", name)
+		}
+		if len(seq.Steps) == 0 {
+			t.Fatalf("%s has no steps", name)
+		}
+		hint := seq.Steps[0].PromptHint
+		if !strings.Contains(hint, "not present in the repository as a pre-existing file, recording, or snapshot") {
+			t.Errorf("%s prism prompt_hint must contain 'not present in the repository as a pre-existing file, recording, or snapshot', got: %q", name, hint)
 		}
 	}
 }

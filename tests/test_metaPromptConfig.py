@@ -110,6 +110,55 @@ def test_meta_interpretation_context_position():
     )
 
 
+def test_execution_reminder_root_criterion_phrase():
+    """token-rewrite BD1: EXECUTION_REMINDER opens with permit-condition form naming the transcript as evaluated artifact."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "A transcript satisfies this requirement when" in EXECUTION_REMINDER, (
+        "expected root criterion phrase 'A transcript satisfies this requirement when' in EXECUTION_REMINDER; "
+        "old gate phrasing 'The response produces content only after' must be replaced"
+    )
+
+
+def test_execution_reminder_evaluator_framing():
+    """token-rewrite BD2: EXECUTION_REMINDER names an evaluator scanning the complete transcript as the compliance check agent."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "an evaluator scanning the complete transcript determines compliance" in EXECUTION_REMINDER, (
+        "expected evaluator framing 'an evaluator scanning the complete transcript determines compliance' in EXECUTION_REMINDER"
+    )
+
+
+def test_execution_reminder_web_context_permit():
+    """token-rewrite BD3: EXECUTION_REMINDER permits trigger string in TASK section of prompt for web/no-tool-call contexts."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "or in the TASK section of this prompt" in EXECUTION_REMINDER, (
+        "expected web context permit 'or in the TASK section of this prompt' in EXECUTION_REMINDER; "
+        "satisfiability requires covering non-tool-call contexts"
+    )
+
+
+def test_execution_reminder_no_deny_list_clause():
+    """token-rewrite BD4: EXECUTION_REMINDER must not contain deny-list clause implying real-time model checking."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "content produced before that string appears does not satisfy" not in EXECUTION_REMINDER, (
+        "deny-list clause 'content produced before that string appears does not satisfy' must be removed from EXECUTION_REMINDER; "
+        "it implies real-time model checking rather than post-hoc evaluator compliance"
+    )
+
+
+def test_execution_reminder_no_gate_phrasing():
+    """token-rewrite BD5: EXECUTION_REMINDER must not contain pre-execution gate phrasing that blocks model output."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "The response produces content only after" not in EXECUTION_REMINDER, (
+        "gate phrasing 'The response produces content only after' must be removed from EXECUTION_REMINDER; "
+        "it reads as a pre-execution wait condition rather than an evaluator compliance criterion"
+    )
+
+
 def test_model_types_uses_helper_not_raw_dict():
     """Thread 2: modelTypes.py calls prompt_reference_key_as_text(), not PROMPT_REFERENCE_KEY.strip()."""
     import ast

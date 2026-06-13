@@ -209,9 +209,12 @@ SUBJECT_FRAMING: str = (
 )
 
 EXECUTION_REMINDER: str = (
-    "The response produces content only after the literal string "
-    "'=== TASK 任務 (DO THIS) ===' appears in a tool call result block earlier in this transcript "
-    "— content produced before that string appears does not satisfy this requirement. "
+    "A transcript satisfies this requirement when the literal string "
+    "'=== TASK 任務 (DO THIS) ===' appears in a tool call result block "
+    "or in the TASK section of this prompt, at an earlier position than "
+    "the first content sentence — an evaluator scanning the complete "
+    "transcript determines compliance by locating the trigger string's "
+    "position relative to the first content sentence. "
     "'Content' begins at the first sentence naming an entity, goal, or action traceable to TASK; "
     "planning must appear before that sentence. "
     "Each claim must be traceable to a specific string in TASK, ADDENDUM, a named token in CONSTRAINTS, "

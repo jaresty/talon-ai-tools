@@ -49,6 +49,49 @@ def test_form_axis_text_contains_prep_vet_resolution():
     )
 
 
+def test_task_reference_key_root_criterion():
+    """token-rewrite BD1: PROMPT_REFERENCE_KEY['task'] uses root-criterion form with 'TASK is the sole authoritative task source'."""
+    from lib.metaPromptConfig import PROMPT_REFERENCE_KEY
+
+    task_text = PROMPT_REFERENCE_KEY["task"]
+    assert "TASK is the sole authoritative task source" in task_text, (
+        f"expected root-criterion phrase 'TASK is the sole authoritative task source' in task definition, got: {task_text[:120]!r}"
+    )
+    assert "Takes precedence over all other sections." not in task_text, (
+        "old procedural phrase 'Takes precedence over all other sections.' must be removed in favour of root-criterion form"
+    )
+
+
+def test_execution_reminder_structural_delimiter():
+    """token-rewrite BD2: EXECUTION_REMINDER names 'tool call result block' as structural delimiter for content gate."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "tool call result block" in EXECUTION_REMINDER, (
+        "expected structural delimiter 'tool call result block' in EXECUTION_REMINDER"
+    )
+
+
+def test_planning_directive_section_heading():
+    """token-rewrite BD3: PLANNING_DIRECTIVE uses allow-list form with literal section heading 'SECTION 1 —' as first heading."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+
+    assert "'SECTION 1 —' as the first heading" in PLANNING_DIRECTIVE or "SECTION 1 —' as the first heading" in PLANNING_DIRECTIVE, (
+        "expected allow-list clause naming 'SECTION 1 —' as the first heading in PLANNING_DIRECTIVE"
+    )
+    assert "no preamble" not in PLANNING_DIRECTIVE, (
+        "deny-list phrase 'no preamble' must be removed in favour of allow-list structural form"
+    )
+
+
+def test_meta_interpretation_context_position():
+    """token-rewrite BD4: META_INTERPRETATION_GUIDANCE names 'tool call result block or user message' as structural position for Suggestion gate."""
+    from lib.metaPromptConfig import META_INTERPRETATION_GUIDANCE
+
+    assert "tool call result block or user message" in META_INTERPRETATION_GUIDANCE, (
+        "expected structural position 'tool call result block or user message' in META_INTERPRETATION_GUIDANCE Suggestion gate"
+    )
+
+
 def test_model_types_uses_helper_not_raw_dict():
     """Thread 2: modelTypes.py calls prompt_reference_key_as_text(), not PROMPT_REFERENCE_KEY.strip()."""
     import ast

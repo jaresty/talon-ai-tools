@@ -4,9 +4,11 @@ import re
 def _get_vet_definition():
     with open("lib/axisConfig.py") as f:
         content = f.read()
-    match = re.search(r'"vet":\s*"([^"]+)"', content)
+    # Collect all string fragments after "vet": (handles implicit concatenation).
+    match = re.search(r'"vet":\s*((?:"[^"]*"\s*)+),', content)
     assert match, "vet definition not found in lib/axisConfig.py"
-    return match.group(1)
+    fragments = re.findall(r'"([^"]*)"', match.group(1))
+    return "".join(fragments)
 
 
 def test_vet_definition_contains_transcript_showed():

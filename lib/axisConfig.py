@@ -146,11 +146,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "resolution emerges. Like a derivative: the rate of change matters more than the total span. Accelerates toward dense regions, decelerates near resolution.",
         "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no "
         "coverage. The coverage allocation is stakes-proportionate rather than uniform.",
-        "zoom": "The response covers the full range of the subject by treating it as exponentially-spaced buckets from smallest natural unit to largest. Each bucket receives substantive "
-        "coverage — the response addresses the subject at every level, not merely names or lists the scale. Both ends must appear as explicit anchors: do not begin at an "
-        "intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude in span produces roughly one step up in "
-        "granularity, so steps are multiplicative, not additive. Applies to any axis with natural magnitude: quantities (units → millions), hierarchy levels (function → system), "
-        "spatial scale, time (minutes → years), complexity tiers, or fuzzy buckets.",
+        "zoom": "The response covers the subject's full magnitude range by dividing it into exponentially-spaced buckets, where the first bucket section is anchored at the smallest natural "
+        "unit of the subject and the last is anchored at the largest; each bucket section contains at least one sentence of content beyond a label or enumeration; and bucket sizes "
+        "are stated as ratios or orders-of-magnitude steps. To apply: name the smallest and largest natural units of the subject, then enumerate bucket levels where each step is a "
+        "ratio (not a difference) of the previous; verify that a sentence of non-enumeration content appears under each level; verify that no level is skipped. Applies to any axis "
+        "with natural magnitude: quantities, hierarchy levels, spatial scale, time, complexity tiers, or fuzzy buckets.",
     },
     "directional": {
         "bog": "The response additionally orients across the full horizontal axis — spanning both the reflective/structural dimension (rog) and the acting/extending dimension (ong), "

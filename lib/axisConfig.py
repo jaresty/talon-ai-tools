@@ -267,7 +267,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "twin": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when "
         "helpful while avoiding near-duplicate alternatives.",
-        "vet": "The response structures the output as a post-experiment review: what was observed, how outcomes compare to expectations, what was learned, and what follows. Complements prep.",
+        "vet": "The response structures the output as a post-experiment review: what the transcript showed (naming null results as gaps, not as disconfirmation), how outcomes compare to the prior "
+        "prediction, what can be derived from what was observed (not from what was absent), and what follows. Complements prep.",
         "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
         "wardley": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
         "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",

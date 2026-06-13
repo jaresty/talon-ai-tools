@@ -1,0 +1,29 @@
+import re
+
+
+def _get_vet_definition():
+    with open("lib/axisConfig.py") as f:
+        content = f.read()
+    match = re.search(r'"vet":\s*"([^"]+)"', content)
+    assert match, "vet definition not found in lib/axisConfig.py"
+    return match.group(1)
+
+
+def test_vet_definition_contains_transcript_showed():
+    defn = _get_vet_definition()
+    assert "what the transcript showed" in defn
+
+
+def test_vet_definition_contains_null_results_as_gaps():
+    defn = _get_vet_definition()
+    assert "naming null results as gaps, not as disconfirmation" in defn
+
+
+def test_vet_definition_contains_not_from_what_was_absent():
+    defn = _get_vet_definition()
+    assert "not from what was absent" in defn
+
+
+def test_vet_definition_contains_prior_prediction():
+    defn = _get_vet_definition()
+    assert "prior prediction" in defn

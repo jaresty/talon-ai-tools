@@ -71,15 +71,33 @@ def test_execution_reminder_structural_delimiter():
     )
 
 
-def test_planning_directive_section_heading():
-    """token-rewrite BD3: PLANNING_DIRECTIVE uses allow-list form with literal section heading 'SECTION 1 —' as first heading."""
+def test_planning_directive_outer_imperative():
+    """token-rewrite BD3a: PLANNING_DIRECTIVE opens with unconditional existence mandate closing zero-instance escape."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE
 
-    assert "'SECTION 1 —' as the first heading" in PLANNING_DIRECTIVE or "SECTION 1 —' as the first heading" in PLANNING_DIRECTIVE, (
-        "expected allow-list clause naming 'SECTION 1 —' as the first heading in PLANNING_DIRECTIVE"
+    assert "The response must contain a planning block" in PLANNING_DIRECTIVE, (
+        "expected outer imperative 'The response must contain a planning block' in PLANNING_DIRECTIVE; "
+        "old 'begins with SECTION 1 —' form has zero-instance escape"
     )
-    assert "no preamble" not in PLANNING_DIRECTIVE, (
-        "deny-list phrase 'no preamble' must be removed in favour of allow-list structural form"
+
+
+def test_planning_directive_no_begins_with_escape():
+    """token-rewrite BD3b: PLANNING_DIRECTIVE must not open with description-first 'begins with' clause (zero-instance escape)."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+
+    assert not PLANNING_DIRECTIVE.startswith("The response planning block begins with"), (
+        "PLANNING_DIRECTIVE must not begin with descriptive 'begins with' clause — "
+        "absence of planning block is not a violation of a 'begins with' claim"
+    )
+
+
+def test_planning_directive_allow_list_form():
+    """token-rewrite BD3c: PLANNING_DIRECTIVE uses allow-list form ('is text output') not deny-list ('no tool call result block')."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+
+    assert "all content between 'SECTION 1 —' and 'SECTION 4 —' is text output" in PLANNING_DIRECTIVE, (
+        "expected allow-list clause 'all content between ... is text output' in PLANNING_DIRECTIVE; "
+        "deny-list 'no tool call result block appears' must be converted"
     )
 
 

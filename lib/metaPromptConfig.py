@@ -220,10 +220,12 @@ EXECUTION_REMINDER: str = (
 )
 
 PLANNING_DIRECTIVE: str = (
-    "The response planning block begins with 'SECTION 1 —' as the first heading and contains exactly four sections "
+    "The response must contain a planning block; write all four sections as text before any task content. "
+    "A response containing any text that does not belong to one of the four named sections does not satisfy this requirement.\n\n"
+    "The planning block contains exactly four sections "
     "('SECTION 1 —', 'SECTION 2 —', 'SECTION 3 —', 'SECTION 4 —'); "
-    "all text between 'SECTION 1 —' and the end of 'SECTION 4 —' appears after one of those four headings and before the next; "
-    "no tool call result block appears between 'SECTION 1 —' and 'SECTION 4 —'.\n\n"
+    "all content between 'SECTION 1 —' and 'SECTION 4 —' is text output — no tool call result blocks; "
+    "all text appears after one of those four headings and before the next.\n\n"
     "SECTION 1 — TOKEN DERIVATIONS:\n"
     "For each token on the method axis (tokens that appear under the METHOD 方法 heading in the rendered prompt), output a full block:\n"
     "  ## Derive: <token-name> <kanji>\n"

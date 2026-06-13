@@ -224,7 +224,7 @@ EXECUTION_REMINDER: str = (
 
 PLANNING_DIRECTIVE: str = (
     "The response must contain a planning block; write all four sections as text before any task content. "
-    "A response containing any text that does not belong to one of the four named sections does not satisfy this requirement.\n\n"
+    "All text within the planning block (between 'SECTION 1 —' and the end of 'SECTION 4 —') belongs to one of the four named sections.\n\n"
     "The planning block contains exactly four sections "
     "('SECTION 1 —', 'SECTION 2 —', 'SECTION 3 —', 'SECTION 4 —'); "
     "all content between 'SECTION 1 —' and 'SECTION 4 —' is text output — no tool call result blocks; "
@@ -259,6 +259,7 @@ PLANNING_DIRECTIVE: str = (
     "Section 4 contains the literal string 'Derivations complete — tokens: [list]; first derive: [verbatim opening 6 words of first ## Derive block in Section 1]' "
     "— this string cannot be written truthfully if Section 1 is absent. "
     "When no method tokens are present, Section 4 contains: 'Derivations complete — tokens: [list]. Beginning task work.' "
+    "Task content appears after the planning block — a response ending at SECTION 4 without task content does not satisfy this requirement. "
     "Then proceed immediately — if no method token has named an artifact precondition that is not yet satisfied in the transcript, make your first tool call now; "
     "if no tool calls are needed, write your response now. Do not pause or wait."
 )

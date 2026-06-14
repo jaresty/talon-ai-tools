@@ -1,13 +1,12 @@
 """
 Falsifiable tests for the 'dialogue' form token definition.
 
-These tests assert the 4 key literal strings from the verified definition:
-  'The response presents content as a sequence of turns from at least two distinct
-   speakers; each turn begins with a name or role label followed by a colon on the
-   same line as the speaker's content.'
+Tests assert the 4 key literal strings from the verified definition:
+  'The response formats content as a back-and-forth exchange between at least
+   two named speakers, with each turn written as `Speaker: their words`.
+   Stage directions or scene-setting may appear on separate lines in [square brackets].'
 
-Tests FAIL when the 'dialogue' key is absent from axisConfig.py.
-Tests PASS after the key is added with the correct definition.
+Tests FAIL against the old definition; PASS after the new definition is implemented.
 """
 
 import sys
@@ -26,31 +25,25 @@ def test_dialogue_key_present():
     )
 
 
-def test_dialogue_sequence_of_turns():
-    assert "sequence of turns" in DIALOGUE_DEF, (
-        "dialogue definition must contain 'sequence of turns'"
+def test_dialogue_back_and_forth():
+    assert "back-and-forth exchange" in DIALOGUE_DEF, (
+        "dialogue definition must contain 'back-and-forth exchange'"
     )
 
 
-def test_dialogue_two_distinct_speakers():
-    assert "at least two distinct speakers" in DIALOGUE_DEF, (
-        "dialogue definition must contain 'at least two distinct speakers'"
+def test_dialogue_named_speakers():
+    assert "at least two named speakers" in DIALOGUE_DEF, (
+        "dialogue definition must contain 'at least two named speakers'"
     )
 
 
-def test_dialogue_colon_pattern():
-    assert "name or role label followed by a colon" in DIALOGUE_DEF, (
-        "dialogue definition must contain 'name or role label followed by a colon'"
+def test_dialogue_speaker_pattern():
+    assert "Speaker: their words" in DIALOGUE_DEF, (
+        "dialogue definition must contain 'Speaker: their words'"
     )
 
 
-def test_dialogue_same_line():
-    assert "on the same line as the speaker" in DIALOGUE_DEF, (
-        "dialogue definition must contain 'on the same line as the speaker'"
-    )
-
-
-def test_dialogue_narration_brackets():
-    assert "Unattributed content may appear on its own line enclosed in square brackets" in DIALOGUE_DEF, (
-        "dialogue definition must contain 'Unattributed content may appear on its own line enclosed in square brackets'"
+def test_dialogue_square_brackets():
+    assert "square brackets" in DIALOGUE_DEF, (
+        "dialogue definition must contain 'square brackets'"
     )

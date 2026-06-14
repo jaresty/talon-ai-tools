@@ -94,7 +94,7 @@
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
         "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
         "coupling": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is. Pairs naturally with snag/mesh methods and diagram/sketch channels.",
-        "dialogue": "The response formats content as a back-and-forth exchange between at least two named speakers, with each turn written as `Speaker: their words`. Stage directions or scene-setting may appear on separate lines in [square brackets].",
+        "dialogue": "The response formats content as a dialogue between named speakers. Before writing turns: name each speaker and their register (formal/casual/expert/naive). Write each turn as `Speaker: their words`, maintaining the register committed above. Where the subject has a scene boundary or tonal shift, add a narration line in [square brackets] before the relevant turn.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide.",
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
@@ -122527,7 +122527,7 @@
     }
   ],
   "checksums": {
-    "axes": "931e474115f1efcfd6daa692249f33ce93e6e38c8c09364478a271479fce236c",
+    "axes": "82bbdcec63cff1d16cd2eb6eafbcef7fa4176528a755bf9c00b06218e41ceeb1",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "1ef0b036441f96c01edbc3983f664528351c6ffb46e1514308ad907ceebacccb",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

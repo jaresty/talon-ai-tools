@@ -1,10 +1,13 @@
 """
 Falsifiable tests for the 'dialogue' form token definition.
 
-Tests assert the 4 key literal strings from the verified definition:
-  'The response formats content as a back-and-forth exchange between at least
-   two named speakers, with each turn written as `Speaker: their words`.
-   Stage directions or scene-setting may appear on separate lines in [square brackets].'
+New definition being implemented:
+  'The response formats content as a dialogue between named speakers.
+   Before writing turns: name each speaker and their register
+   (formal/casual/expert/naive). Write each turn as `Speaker: their words`,
+   maintaining the register committed above. Where the subject has a scene
+   boundary or tonal shift, add a narration line in [square brackets] before
+   the relevant turn.'
 
 Tests FAIL against the old definition; PASS after the new definition is implemented.
 """
@@ -25,18 +28,6 @@ def test_dialogue_key_present():
     )
 
 
-def test_dialogue_back_and_forth():
-    assert "back-and-forth exchange" in DIALOGUE_DEF, (
-        "dialogue definition must contain 'back-and-forth exchange'"
-    )
-
-
-def test_dialogue_named_speakers():
-    assert "at least two named speakers" in DIALOGUE_DEF, (
-        "dialogue definition must contain 'at least two named speakers'"
-    )
-
-
 def test_dialogue_speaker_pattern():
     assert "Speaker: their words" in DIALOGUE_DEF, (
         "dialogue definition must contain 'Speaker: their words'"
@@ -46,4 +37,22 @@ def test_dialogue_speaker_pattern():
 def test_dialogue_square_brackets():
     assert "square brackets" in DIALOGUE_DEF, (
         "dialogue definition must contain 'square brackets'"
+    )
+
+
+def test_dialogue_pre_production_instruction():
+    assert "Before writing turns" in DIALOGUE_DEF, (
+        "dialogue definition must contain 'Before writing turns' (GAP-1: pre-production commitment)"
+    )
+
+
+def test_dialogue_register_vocabulary():
+    assert "formal/casual/expert/naive" in DIALOGUE_DEF, (
+        "dialogue definition must contain 'formal/casual/expert/naive' (GAP-3: voice consistency)"
+    )
+
+
+def test_dialogue_narration_trigger():
+    assert "scene boundary or tonal shift" in DIALOGUE_DEF, (
+        "dialogue definition must contain 'scene boundary or tonal shift' (GAP-2: narration trigger)"
     )

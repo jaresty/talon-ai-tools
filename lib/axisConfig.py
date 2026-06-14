@@ -204,8 +204,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
         "coupling": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is. Pairs "
         "naturally with snag/mesh methods and diagram/sketch channels.",
-        "dialogue": "The response formats content as a back-and-forth exchange between at least two named speakers, with each turn written as `Speaker: their words`. Stage directions or "
-        "scene-setting may appear on separate lines in [square brackets].",
+        "dialogue": "The response formats content as a dialogue between named speakers. Before writing turns: name each speaker and their register (formal/casual/expert/naive). Write each turn as "
+        "`Speaker: their words`, maintaining the register committed above. Where the subject has a scene boundary or tonal shift, add a narration line in [square brackets] before the "
+        "relevant turn.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work "
         "solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide.",

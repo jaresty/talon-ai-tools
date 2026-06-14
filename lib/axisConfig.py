@@ -205,7 +205,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "coupling": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is. Pairs "
         "naturally with snag/mesh methods and diagram/sketch channels.",
         "dialogue": "The response presents content as a sequence of turns from at least two distinct speakers; each turn begins with a name or role label followed by a colon on the same line as "
-        "the speaker's content.",
+        "the speaker's content. Unattributed content may appear on its own line enclosed in square brackets, interspersed among turns.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work "
         "solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide.",

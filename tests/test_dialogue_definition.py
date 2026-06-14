@@ -48,3 +48,9 @@ def test_dialogue_same_line():
     assert "on the same line as the speaker" in DIALOGUE_DEF, (
         "dialogue definition must contain 'on the same line as the speaker'"
     )
+
+
+def test_dialogue_narration_brackets():
+    assert "Unattributed content may appear on its own line enclosed in square brackets" in DIALOGUE_DEF, (
+        "dialogue definition must contain 'Unattributed content may appear on its own line enclosed in square brackets'"
+    )

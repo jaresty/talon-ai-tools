@@ -94,7 +94,7 @@
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
         "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
         "coupling": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is. Pairs naturally with snag/mesh methods and diagram/sketch channels.",
-        "dialogue": "The response presents content as a sequence of turns from at least two distinct speakers; each turn begins with a name or role label followed by a colon on the same line as the speaker's content.",
+        "dialogue": "The response presents content as a sequence of turns from at least two distinct speakers; each turn begins with a name or role label followed by a colon on the same line as the speaker's content. Unattributed content may appear on its own line enclosed in square brackets, interspersed among turns.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide.",
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
@@ -122527,7 +122527,7 @@
     }
   ],
   "checksums": {
-    "axes": "5f674b4f755c45342b556ff65e11e213ec3cfd15d50f8534eb555939ea244af4",
+    "axes": "01f336cecaa56e33fb01f95921b333761e4943c409e98ae34c46ab97b690d203",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "1ef0b036441f96c01edbc3983f664528351c6ffb46e1514308ad907ceebacccb",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

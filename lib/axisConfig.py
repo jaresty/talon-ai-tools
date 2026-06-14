@@ -929,7 +929,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "commit": "提",
         "contextualise": "脈",
         "coupling": "繋",
-        "dialogue": "話",
+        "dialogue": "談",
         "direct": "直",
         "facilitate": "促",
         "faq": "質",

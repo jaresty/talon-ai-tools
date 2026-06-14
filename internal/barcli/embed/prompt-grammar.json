@@ -798,7 +798,7 @@
         "commit": "提",
         "contextualise": "脈",
         "coupling": "繋",
-        "dialogue": "話",
+        "dialogue": "談",
         "direct": "直",
         "facilitate": "促",
         "faq": "質",
@@ -122527,7 +122527,7 @@
     }
   ],
   "checksums": {
-    "axes": "2aefee8bb8f67568c0d538c6cd7a99f285155afc0c59894ca81039476884294b",
+    "axes": "931e474115f1efcfd6daa692249f33ce93e6e38c8c09364478a271479fce236c",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "1ef0b036441f96c01edbc3983f664528351c6ffb46e1514308ad907ceebacccb",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

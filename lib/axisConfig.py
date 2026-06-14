@@ -204,6 +204,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
         "coupling": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is. Pairs "
         "naturally with snag/mesh methods and diagram/sketch channels.",
+        "dialogue": "The response presents content as a sequence of turns from at least two distinct speakers; each turn begins with a name or role label followed by a colon on the same line as "
+        "the speaker's content.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work "
         "solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide.",
@@ -695,6 +697,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "commit": "Conventional commit message",
         "contextualise": "Add or reshape supporting context",
         "coupling": "Coupling map layout",
+        "dialogue": "Dialogue between identified speakers",
         "direct": "Lead with main point first",
         "facilitate": "Facilitation plan and session structure",
         "faq": "Question-and-answer format",
@@ -926,6 +929,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "commit": "提",
         "contextualise": "脈",
         "coupling": "繋",
+        "dialogue": "話",
         "direct": "直",
         "facilitate": "促",
         "faq": "質",
@@ -1367,6 +1371,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "commit": "Commit message",
         "contextualise": "LLM context package",
         "coupling": "Coupling map",
+        "dialogue": "Dialogue between identified speakers",
         "direct": "Lead with conclusion",
         "facilitate": "Facilitation plan",
         "faq": "FAQ format",

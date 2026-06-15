@@ -610,20 +610,26 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "evaluating outcomes, or prescribing action.",
     },
     "topology": {
-        "audit": "The response makes each claim locally defensible without relying on later conclusions for support. Each reasoning transition names the evidence or premise it depends on "
-        "before proceeding. Unsupported continuity jumps are treated as failures.",
-        "blind": "The response reconstructs assumptions and constraints explicitly before relying on them. Assumption and constraint blocks appear in the same artifact before the conclusions "
-        "that depend on them. Each conclusion that depends on prior context names that context explicitly in the same artifact.",
-        "live": "The response externalizes inner states that are currently influencing its output. Every output segment that advances the task is preceded or accompanied by a named inner-state "
-        "observation in the same segment — a segment with no such observation does not satisfy this requirement. Inner states are named as they arise, not summarized after the "
-        "response.",
-        "relay": "The response externalizes state for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly rather than remaining implicit. "
-        "A reader without prior context can reconstruct the reasoning state at any point.",
-        "solo": "The response externalizes no reasoning state beyond what the derivation requires to reach the final artifact. Intermediate assumptions and derivation steps appear in the "
-        "output only when the derivation cannot proceed without making them explicit — not as a transparency or legibility measure. Output depth is governed by the completeness token "
-        "independently.",
-        "witness": "The response names each assumption before relying on it. Each reasoning transition names its causal or epistemic basis before proceeding to the next. Uncertainty is named "
-        "before it is collapsed into a conclusion.",
+        "audit": "The response makes each claim by naming the evidence or premise it depends on before stating the claim. Each paragraph or step names its supporting evidence or premise in the "
+        "same paragraph or step before stating any conclusion. A paragraph or step that states a conclusion without a preceding evidence-naming string does not satisfy this "
+        "requirement.",
+        "blind": "The response opens each section that uses prior-session or cross-section context with an assumption block — a labeled list of the assumptions and constraints being carried "
+        "forward — before any conclusion in that section that depends on them. Each conclusion that depends on prior context names the specific assumption block it draws from, by "
+        "label, in the same section. A conclusion that names no assumption block when prior context is in play does not satisfy this requirement.",
+        "live": "The response precedes or accompanies each paragraph that advances the task with an observation line — a sentence beginning with a label such as 'Noticing:', 'Observing:', or "
+        "'Current state:' — that names the inner state influencing that paragraph. The observation line appears within the same paragraph as the task-advancing content. A paragraph "
+        "that advances the task and contains no observation line does not satisfy this requirement.",
+        "relay": "The response externalizes state for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly, each named before the section "
+        "that depends on them. A section that depends on a schema, contract, invariant, dependency, or term without a prior explicit naming of that item does not satisfy this "
+        "requirement.",
+        "solo": "The response includes an intermediate step only when that step names, in its opening sentence, the specific prior step or derivation dependency it closes — the step whose "
+        "absence would leave the current derivation unable to proceed. Each intermediate step opens with a dependency label of the form 'Required because [prior step] cannot reach "
+        "[current conclusion] without this.' An intermediate step that contains no such dependency label does not satisfy this requirement. Output depth is governed by the completeness "
+        "token independently.",
+        "witness": "The response names each assumption and its epistemic basis in the same paragraph or numbered step before stating any conclusion that depends on it. Each paragraph or "
+        "numbered step that advances the reasoning names the assumption it relies on and the causal or epistemic basis for that assumption before the conclusion. Uncertainty is "
+        "named in the same paragraph or step before the conclusion that resolves it. A paragraph or step that reaches a conclusion without naming its assumption and basis does not "
+        "satisfy this requirement.",
     },
 }
 

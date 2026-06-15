@@ -458,7 +458,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration and coordination setup",
-                "prompt_hint": "Enumerate the independent work frames as a governing artifact. Each frame names a distinct, non-overlapping scope area — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also establish the coordination store: either use nn (if available) with a shared tag, or create a temp JSON file at a deterministic path. Output: (1) named frames with scope, (2) store mechanism and path/identifier, (3) coordination protocol — what each agent must read before starting and write when claiming scope or completing work. The store path/mechanism must appear explicitly in this output so it can be passed to every dispatch agent.",
+                "prompt_hint": "Enumerate the independent work frames as a governing artifact. Each frame names a distinct, non-overlapping scope area — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also establish the coordination store: a namespace directory at a deterministic path derived from the session or task context (e.g., /tmp/bar-frame-work-<session-id>/). Each agent writes exactly one artifact to this namespace, at a path derived from its frame name (e.g., <namespace>/<slugified-frame-name>.<ext>). No two agents share a write target — write-target isolation is enforced structurally by the per-frame path derivation rule. Output: (1) named frames with scope, (2) the namespace prefix path, (3) coordination protocol — what each agent must read before starting and write when claiming scope or completing work. The namespace prefix must appear explicitly in this output so it can be passed to every dispatch agent; the join step enumerates all claims by scanning the namespace prefix.",
             },
             {
                 "type": "dispatch",
@@ -467,14 +467,14 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "join": "all",
                 "isolation": True,
                 "during_dispatch": "show form:quiz",
-                "prompt_hint": "Each agent receives its assigned frame, the store path/mechanism, and the coordination protocol from step 1. Execute the inner sequence. The store is a live coordination channel — agents must read it before claiming scope and may read it during work to detect conflicts.",
+                "prompt_hint": "Each agent receives its assigned frame, the namespace prefix, and the coordination protocol from step 1. Execute the inner sequence. The namespace is a live coordination channel — agents must scan it before claiming scope. Each agent chooses the artifact format fit to its frame's content (markdown, plain text, or structured data) — format is the agent's choice.",
                 "inner": {
                     "mode": "autonomous",
                     "steps": [
                         {
                             "type": "action",
                             "role": "scope claim",
-                            "prompt_hint": "Read the coordination store. Check for existing claims that overlap with your frame's scope. Write your frame name and the specific files/symbols you intend to modify as a claim. If overlap exists with another agent's claim, narrow your scope before proceeding and update your claim accordingly. Also write your ground derivation to the store: governing goal, behavioral dimensions, and enforcement sequence — this is required so the adversarial step can validate your work against your stated intent.",
+                            "prompt_hint": "Scan the namespace prefix for existing claim artifacts. Check for claims that overlap with your frame's scope. Before any file-modifying tool call, write your claim artifact to your per-frame path (<namespace>/<slugified-frame-name>.<ext>) — a claim artifact written after any file-modifying call does not satisfy this gate. The claim must name the specific files/symbols you intend to modify. If overlap exists with another agent's claim, narrow your scope before proceeding and update your claim accordingly. Also write your ground derivation to your claim artifact: governing goal, behavioral dimensions, and enforcement sequence — this is required so the adversarial step can validate your work against your stated intent.",
                         },
                         {
                             "token": "make witness ground gate falsify atomic",

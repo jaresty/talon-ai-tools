@@ -512,11 +512,11 @@ class FormAxisMetadataTests(unittest.TestCase):
         )
 
     def test_quiz_definition_encodes_terminal_declaration(self):
-        """quiz definition must require a terminal declaration listing confirmed concepts."""
+        """quiz definition must require a terminal declaration with evaluator criterion."""
         quiz = self.meta.get("quiz", {})
         definition = quiz.get("definition", "")
         self.assertIn(
-            "terminal declaration listing all confirmed concepts",
+            "an evaluator determines completeness by comparing the terminal declaration against the opening list",
             definition,
             "quiz definition must require a terminal declaration as a closing structural artifact",
         )

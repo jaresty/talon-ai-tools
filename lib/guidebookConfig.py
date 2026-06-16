@@ -532,6 +532,35 @@ GUIDEBOOK: list[dict[str, Any]] = [
         ),
     },
 
+    {
+        "id": "rebase-vs-neighbors",
+        "title": "rebase vs crystal vs dimension vs shift vs reify vs cluster",
+        "tokens": ["rebase", "crystal", "dimension", "shift", "reify", "cluster"],
+        "body": (
+            "These tokens all involve reorganizing or reframing — but differ in what they do to the subject:\n\n"
+            "**rebase** — *re-expresses existing items under a new basis*: the items don't change, "
+            "only the coordinate system they're viewed through. Requires naming the original basis, "
+            "placing every item in the new basis, and naming what became visible. Descriptive/interpretive.\n\n"
+            "**crystal** — *prescriptively restructures the artifact*: changes the system itself so "
+            "behavior is determined by explicit structure rather than convention. The artifact is altered.\n\n"
+            "**dimension** — *discovers implicit axes*: finds hidden dimensions that were always present "
+            "but not named. `rebase` starts with a new basis you bring; `dimension` surfaces axes the "
+            "subject already has.\n\n"
+            "**shift** — *rotates through distinct perspectives*: contrasts how multiple frames interpret "
+            "the same facts. Produces N parallel readings. `rebase` produces one re-expressed set under "
+            "one new basis — not multiple outputs.\n\n"
+            "**reify** — *makes implicit structure explicit as formal rules*: the items may be hidden. "
+            "`rebase` operates on already-explicit items and changes their organizing frame.\n\n"
+            "**cluster** — *groups items by shared characteristics*: no new basis required, no visibility "
+            "gain required. `rebase` requires both a named basis change and a named insight that the new "
+            "basis reveals.\n\n"
+            "Quick test: if the items are unchanged but you want to see them differently → `rebase`. "
+            "If you want to restructure the thing itself → `crystal`. "
+            "If you want to find what axes are implicit → `dimension`. "
+            "If you want multiple lenses applied in parallel → `shift`."
+        ),
+    },
+
     # ── Process tokens (ground / gate / chain / atomic) ───────────────────────
 
     {

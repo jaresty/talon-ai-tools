@@ -122404,7 +122404,12 @@
           "prompt_hint": "Generate competing hypotheses for why each structural decision in the token definition was encoded the way it was — each hypothesis names the specific evidence it explains that the alternatives do not. Identify the minimal root criterion: the single generative assumption from which all current clauses derive. Name which clauses are derivable from that criterion and which require explicit encoding to close escape routes."
         },
         {
-          "token": "show mean mint gap hollow",
+          "token": "show mean drift gap clash",
+          "role": "underenforced-conclusion and conflict audit",
+          "prompt_hint": "Identify where conclusions in the token definition are underenforced (drift), where assumptions are implicit rather than explicit (gap), and where explicitly stated clauses conflict with each other (clash). Name the specific conclusion, assumption, or clause pair for each finding. This diagnostic pass produces the input for the assumption derivation step."
+        },
+        {
+          "token": "show mean mint reify align hollow",
           "role": "assumption derivation and addressability audit",
           "prompt_hint": "Produce a rewritten definition that an agent cannot nominally satisfy."
         },
@@ -122980,7 +122985,7 @@
     "slugs": "df7880fd858faa3ee0a40a0ade668f38308ddc8fd8dc85ab4f68a4467ade7dcc",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "c4431240c3e6c79329c54d284481db0316a23051d1ef97f094ddd16ecb95d230",
+    "sequences": "0483345f1c4e1c1a9548bdc711969804456d600eebead3add6e1e2b8498e4bb0",
     "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
     "guidebook": "c978d0ce9e8e68a74aa3407d26aa7e272cad9bbad79bf30ba93ba916108fa8dc"
   }

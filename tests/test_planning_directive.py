@@ -20,3 +20,18 @@ def test_gap1_deny_list_clause_absent():
 def test_gap4_permit_condition_present():
     """GAP-4: permit condition requiring task content after planning block must be present."""
     assert "Task content appears after the planning block — a response ending at SECTION 4 without task content does not satisfy this requirement" in PLANNING_DIRECTIVE
+
+
+def test_gap_output_category_not_reasoning_artifact():
+    """GAP-OUTPUT-CATEGORY BD-1: 'not a reasoning artifact' must appear in PLANNING_DIRECTIVE."""
+    assert "not a reasoning artifact" in PLANNING_DIRECTIVE
+
+
+def test_gap_output_category_response_itself():
+    """GAP-OUTPUT-CATEGORY BD-2: 'the response itself up to this point' must appear."""
+    assert "the response itself up to this point" in PLANNING_DIRECTIVE
+
+
+def test_gap_output_category_section1_literal_string_gate():
+    """GAP-OUTPUT-CATEGORY BD-3: literal string gate on SECTION 1 — in user-facing text must appear."""
+    assert "does not appear in the user-facing text has not produced the planning block" in PLANNING_DIRECTIVE

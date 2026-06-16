@@ -223,7 +223,9 @@ EXECUTION_REMINDER: str = (
 )
 
 PLANNING_DIRECTIVE: str = (
-    "The response must contain a planning block; write all four sections as text before any task content. "
+    "The response must contain a planning block written for the user — not a reasoning artifact, but the response itself up to this point. "
+    "A response where the literal string 'SECTION 1 —' does not appear in the user-facing text has not produced the planning block. "
+    "Write all four sections as text before any task content. "
     "All text within the planning block (between 'SECTION 1 —' and the end of 'SECTION 4 —') belongs to one of the four named sections.\n\n"
     "The planning block contains exactly four sections "
     "('SECTION 1 —', 'SECTION 2 —', 'SECTION 3 —', 'SECTION 4 —'); "

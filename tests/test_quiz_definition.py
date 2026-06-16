@@ -21,11 +21,11 @@ def get_quiz_def() -> str:
 def test_quiz_permit_condition_for_answer_in_same_turn():
     """Gap 1: halt-before-answer was an absence constraint.
     New definition converts it to a permit-condition with a named literal string.
-    Old definition: 'no answer may appear in the same response turn as a Predict: prompt'
-    New definition: 'An answer is permitted in the same response turn as a Predict: line only when an output-exclusive channel token is present'
+    Old definition: 'An answer is permitted in the same response turn as a Predict: line only when an output-exclusive channel token is present'
+    New definition: names structural condition (static document or terminal sequence artifact) instead of bar token type
     """
     defn = get_quiz_def()
-    assert "An answer is permitted in the same response turn as a Predict: line only when an output-exclusive channel token is present" in defn, (
+    assert "An answer is permitted in the same response turn as the question only" in defn, (
         "quiz definition must state the permit-condition for answer-in-same-turn as a named literal string"
     )
 

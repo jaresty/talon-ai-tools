@@ -112,13 +112,13 @@ def test_falsify_governing_artifact_creation_not_gated():
     """
     text = _falsify()
     assert (
-        "governing criterion string is absent from the file before the call and present after it" in text
+        "does not appear as the target of any Write or Edit tool call at any earlier position in the transcript" in text
     ) and (
-        "result-block requirement does not apply" in text
+        "if-and-only-if requirement does not apply" in text
     ), (
-        "falsify must explicitly exempt governing artifact creation (test/spec writing) "
-        "from the result-block requirement, with a structural boundary: governing criterion string "
-        "absent before the call and present after it (hollow audit fix)"
+        "falsify must explicitly exempt governing artifact creation from the result-block requirement, "
+        "with a structural boundary: file path must not appear as target of any prior Write or Edit "
+        "(file-nonexistence condition replaces old string-absence proxy — ADR rewrite 2026-06-16)"
     )
 
 

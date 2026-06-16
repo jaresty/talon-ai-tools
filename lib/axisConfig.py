@@ -377,17 +377,17 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "falsify": "The response establishes, before any governed action, that the governing artifact can observe the absence of each governed behavior. Derivation phase (required before any "
-        "governed action): Name — (a) the assertion-failure marker: the string in a result that signals the artifact detected the behavior's absence; (b) the string in a result that "
-        "signals a governed behavior is present; (c) the string identifying each governed behavior in a result; (d) the string identifying the governed action. A result satisfies this "
-        "token if and only if: a line where (a) immediately precedes (c) appears in the transcript, at least one line where (b) immediately precedes a governed behavior identifier "
-        "appears, and the result was produced by a tool call whose text names (d) directly. A result satisfies this token only when produced by an artifact whose file path exists in "
-        "the work product at the time of the governed action. A result where any governed behavior identifier appears under a signal other than (a) or (b) does not satisfy this token "
-        "for that behavior; bring the system to a state where every governed behavior can produce either (a) or (b) before proceeding. If implementation already exists when this token "
-        "is invoked: revert the implementation, run the artifact to produce a result where (a) precedes (c), then restore the implementation and run again to produce a result where "
-        "(b) precedes the governed behavior identifier — both results must appear in the transcript before the governed action. Exception: the result-block requirement does not apply "
-        "to the single governed action whose effect introduces (c) as a new string — a governed action is the creation step only if (c) is absent before the action and present after "
-        "it (equivalently: the governing criterion string is absent from the file before the call and present after it); any other governed action is not exempt. Proceed to the "
-        "governed action only when the derivation and the satisfying result are present as text above this point in the transcript.",
+        "governed action): Name — (a) the assertion-failure marker: the string in a result that signals the artifact detected the behavior absence; (b) the string in a result that "
+        "signals a governed behavior is present; (c) the string identifying each governed behavior in a result; (d) the string identifying the governed action, which must be a literal "
+        "substring of the symbol name added or modified by the governed action. A result satisfies this token if and only if: (a) and (c) appear on consecutive lines with no "
+        "intervening content, (b) appears on a line immediately preceding a governed behavior identifier, the result was produced by a tool call whose text names (d) directly, and the "
+        "tool call names a file whose path appears as the target of a prior Write, Edit, or tool-executed directory-listing result in the transcript before the governed action. A "
+        "result where any governed behavior identifier appears under a signal other than (a) or (b) does not satisfy this token for that behavior. If the governing artifact file "
+        "already exists when this token is invoked: revert the implementation, run the artifact to produce a result satisfying the if-and-only-if condition, then restore and run again "
+        "to produce a result where (b) precedes the governed behavior identifier — both results must appear in the transcript before the governed action. Exception: the if-and-only-if "
+        "requirement does not apply to the single governed action that creates the governing artifact file — a governed action is the creation step only when the governing artifact "
+        "file path does not appear as the target of any Write or Edit tool call at any earlier position in the transcript; any other governed action is not exempt. Proceed to the "
+        "governed action only when the derivation and a satisfying result are present as text above this point in the transcript.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

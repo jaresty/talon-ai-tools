@@ -515,6 +515,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "pulse": "The response models the transfer being analyzed by distinguishing what is being conveyed from the medium that carries it, identifying where the medium distorts the content, and "
         "specifying what mechanism — if any — detects and corrects that distortion.",
+        "rebase": "The response re-expresses the items in the subject under a single named alternative basis — a coordinate system, grouping principle, or organizing frame different from the one "
+        "the subject uses. The response names the original basis first, using the label 'Original basis:' before any re-expressed item appears. Every item named in the original basis "
+        "must appear in the re-expression, placed within the new basis — not mentioned alongside it. After re-expressing all items, the response names what structural relationship or "
+        "priority became visible, using the label 'What this reveals:' — a response that omits this label has not satisfied this requirement.",
         "redact": "The response rewrites the subject for a general audience by applying a named criteria list. Before producing the rewritten output, it states each category of content being "
         "excluded. The rewritten output contains no content matching any named category — a rewrite where a named category is present in the output does not satisfy this requirement. "
         "Content is removed or paraphrased naturally; no placeholder markers are required.",
@@ -815,6 +819,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "prism": "Multi-frame enumeration",
         "probability": "Probabilistic and statistical reasoning",
         "pulse": "Content vs medium; distortion and correction",
+        "rebase": "Re-express in alternative basis",
         "redact": "Rewrite for general consumption",
         "reify": "Make implicit patterns explicit as rules",
         "release": "De-weight contingent features; surface load-bearing constraints",
@@ -1047,6 +1052,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "prism": "稜",
         "probability": "確",
         "pulse": "伝",
+        "rebase": "換",
         "redact": "消",
         "reify": "形",
         "release": "放",
@@ -1256,6 +1262,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "prism": "Generative",
         "probability": "Reasoning",
         "pulse": "Temporal/Dynamic",
+        "rebase": "Generative",
         "reify": "Generative",
         "release": "Conduct",
         "reset": "Structural",
@@ -1489,6 +1496,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "prism": "Enumerate frames then apply each",
         "probability": "Statistical reasoning",
         "pulse": "Content/medium separation and distortion",
+        "rebase": "Alternative basis re-expression",
         "redact": "Criteria-governed content removal for general audience",
         "reify": "Make implicit explicit",
         "release": "De-weight transient features",
@@ -6167,6 +6175,44 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "observability pipeline fidelity",
                 "where does signal get lost in this event pipeline",
                 "where does data degrade as it passes through these service boundaries",
+            ],
+        },
+        "rebase": {
+            "distinctions": [
+                {
+                    "note": "crystal = prescriptively restructures the artifact; rebase = descriptively re-expresses existing items under a new frame without altering them",
+                    "token": "crystal",
+                },
+                {
+                    "note": "dimension = discovers implicit axes of analysis; rebase = applies a named alternative basis to re-express existing items",
+                    "token": "dimension",
+                },
+                {
+                    "note": "shift = rotates through distinct perspectives contrasting how each interprets the same facts; rebase = re-expresses every item under one singular "
+                    "new basis",
+                    "token": "shift",
+                },
+                {
+                    "note": "reify = makes implicit patterns explicit as formal rules; rebase = re-expresses already-explicit items under a different organizing frame",
+                    "token": "reify",
+                },
+                {
+                    "note": "cluster = groups items by shared characteristics without naming a new basis or required visibility gain; rebase = requires naming original basis, "
+                    "new basis, and what became visible",
+                    "token": "cluster",
+                },
+            ],
+            "heuristics": [
+                "re-express this under a different basis",
+                "what if I organized this by X instead",
+                "reframe these items",
+                "same items, different coordinate system",
+                "change the organizing principle",
+                "what structure becomes visible if I group by",
+                "transform the basis",
+                "reclassify these under a different axis",
+                "show me what this looks like organized by priority instead of sequence",
+                "re-express this feedback organized by who owns the fix",
             ],
         },
         "redact": {

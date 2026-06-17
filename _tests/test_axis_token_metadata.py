@@ -971,31 +971,31 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_empty_transcript_gap_closed(self):
-        """falsify must block the governed action until the derivation and satisfying result are present as text above that point — the structural gate preventing action without a visible result (hollow audit finding)."""
+        """falsify must block the governed action until a 'Falsify derivation:' block is present in the transcript — the structural gate preventing action without a visible derivation (2026-06-17 rewrite: labeled block replaces closing sentence)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "Proceed to the governed action only when the derivation and a satisfying result are present as text above this point in the transcript",
+            "complete only when a literal block labeled 'Falsify derivation:' containing entries for (a) through (f) appears in the transcript",
             definition,
             "falsify must explicitly block the governed action until derivation and satisfying result are present in the transcript",
         )
 
     def test_falsify_slower_check_excludes_compiler_artifacts(self):
-        """falsify must require that governed behaviors reach execution producing signal (a) — pre-execution failures producing a different signal do not satisfy (hollow audit finding)."""
+        """falsify must require that (a) is not separated from (c) by an unrelated behavior — pre-execution failures producing a different signal do not satisfy (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "on consecutive lines with no intervening content",
+            "(a) is not separated from (c) by any line naming a different governed behavior identifier",
             definition,
-            "falsify condition must name the observable that excludes pre-execution failures: (a) and (c) on consecutive lines with no intervening content",
+            "falsify condition must name the observable that excludes pre-execution failures: (a) is not separated from (c) by any line naming a different governed behavior identifier",
         )
 
     def test_falsify_self_refuting_closes_entry(self):
-        """falsify must structurally require elimination of non-execution paths — governed behaviors must be able to produce signal (a) or (b) before proceeding (hollow audit finding)."""
+        """falsify must structurally require that (a) is not separated from (c) by an unrelated behavior signal — non-execution paths are excluded by the separation rule (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "A result where any governed behavior identifier appears under a signal other than (a) or (b) does not satisfy this token for that behavior",
+            "(a) is not separated from (c) by any line naming a different governed behavior identifier",
             definition,
             "falsify must structurally require elimination of non-execution paths — behaviors must produce (a) or (b), not some other signal",
         )
@@ -1011,13 +1011,13 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_creation_step_boundary_required(self):
-        """falsify's exception clause must name the transcript-observable boundary of 'creation step' — file path must not appear as target of any prior Write or Edit (file-nonexistence condition, replaces old string-absence proxy per 2026-06-16 rewrite)."""
+        """falsify's exception clause must name the transcript-observable boundary of 'creation step' — (c) absent before and present after the action (string-absence condition per 2026-06-17 rewrite)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "does not appear as the target of any Write or Edit tool call at any earlier position in the transcript",
+            "(c) is absent before the action and present after it",
             definition,
-            "falsify must name the creation-step boundary: governing artifact file path must not appear as target of any prior Write or Edit — any other governed action is not exempt",
+            "falsify must name the creation-step boundary: (c) is absent before the action and present after it — any other governed action is not exempt",
         )
 
     def test_falsify_no_open_enumeration(self):
@@ -1051,25 +1051,25 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_governing_artifact_not_disposable(self):
-        """falsify must require the governing artifact path to be evidenced by a prior tool call — allow-list clause naming prior Write/Edit/directory-listing closes the disposable-artifact gap (2026-06-16 rewrite: stronger than 'file path exists in work product')."""
+        """falsify must require the tool call to name the governed subject directly — closes the disposable-artifact gap in a domain-agnostic way (2026-06-17 rewrite)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "path appears as the target of a prior Write, Edit, or tool-executed directory-listing result in the transcript before the governed action",
+            "the tool call names the governed subject directly",
             definition,
-            "falsify must require artifact path to be evidenced by a prior tool call in the transcript — 'path appears as the target of a prior Write, Edit, or tool-executed directory-listing result' must appear in the definition",
+            "falsify must require the tool call to name the governed subject directly — 'the tool call names the governed subject directly' must appear in the definition",
         )
 
     def test_falsify_disposable_artifact_constraint_in_primary_condition(self):
-        """falsify's PRIMARY condition must name the persistent-artifact requirement — allow-list clause must appear before 'Exception:' so /tmp-based governing artifacts are excluded (hollow audit fix: allow-list replaces deny-list)."""
+        """falsify's PRIMARY condition must name the governed-subject requirement before 'Exception:' — so disposable artifacts are excluded (hollow audit fix)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         exception_start = definition.find("Exception:")
         primary_condition = definition[:exception_start] if exception_start != -1 else definition
         self.assertIn(
-            "path appears as the target of a prior Write, Edit, or tool-executed directory-listing result in the transcript before the governed action",
+            "the tool call names the governed subject directly",
             primary_condition,
-            "falsify primary condition must require artifact path to be evidenced by a prior tool call — allow-list clause must appear before 'Exception:'",
+            "falsify primary condition must require tool call to name governed subject — allow-list clause must appear before 'Exception:'",
         )
 
     def test_falsify_governed_action_boundary_named(self):

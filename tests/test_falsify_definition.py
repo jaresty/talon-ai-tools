@@ -15,27 +15,27 @@ from lib.axisConfig import AXIS_KEY_TO_VALUE
 
 
 def test_falsify_allow_list_clause():
-    """Dimension A: artifact path must be evidenced by a prior tool call in the transcript."""
+    """Dimension A: tool call must name the governed subject directly."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "the tool call names a file whose path appears as the target of a prior Write, Edit, or tool-executed directory-listing result in the transcript before the governed action" in defn
+    assert "the tool call names the governed subject directly" in defn
 
 
 def test_falsify_retroactive_clause():
     """Dimension B: definition must name the revert-run-restore path for the retroactive case."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "If the governing artifact file already exists when this token is invoked: revert the implementation" in defn
+    assert "If implementation already exists: revert the implementation" in defn
 
 
-def test_falsify_consecutive_lines():
-    """Dim 3: consecutive-lines requirement must be explicit — closes Drift 3."""
+def test_falsify_separation_rule():
+    """Dim 3: (a)+(c) separation rule replaces consecutive-lines — closes C2."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "on consecutive lines with no intervening content" in defn
+    assert "(a) is not separated from (c) by any line naming a different governed behavior identifier" in defn
 
 
-def test_falsify_creation_step_file_nonexistence():
-    """Dim 1: creation-step exception must be gated on file-nonexistence, not string absence."""
+def test_falsify_creation_step_string_absence():
+    """Dim 1: creation-step exception gated on (c) string absence/presence."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "does not appear as the target of any Write or Edit tool call at any earlier position in the transcript" in defn
+    assert "(c) is absent before the action and present after it" in defn
 
 
 def test_falsify_symbol_substring():
@@ -44,7 +44,54 @@ def test_falsify_symbol_substring():
     assert "which must be a literal substring of the symbol name added or modified by the governed action" in defn
 
 
-def test_falsify_old_creation_step_string_absent():
-    """Dim 2: old proxy condition must be gone — no longer fires on any new string addition."""
+def test_falsify_old_file_nonexistence_clause_absent():
+    """Dim 2: old file-nonexistence proxy condition must be gone."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "(c) is absent before the action and present after it" not in defn
+    assert "does not appear as the target of any Write or Edit tool call at any earlier position in the transcript" not in defn
+
+
+def test_falsify_derivation_block_label():
+    """D1: derivation block label 'Falsify derivation:' must appear in definition."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "Falsify derivation:" in defn
+
+
+def test_falsify_execution_layer_agnostic():
+    """D2: domain-agnostic layer description present; software taxonomy absent."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "the layer at which the governed behavior manifests" in defn
+    assert "one of: unit, integration, end-to-end, or static-content" not in defn
+
+
+def test_falsify_executor_agnostic():
+    """D3: domain-agnostic executor constraint present; software deny-list absent."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "a tool call whose output could be produced by reading or inspecting the subject at rest does not satisfy this requirement" in defn
+    assert "grep, cat, head, tail, sed, awk, and find" not in defn
+
+
+def test_falsify_layer_gate():
+    """D4: layer gate clause must be explicit — closes G2."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "Layer gate: the executor named in (f) must operate at the layer named in (e)" in defn
+
+
+def test_falsify_domain_agnostic_layer():
+    """DA-D1: domain-agnostic layer description present; software taxonomy absent."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "the layer at which the governed behavior manifests" in defn
+    assert "one of: unit, integration, end-to-end, or static-content" not in defn
+
+
+def test_falsify_domain_agnostic_executor():
+    """DA-D2: domain-agnostic executor constraint present; software deny-list absent."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "a tool call whose output could be produced by reading or inspecting the subject at rest does not satisfy this requirement" in defn
+    assert "grep, cat, head, tail, sed, awk, and find" not in defn
+
+
+def test_falsify_domain_agnostic_subject():
+    """DA-D3: domain-agnostic subject reference present; file-path clause absent."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "the tool call names the governed subject directly" in defn
+    assert "the tool call names a file whose path appears as the target of a prior Write, Edit, or tool-executed directory-listing result" not in defn

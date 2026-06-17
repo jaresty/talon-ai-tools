@@ -175,8 +175,8 @@ func TestFalsifyDefinition_FiredBeforeImplementation(t *testing.T) {
 func TestFalsifyDefinition_ImplementationStepConstraint(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "file path exists in the work product") {
-		t.Error("falsify definition must require artifact file path to exist in work product")
+	if !strings.Contains(def, "does not appear as the target of any Write or Edit tool call at any earlier position in the transcript") {
+		t.Error("falsify definition must require file-nonexistence check (no prior Write or Edit to that path)")
 	}
 }
 

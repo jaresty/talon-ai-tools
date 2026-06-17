@@ -145,11 +145,10 @@ class PromptGrammarCliTests(unittest.TestCase):
             meta_guidance,
             "meta_interpretation_guidance must not imply live reasoning is being reported retrospectively",
         )
-        # Issue 6: Suggestion is for future prompts, not a critique of current constraints
-        self.assertIn(
-            "future",
-            meta_guidance,
-            "meta_interpretation_guidance must clarify the Suggestion line is for future prompts",
+        # Issue 6: Suggestion is for future prompts / subsequent invocations, not a critique of current constraints
+        self.assertTrue(
+            "future" in meta_guidance or "subsequent" in meta_guidance,
+            "meta_interpretation_guidance must clarify the Suggestion line is for future/subsequent prompts",
         )
 
         reference_key = data.get("reference_key", "")

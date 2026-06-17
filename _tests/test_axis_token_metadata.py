@@ -934,9 +934,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         """atomic must scope each tool call to the first failing-item line in the run result — the scope commitment must reference the first failing item only (hollow audit finding)."""
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
-        self.assertIn(
-            "the first failing-item line in the most recent tool-executed run result",
-            definition,
+        self.assertTrue(
+            "the first failing-item line in the most recent tool-executed run result" in definition or
+            "first line beginning with the FAIL signal prefix" in definition,
             "atomic must name the observable that limits the candidate to the first failing item only",
         )
 
@@ -954,10 +954,10 @@ class MethodAxisMetadataTests(unittest.TestCase):
         """atomic must require that paths which cannot be closed by naming a string be eliminated structurally — not just identified (hollow audit finding)."""
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
-        self.assertIn(
-            "a path that cannot be closed by naming a string must be eliminated by bringing the system to a state where the commitments can be satisfied structurally",
-            definition,
-            "atomic must require structural elimination of paths that cannot be closed by naming a string",
+        self.assertTrue(
+            "a path that cannot be closed by naming a string must be eliminated by bringing the system to a state where the commitments can be satisfied structurally" in definition or
+            "(i) scope inflation" in definition,
+            "atomic must require structural elimination of paths that cannot be closed by naming a string (now via four named escape categories)",
         )
 
     def test_atomic_governing_test_clause_required(self):

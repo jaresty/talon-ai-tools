@@ -19,11 +19,12 @@ def test_gate_definition_contains_earlier_transcript_position():
     assert "earlier transcript position" in _gate_def()
 
 
-def test_gate_definition_contains_later_transcript_position():
-    """New definition requires named string at later transcript position — absent from old definition."""
-    assert "later transcript position" in _gate_def()
+def test_gate_definition_blocks_prose_assertion():
+    """Gate must require prior-executed result — not asserted in prose."""
+    assert "prior-executed result" in _gate_def()
+    assert "not asserted in prose" in _gate_def()
 
 
-def test_gate_definition_does_not_contain_prior_executed():
-    """Old underenforced phrase 'prior-executed result' replaced by 'tool call result' — should be absent."""
-    assert "prior-executed result" not in _gate_def()
+def test_gate_definition_condition_block_precedes_result():
+    """Gate condition block must not appear after the result it references."""
+    assert "appears after the result it references does not satisfy" in _gate_def()

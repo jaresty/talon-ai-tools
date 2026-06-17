@@ -189,6 +189,12 @@ func TestGateDefinition_HardBlockingCheckpoint(t *testing.T) {
 	if !strings.Contains(def, "gate condition block") {
 		t.Error("gate definition must require a gate condition block naming the specific string")
 	}
+	if !strings.Contains(def, "prior-executed result") {
+		t.Error("gate definition must require a prior-executed result, not assertion")
+	}
+	if !strings.Contains(def, "not asserted in prose") {
+		t.Error("gate definition must explicitly exclude prose assertion as satisfaction")
+	}
 }
 
 func TestChainDefinition_NoGateCycleClause(t *testing.T) {

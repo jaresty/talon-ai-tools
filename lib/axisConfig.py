@@ -401,10 +401,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "quadrant held. Use when binary framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "gate": "The response applies a hard-blocking checkpoint: before taking any governed action, the response must contain a gate condition block naming the specific string whose presence in "
-        "that action's result constitutes satisfaction. The gate condition block must appear at an earlier transcript position than the governed action. Satisfaction requires the named "
-        "string to appear in the result at a later transcript position than the gate condition block — a gate condition block that appears after the result it references does not satisfy "
-        "this requirement.",
+        "gate": "The response applies a hard-blocking checkpoint: the next action is blocked until a condition is satisfied by a prior-executed result already present in the transcript — not "
+        "asserted in prose. A gate condition block must appear at an earlier transcript position than the governed action, naming the specific string or structural property in that "
+        "prior-executed result whose presence constitutes satisfaction; a condition that cannot name that property has not been derived. A gate condition block that appears after the "
+        "result it references does not satisfy this requirement.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a representation naming the schema, invariants, and terminology an external actor needs to intervene, "
         "making implicit structure explicit, identifying the mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by naming the directions in which the system's existing structure already propagates — interfaces, dependencies, data flows — and naming "

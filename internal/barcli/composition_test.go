@@ -175,8 +175,8 @@ func TestFalsifyDefinition_FiredBeforeImplementation(t *testing.T) {
 func TestFalsifyDefinition_ImplementationStepConstraint(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "does not appear as the target of any Write or Edit tool call at any earlier position in the transcript") {
-		t.Error("falsify definition must require file-nonexistence check (no prior Write or Edit to that path)")
+	if !strings.Contains(def, "(c) is absent before the action and present after it") {
+		t.Error("falsify definition must name the creation-step boundary: (c) is absent before the action and present after it")
 	}
 }
 
@@ -186,8 +186,8 @@ func TestGateDefinition_HardBlockingCheckpoint(t *testing.T) {
 	if !strings.Contains(def, "hard-blocking checkpoint") {
 		t.Error("gate definition must describe a hard-blocking checkpoint")
 	}
-	if !strings.Contains(def, "prior-executed result") {
-		t.Error("gate definition must require a prior-executed result, not assertion")
+	if !strings.Contains(def, "gate condition block") {
+		t.Error("gate definition must require a gate condition block naming the specific string")
 	}
 }
 

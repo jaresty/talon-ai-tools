@@ -405,6 +405,15 @@ export function getChipStateWithReason(
 // Forward check: looks at the chip's own composition data against all active axes.
 // Reverse check: looks at active tokens' composition data to see if they point to this chip.
 // Cautionary takes precedence over natural.
+export const COMMAND_AXIS_ORDER = ['task', 'topology', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
+
+export function buildCommandTokens(
+	selected: Record<string, string[]>,
+	slugFn: (s: string) => string
+): string[] {
+	return COMMAND_AXIS_ORDER.flatMap((axis) => (selected[axis] ?? []).map(slugFn));
+}
+
 export function getReverseChipState(
 	grammar: Grammar,
 	activeTokensByAxis: Record<string, string[]>,

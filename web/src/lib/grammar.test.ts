@@ -12,6 +12,7 @@ import {
 	toAxisTokenSlug,
 	getReverseChipState,
 	getChipStateWithReason,
+	buildCommandTokens,
 	AXES,
 	type Grammar
 } from './grammar.js';
@@ -526,5 +527,20 @@ describe('toAxisTokenSlug — multi-word directional hyphenation', () => {
 	it('leaves single-word tokens unchanged', () => {
 		expect(toAxisTokenSlug('dig')).toBe('dig');
 		expect(toAxisTokenSlug('fog')).toBe('fog');
+	});
+});
+
+describe('buildCommandTokens — ADR-0236-cmd topology in order', () => {
+	it('includes topology tokens when selected', () => {
+		const selected: Record<string, string[]> = { topology: ['witness'] };
+		const result = buildCommandTokens(selected, toAxisTokenSlug);
+		expect(result).toContain('witness');
+	});
+
+	it('excludes topology tokens when not selected', () => {
+		const selected: Record<string, string[]> = { completeness: ['full'] };
+		const result = buildCommandTokens(selected, toAxisTokenSlug);
+		expect(result).not.toContain('witness');
+		expect(result).toContain('full');
 	});
 });

@@ -586,12 +586,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Generate competing hypotheses for why each structural decision in the token definition was encoded the way it was — each hypothesis names the specific evidence it explains that the alternatives do not. Identify the minimal root criterion: the single generative assumption from which all current clauses derive. Name which clauses are derivable from that criterion and which require explicit encoding to close escape routes.",
             },
             {
-                "token": "show mean drift gap clash",
+                "token": "show mean drift gap chain clash",
                 "role": "underenforced-conclusion and conflict audit",
                 "prompt_hint": "Identify where conclusions in the token definition are underenforced (drift), where assumptions are implicit rather than explicit (gap), and where explicitly stated clauses conflict with each other (clash). Name the specific conclusion, assumption, or clause pair for each finding. This diagnostic pass produces the input for the assumption derivation step.",
             },
             {
-                "token": "show mean mint reify align hollow",
+                "token": "show mean mint reify align enforce hollow",
                 "role": "assumption derivation and addressability audit",
                 "prompt_hint": "Produce a rewritten definition that an agent cannot nominally satisfy.",
             },

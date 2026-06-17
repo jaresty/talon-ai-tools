@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokensMeta, getPresetHint, toPersonaSlug, toAxisTokenSlug, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks } from '$lib/grammar.js';
+	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokensMeta, getPresetHint, toPersonaSlug, toAxisTokenSlug, buildCommandTokens, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks } from '$lib/grammar.js';
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
@@ -199,10 +199,7 @@
 			if (persona.tone) personaTokens.push(persona.tone);
 			if (persona.intent) personaTokens.push(persona.intent);
 		}
-		const order = ['task', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
-		return [...personaTokens, ...order.flatMap((axis) =>
-			(selected[axis] ?? []).map((tok) => toAxisTokenSlug(tok))
-		)];
+		return [...personaTokens, ...buildCommandTokens(selected, toAxisTokenSlug)];
 	});
 
 	let command = $derived.by(() => {

@@ -97,4 +97,5 @@ describe('Page — ADR-0236 topology tab', () => {
 		expect(completenessIdx).toBeGreaterThanOrEqual(0);
 		expect(topologyIdx).toBeLessThan(completenessIdx);
 	});
+
 });

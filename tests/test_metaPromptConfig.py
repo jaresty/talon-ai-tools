@@ -72,12 +72,15 @@ def test_execution_reminder_structural_delimiter():
 
 
 def test_planning_directive_outer_imperative():
-    """token-rewrite BD3a: PLANNING_DIRECTIVE opens with unconditional existence mandate closing zero-instance escape."""
+    """token-rewrite BD3a: PLANNING_DIRECTIVE opens with structural-verifiability framing and retains zero-instance escape closure via SECTION 1 — literal string check."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE
 
-    assert "The response must contain a planning block" in PLANNING_DIRECTIVE, (
-        "expected outer imperative 'The response must contain a planning block' in PLANNING_DIRECTIVE; "
-        "old 'begins with SECTION 1 —' form has zero-instance escape"
+    assert "The response contains a planning block" in PLANNING_DIRECTIVE, (
+        "expected structural framing 'The response contains a planning block' in PLANNING_DIRECTIVE opener; "
+        "coercive 'must contain' form replaced with evaluator-detectable structural check"
+    )
+    assert "A response where the literal string 'SECTION 1 —' does not appear in the user-facing text has not produced the planning block" in PLANNING_DIRECTIVE, (
+        "expected zero-instance escape closure via SECTION 1 — literal string check in PLANNING_DIRECTIVE"
     )
 
 
@@ -156,6 +159,80 @@ def test_execution_reminder_no_gate_phrasing():
     assert "The response produces content only after" not in EXECUTION_REMINDER, (
         "gate phrasing 'The response produces content only after' must be removed from EXECUTION_REMINDER; "
         "it reads as a pre-execution wait condition rather than an evaluator compliance criterion"
+    )
+
+
+def test_planning_directive_no_truthfulness_gate():
+    """token-rewrite BD1: PLANNING_DIRECTIVE must not contain 'cannot be written truthfully' (CL1 refuse-via-diagnosis trigger)."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+
+    assert "cannot be written truthfully" not in PLANNING_DIRECTIVE, (
+        "PLANNING_DIRECTIVE must not contain 'cannot be written truthfully'; "
+        "this truthfulness-norm appeal reads as a pre-execution gate and triggers refuse-via-diagnosis in capable models"
+    )
+
+
+def test_planning_directive_structural_section4_gate():
+    """token-rewrite BD1: PLANNING_DIRECTIVE Section 4 uses structural check 'Section 4 is compliant when' instead of truthfulness gate."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+
+    assert "Section 4 is compliant when" in PLANNING_DIRECTIVE, (
+        "expected structural compliance check 'Section 4 is compliant when' in PLANNING_DIRECTIVE Section 4; "
+        "replaces the 'cannot be written truthfully' truthfulness gate with an evaluator-detectable string check"
+    )
+
+
+def test_planning_directive_no_behavioral_override():
+    """token-rewrite BD2: PLANNING_DIRECTIVE must not contain 'Do not pause or wait' (coercive behavioral override)."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+
+    assert "Do not pause or wait" not in PLANNING_DIRECTIVE, (
+        "PLANNING_DIRECTIVE must not contain 'Do not pause or wait'; "
+        "this behavioral override reads as additional coercive pressure rather than permission"
+    )
+
+
+def test_planning_directive_proceed_permission():
+    """token-rewrite BD2: PLANNING_DIRECTIVE uses permission form for proceed clause."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+
+    assert "no user input is required between the planning block" in PLANNING_DIRECTIVE, (
+        "expected permission clause 'no user input is required between the planning block' in PLANNING_DIRECTIVE; "
+        "replaces behavioral override 'Do not pause or wait' with a permission statement"
+    )
+
+
+def test_planning_directive_section1_count_check():
+    """token-rewrite BD4: PLANNING_DIRECTIVE Section 1 requires evaluator count of ## Derive: headings vs method token count."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+
+    assert "an evaluator counts the ## Derive: headings in Section 1" in PLANNING_DIRECTIVE, (
+        "expected count-check clause 'an evaluator counts the ## Derive: headings in Section 1' in PLANNING_DIRECTIVE; "
+        "closes D1 drift: literal-string presence check does not enforce actual derivation content"
+    )
+
+
+def test_planning_directive_structurally_verifiable_framing():
+    """token-rewrite BD3: PLANNING_DIRECTIVE opens with structural-verifiability framing, not imperative 'must contain'."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+
+    assert "The response contains a planning block" in PLANNING_DIRECTIVE, (
+        "expected structural framing 'The response contains a planning block' as opener; "
+        "imperative 'must contain' framing reads as coercive to capable models"
+    )
+    assert "a structurally verifiable sequence" in PLANNING_DIRECTIVE, (
+        "expected 'a structurally verifiable sequence' in PLANNING_DIRECTIVE opener; "
+        "names the root criterion explicitly"
+    )
+
+
+def test_planning_directive_explicit_tool_call_prohibition():
+    """token-rewrite BD5: PLANNING_DIRECTIVE names tool call result blocks explicitly as non-compliant inside sections."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+
+    assert "a tool call result block appearing between 'SECTION 1 —' and 'SECTION 4 —' renders the planning block non-compliant" in PLANNING_DIRECTIVE, (
+        "expected explicit prohibition 'a tool call result block appearing between ... renders the planning block non-compliant' in PLANNING_DIRECTIVE; "
+        "closes CL2: allow-list form must name the disallowed structural element explicitly"
     )
 
 

@@ -210,17 +210,12 @@ SUBJECT_FRAMING: str = (
 )
 
 EXECUTION_REMINDER: str = (
-    "A transcript satisfies this requirement when the literal string "
-    "'=== TASK 任務 (DO THIS) ===' appears in a tool call result block "
-    "or in the TASK section of this prompt, at an earlier position than "
-    "the first content sentence — an evaluator scanning the complete "
-    "transcript determines compliance by locating the trigger string's "
-    "position relative to the first content sentence. "
-    "'Content' begins at the first sentence naming an entity, goal, or action traceable to TASK; "
-    "planning must appear before that sentence. "
-    "Each claim must be traceable to a specific string in TASK, ADDENDUM, a named token in CONSTRAINTS, "
-    "or a phrase in SUBJECT — a claim that cannot be so traced does not satisfy this requirement "
-    "regardless of resemblance to a correct response."
+    "The response begins with the token derivation block specified in the PLANNING DIRECTIVE — "
+    "the block that opens with 'Token derivations:' and closes with 'Derived stance complete.' — "
+    "containing per-token effect lines, method token 'What it requires here:' lines, "
+    "and a combined stance paragraph with at least one "
+    "'without [token-name], this response would' clause. "
+    "Claims in the response are grounded in TASK, ADDENDUM, CONSTRAINTS, or SUBJECT."
 )
 
 PLANNING_DIRECTIVE: str = (

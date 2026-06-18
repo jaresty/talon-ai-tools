@@ -98,14 +98,6 @@ def test_task_structural_boundary():
     )
 
 
-def test_execution_reminder_structural_delimiter():
-    """token-rewrite BD2: EXECUTION_REMINDER names 'tool call result block' as structural delimiter for content gate."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "tool call result block" in EXECUTION_REMINDER, (
-        "expected structural delimiter 'tool call result block' in EXECUTION_REMINDER"
-    )
-
 
 def test_planning_directive_no_begins_with_escape():
     """token-rewrite BD3b: PLANNING_DIRECTIVE must not open with description-first 'begins with' clause (zero-instance escape)."""
@@ -125,34 +117,6 @@ def test_meta_interpretation_context_position():
         "expected structural position 'tool call result block or user message' in META_INTERPRETATION_GUIDANCE Suggestion gate"
     )
 
-
-def test_execution_reminder_root_criterion_phrase():
-    """token-rewrite BD1: EXECUTION_REMINDER opens with permit-condition form naming the transcript as evaluated artifact."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "A transcript satisfies this requirement when" in EXECUTION_REMINDER, (
-        "expected root criterion phrase 'A transcript satisfies this requirement when' in EXECUTION_REMINDER; "
-        "old gate phrasing 'The response produces content only after' must be replaced"
-    )
-
-
-def test_execution_reminder_evaluator_framing():
-    """token-rewrite BD2: EXECUTION_REMINDER names an evaluator scanning the complete transcript as the compliance check agent."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "an evaluator scanning the complete transcript determines compliance" in EXECUTION_REMINDER, (
-        "expected evaluator framing 'an evaluator scanning the complete transcript determines compliance' in EXECUTION_REMINDER"
-    )
-
-
-def test_execution_reminder_web_context_permit():
-    """token-rewrite BD3: EXECUTION_REMINDER permits trigger string in TASK section of prompt for web/no-tool-call contexts."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "or in the TASK section of this prompt" in EXECUTION_REMINDER, (
-        "expected web context permit 'or in the TASK section of this prompt' in EXECUTION_REMINDER; "
-        "satisfiability requires covering non-tool-call contexts"
-    )
 
 
 def test_execution_reminder_no_deny_list_clause():
@@ -287,3 +251,40 @@ def test_model_types_uses_helper_not_raw_dict():
                     f"modelTypes.py calls PROMPT_REFERENCE_KEY.strip() at line {node.lineno}; "
                     "should call prompt_reference_key_as_text() instead"
                 )
+
+
+def test_execution_reminder_names_token_derivations_open():
+    """BD1: EXECUTION_REMINDER names 'Token derivations:' as the block opening string."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "Token derivations:" in EXECUTION_REMINDER, (
+        "expected 'Token derivations:' in EXECUTION_REMINDER as derivation block opening string"
+    )
+
+
+def test_execution_reminder_names_derived_stance_close():
+    """BD2: EXECUTION_REMINDER names 'Derived stance complete.' as the block closing string."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "Derived stance complete." in EXECUTION_REMINDER, (
+        "expected 'Derived stance complete.' in EXECUTION_REMINDER as derivation block closing string"
+    )
+
+
+def test_execution_reminder_no_transcript_satisfies_phrasing():
+    """BD3: EXECUTION_REMINDER must not contain 'A transcript satisfies this requirement' (task-trigger-string compliance check)."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "A transcript satisfies this requirement" not in EXECUTION_REMINDER, (
+        "EXECUTION_REMINDER must not contain 'A transcript satisfies this requirement'; "
+        "this describes a task-trigger-string compliance check, not the derivation block requirement"
+    )
+
+
+def test_execution_reminder_references_planning_directive():
+    """BD4: EXECUTION_REMINDER references 'PLANNING DIRECTIVE' to unify the two block descriptions."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "PLANNING DIRECTIVE" in EXECUTION_REMINDER, (
+        "expected 'PLANNING DIRECTIVE' in EXECUTION_REMINDER to unify derivation block definition"
+    )

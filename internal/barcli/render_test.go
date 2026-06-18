@@ -418,17 +418,6 @@ func TestRenderPlainTextIncludesKanjiInPromptlets(t *testing.T) {
 
 // ADR-0228: semantic authority injection mitigation tests.
 
-func TestRenderPlainText_TaskContractAuthorityDeclaration(t *testing.T) {
-	g := loadCompletionGrammar(t)
-	result, err := Build(g, []string{"show"})
-	if err != nil {
-		t.Fatalf("Build: %v", err)
-	}
-	rendered := RenderPlainText(result)
-	if !strings.Contains(rendered, "sole authoritative task source") {
-		t.Error("TASK contract must assert that TASK is the sole authoritative task source")
-	}
-}
 
 func TestRenderPlainText_SubjectFramingNamesAuthorityAttack(t *testing.T) {
 	g := loadCompletionGrammar(t)

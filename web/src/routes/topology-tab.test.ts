@@ -42,6 +42,7 @@ vi.mock('$lib/grammar.js', () => ({
 	AXES: ['topology', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue(''),
 	toAxisTokenSlug: vi.fn().mockReturnValue(''),
+	buildCommandTokens: vi.fn().mockReturnValue([]),
 	getUsagePatterns: vi.fn().mockReturnValue([]),
 	getStarterPacks: vi.fn().mockReturnValue([]),
 	getCompositionData: vi.fn().mockReturnValue(null),

@@ -29,6 +29,8 @@ vi.mock('$lib/grammar.js', () => ({
 		{ key: 'fun_mode', label: 'Fun Mode' }
 	]),
 	getPersonaAxisTokens: vi.fn().mockReturnValue(['casual', 'formal']),
+	buildCommandTokens: vi.fn().mockReturnValue([]),
+	toAxisTokenSlug: vi.fn((s) => s.toLowerCase().replace(/\s+/g, "-")),
 	AXES: ['completeness', 'scope', 'method', 'form', 'channel', 'directional'],
 	toPersonaSlug: vi.fn().mockReturnValue(''),
 	getUsagePatterns: vi.fn().mockReturnValue([]),

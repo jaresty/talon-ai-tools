@@ -66,6 +66,8 @@ vi.mock('$lib/grammar.js', () => ({
 		if (axis === 'audience') return ['to managers'];
 		return [];
 	}),
+	buildCommandTokens: vi.fn().mockReturnValue([]),
+	toAxisTokenSlug: vi.fn((s: string) => s.toLowerCase().replace(/\s+/g, '-')),
 	getPersonaIntentTokens: vi.fn().mockReturnValue([]),
 	getPersonaAxisTokensMeta: vi.fn().mockReturnValue([]),
 	getPresetHint: vi.fn().mockReturnValue(''),

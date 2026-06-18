@@ -57,6 +57,8 @@ vi.mock('$lib/grammar.js', () => ({
 		{ key: 'designer_to_pm', label: 'Designer to PM', voice: 'as designer', audience: 'to product manager', tone: 'directly', spoken: '' }
 	]),
 	getPersonaAxisTokens: vi.fn().mockReturnValue([]),
+	buildCommandTokens: vi.fn().mockReturnValue([]),
+	toAxisTokenSlug: vi.fn((s) => s.toLowerCase().replace(/\s+/g, "-")),
 	getPersonaAxisTokensMeta: vi.fn().mockImplementation((_grammar: unknown, axis: string) => {
 		if (axis === 'voice') return [makeTokenMeta('as designer'), makeTokenMeta('as programmer')];
 		if (axis === 'audience') return [makeTokenMeta('to product manager')];

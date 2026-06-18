@@ -30,6 +30,8 @@ vi.mock('$lib/grammar.js', () => ({
 		{ key: 'designer_to_pm', label: 'Designer → PM' }
 	]),
 	getPersonaAxisTokens: vi.fn().mockReturnValue([]),
+	buildCommandTokens: vi.fn().mockReturnValue([]),
+	toAxisTokenSlug: vi.fn((s) => s.toLowerCase().replace(/\s+/g, "-")),
 	getPersonaIntentTokens: vi.fn().mockReturnValue([]),
 	getPersonaAxisTokensMeta: vi.fn().mockReturnValue([]),
 	getPresetHint: vi.fn().mockReturnValue(''),

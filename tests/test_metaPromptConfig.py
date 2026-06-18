@@ -107,19 +107,6 @@ def test_execution_reminder_structural_delimiter():
     )
 
 
-def test_planning_directive_outer_imperative():
-    """token-rewrite BD3a: PLANNING_DIRECTIVE opens with structural-verifiability framing and retains zero-instance escape closure via SECTION 1 — literal string check."""
-    from lib.metaPromptConfig import PLANNING_DIRECTIVE
-
-    assert "The response contains a planning block" in PLANNING_DIRECTIVE, (
-        "expected structural framing 'The response contains a planning block' in PLANNING_DIRECTIVE opener; "
-        "coercive 'must contain' form replaced with evaluator-detectable structural check"
-    )
-    assert "A response where the literal string 'SECTION 1 —' does not appear in the user-facing text has not produced the planning block" in PLANNING_DIRECTIVE, (
-        "expected zero-instance escape closure via SECTION 1 — literal string check in PLANNING_DIRECTIVE"
-    )
-
-
 def test_planning_directive_no_begins_with_escape():
     """token-rewrite BD3b: PLANNING_DIRECTIVE must not open with description-first 'begins with' clause (zero-instance escape)."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE
@@ -127,16 +114,6 @@ def test_planning_directive_no_begins_with_escape():
     assert not PLANNING_DIRECTIVE.startswith("The response planning block begins with"), (
         "PLANNING_DIRECTIVE must not begin with descriptive 'begins with' clause — "
         "absence of planning block is not a violation of a 'begins with' claim"
-    )
-
-
-def test_planning_directive_allow_list_form():
-    """token-rewrite BD3c: PLANNING_DIRECTIVE uses allow-list form ('is text output') not deny-list ('no tool call result block')."""
-    from lib.metaPromptConfig import PLANNING_DIRECTIVE
-
-    assert "all content between 'SECTION 1 —' and 'SECTION 4 —' is text output" in PLANNING_DIRECTIVE, (
-        "expected allow-list clause 'all content between ... is text output' in PLANNING_DIRECTIVE; "
-        "deny-list 'no tool call result block appears' must be converted"
     )
 
 
@@ -208,16 +185,6 @@ def test_planning_directive_no_truthfulness_gate():
     )
 
 
-def test_planning_directive_structural_section4_gate():
-    """token-rewrite BD1: PLANNING_DIRECTIVE Section 4 uses structural check 'Section 4 is compliant when' instead of truthfulness gate."""
-    from lib.metaPromptConfig import PLANNING_DIRECTIVE
-
-    assert "Section 4 is compliant when" in PLANNING_DIRECTIVE, (
-        "expected structural compliance check 'Section 4 is compliant when' in PLANNING_DIRECTIVE Section 4; "
-        "replaces the 'cannot be written truthfully' truthfulness gate with an evaluator-detectable string check"
-    )
-
-
 def test_planning_directive_no_behavioral_override():
     """token-rewrite BD2: PLANNING_DIRECTIVE must not contain 'Do not pause or wait' (coercive behavioral override)."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE
@@ -228,47 +195,74 @@ def test_planning_directive_no_behavioral_override():
     )
 
 
-def test_planning_directive_proceed_permission():
-    """token-rewrite BD2: PLANNING_DIRECTIVE uses permission form for proceed clause."""
-    from lib.metaPromptConfig import PLANNING_DIRECTIVE
 
-    assert "no user input is required between the planning block" in PLANNING_DIRECTIVE, (
-        "expected permission clause 'no user input is required between the planning block' in PLANNING_DIRECTIVE; "
-        "replaces behavioral override 'Do not pause or wait' with a permission statement"
+def test_planning_directive_token_derivations_marker():
+    """Phase-3: PLANNING_DIRECTIVE begins derivation span with 'Token derivations:' literal."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+    assert "Token derivations:" in PLANNING_DIRECTIVE, (
+        "expected 'Token derivations:' in PLANNING_DIRECTIVE as derivation span start marker"
     )
 
 
-def test_planning_directive_section1_count_check():
-    """token-rewrite BD4: PLANNING_DIRECTIVE Section 1 requires evaluator count of ## Derive: headings vs method token count."""
+def test_planning_directive_method_token_second_line():
+    """Phase-3: PLANNING_DIRECTIVE requires 'What it requires here:' line for method tokens."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE
-
-    assert "an evaluator counts the ## Derive: headings in Section 1" in PLANNING_DIRECTIVE, (
-        "expected count-check clause 'an evaluator counts the ## Derive: headings in Section 1' in PLANNING_DIRECTIVE; "
-        "closes D1 drift: literal-string presence check does not enforce actual derivation content"
+    assert "What it requires here:" in PLANNING_DIRECTIVE, (
+        "expected 'What it requires here:' in PLANNING_DIRECTIVE for method token second line"
     )
 
 
-def test_planning_directive_structurally_verifiable_framing():
-    """token-rewrite BD3: PLANNING_DIRECTIVE opens with structural-verifiability framing, not imperative 'must contain'."""
+def test_planning_directive_combined_stance_counterfactual():
+    """Phase-3: PLANNING_DIRECTIVE requires counterfactual clause in combined stance paragraph."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE
-
-    assert "The response contains a planning block" in PLANNING_DIRECTIVE, (
-        "expected structural framing 'The response contains a planning block' as opener; "
-        "imperative 'must contain' framing reads as coercive to capable models"
-    )
-    assert "a structurally verifiable sequence" in PLANNING_DIRECTIVE, (
-        "expected 'a structurally verifiable sequence' in PLANNING_DIRECTIVE opener; "
-        "names the root criterion explicitly"
+    assert "without [token-name], this response would" in PLANNING_DIRECTIVE, (
+        "expected counterfactual clause 'without [token-name], this response would' in PLANNING_DIRECTIVE"
     )
 
 
-def test_planning_directive_explicit_tool_call_prohibition():
-    """token-rewrite BD5: PLANNING_DIRECTIVE names tool call result blocks explicitly as non-compliant inside sections."""
+def test_planning_directive_transition_marker():
+    """Phase-3: PLANNING_DIRECTIVE uses 'Derived stance complete.' as transition marker."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE
+    assert "Derived stance complete." in PLANNING_DIRECTIVE, (
+        "expected transition marker 'Derived stance complete.' in PLANNING_DIRECTIVE"
+    )
 
-    assert "a tool call result block appearing between 'SECTION 1 —' and 'SECTION 4 —' renders the planning block non-compliant" in PLANNING_DIRECTIVE, (
-        "expected explicit prohibition 'a tool call result block appearing between ... renders the planning block non-compliant' in PLANNING_DIRECTIVE; "
-        "closes CL2: allow-list form must name the disallowed structural element explicitly"
+
+def test_planning_directive_no_section_headings():
+    """Phase-3: PLANNING_DIRECTIVE does not contain SECTION 1-4 headings."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+    assert "SECTION 1 —" not in PLANNING_DIRECTIVE, (
+        "PLANNING_DIRECTIVE must not contain 'SECTION 1 —' after Phase-3 rewrite"
+    )
+    assert "SECTION 4 —" not in PLANNING_DIRECTIVE, (
+        "PLANNING_DIRECTIVE must not contain 'SECTION 4 —' after Phase-3 rewrite"
+    )
+
+
+def test_planning_directive_no_derive_heading_counts():
+    """Phase-3: PLANNING_DIRECTIVE does not use ## Derive heading count machinery."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+    assert "## Derive:" not in PLANNING_DIRECTIVE, (
+        "PLANNING_DIRECTIVE must not contain '## Derive:' after Phase-3 rewrite"
+    )
+    assert "an evaluator counts the ## Derive: headings in Section 1" not in PLANNING_DIRECTIVE, (
+        "PLANNING_DIRECTIVE must not contain evaluator heading-count machinery"
+    )
+
+
+def test_planning_directive_tool_call_prohibition_new():
+    """Phase-3: PLANNING_DIRECTIVE names tool call result blocks as non-compliant within derivation span."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+    assert "tool call result block" in PLANNING_DIRECTIVE, (
+        "expected 'tool call result block' in PLANNING_DIRECTIVE as derivation span prohibition"
+    )
+
+
+def test_planning_directive_no_readiness_string():
+    """Phase-3: PLANNING_DIRECTIVE does not use 'Derivations complete — tokens:' readiness string."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+    assert "Derivations complete — tokens:" not in PLANNING_DIRECTIVE, (
+        "PLANNING_DIRECTIVE must not contain 'Derivations complete — tokens:' after Phase-3 rewrite"
     )
 
 

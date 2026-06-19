@@ -151,6 +151,7 @@ func RenderPlainText(result *BuildResult) string {
 	}
 
 	writeSection(&b, sectionFormat, result.PlanningDirective)
+	writeSection(&b, sectionMeta, result.MetaInterpretationGuidance)
 
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }

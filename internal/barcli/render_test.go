@@ -701,16 +701,19 @@ func TestRenderPlainText_NoPersonaSection(t *testing.T) {
 	}
 }
 
-// TestRenderPlainText_NoMetaInterpretationSection specifies that the META INTERPRETATION
-// section is absent from the redesigned output.
-func TestRenderPlainText_NoMetaInterpretationSection(t *testing.T) {
+// TestRenderPlainText_MetaInterpretationSection specifies that the META INTERPRETATION
+// section is present in the render output when MetaInterpretationGuidance is set.
+func TestRenderPlainText_MetaInterpretationSection(t *testing.T) {
 	result := &BuildResult{
-		Task:                      "make something",
+		Task:                       "make something",
 		MetaInterpretationGuidance: "some guidance",
 	}
 	output := RenderPlainText(result)
-	if strings.Contains(output, "=== META INTERPRETATION ===") {
-		t.Fatalf("META INTERPRETATION section must be absent from redesigned output, got:\n%s", output)
+	if !strings.Contains(output, "=== META INTERPRETATION ===") {
+		t.Fatalf("META INTERPRETATION section must be present in render output, got:\n%s", output)
+	}
+	if !strings.Contains(output, "some guidance") {
+		t.Fatalf("META INTERPRETATION section must contain guidance text, got:\n%s", output)
 	}
 }
 

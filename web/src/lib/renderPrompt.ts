@@ -166,6 +166,11 @@ export function renderPrompt(
 	// FORMAT section.
 	parts.push(writeSection('=== FORMAT 形式 ===', grammar.planning_directive));
 
+	// META INTERPRETATION section.
+	if (grammar.meta_interpretation_guidance?.trim()) {
+		parts.push(writeSection('=== META INTERPRETATION ===', grammar.meta_interpretation_guidance));
+	}
+
 	return parts.join('').trimEnd() + '\n';
 }
 

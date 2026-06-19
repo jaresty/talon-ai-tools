@@ -216,9 +216,10 @@ describe('renderPrompt', () => {
 		expect(result).not.toContain('=== EXECUTION REMINDER ===');
 	});
 
-	it('META INTERPRETATION section is absent from redesigned output', () => {
+	it('META INTERPRETATION section is present when meta_interpretation_guidance is set', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
-		expect(result).not.toContain('=== META INTERPRETATION ===');
+		expect(result).toContain('=== META INTERPRETATION ===');
+		expect(result).toContain('META INTERPRETATION GUIDANCE TEXT');
 	});
 
 	it('section is named FORMAT not PLANNING DIRECTIVE', () => {

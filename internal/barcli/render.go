@@ -91,14 +91,9 @@ func RenderPlainText(result *BuildResult) string {
 	if len(result.HydratedConstraints) == 0 && result.Persona == (PersonaResult{}) {
 		b.WriteString("(none)\n\n")
 	} else {
-		seenAxes := make(map[string]struct{})
 		for _, constraint := range result.HydratedConstraints {
 			axisKey := strings.ToLower(strings.TrimSpace(constraint.Axis))
 			token := strings.TrimSpace(constraint.Token)
-			if _, seen := seenAxes[axisKey]; seen {
-				continue
-			}
-			seenAxes[axisKey] = struct{}{}
 			fmt.Fprintf(&b, "- %s = %s\n", axisKey, token)
 		}
 		personaTokens := buildPersonaTokenSummary(result.Persona)

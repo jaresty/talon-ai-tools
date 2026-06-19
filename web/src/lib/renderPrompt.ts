@@ -114,8 +114,8 @@ export function renderPrompt(
 	const tokenLines: string[] = [];
 	for (const axis of CONSTRAINT_AXES) {
 		const tokens = effectiveSelected[axis] ?? [];
-		if (tokens.length > 0) {
-			tokenLines.push(`- ${axis} = ${tokens[0]}`);
+		for (const token of tokens) {
+			tokenLines.push(`- ${axis} = ${token}`);
 		}
 	}
 	// Persona row.

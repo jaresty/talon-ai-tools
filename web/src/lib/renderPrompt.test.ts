@@ -222,6 +222,13 @@ describe('renderPrompt', () => {
 		expect(result).toContain('META INTERPRETATION GUIDANCE TEXT');
 	});
 
+	it('TOKENS section lists all tokens for an axis, not just the first', () => {
+		const result = renderPrompt(grammar, { method: ['ground', 'falsify', 'atomic'] }, 'x', '');
+		expect(result).toContain('- method = ground');
+		expect(result).toContain('- method = falsify');
+		expect(result).toContain('- method = atomic');
+	});
+
 	it('section is named FORMAT not PLANNING DIRECTIVE', () => {
 		const result = renderPrompt(grammar, { completeness: ['full'] }, 'some subject', '');
 		expect(result).toContain('=== FORMAT');

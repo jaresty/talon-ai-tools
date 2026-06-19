@@ -717,6 +717,25 @@ func TestRenderPlainText_MetaInterpretationSection(t *testing.T) {
 	}
 }
 
+// TestRenderPlainText_TokensSectionMultipleMethodTokens verifies that all tokens for an axis
+// appear in the TOKENS section, not just the first.
+func TestRenderPlainText_TokensSectionMultipleMethodTokens(t *testing.T) {
+	result := &BuildResult{
+		Task: "do something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "method", Token: "ground", Description: "ground desc"},
+			{Axis: "method", Token: "falsify", Description: "falsify desc"},
+			{Axis: "method", Token: "atomic", Description: "atomic desc"},
+		},
+	}
+	output := RenderPlainText(result)
+	for _, tok := range []string{"ground", "falsify", "atomic"} {
+		if !strings.Contains(output, "- method = "+tok) {
+			t.Fatalf("TOKENS section missing '- method = %s', got:\n%s", tok, output)
+		}
+	}
+}
+
 // TestRenderPlainText_NoSubjectFraming specifies that the SubjectFraming prose block
 // is absent from the redesigned output.
 func TestRenderPlainText_NoSubjectFraming(t *testing.T) {

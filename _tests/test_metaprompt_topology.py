@@ -63,16 +63,18 @@ if bootstrap is not None:
                 "topology axis missing from prompt_reference_key_as_text() output",
             )
 
-        def test_M5_planning_directive_scopes_four_section_constraint_to_planning_block(self) -> None:
-            """PLANNING_DIRECTIVE must contain four section headings scoped to the planning block."""
-            self.assertTrue(
-                "SECTION 1 —" in PLANNING_DIRECTIVE and "SECTION 4 —" in PLANNING_DIRECTIVE,
-                "PLANNING_DIRECTIVE must define four named sections (SECTION 1 — through SECTION 4 —)",
+        def test_M5_planning_directive_contains_token_derivations_marker(self) -> None:
+            """PLANNING_DIRECTIVE must open the derivation block with 'Token derivations:'."""
+            self.assertIn(
+                "Token derivations:",
+                PLANNING_DIRECTIVE,
+                "PLANNING_DIRECTIVE must begin derivation block with 'Token derivations:'",
             )
 
-        def test_M6_planning_directive_states_task_execution_continues_after_planning_block(self) -> None:
-            """PLANNING_DIRECTIVE must explicitly state that task execution continues after the four-section block."""
-            self.assertTrue(
-                "proceed immediately" in PLANNING_DIRECTIVE or "Task execution begins" in PLANNING_DIRECTIVE,
-                "PLANNING_DIRECTIVE must state task execution continues after planning block",
+        def test_M6_planning_directive_contains_derived_stance_complete_marker(self) -> None:
+            """PLANNING_DIRECTIVE must close the derivation block with 'Derived stance complete.'."""
+            self.assertIn(
+                "Derived stance complete.",
+                PLANNING_DIRECTIVE,
+                "PLANNING_DIRECTIVE must close derivation block with 'Derived stance complete.'",
             )

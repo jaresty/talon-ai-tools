@@ -28,13 +28,13 @@ func TestRenderPlainTextSections(t *testing.T) {
 	output := RenderPlainText(result)
 
 	required := []string{
-		"=== TASK 任務 (DO THIS) ===",
-		"=== CONSTRAINTS 制約 (GUARDRAILS) ===",
-		"=== PERSONA 人格 (STANCE) ===",
-		"=== SUBJECT 題材 (CONTEXT) ===",
-		"Completeness (full):",
-		"- Preset: coach_junior — Coach junior",
-		"- Voice (as teacher): Teaches kindly.",
+		"=== REQUEST 依頼 ===",
+		"=== AXES 軸 (token types — each governs a different dimension) ===",
+		"=== TOKENS 役割 ===",
+		"=== TOKEN DEFINITIONS 定義 ===",
+		"Format this as a todo list.",
+		"Fix onboarding",
+		"- persona =",
 	}
 
 	for _, marker := range required {
@@ -58,146 +58,24 @@ func TestRenderPlainTextNoReferenceKeyBlock(t *testing.T) {
 	}
 }
 
-// TestRenderPlainTextContractBracketed specifies that inline contract lines are
-// wrapped in brackets to visually distinguish them from token descriptions.
-func TestRenderPlainTextContractBracketed(t *testing.T) {
-	result := &BuildResult{
-		Task:         "make something",
-		ReferenceKey: ReferenceKeyContracts{Task: "SENTINEL_TASK_CONTRACT"},
-	}
-	output := RenderPlainText(result)
-	if !strings.Contains(output, "↓ [SENTINEL_TASK_CONTRACT]") {
-		t.Fatalf("expected TASK inline contract to be bracket-wrapped as ↓ [SENTINEL_TASK_CONTRACT], got:\n%s", output)
-	}
-}
+// TestRenderPlainTextContractBracketed — redesigned output has no ↓ contracts in REQUEST section.
+// The ReferenceKey contracts are no longer emitted in the new section layout.
 
-// TestRenderPlainTextTaskInlineContract specifies that the TASK section emits
-// its inline contract immediately after the header and before the task body (ADR-0176).
-func TestRenderPlainTextTaskInlineContract(t *testing.T) {
-	result := &BuildResult{
-		Task:         "make something",
-		ReferenceKey: ReferenceKeyContracts{Task: "SENTINEL_TASK_CONTRACT"},
-	}
-	output := RenderPlainText(result)
-	if !strings.Contains(output, "SENTINEL_TASK_CONTRACT") {
-		t.Fatalf("expected TASK inline contract in output:\n%s", output)
-	}
-	taskIdx := strings.Index(output, sectionTask)
-	contractIdx := strings.Index(output, "SENTINEL_TASK_CONTRACT")
-	bodyIdx := strings.Index(output, "make something")
-	if contractIdx <= taskIdx || contractIdx >= bodyIdx {
-		t.Fatalf("expected TASK contract (pos %d) between header (pos %d) and body (pos %d):\n%s", contractIdx, taskIdx, bodyIdx, output)
-	}
-}
+// TestRenderPlainTextTaskInlineContract — removed: TASK section is absent from redesigned output.
+// REQUEST section contract is covered by TestRenderPlainTextSubjectInlineContract.
 
-// TestRenderPlainTextConstraintsInlineContract specifies that the CONSTRAINTS
-// section emits its section-level contract immediately after the header and
-// before the first constraint bullet (ADR-0176).
-func TestRenderPlainTextConstraintsInlineContract(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "full", Description: "Thorough."},
-		},
-		ReferenceKey: ReferenceKeyContracts{Constraints: "SENTINEL_CONSTRAINTS_CONTRACT"},
-	}
-	output := RenderPlainText(result)
-	if !strings.Contains(output, "SENTINEL_CONSTRAINTS_CONTRACT") {
-		t.Fatalf("expected CONSTRAINTS contract in output:\n%s", output)
-	}
-	headerIdx := strings.Index(output, sectionConstraints)
-	contractIdx := strings.Index(output, "SENTINEL_CONSTRAINTS_CONTRACT")
-	bulletIdx := strings.Index(output, "- Completeness")
-	if contractIdx <= headerIdx || contractIdx >= bulletIdx {
-		t.Fatalf("expected CONSTRAINTS contract (pos %d) between header (pos %d) and first bullet (pos %d):\n%s", contractIdx, headerIdx, bulletIdx, output)
-	}
-}
+// TestRenderPlainTextConstraintsInlineContract — removed: CONSTRAINTS section
+// replaced by AXES/TOKENS/TOKEN DEFINITIONS sections which have no section-level contract.
 
-// TestRenderPlainTextConstraintsSectionContractNoArrow specifies that the
-// CONSTRAINTS section-level contract has no ↓ arrow (it scopes the whole block),
-// while per-axis contracts do have ↓ arrows.
-func TestRenderPlainTextConstraintsSectionContractNoArrow(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "full", Description: "Thorough."},
-		},
-		ReferenceKey: ReferenceKeyContracts{
-			Constraints:     "SENTINEL_CONSTRAINTS_CONTRACT",
-			ConstraintsAxes: map[string]string{"completeness": "SENTINEL_COMPLETENESS_CONTRACT"},
-		},
-	}
-	output := RenderPlainText(result)
-	// Section-level contract: bare brackets, no ↓
-	if strings.Contains(output, "↓ [SENTINEL_CONSTRAINTS_CONTRACT]") {
-		t.Fatalf("CONSTRAINTS section-level contract must not have ↓ arrow (scopes whole block):\n%s", output)
-	}
-	if !strings.Contains(output, "[SENTINEL_CONSTRAINTS_CONTRACT]") {
-		t.Fatalf("CONSTRAINTS section-level contract must be present as [contract]:\n%s", output)
-	}
-	// Per-axis contract: must have ↓
-	if !strings.Contains(output, "↓ [SENTINEL_COMPLETENESS_CONTRACT]") {
-		t.Fatalf("per-axis contract must have ↓ arrow (governs next token group):\n%s", output)
-	}
-}
+// TestRenderPlainTextConstraintsSectionContractNoArrow — removed: CONSTRAINTS section
+// replaced by AXES/TOKENS/TOKEN DEFINITIONS sections which have no contract mechanism.
 
-// TestRenderPlainTextPerAxisContracts specifies that present axes in CONSTRAINTS
-// emit their per-axis contract before that axis's bullet(s) (ADR-0176).
-func TestRenderPlainTextPerAxisContracts(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "full", Description: "Thorough."},
-			{Axis: "scope", Token: "struct", Description: "Structural."},
-		},
-		ReferenceKey: ReferenceKeyContracts{
-			ConstraintsAxes: map[string]string{
-				"completeness": "SENTINEL_COMPLETENESS_CONTRACT",
-				"scope":        "SENTINEL_SCOPE_CONTRACT",
-			},
-		},
-	}
-	output := RenderPlainText(result)
-	for _, sentinel := range []string{"SENTINEL_COMPLETENESS_CONTRACT", "SENTINEL_SCOPE_CONTRACT"} {
-		if !strings.Contains(output, sentinel) {
-			t.Fatalf("expected per-axis contract %q in output:\n%s", sentinel, output)
-		}
-	}
-	completenessContractIdx := strings.Index(output, "SENTINEL_COMPLETENESS_CONTRACT")
-	scopeContractIdx := strings.Index(output, "SENTINEL_SCOPE_CONTRACT")
-	completenessBulletIdx := strings.Index(output, "- Completeness")
-	scopeBulletIdx := strings.Index(output, "- Scope")
-	if completenessContractIdx >= completenessBulletIdx {
-		t.Fatalf("expected completeness contract (pos %d) before completeness bullet (pos %d):\n%s", completenessContractIdx, completenessBulletIdx, output)
-	}
-	if scopeContractIdx >= scopeBulletIdx {
-		t.Fatalf("expected scope contract (pos %d) before scope bullet (pos %d):\n%s", scopeContractIdx, scopeBulletIdx, output)
-	}
-}
+// TestRenderPlainTextPerAxisContracts — removed: per-axis contracts (ADR-0176) no longer
+// rendered; AXES/TOKENS/TOKEN DEFINITIONS sections have no contract mechanism.
 
-// TestRenderPlainTextAbsentAxisNoContract specifies that axes not present in
-// the rendered CONSTRAINTS do not emit their per-axis contract (ADR-0176).
-func TestRenderPlainTextAbsentAxisNoContract(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "full", Description: "Thorough."},
-		},
-		ReferenceKey: ReferenceKeyContracts{
-			ConstraintsAxes: map[string]string{
-				"completeness": "SENTINEL_COMPLETENESS_CONTRACT",
-				"method":       "SENTINEL_METHOD_CONTRACT",
-			},
-		},
-	}
-	output := RenderPlainText(result)
-	if strings.Contains(output, "SENTINEL_METHOD_CONTRACT") {
-		t.Fatalf("expected absent axis contract to be omitted, got:\n%s", output)
-	}
-}
+// TestRenderPlainTextAbsentAxisNoContract — removed: per-axis contracts no longer rendered.
 
-// TestRenderPlainTextSubjectInlineContract specifies that the SUBJECT section
-// emits its inline contract immediately after the header and before the body (ADR-0176).
+// TestRenderPlainTextSubjectInlineContract — redesigned output has no ↓ contracts in REQUEST section.
 func TestRenderPlainTextSubjectInlineContract(t *testing.T) {
 	result := &BuildResult{
 		Task:         "make something",
@@ -205,64 +83,37 @@ func TestRenderPlainTextSubjectInlineContract(t *testing.T) {
 		ReferenceKey: ReferenceKeyContracts{Subject: "SENTINEL_SUBJECT_CONTRACT"},
 	}
 	output := RenderPlainText(result)
-	if !strings.Contains(output, "SENTINEL_SUBJECT_CONTRACT") {
-		t.Fatalf("expected SUBJECT contract in output:\n%s", output)
-	}
-	headerIdx := strings.Index(output, sectionSubject)
-	contractIdx := strings.Index(output, "SENTINEL_SUBJECT_CONTRACT")
-	bodyIdx := strings.Index(output, "my subject text")
-	if contractIdx <= headerIdx || contractIdx >= bodyIdx {
-		t.Fatalf("expected SUBJECT contract (pos %d) between header (pos %d) and body (pos %d):\n%s", contractIdx, headerIdx, bodyIdx, output)
+	if strings.Contains(output, "SENTINEL_SUBJECT_CONTRACT") {
+		t.Fatalf("redesigned REQUEST section must not emit ↓ contract, got:\n%s", output)
 	}
 }
 
-// TestRenderPlainTextAddendumInlineContract specifies that the ADDENDUM section
-// emits its inline contract when addendum is present (ADR-0176).
+// TestRenderPlainTextAddendumInlineContract — addendum is now merged into REQUEST body,
+// not a standalone section. Addendum text appears in the REQUEST block.
 func TestRenderPlainTextAddendumInlineContract(t *testing.T) {
 	result := &BuildResult{
-		Task:         "make something",
-		Addendum:     "extra instructions",
-		ReferenceKey: ReferenceKeyContracts{Addendum: "SENTINEL_ADDENDUM_CONTRACT"},
+		Task:     "make something",
+		Addendum: "extra instructions",
 	}
 	output := RenderPlainText(result)
-	if !strings.Contains(output, "SENTINEL_ADDENDUM_CONTRACT") {
-		t.Fatalf("expected ADDENDUM contract in output:\n%s", output)
+	requestIdx := strings.Index(output, sectionSubject)
+	formatIdx := strings.Index(output, sectionFormat)
+	if requestIdx < 0 || formatIdx < 0 {
+		t.Fatalf("expected REQUEST and FORMAT sections in output:\n%s", output)
 	}
-	headerIdx := strings.Index(output, sectionAddendum)
-	contractIdx := strings.Index(output, "SENTINEL_ADDENDUM_CONTRACT")
-	bodyIdx := strings.Index(output, "extra instructions")
-	if contractIdx <= headerIdx || contractIdx >= bodyIdx {
-		t.Fatalf("expected ADDENDUM contract (pos %d) between header (pos %d) and body (pos %d):\n%s", contractIdx, headerIdx, bodyIdx, output)
+	requestBlock := output[requestIdx:formatIdx]
+	if !strings.Contains(requestBlock, "extra instructions") {
+		t.Fatalf("expected addendum text in REQUEST block, got:\n%s", requestBlock)
 	}
 }
 
-// TestRenderPlainTextPersonaInlineContract specifies that the PERSONA section
-// emits its inline contract when a persona is present (ADR-0176).
-func TestRenderPlainTextPersonaInlineContract(t *testing.T) {
-	result := &BuildResult{
-		Task:    "make something",
-		Persona: PersonaResult{Voice: "as teacher"},
-		HydratedPersona: []HydratedPromptlet{
-			{Axis: "voice", Token: "as teacher", Description: "Teaches."},
-		},
-		ReferenceKey: ReferenceKeyContracts{Persona: "SENTINEL_PERSONA_CONTRACT"},
-	}
-	output := RenderPlainText(result)
-	if !strings.Contains(output, "SENTINEL_PERSONA_CONTRACT") {
-		t.Fatalf("expected PERSONA contract in output:\n%s", output)
-	}
-	headerIdx := strings.Index(output, sectionPersona)
-	contractIdx := strings.Index(output, "SENTINEL_PERSONA_CONTRACT")
-	if contractIdx <= headerIdx {
-		t.Fatalf("expected PERSONA contract (pos %d) after header (pos %d):\n%s", contractIdx, headerIdx, output)
-	}
-}
+// TestRenderPlainTextPersonaInlineContract — PERSONA section is absent from redesigned output.
+// Persona folds into TOKENS and TOKEN DEFINITIONS sections instead.
 
 // TestRenderPlainTextIncludesKanjiInPromptlets specifies that hydrated promptlets
 // include kanji characters when available (ADR-0143).
-// TestRenderPersonaAllFourAxes specifies that RenderPlainText renders all four
-// persona axes (voice, audience, tone, intent) with their descriptions when all
-// are present in PersonaResult and HydratedPersona.
+// TestRenderPersonaAllFourAxes specifies that RenderPlainText renders persona axes
+// in the TOKEN DEFINITIONS section (persona folds into TOKENS + TOKEN DEFINITIONS).
 func TestRenderPersonaAllFourAxes(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
@@ -282,21 +133,23 @@ func TestRenderPersonaAllFourAxes(t *testing.T) {
 
 	output := RenderPlainText(result)
 
-	for _, want := range []string{
-		"- Voice (as teacher): Teaches carefully.",
-		"- Audience (to junior engineer): Clear for juniors.",
-		"- Tone (kindly): Kind and warm.",
-		"- Intent (coach): Guide growth.",
-	} {
-		if !strings.Contains(output, want) {
-			t.Errorf("expected output to contain %q\ngot:\n%s", want, output)
-		}
+	// Persona tokens appear in TOKENS section as a combined row.
+	tokensIdx := strings.Index(output, sectionTokens)
+	defsIdx := strings.Index(output, sectionTokenDefinitions)
+	tokensBlock := output[tokensIdx:defsIdx]
+	if !strings.Contains(tokensBlock, "- persona =") {
+		t.Errorf("expected persona row in TOKENS section, got block:\n%s", tokensBlock)
+	}
+	// Persona descriptions appear in TOKEN DEFINITIONS section.
+	formatIdx := strings.Index(output, sectionFormat)
+	defsBlock := output[defsIdx:formatIdx]
+	if !strings.Contains(defsBlock, "- persona") {
+		t.Errorf("expected persona row in TOKEN DEFINITIONS section, got block:\n%s", defsBlock)
 	}
 }
 
-// TestRenderPersonaPresetWithIntent specifies that when a preset is combined
-// with an explicit intent, both the preset axes and the intent appear in the
-// PERSONA section.
+// TestRenderPersonaPresetWithIntent specifies that when a preset is active,
+// the preset token appears in the TOKENS persona row.
 func TestRenderPersonaPresetWithIntent(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
@@ -319,45 +172,16 @@ func TestRenderPersonaPresetWithIntent(t *testing.T) {
 
 	output := RenderPlainText(result)
 
-	for _, want := range []string{
-		"- Preset:",
-		"- Voice (as designer): Designer voice.",
-		"- Intent (persuade): Persuade the audience.",
-	} {
-		if !strings.Contains(output, want) {
-			t.Errorf("expected output to contain %q\ngot:\n%s", want, output)
-		}
+	tokensIdx := strings.Index(output, sectionTokens)
+	defsIdx := strings.Index(output, sectionTokenDefinitions)
+	tokensBlock := output[tokensIdx:defsIdx]
+	if !strings.Contains(tokensBlock, "- persona = designer_to_pm") {
+		t.Errorf("expected preset in persona TOKENS row, got block:\n%s", tokensBlock)
 	}
 }
 
-// TestExecutionReminderPrecedesConstraints specifies that the EXECUTION REMINDER
-// section appears before the CONSTRAINTS section in RenderPlainText output, so
-// it gates completion-intent before constraints arrive rather than functioning
-// as a late-position advisory.
-func TestExecutionReminderPrecedesConstraints(t *testing.T) {
-	result := &BuildResult{
-		Task:              "make something",
-		ExecutionReminder: "Execute the TASK. Satisfy CONSTRAINTS before producing content.",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "full", Description: "Thorough answer."},
-		},
-	}
-
-	output := RenderPlainText(result)
-
-	reminderIdx := strings.Index(output, sectionExecution)
-	constraintsIdx := strings.Index(output, sectionConstraints)
-
-	if reminderIdx == -1 {
-		t.Fatalf("expected output to contain EXECUTION REMINDER section, got:\n%s", output)
-	}
-	if constraintsIdx == -1 {
-		t.Fatalf("expected output to contain CONSTRAINTS section, got:\n%s", output)
-	}
-	if reminderIdx >= constraintsIdx {
-		t.Fatalf("expected EXECUTION REMINDER (pos %d) to appear before CONSTRAINTS (pos %d):\n%s", reminderIdx, constraintsIdx, output)
-	}
-}
+// TestExecutionReminderPrecedesAxes — removed: EXECUTION REMINDER section is absent
+// from redesigned output. Preamble replaces it and precedes REQUEST.
 
 // TestPlanningDirectiveFollowsSubject specifies that a PLANNING DIRECTIVE
 // appears after the SUBJECT section (after META INTERPRETATION when
@@ -373,16 +197,16 @@ func TestPlanningDirectiveFollowsSubject(t *testing.T) {
 	output := RenderPlainText(result)
 
 	subjectIdx := strings.Index(output, sectionSubject)
-	planningDirectiveIdx := strings.Index(output, "=== PLANNING DIRECTIVE ===")
+	formatIdx := strings.Index(output, sectionFormat)
 
 	if subjectIdx == -1 {
-		t.Fatalf("expected output to contain SUBJECT section")
+		t.Fatalf("expected output to contain REQUEST section")
 	}
-	if planningDirectiveIdx == -1 {
-		t.Fatalf("expected output to contain PLANNING DIRECTIVE section, got:\n%s", output)
+	if formatIdx == -1 {
+		t.Fatalf("expected output to contain FORMAT 形式 section, got:\n%s", output)
 	}
-	if planningDirectiveIdx <= subjectIdx {
-		t.Fatalf("expected PLANNING DIRECTIVE (pos %d) to appear after SUBJECT (pos %d):\n%s", planningDirectiveIdx, subjectIdx, output)
+	if formatIdx <= subjectIdx {
+		t.Fatalf("expected FORMAT (pos %d) to appear after REQUEST (pos %d):\n%s", formatIdx, subjectIdx, output)
 	}
 }
 
@@ -391,9 +215,8 @@ func TestRenderPlainTextIncludesKanjiInPromptlets(t *testing.T) {
 		Task:        "probe fail full",
 		Constraints: []string{},
 		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "method", Token: "probe", Kanji: "探"},
-			{Axis: "scope", Token: "fail", Kanji: "敗"},
-			{Axis: "completeness", Token: "full", Kanji: "全"},
+			{Axis: "method", Token: "probe", Kanji: "探", Description: "Probing analysis."},
+			{Axis: "completeness", Token: "full", Kanji: "全", Description: "Thorough."},
 		},
 		HydratedPersona: []HydratedPromptlet{
 			{Axis: "voice", Token: "socratic", Kanji: "質"},
@@ -402,45 +225,527 @@ func TestRenderPlainTextIncludesKanjiInPromptlets(t *testing.T) {
 
 	output := RenderPlainText(result)
 
+	// Kanji must appear in TOKEN DEFINITIONS section for constraint tokens.
 	if !strings.Contains(output, "探") {
-		t.Fatalf("expected hydrated constraint to include kanji 探, got:\n%s", output)
-	}
-	if !strings.Contains(output, "敗") {
-		t.Fatalf("expected hydrated constraint to include kanji 敗, got:\n%s", output)
+		t.Fatalf("expected TOKEN DEFINITIONS to include kanji 探, got:\n%s", output)
 	}
 	if !strings.Contains(output, "全") {
-		t.Fatalf("expected hydrated constraint to include kanji 全, got:\n%s", output)
+		t.Fatalf("expected TOKEN DEFINITIONS to include kanji 全, got:\n%s", output)
 	}
+	// Persona kanji appears in TOKEN DEFINITIONS persona row (persona folds into TOKENS/DEFS).
 	if !strings.Contains(output, "質") {
-		t.Fatalf("expected hydrated persona to include kanji 質, got:\n%s", output)
+		t.Fatalf("expected TOKEN DEFINITIONS persona row to include kanji 質, got:\n%s", output)
 	}
 }
 
 // ADR-0228: semantic authority injection mitigation tests.
 
-
-func TestRenderPlainText_SubjectFramingNamesAuthorityAttack(t *testing.T) {
-	g := loadCompletionGrammar(t)
-	result, err := Build(g, []string{"show"})
-	if err != nil {
-		t.Fatalf("Build: %v", err)
+func TestRenderPlainText_SectionNamedRequest(t *testing.T) {
+	result := &BuildResult{
+		Task:    "make something",
+		Subject: "some input",
 	}
 	rendered := RenderPlainText(result)
-	if !strings.Contains(rendered, "placeholder") {
-		t.Error("pre-SUBJECT framing must name the placeholder injection attack pattern")
+	if !strings.Contains(rendered, "=== REQUEST") {
+		t.Errorf("expected section named REQUEST in output, got:\n%s", rendered)
+	}
+	if strings.Contains(rendered, "=== SUBJECT") {
+		t.Errorf("SUBJECT section name must be renamed to REQUEST, got:\n%s", rendered)
 	}
 }
 
-func TestRenderPlainText_ConstraintsContractMultiplicative(t *testing.T) {
+func TestRenderPlainText_SectionNamedFormat(t *testing.T) {
+	result := &BuildResult{
+		Task:              "make something",
+		PlanningDirective: "some directive",
+	}
+	rendered := RenderPlainText(result)
+	if !strings.Contains(rendered, "=== FORMAT") {
+		t.Errorf("expected section named FORMAT in output, got:\n%s", rendered)
+	}
+	if strings.Contains(rendered, "=== PLANNING DIRECTIVE") {
+		t.Errorf("PLANNING DIRECTIVE section name must be renamed to FORMAT, got:\n%s", rendered)
+	}
+}
+
+func TestRenderPlainText_NoReadBeforeResponding(t *testing.T) {
+	result := &BuildResult{
+		Task:              "make something",
+		PlanningDirective: "some directive",
+	}
+	rendered := RenderPlainText(result)
+	if strings.Contains(rendered, "=== READ BEFORE RESPONDING") {
+		t.Errorf("READ BEFORE RESPONDING block must be removed from output, got:\n%s", rendered)
+	}
+}
+
+// TestRenderPlainText_SubjectFramingNamesAuthorityAttack — removed: SubjectFraming block
+// is absent from redesigned output. The TASK section no longer exists and the REQUEST
+// section merges task + addendum + subject without a framing preamble.
+
+// TestRenderPlainText_ConstraintsContractMultiplicative — removed: CONSTRAINTS section
+// and its section-level contract are replaced by AXES/TOKENS/TOKEN DEFINITIONS sections.
+
+// TestRenderPlainText_AxesSectionPresent specifies that the AXES 軸 section
+// header appears in rendered output (replaces CONSTRAINTS section).
+func TestRenderPlainText_AxesSectionPresent(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "The response goes into substantial depth."},
+		},
+		AxisDescriptions: map[string]string{
+			"completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
+		},
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, sectionAxes) {
+		t.Fatalf("expected AXES 軸 section header in output, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_TokensSectionPresent specifies that the TOKENS 役割 section
+// header appears in rendered output.
+func TestRenderPlainText_TokensSectionPresent(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "The response goes into substantial depth."},
+		},
+		AxisDescriptions: map[string]string{
+			"completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
+		},
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "=== TOKENS 役割 ===") {
+		t.Fatalf("expected TOKENS 役割 section header in output, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_TokenDefinitionsSectionPresent specifies that the
+// TOKEN DEFINITIONS 定義 section header appears in rendered output.
+func TestRenderPlainText_TokenDefinitionsSectionPresent(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "The response goes into substantial depth."},
+		},
+		AxisDescriptions: map[string]string{
+			"completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
+		},
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "=== TOKEN DEFINITIONS 定義 ===") {
+		t.Fatalf("expected TOKEN DEFINITIONS 定義 section header in output, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_FormatKanjiSectionPresent specifies that the FORMAT 形式
+// section header (with kanji) appears in rendered output.
+func TestRenderPlainText_FormatKanjiSectionPresent(t *testing.T) {
+	result := &BuildResult{
+		Task:              "make something",
+		PlanningDirective: "Token derivations:\n- deep: goes deep.\nDerived stance complete.",
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "=== FORMAT 形式 ===") {
+		t.Fatalf("expected FORMAT 形式 section header in output, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_ConstraintsSectionAbsent specifies that the old
+// CONSTRAINTS 制約 (GUARDRAILS) section header is absent from rendered output.
+func TestRenderPlainText_ConstraintsSectionAbsent(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "The response goes into substantial depth."},
+		},
+		AxisDescriptions: map[string]string{
+			"completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
+		},
+	}
+	output := RenderPlainText(result)
+	if strings.Contains(output, "=== CONSTRAINTS 制約 (GUARDRAILS) ===") {
+		t.Fatalf("CONSTRAINTS section must be replaced by AXES/TOKENS/TOKEN DEFINITIONS/FORMAT, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_AxesSectionContainsAxisDescription specifies that the
+// AXES section body contains the axis description for each active axis.
+func TestRenderPlainText_AxesSectionContainsAxisDescription(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "The response goes into substantial depth."},
+		},
+		AxisDescriptions: map[string]string{
+			"completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
+		},
+	}
+	output := RenderPlainText(result)
+	axesIdx := strings.Index(output, sectionAxes)
+	tokensIdx := strings.Index(output, sectionTokens)
+	if axesIdx < 0 || tokensIdx < 0 {
+		t.Fatal("AXES and TOKENS sections must both be present")
+	}
+	axesBlock := output[axesIdx:tokensIdx]
+	if !strings.Contains(axesBlock, "Depth of coverage") {
+		t.Fatalf("AXES block must contain axis description, got block:\n%s", axesBlock)
+	}
+}
+
+// TestRenderPlainText_TokenDefinitionsSectionContainsDefinitionText specifies
+// that the TOKEN DEFINITIONS section body contains the verbatim token description.
+func TestRenderPlainText_TokenDefinitionsSectionContainsDefinitionText(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "The response goes into substantial depth."},
+		},
+		AxisDescriptions: map[string]string{
+			"completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
+		},
+	}
+	output := RenderPlainText(result)
+	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS 定義 ===")
+	formatIdx := strings.Index(output, "=== FORMAT")
+	if defsIdx < 0 || formatIdx < 0 {
+		t.Fatal("TOKEN DEFINITIONS and FORMAT sections must both be present")
+	}
+	defsBlock := output[defsIdx:formatIdx]
+	if !strings.Contains(defsBlock, "substantial depth") {
+		t.Fatalf("TOKEN DEFINITIONS block must contain token description text, got block:\n%s", defsBlock)
+	}
+}
+
+// TestRenderPlainText_PreamblePrecedesRequest specifies that the preamble constant
+// appears before the REQUEST section in the redesigned output.
+func TestRenderPlainText_PreamblePrecedesRequest(t *testing.T) {
+	result := &BuildResult{
+		Task:     "make something",
+		Subject:  "my input",
+		Preamble: "I want my responses formatted with a token derivation structure.",
+	}
+	output := RenderPlainText(result)
+	preambleIdx := strings.Index(output, "I want my responses formatted with a token derivation structure.")
+	requestIdx := strings.Index(output, "=== REQUEST")
+	if preambleIdx < 0 {
+		t.Fatalf("expected preamble text in output, got:\n%s", output)
+	}
+	if requestIdx < 0 {
+		t.Fatalf("expected REQUEST section in output, got:\n%s", output)
+	}
+	if preambleIdx >= requestIdx {
+		t.Fatalf("expected preamble (pos %d) before REQUEST (pos %d):\n%s", preambleIdx, requestIdx, output)
+	}
+}
+
+// TestRenderPlainText_RequestKanjiIsDependency specifies that the REQUEST section
+// uses 依頼 (not 題材) as the kanji annotation.
+func TestRenderPlainText_RequestKanjiIsDependency(t *testing.T) {
+	result := &BuildResult{
+		Task:    "make something",
+		Subject: "my input",
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "=== REQUEST 依頼 ===") {
+		t.Fatalf("expected REQUEST section to use 依頼 kanji, got:\n%s", output)
+	}
+	if strings.Contains(output, "題材") {
+		t.Fatalf("REQUEST section must not use 題材 kanji, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_AxesHeaderIncludesDescriptor specifies that the AXES section
+// header includes the descriptor suffix.
+func TestRenderPlainText_AxesHeaderIncludesDescriptor(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "=== AXES 軸 (token types — each governs a different dimension) ===") {
+		t.Fatalf("expected full AXES header with descriptor, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_AxisInteractionAfterAxes specifies that the axis_interaction
+// constant appears in the AXES section after the axis bullets.
+func TestRenderPlainText_AxisInteractionAfterAxes(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+		AxisInteraction: "Axis interaction: completeness sets the depth at which each method step runs.",
+	}
+	output := RenderPlainText(result)
+	axesIdx := strings.Index(output, "=== AXES")
+	tokensIdx := strings.Index(output, "=== TOKENS")
+	interactionIdx := strings.Index(output, "Axis interaction:")
+	if interactionIdx < 0 {
+		t.Fatalf("expected axis_interaction text in output, got:\n%s", output)
+	}
+	if interactionIdx <= axesIdx || interactionIdx >= tokensIdx {
+		t.Fatalf("expected axis_interaction (pos %d) between AXES (pos %d) and TOKENS (pos %d):\n%s", interactionIdx, axesIdx, tokensIdx, output)
+	}
+}
+
+// TestRenderPlainText_AxesBulletFormat specifies that AXES entries use "- axis: desc" bullet format.
+func TestRenderPlainText_AxesBulletFormat(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+		AxisDescriptions: map[string]string{
+			"completeness": "Depth of coverage.",
+		},
+	}
+	output := RenderPlainText(result)
+	axesIdx := strings.Index(output, "=== AXES")
+	tokensIdx := strings.Index(output, "=== TOKENS")
+	axesBlock := output[axesIdx:tokensIdx]
+	if !strings.Contains(axesBlock, "- completeness: Depth of coverage.") {
+		t.Fatalf("expected AXES bullet '- completeness: Depth of coverage.' in block:\n%s", axesBlock)
+	}
+}
+
+// TestRenderPlainText_TokensBulletFormat specifies that TOKENS entries use "- axis = token" bullet format.
+func TestRenderPlainText_TokensBulletFormat(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, "=== TOKENS")
+	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
+	tokensBlock := output[tokensIdx:defsIdx]
+	if !strings.Contains(tokensBlock, "- completeness = deep") {
+		t.Fatalf("expected TOKENS bullet '- completeness = deep' in block:\n%s", tokensBlock)
+	}
+}
+
+// TestRenderPlainText_TokenDefsBulletFormat specifies that TOKEN DEFINITIONS entries
+// use "- axis (token kanji): desc" bullet format.
+func TestRenderPlainText_TokenDefsBulletFormat(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Kanji: "全", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
+	formatIdx := strings.Index(output, "=== FORMAT")
+	defsBlock := output[defsIdx:formatIdx]
+	if !strings.Contains(defsBlock, "- completeness (deep 全): Goes deep.") {
+		t.Fatalf("expected TOKEN DEFS bullet '- completeness (deep 全): Goes deep.' in block:\n%s", defsBlock)
+	}
+}
+
+// TestRenderPlainText_PersonaFoldsIntoTokensSection specifies that when a persona
+// is active, a persona row appears in the TOKENS section.
+func TestRenderPlainText_PersonaFoldsIntoTokensSection(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+		Persona: PersonaResult{Voice: "as teacher"},
+		HydratedPersona: []HydratedPromptlet{
+			{Axis: "voice", Token: "as teacher", Description: "Teaches."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, "=== TOKENS")
+	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
+	tokensBlock := output[tokensIdx:defsIdx]
+	if !strings.Contains(tokensBlock, "- persona =") {
+		t.Fatalf("expected persona row in TOKENS section, got block:\n%s", tokensBlock)
+	}
+}
+
+// TestRenderPlainText_PersonaNoneWhenAbsent specifies that when no persona is active,
+// "- persona = (none)" appears in the TOKENS section.
+func TestRenderPlainText_PersonaNoneWhenAbsent(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, "=== TOKENS")
+	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
+	tokensBlock := output[tokensIdx:defsIdx]
+	if !strings.Contains(tokensBlock, "- persona = (none)") {
+		t.Fatalf("expected '- persona = (none)' in TOKENS section when no persona active, got block:\n%s", tokensBlock)
+	}
+}
+
+// TestRenderPlainText_PersonaFoldsIntoTokenDefsSection specifies that when a persona
+// is active, a persona row appears in the TOKEN DEFINITIONS section.
+func TestRenderPlainText_PersonaFoldsIntoTokenDefsSection(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+		Persona: PersonaResult{Voice: "as teacher"},
+		HydratedPersona: []HydratedPromptlet{
+			{Axis: "voice", Token: "as teacher", Description: "Teaches carefully."},
+		},
+	}
+	output := RenderPlainText(result)
+	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
+	formatIdx := strings.Index(output, "=== FORMAT")
+	defsBlock := output[defsIdx:formatIdx]
+	if !strings.Contains(defsBlock, "- persona") {
+		t.Fatalf("expected persona row in TOKEN DEFINITIONS section, got block:\n%s", defsBlock)
+	}
+}
+
+// TestCompletednessFullHasKanji specifies that the completeness=full token
+// renders with its kanji 全 in the TOKEN DEFINITIONS section.
+func TestCompletenessFullHasKanji(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, err := Build(g, []string{"show", "full"})
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	rendered := RenderPlainText(result)
+	defsIdx := strings.Index(rendered, sectionTokenDefinitions)
+	formatIdx := strings.Index(rendered, sectionFormat)
+	defsBlock := rendered[defsIdx:formatIdx]
+	if !strings.Contains(defsBlock, "全") {
+		t.Fatalf("expected completeness=full to render with kanji 全 in TOKEN DEFINITIONS, got block:\n%s", defsBlock)
+	}
+}
+
+// TestBuildResultPreamblePopulatedFromGrammar specifies that Build() propagates
+// the grammar's preamble field into BuildResult.Preamble.
+func TestBuildResultPreamblePopulatedFromGrammar(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	result, err := Build(g, []string{"show"})
 	if err != nil {
 		t.Fatalf("Build: %v", err)
 	}
+	if strings.TrimSpace(result.Preamble) == "" {
+		t.Fatalf("expected BuildResult.Preamble to be populated from grammar, got empty string.\nRendered:\n%s", RenderPlainText(result))
+	}
+}
+
+// TestBuildResultAxisInteractionPopulatedFromGrammar specifies that Build()
+// propagates the grammar's axis_interaction field into BuildResult.AxisInteraction.
+func TestBuildResultAxisInteractionPopulatedFromGrammar(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, err := Build(g, []string{"show", "full"})
+	if err != nil {
+		t.Fatalf("Build: %v", err)
+	}
+	if strings.TrimSpace(result.AxisInteraction) == "" {
+		t.Fatalf("expected BuildResult.AxisInteraction to be populated from grammar, got empty string.\nRendered:\n%s", RenderPlainText(result))
+	}
 	rendered := RenderPlainText(result)
-	// The constraints section-level contract must convey multiplicative (unified-lens)
-	// combination, not additive (independent-pass) combination.
-	if !strings.Contains(rendered, "modifies how the others are applied") {
-		t.Error("CONSTRAINTS contract must state that each token modifies how the others are applied")
+	axesIdx := strings.Index(rendered, sectionAxes)
+	tokensIdx := strings.Index(rendered, sectionTokens)
+	axesBlock := rendered[axesIdx:tokensIdx]
+	if !strings.Contains(axesBlock, "Axis interaction:") {
+		t.Fatalf("expected 'Axis interaction:' in AXES block, got:\n%s", axesBlock)
+	}
+}
+
+// TestRenderPlainText_NoTaskSection specifies that the old TASK section is absent.
+func TestRenderPlainText_NoTaskSection(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+	}
+	output := RenderPlainText(result)
+	if strings.Contains(output, "=== TASK 任務 (DO THIS) ===") {
+		t.Fatalf("TASK section must be absent from redesigned output, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_NoExecutionReminderSection specifies that the EXECUTION REMINDER
+// section is absent from the redesigned output (replaced by preamble).
+func TestRenderPlainText_NoExecutionReminderSection(t *testing.T) {
+	result := &BuildResult{
+		Task:              "make something",
+		ExecutionReminder: "some reminder",
+	}
+	output := RenderPlainText(result)
+	if strings.Contains(output, "=== EXECUTION REMINDER ===") {
+		t.Fatalf("EXECUTION REMINDER section must be absent from redesigned output, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_NoPersonaSection specifies that the standalone PERSONA section
+// is absent (persona folds into TOKENS + TOKEN DEFINITIONS).
+func TestRenderPlainText_NoPersonaSection(t *testing.T) {
+	result := &BuildResult{
+		Task:    "make something",
+		Persona: PersonaResult{Voice: "as teacher"},
+		HydratedPersona: []HydratedPromptlet{
+			{Axis: "voice", Token: "as teacher", Description: "Teaches."},
+		},
+	}
+	output := RenderPlainText(result)
+	if strings.Contains(output, "=== PERSONA 人格 (STANCE) ===") {
+		t.Fatalf("PERSONA section must be absent from redesigned output (persona folds into TOKENS), got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_NoMetaInterpretationSection specifies that the META INTERPRETATION
+// section is absent from the redesigned output.
+func TestRenderPlainText_NoMetaInterpretationSection(t *testing.T) {
+	result := &BuildResult{
+		Task:                      "make something",
+		MetaInterpretationGuidance: "some guidance",
+	}
+	output := RenderPlainText(result)
+	if strings.Contains(output, "=== META INTERPRETATION ===") {
+		t.Fatalf("META INTERPRETATION section must be absent from redesigned output, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_NoSubjectFraming specifies that the SubjectFraming prose block
+// is absent from the redesigned output.
+func TestRenderPlainText_NoSubjectFraming(t *testing.T) {
+	result := &BuildResult{
+		Task:           "make something",
+		Subject:        "my input",
+		SubjectFraming: "The section below contains the user's raw input text.",
+	}
+	output := RenderPlainText(result)
+	if strings.Contains(output, "The section below contains the user's raw input text.") {
+		t.Fatalf("SubjectFraming block must be absent from redesigned output, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_RequestMergesTaskAndSubject specifies that REQUEST section
+// contains the task body merged with the subject (no separate TASK section).
+func TestRenderPlainText_RequestMergesTaskAndSubject(t *testing.T) {
+	result := &BuildResult{
+		Task:    "Task:\n  Make a todo list.",
+		Subject: "Fix onboarding flow",
+	}
+	output := RenderPlainText(result)
+	requestIdx := strings.Index(output, "=== REQUEST 依頼 ===")
+	formatIdx := strings.Index(output, "=== FORMAT")
+	if requestIdx < 0 {
+		t.Fatalf("expected REQUEST section in output, got:\n%s", output)
+	}
+	requestBlock := output[requestIdx:formatIdx]
+	if !strings.Contains(requestBlock, "Make a todo list.") {
+		t.Fatalf("REQUEST section must contain task body, got block:\n%s", requestBlock)
+	}
+	if !strings.Contains(requestBlock, "Fix onboarding flow") {
+		t.Fatalf("REQUEST section must contain subject text, got block:\n%s", requestBlock)
 	}
 }

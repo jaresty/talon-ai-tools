@@ -64,26 +64,58 @@ if bootstrap is not None:
                 "EXECUTION REMINDER must appear before ADDENDUM so it intercepts completion-intent",
             )
 
-        def test_planning_directive_follows_subject(self) -> None:
-            """A PLANNING DIRECTIVE must appear after SUBJECT in format_source_messages
-            output, providing recency-based resistance to SUBJECT injection attacks while
-            requiring explicit planning output from the LLM."""
+        def test_format_source_messages_uses_request_heading(self) -> None:
+            """format_source_messages should render REQUEST heading, not SUBJECT."""
             messages = format_source_messages("do this", _SimpleSource())
             all_text = " ".join(
                 item.get("text", "") for item in messages if isinstance(item, dict)
             )
-            subject_idx = all_text.find("=== SUBJECT (CONTEXT) ===")
-            planning_directive_idx = all_text.find("=== PLANNING DIRECTIVE ===")
-            self.assertGreater(subject_idx, -1, "SUBJECT section must be present")
+            self.assertIn(
+                "=== REQUEST",
+                all_text,
+                "format_source_messages must use REQUEST heading (renamed from SUBJECT)",
+            )
+            self.assertNotIn(
+                "=== SUBJECT",
+                all_text,
+                "format_source_messages must not use SUBJECT heading after rename to REQUEST",
+            )
+
+        def test_format_source_messages_uses_format_heading(self) -> None:
+            """format_source_messages should render FORMAT heading, not PLANNING DIRECTIVE."""
+            messages = format_source_messages("do this", _SimpleSource())
+            all_text = " ".join(
+                item.get("text", "") for item in messages if isinstance(item, dict)
+            )
+            self.assertIn(
+                "=== FORMAT",
+                all_text,
+                "format_source_messages must use FORMAT heading (renamed from PLANNING DIRECTIVE)",
+            )
+            self.assertNotIn(
+                "=== PLANNING DIRECTIVE",
+                all_text,
+                "format_source_messages must not use PLANNING DIRECTIVE heading after rename to FORMAT",
+            )
+
+        def test_format_follows_request(self) -> None:
+            """FORMAT must appear after REQUEST in format_source_messages output."""
+            messages = format_source_messages("do this", _SimpleSource())
+            all_text = " ".join(
+                item.get("text", "") for item in messages if isinstance(item, dict)
+            )
+            request_idx = all_text.find("=== REQUEST")
+            format_idx = all_text.find("=== FORMAT")
+            self.assertGreater(request_idx, -1, "REQUEST section must be present")
             self.assertGreater(
-                planning_directive_idx,
+                format_idx,
                 -1,
-                "PLANNING DIRECTIVE section must be present, got:\n%s" % all_text,
+                "FORMAT section must be present, got:\n%s" % all_text,
             )
             self.assertGreater(
-                planning_directive_idx,
-                subject_idx,
-                "PLANNING DIRECTIVE must appear after SUBJECT for injection resistance",
+                format_idx,
+                request_idx,
+                "FORMAT must appear after REQUEST for injection resistance",
             )
 
         def test_prompt_reference_key_process_method_no_substitution(self) -> None:

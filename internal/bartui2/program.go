@@ -2401,7 +2401,7 @@ func (m model) renderSubjectModal() string {
 	}
 
 	var content strings.Builder
-	content.WriteString(headerStyle.Render("SUBJECT INPUT"))
+	content.WriteString(headerStyle.Render("REQUEST INPUT"))
 	content.WriteString("\n\n")
 	content.WriteString(m.subjectInput.View())
 	content.WriteString("\n\n")

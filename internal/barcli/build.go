@@ -22,6 +22,8 @@ const (
 type BuildResult struct {
 	SchemaVersion       string              `json:"schema_version"`
 	ReferenceKey               ReferenceKeyContracts `json:"reference_key,omitempty"`
+	Preamble                   string              `json:"preamble,omitempty"`
+	AxisInteraction            string              `json:"axis_interaction,omitempty"`
 	ExecutionReminder          string              `json:"execution_reminder,omitempty"`
 	PlanningDirective          string              `json:"planning_directive,omitempty"`
 	MetaInterpretationGuidance string              `json:"meta_interpretation_guidance,omitempty"`
@@ -31,6 +33,7 @@ type BuildResult struct {
 	Task                string              `json:"task"`
 	Constraints         []string            `json:"constraints"`
 	HydratedConstraints []HydratedPromptlet `json:"hydrated_constraints"`
+	AxisDescriptions    map[string]string   `json:"axis_descriptions,omitempty"`
 	Axes                AxesResult          `json:"axes"`
 	Persona             PersonaResult       `json:"persona,omitempty"`
 	HydratedPersona     []HydratedPromptlet `json:"hydrated_persona,omitempty"`
@@ -1104,6 +1107,8 @@ func (s *buildState) toResult() *BuildResult {
 	result := &BuildResult{
 		SchemaVersion:     s.grammar.SchemaVersion,
 		ReferenceKey:               s.grammar.ReferenceKey,
+		Preamble:                   s.grammar.Preamble,
+		AxisInteraction:            s.grammar.AxisInteraction,
 		ExecutionReminder:          s.grammar.ExecutionReminder,
 		PlanningDirective:          s.grammar.PlanningDirective,
 		MetaInterpretationGuidance: s.grammar.MetaInterpretationGuidance,
@@ -1126,6 +1131,21 @@ func (s *buildState) toResult() *BuildResult {
 	}
 	if len(s.hydratedConstraints) > 0 {
 		result.HydratedConstraints = append([]HydratedPromptlet(nil), s.hydratedConstraints...)
+		seen := make(map[string]struct{})
+		axisDescs := make(map[string]string)
+		for _, c := range s.hydratedConstraints {
+			axis := strings.ToLower(strings.TrimSpace(c.Axis))
+			if _, ok := seen[axis]; ok {
+				continue
+			}
+			seen[axis] = struct{}{}
+			if desc, exists := s.grammar.Axes.AxisDescriptions[axis]; exists && strings.TrimSpace(desc) != "" {
+				axisDescs[axis] = desc
+			}
+		}
+		if len(axisDescs) > 0 {
+			result.AxisDescriptions = axisDescs
+		}
 	}
 	if len(s.hydratedPersona) > 0 {
 		result.HydratedPersona = append([]HydratedPromptlet(nil), s.hydratedPersona...)

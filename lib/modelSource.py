@@ -58,7 +58,7 @@ def format_source_messages(
         format_message(f"=== EXECUTION REMINDER ===\n{EXECUTION_REMINDER}\n\n"),
         format_message("=== ADDENDUM (CLARIFICATION) ===\n"),
         format_message(prompt_chunks[0]),
-        format_message("\n\n=== SUBJECT (CONTEXT) ===\n"),
+        format_message("\n\n=== REQUEST (CONTEXT) ===\n"),
         format_message(SUBJECT_FRAMING + "\n"),
     ]
     current_request += source_messages
@@ -66,7 +66,7 @@ def format_source_messages(
     # planning instruction - LLM must cite each prompt token by name and
     # explain how it shapes the response, then include a divider.
     current_request.append(
-        format_message(f"\n\n=== PLANNING DIRECTIVE ===\n{PLANNING_DIRECTIVE}\n")
+        format_message(f"\n\n=== FORMAT ===\n{PLANNING_DIRECTIVE}\n")
     )
     return additional_source_messages + current_request
 

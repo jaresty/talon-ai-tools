@@ -371,8 +371,8 @@ func TestRunPresetUseBuildsRecipe(t *testing.T) {
 	if !strings.Contains(output, "Fresh subject") {
 		t.Fatalf("expected preset use output to include new subject, got:\n%s", output)
 	}
-	if !strings.Contains(output, "=== TASK 任務 (DO THIS) ===") {
-		t.Fatalf("expected preset use output to include task section, got:\n%s", output)
+	if !strings.Contains(output, "=== REQUEST 依頼 ===") {
+		t.Fatalf("expected preset use output to include REQUEST section, got:\n%s", output)
 	}
 
 	stored, err := loadLastBuild()

@@ -36,6 +36,8 @@ type ReferenceKeyContracts struct {
 type Grammar struct {
 	SchemaVersion              string
 	ReferenceKey               ReferenceKeyContracts
+	Preamble                   string
+	AxisInteraction            string
 	ExecutionReminder          string
 	PlanningDirective          string
 	MetaInterpretationGuidance string
@@ -177,6 +179,8 @@ type GrammarPattern struct {
 type rawGrammar struct {
 	SchemaVersion              string           `json:"schema_version"`
 	ReferenceKey               ReferenceKeyContracts `json:"reference_key"`
+	Preamble                   string           `json:"preamble"`
+	AxisInteraction            string           `json:"axis_interaction"`
 	ExecutionReminder          string           `json:"execution_reminder"`
 	PlanningDirective          string           `json:"planning_directive"`
 	MetaInterpretationGuidance string           `json:"meta_interpretation_guidance"`
@@ -296,6 +300,8 @@ func LoadGrammar(path string) (*Grammar, error) {
 	grammar := &Grammar{
 		SchemaVersion:              raw.SchemaVersion,
 		ReferenceKey:               raw.ReferenceKey,
+		Preamble:                   raw.Preamble,
+		AxisInteraction:            raw.AxisInteraction,
 		ExecutionReminder:          raw.ExecutionReminder,
 		PlanningDirective:          raw.PlanningDirective,
 		MetaInterpretationGuidance: raw.MetaInterpretationGuidance,

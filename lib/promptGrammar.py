@@ -8,7 +8,7 @@ from typing import Any, Iterable, Mapping
 
 from .axisCatalog import axis_catalog
 from .axisMappings import DEFAULT_COMPLETENESS_TOKEN
-from .metaPromptConfig import EXECUTION_REMINDER, META_INTERPRETATION_GUIDANCE, PLANNING_DIRECTIVE, PROMPT_REFERENCE_KEY, SUBJECT_FRAMING
+from .metaPromptConfig import AXIS_INTERACTION, EXECUTION_REMINDER, META_INTERPRETATION_GUIDANCE, PLANNING_DIRECTIVE, PREAMBLE, PROMPT_REFERENCE_KEY, SUBJECT_FRAMING
 from .personaCatalog import get_persona_intent_catalog
 from .personaConfig import (
     persona_token_metadata_map,
@@ -552,6 +552,8 @@ def prompt_grammar_payload() -> dict[str, Any]:
     payload: dict[str, Any] = {
         "schema_version": SCHEMA_VERSION,
         "reference_key": PROMPT_REFERENCE_KEY,
+        "preamble": PREAMBLE,
+        "axis_interaction": AXIS_INTERACTION,
         "execution_reminder": EXECUTION_REMINDER,
         "planning_directive": PLANNING_DIRECTIVE,
         "subject_framing": SUBJECT_FRAMING,

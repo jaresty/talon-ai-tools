@@ -256,8 +256,9 @@ func TestRunBuildWithAddendumFlag(t *testing.T) {
 	if !strings.Contains(result.Stdout, "focus on security") {
 		t.Fatalf("expected stdout to include addendum text, got: %s", result.Stdout)
 	}
-	if !strings.Contains(result.Stdout, "ADDENDUM 追加 (CLARIFICATION)") {
-		t.Fatalf("expected ADDENDUM section heading in output, got: %s", result.Stdout)
+	// Addendum text is merged into REQUEST section in redesigned output.
+	if !strings.Contains(result.Stdout, "=== REQUEST 依頼 ===") {
+		t.Fatalf("expected REQUEST section heading in output, got: %s", result.Stdout)
 	}
 }
 
@@ -392,7 +393,7 @@ func TestBuildPackNameExpandsToCommand(t *testing.T) {
 	if !strings.Contains(result.Stderr, "Expanding pack: debug") {
 		t.Errorf("expected 'Expanding pack: debug' on stderr, got:\n%s", result.Stderr)
 	}
-	if !strings.Contains(result.Stdout, "=== TASK") {
+	if !strings.Contains(result.Stdout, "=== REQUEST 依頼 ===") {
 		t.Errorf("expected prompt output after expansion, got:\n%s", result.Stdout)
 	}
 }

@@ -129,14 +129,14 @@ func TestRenderPlainText_CompositionRulesSectionPresent(t *testing.T) {
 	if !strings.Contains(rendered, "=== COMPOSITION RULES") {
 		t.Error("rendered output must contain COMPOSITION RULES section")
 	}
-	constraintsIdx := strings.Index(rendered, "=== CONSTRAINTS")
+	tokenDefsIdx := strings.Index(rendered, "=== TOKEN DEFINITIONS")
 	compositionIdx := strings.Index(rendered, "=== COMPOSITION RULES")
-	personaIdx := strings.Index(rendered, "=== PERSONA")
-	if compositionIdx <= constraintsIdx {
-		t.Error("COMPOSITION RULES must appear after CONSTRAINTS")
+	formatIdx := strings.Index(rendered, "=== FORMAT")
+	if compositionIdx <= tokenDefsIdx {
+		t.Error("COMPOSITION RULES must appear after TOKEN DEFINITIONS")
 	}
-	if compositionIdx >= personaIdx {
-		t.Error("COMPOSITION RULES must appear before PERSONA")
+	if compositionIdx >= formatIdx {
+		t.Error("COMPOSITION RULES must appear before FORMAT")
 	}
 }
 

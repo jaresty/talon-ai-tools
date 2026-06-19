@@ -7,71 +7,135 @@ import (
 )
 
 const (
-	subjectPlaceholder = "(none provided)"
-	sectionReference   = "=== REFERENCE KEY ==="
-	sectionTask        = "=== TASK 任務 (DO THIS) ==="
-	sectionAddendum    = "=== ADDENDUM 追加 (CLARIFICATION) ==="
-	sectionConstraints      = "=== CONSTRAINTS 制約 (GUARDRAILS) ==="
+	subjectPlaceholder      = "(none provided)"
+	sectionReference        = "=== REFERENCE KEY ==="
+	sectionTask             = "=== TASK 任務 (DO THIS) ==="
+	sectionAddendum         = "=== ADDENDUM 追加 (CLARIFICATION) ==="
+	sectionAxes             = "=== AXES 軸 (token types — each governs a different dimension) ==="
+	sectionTokens           = "=== TOKENS 役割 ==="
+	sectionTokenDefinitions = "=== TOKEN DEFINITIONS 定義 ==="
 	sectionCompositionRules = "=== COMPOSITION RULES 合成 (CO-PRESENCE) ===" // ADR-0227
 	sectionPersona          = "=== PERSONA 人格 (STANCE) ==="
-	sectionSubject     = "=== SUBJECT 題材 (CONTEXT) ==="
-	sectionExecution   = "=== EXECUTION REMINDER ==="
-	sectionMeta        = "=== META INTERPRETATION ==="
-	sectionPromptlets  = "Promptlets"
+	sectionSubject          = "=== REQUEST 依頼 ==="
+	sectionExecution        = "=== EXECUTION REMINDER ==="
+	sectionMeta             = "=== META INTERPRETATION ==="
+	sectionFormat           = "=== FORMAT 形式 ==="
+	sectionPromptlets       = "Promptlets"
 )
 
 // RenderPlainText builds the human-readable output for the CLI.
 func RenderPlainText(result *BuildResult) string {
 	var b strings.Builder
-	rk := result.ReferenceKey
 
+	// Preamble: plain user voice constant precedes all sections.
+	if p := strings.TrimSpace(result.Preamble); p != "" {
+		b.WriteString(p)
+		b.WriteString("\n\n")
+	}
+
+	// REQUEST: task body + addendum + subject merged into one block.
 	taskBody := strings.TrimSpace(result.Task)
 	taskBody = strings.TrimPrefix(taskBody, "Task:\n")
 	taskBody = strings.TrimPrefix(taskBody, "Task:")
 	taskBody = strings.TrimSpace(taskBody)
-	writeSectionWithContract(&b, sectionTask, rk.Task, taskBody)
 
-	// Add execution reminder immediately after TASK to gate completion-intent
-	// before constraints arrive — prevents it functioning as a late-position advisory.
-	writeSection(&b, sectionExecution, result.ExecutionReminder)
-
-	// Truncation warning: always visible in the first 2KB of output regardless of
-	// token count. The PLANNING DIRECTIVE appears at the end for injection resistance
-	// — this warning ensures a truncated preview does not cause it to be skipped.
-	if strings.TrimSpace(result.PlanningDirective) != "" {
-		b.WriteString("=== READ BEFORE RESPONDING ===\n")
-		b.WriteString("This output may be truncated. The PLANNING DIRECTIVE at the end specifies required output structure — if this output was saved to a file, read the full file before producing any response.\n\n")
+	var requestParts []string
+	if taskBody != "" {
+		requestParts = append(requestParts, taskBody)
 	}
-
 	if strings.TrimSpace(result.Addendum) != "" {
-		writeSectionWithContract(&b, sectionAddendum, rk.Addendum, strings.TrimSpace(result.Addendum))
+		requestParts = append(requestParts, strings.TrimSpace(result.Addendum))
 	}
+	subject := strings.TrimSpace(result.Subject)
+	if subject != "" {
+		requestParts = append(requestParts, subject)
+	}
+	requestBody := strings.Join(requestParts, "\n\n")
+	if requestBody == "" {
+		requestBody = subjectPlaceholder
+	}
+	writeSection(&b, sectionSubject, requestBody)
 
-	// CONSTRAINTS: section-level contract, then per-axis contracts inline (ADR-0176).
-	b.WriteString(sectionConstraints)
+	// AXES: one bullet per active axis with its role description.
+	b.WriteString(sectionAxes)
 	b.WriteString("\n")
-	if c := strings.TrimSpace(rk.Constraints); c != "" {
-		fmt.Fprintf(&b, "[%s]\n", c)
-	}
 	if len(result.HydratedConstraints) == 0 {
 		b.WriteString("(none)\n\n")
 	} else {
-		currentAxis := ""
+		seenAxes := make(map[string]struct{})
 		for _, constraint := range result.HydratedConstraints {
 			axisKey := strings.ToLower(strings.TrimSpace(constraint.Axis))
-			if axisKey != currentAxis {
-				currentAxis = axisKey
-				if contract, ok := rk.ConstraintsAxes[axisKey]; ok && strings.TrimSpace(contract) != "" {
-					fmt.Fprintf(&b, "↓ [%s]\n", strings.TrimSpace(contract))
-				}
+			if _, seen := seenAxes[axisKey]; seen {
+				continue
 			}
-			formatted := renderPromptlet(constraint)
-			if formatted != "" {
-				fmt.Fprintf(&b, "- %s\n", formatted)
+			seenAxes[axisKey] = struct{}{}
+			desc := ""
+			if result.AxisDescriptions != nil {
+				desc = result.AxisDescriptions[axisKey]
+			}
+			if desc != "" {
+				fmt.Fprintf(&b, "- %s: %s\n", axisKey, desc)
+			} else {
+				fmt.Fprintf(&b, "- %s\n", axisKey)
+			}
+		}
+		if ai := strings.TrimSpace(result.AxisInteraction); ai != "" {
+			fmt.Fprintf(&b, "%s\n", ai)
+		}
+		b.WriteString("\n")
+	}
+
+	// TOKENS: one bullet per active axis including persona row.
+	b.WriteString(sectionTokens)
+	b.WriteString("\n")
+	if len(result.HydratedConstraints) == 0 && result.Persona == (PersonaResult{}) {
+		b.WriteString("(none)\n\n")
+	} else {
+		seenAxes := make(map[string]struct{})
+		for _, constraint := range result.HydratedConstraints {
+			axisKey := strings.ToLower(strings.TrimSpace(constraint.Axis))
+			token := strings.TrimSpace(constraint.Token)
+			if _, seen := seenAxes[axisKey]; seen {
+				continue
+			}
+			seenAxes[axisKey] = struct{}{}
+			fmt.Fprintf(&b, "- %s = %s\n", axisKey, token)
+		}
+		personaTokens := buildPersonaTokenSummary(result.Persona)
+		if personaTokens != "" {
+			fmt.Fprintf(&b, "- persona = %s\n", personaTokens)
+		} else {
+			b.WriteString("- persona = (none)\n")
+		}
+		b.WriteString("\n")
+	}
+
+	// TOKEN DEFINITIONS: one bullet per active token including persona row.
+	b.WriteString(sectionTokenDefinitions)
+	b.WriteString("\n")
+	if len(result.HydratedConstraints) == 0 && len(result.HydratedPersona) == 0 {
+		b.WriteString("(none)\n\n")
+	} else {
+		for _, constraint := range result.HydratedConstraints {
+			axisKey := strings.ToLower(strings.TrimSpace(constraint.Axis))
+			token := strings.TrimSpace(constraint.Token)
+			kanji := strings.TrimSpace(constraint.Kanji)
+			desc := strings.TrimSpace(constraint.Description)
+			if token != "" && desc != "" {
+				tokenWithKanji := token
+				if kanji != "" {
+					tokenWithKanji = fmt.Sprintf("%s %s", token, kanji)
+				}
+				fmt.Fprintf(&b, "- %s (%s): %s\n", axisKey, tokenWithKanji, desc)
 				if constraint.ConflictNote != "" {
-					fmt.Fprintf(&b, "  \u21b3 %s\n", constraint.ConflictNote)
+					fmt.Fprintf(&b, "  ↳ %s\n", constraint.ConflictNote)
 				}
 			}
+		}
+		if len(result.HydratedPersona) > 0 {
+			writePersonaDefinitionRow(&b, result.HydratedPersona)
+		} else {
+			b.WriteString("- persona (none): No communication-identity styling applied.\n")
 		}
 		b.WriteString("\n")
 	}
@@ -86,35 +150,68 @@ func RenderPlainText(result *BuildResult) string {
 		}
 	}
 
-	if writePersonaSection(&b, result.Persona, result.HydratedPersona, rk.Persona) {
-		b.WriteString("\n")
-	} else {
-		writeSection(&b, sectionPersona, "(none)")
-	}
-
-	// Add explicit framing before SUBJECT to prevent override behavior
-	if sf := strings.TrimSpace(result.SubjectFraming); sf != "" {
-		b.WriteString(sf)
-		b.WriteString("\n\n")
-	}
-
-	subject := subjectPlaceholder
-	if strings.TrimSpace(result.Subject) != "" {
-		subject = strings.TrimSpace(result.Subject)
-	}
-	writeSectionWithContract(&b, sectionSubject, rk.Subject, subject)
-
-	// Add meta interpretation guidance when present (ADR-0166)
-	if strings.TrimSpace(result.MetaInterpretationGuidance) != "" {
-		writeSection(&b, sectionMeta, result.MetaInterpretationGuidance)
-	}
-
-	// Planning directive: appears after SUBJECT for recency-based injection resistance.
-	// A truncation warning appears near the top (after EXECUTION REMINDER) so it
-	// survives output truncation and directs the reader to load the full output.
-	writeSection(&b, "=== PLANNING DIRECTIVE ===", result.PlanningDirective)
+	writeSection(&b, sectionFormat, result.PlanningDirective)
 
 	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+// buildPersonaTokenSummary returns a short token summary string for the TOKENS row,
+// or empty string when no persona axes are active.
+func buildPersonaTokenSummary(p PersonaResult) string {
+	var parts []string
+	if p.Preset != "" {
+		parts = append(parts, p.Preset)
+	} else {
+		if p.Voice != "" {
+			parts = append(parts, p.Voice)
+		}
+		if p.Audience != "" {
+			parts = append(parts, p.Audience)
+		}
+		if p.Tone != "" {
+			parts = append(parts, p.Tone)
+		}
+		if p.Intent != "" {
+			parts = append(parts, p.Intent)
+		}
+	}
+	return strings.Join(parts, ", ")
+}
+
+// writePersonaDefinitionRow emits a "- persona (...): ..." line into TOKEN DEFINITIONS.
+func writePersonaDefinitionRow(b *strings.Builder, promptlets []HydratedPromptlet) {
+	var tokens []string
+	var descs []string
+	for _, p := range promptlets {
+		axisKey := strings.ToLower(strings.TrimSpace(p.Axis))
+		if axisKey == "persona_preset" {
+			continue
+		}
+		tok := strings.TrimSpace(p.Token)
+		kanji := strings.TrimSpace(p.Kanji)
+		desc := strings.TrimSpace(p.Description)
+		if tok != "" {
+			if kanji != "" {
+				tokens = append(tokens, fmt.Sprintf("%s %s", tok, kanji))
+			} else {
+				tokens = append(tokens, tok)
+			}
+		}
+		if desc != "" {
+			descs = append(descs, desc)
+		}
+	}
+	if len(tokens) == 0 {
+		b.WriteString("- persona (none): No communication-identity styling applied.\n")
+		return
+	}
+	tokenStr := strings.Join(tokens, ", ")
+	descStr := strings.Join(descs, " ")
+	if descStr != "" {
+		fmt.Fprintf(b, "- persona (%s): %s\n", tokenStr, descStr)
+	} else {
+		fmt.Fprintf(b, "- persona (%s)\n", tokenStr)
+	}
 }
 
 func writeSection(b *strings.Builder, heading string, body string) {

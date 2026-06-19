@@ -148,9 +148,9 @@ func TestCompareIncludesTaskSection(t *testing.T) {
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d\nstderr: %s", result.Exit, result.Stderr)
 	}
-	// Each variant must include the TASK section from the full render
-	if strings.Count(result.Stdout, "TASK") < 2 {
-		t.Errorf("expected TASK section in each variant (at least 2), output:\n%s", result.Stdout)
+	// Each variant must include the REQUEST section from the full render
+	if strings.Count(result.Stdout, "=== REQUEST 依頼 ===") < 2 {
+		t.Errorf("expected REQUEST section in each variant (at least 2), output:\n%s", result.Stdout)
 	}
 }
 

@@ -9,11 +9,6 @@ const SUBJECT_PLACEHOLDER = '(none provided)';
 
 const CONSTRAINT_AXES = ['topology', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
 
-function axisHeading(axis: string): string {
-	if (!axis) return '';
-	return axis.charAt(0).toUpperCase() + axis.slice(1);
-}
-
 function writeSection(heading: string, body: string): string {
 	const trimmed = body.trim();
 	if (!trimmed) return `${heading}\n(none)\n\n`;
@@ -48,37 +43,22 @@ export function renderPrompt(
 ): string {
 	const parts: string[] = [];
 
-	// TASK section
-	const taskTokens = selected.task ?? [];
-	const taskToken = taskTokens[0] ?? '';
-	const taskDesc = taskToken
-		? (grammar.tasks.descriptions?.[taskToken] ?? taskToken)
-		: '';
-	parts.push(writeSectionWithContract('=== TASK 任務 (DO THIS) ===', grammar.reference_key.task, taskDesc));
-
-	// EXECUTION REMINDER immediately after TASK to gate completion-intent
-	// before constraints arrive — mirrors render.go ordering.
-	parts.push(writeSection('=== EXECUTION REMINDER ===', grammar.execution_reminder));
-
-	// ADDENDUM section (only if present)
-	if (addendum.trim()) {
-		parts.push(writeSectionWithContract('=== ADDENDUM 追加 (CLARIFICATION) ===', grammar.reference_key.addendum, addendum.trim()));
+	// Preamble: plain user voice constant precedes all sections.
+	if (grammar.preamble?.trim()) {
+		parts.push(grammar.preamble.trim() + '\n\n');
 	}
 
-	// ADR-0153 T-1: apply form-token default completeness override when the user
-	// has not selected a completeness token explicitly.
+	// ADR-0153 T-1: apply form-token default completeness override.
 	const effectiveSelected = { ...selected };
 	const formTokens = effectiveSelected.form ?? [];
 	if ((effectiveSelected.completeness ?? []).length === 0 && formTokens.length > 0) {
-		const formDefault =
-			grammar.axes?.form_default_completeness?.[formTokens[0]] ?? null;
+		const formDefault = grammar.axes?.form_default_completeness?.[formTokens[0]] ?? null;
 		if (formDefault) {
 			effectiveSelected.completeness = [formDefault];
 		}
 	}
 
-	// ADR-0153 T-2: build conflict-note index from cross_axis_composition cautionary_notes.
-	// Maps axis → token → conflictNote string for the current selection.
+	// ADR-0153 T-2: build conflict-note index.
 	const conflictNotes: Record<string, Record<string, string>> = {};
 	const cac = grammar.axes?.cross_axis_composition ?? {};
 	for (const [axisA, byTokenA] of Object.entries(cac)) {
@@ -98,51 +78,77 @@ export function renderPrompt(
 		}
 	}
 
-	// CONSTRAINTS section — section contract + per-axis contracts (ADR-0176)
-	const constraintLines: string[] = [];
-	let lastAxis = '';
+	// REQUEST: task token desc + addendum + subject merged into one block.
+	const taskTokens = selected.task ?? [];
+	const taskToken = taskTokens[0] ?? '';
+	const taskDesc = taskToken ? (grammar.tasks.descriptions?.[taskToken] ?? taskToken) : '';
+	const requestParts: string[] = [];
+	if (taskDesc) requestParts.push(taskDesc);
+	if (addendum.trim()) requestParts.push(addendum.trim());
+	if (subject.trim()) requestParts.push(subject.trim());
+	const requestBody = requestParts.join('\n\n') || SUBJECT_PLACEHOLDER;
+	parts.push(writeSection('=== REQUEST 依頼 ===', requestBody));
+
+	// AXES: one bullet per active axis with role description.
+	const activeAxes: string[] = [];
+	for (const axis of CONSTRAINT_AXES) {
+		if ((effectiveSelected[axis] ?? []).length > 0) {
+			activeAxes.push(axis);
+		}
+	}
+	if (activeAxes.length === 0) {
+		parts.push('=== AXES 軸 (token types — each governs a different dimension) ===\n(none)\n\n');
+	} else {
+		let axesBody = '';
+		for (const axis of activeAxes) {
+			const desc = grammar.axes?.axis_descriptions?.[axis] ?? '';
+			axesBody += desc ? `- ${axis}: ${desc}\n` : `- ${axis}\n`;
+		}
+		if (grammar.axis_interaction?.trim()) {
+			axesBody += grammar.axis_interaction.trim() + '\n';
+		}
+		parts.push(`=== AXES 軸 (token types — each governs a different dimension) ===\n${axesBody}\n`);
+	}
+
+	// TOKENS: one bullet per active axis including persona row.
+	const tokenLines: string[] = [];
+	for (const axis of CONSTRAINT_AXES) {
+		const tokens = effectiveSelected[axis] ?? [];
+		if (tokens.length > 0) {
+			tokenLines.push(`- ${axis} = ${tokens[0]}`);
+		}
+	}
+	// Persona row.
+	const personaSummary = buildPersonaTokenSummary(persona);
+	tokenLines.push(personaSummary ? `- persona = ${personaSummary}` : '- persona = (none)');
+
+	parts.push(`=== TOKENS 役割 ===\n${tokenLines.join('\n')}\n\n`);
+
+	// TOKEN DEFINITIONS: one bullet per active token including persona row.
+	const defLines: string[] = [];
 	for (const axis of CONSTRAINT_AXES) {
 		const tokens = effectiveSelected[axis] ?? [];
 		const kanjiMap = grammar.axes?.kanji?.[axis] ?? {};
-		const categoryMap = grammar.axes?.categories?.[axis] ?? {};
 		for (const token of tokens) {
-			// Emit per-axis contract once per axis group
-			if (axis !== lastAxis) {
-				lastAxis = axis;
-				const axisContract = grammar.reference_key.constraints_axes?.[axis] ?? '';
-				if (axisContract.trim()) {
-					constraintLines.push(`↓ [${axisContract.trim()}]`);
-				}
-			}
 			const desc = grammar.axes?.definitions?.[axis]?.[token] ?? '';
-			const heading = axisHeading(axis);
 			const kanji = kanjiMap[token] ?? '';
 			const tokenWithKanji = kanji ? `${token} ${kanji}` : token;
-			let line = '';
-			if (token && desc) {
-				line = `- ${heading} (${tokenWithKanji}): ${desc}`;
-			} else if (token) {
-				line = `- ${heading}: ${tokenWithKanji}`;
-			}
-			if (line) {
+			if (desc) {
+				let line = `- ${axis} (${tokenWithKanji}): ${desc}`;
 				const note = conflictNotes[axis]?.[token];
-				constraintLines.push(note ? `${line}\n  ↳ ${note}` : line);
+				if (note) line += `\n  ↳ ${note}`;
+				defLines.push(line);
 			}
 		}
 	}
+	// Persona definition row.
+	const personaDefLine = buildPersonaDefinitionLine(grammar, persona);
+	defLines.push(personaDefLine);
 
-	const constraintsSectionContract = grammar.reference_key.constraints ?? '';
-	parts.push(`=== CONSTRAINTS 制約 (GUARDRAILS) ===\n`);
-	if (constraintsSectionContract.trim()) {
-		parts.push(`[${constraintsSectionContract.trim()}]\n`);
-	}
-	if (constraintLines.length === 0) {
-		parts.push('(none)\n\n');
-	} else {
-		parts.push(constraintLines.join('\n') + '\n\n');
-	}
+	const defsBody = defLines.length > 0 ? defLines.join('\n') + '\n' : '(none)\n';
+	parts.push(`=== TOKEN DEFINITIONS 定義 ===\n${defsBody}\n`);
 
-	// ADR-0227: COMPOSITION RULES section — injected when active token co-presence activates a composition (all axes).
+	// ADR-0227: COMPOSITION RULES section when active.
 	if (grammar.compositions && grammar.compositions.length > 0) {
 		const allActiveTokens = new Set<string>(Object.values(selected).flat());
 		const activeCompositions = grammar.compositions.filter((c) =>
@@ -157,82 +163,52 @@ export function renderPrompt(
 		}
 	}
 
-	// PERSONA section — mirrors Go CLI's writePersonaSection() in render.go.
-	// Format: "- Label (token): description" when docs exist; "- Label: token" otherwise.
-	const personaLines: string[] = [];
-
-	function personaEntry(label: string, token: string, desc: string): string {
-		if (token && desc) return `- ${label} (${token}): ${desc}`;
-		if (token) return `- ${label}: ${token}`;
-		return '';
-	}
-
-	const presetObj = persona?.preset ? (grammar.persona?.presets?.[persona.preset] ?? null) : null;
-	if (presetObj) {
-		const presetKey = presetObj.key ?? persona!.preset;
-		const presetLabel =
-			presetObj.label && presetObj.label !== presetKey
-				? `${presetKey} — ${presetObj.label}`
-				: presetKey;
-		personaLines.push(`- Preset: ${presetLabel}`);
-		if (presetObj.voice) {
-			const desc = grammar.persona?.docs?.voice?.[presetObj.voice] ?? '';
-			const entry = personaEntry('Voice', presetObj.voice, desc);
-			if (entry) personaLines.push(entry);
-		}
-		if (presetObj.audience) {
-			const desc = grammar.persona?.docs?.audience?.[presetObj.audience] ?? '';
-			const entry = personaEntry('Audience', presetObj.audience, desc);
-			if (entry) personaLines.push(entry);
-		}
-		if (presetObj.tone) {
-			const desc = grammar.persona?.docs?.tone?.[presetObj.tone] ?? '';
-			const entry = personaEntry('Tone', presetObj.tone, desc);
-			if (entry) personaLines.push(entry);
-		}
-	} else if (persona) {
-		if (persona.voice) {
-			const desc = grammar.persona?.docs?.voice?.[persona.voice] ?? '';
-			const entry = personaEntry('Voice', persona.voice, desc);
-			if (entry) personaLines.push(entry);
-		}
-		if (persona.audience) {
-			const desc = grammar.persona?.docs?.audience?.[persona.audience] ?? '';
-			const entry = personaEntry('Audience', persona.audience, desc);
-			if (entry) personaLines.push(entry);
-		}
-		if (persona.tone) {
-			const desc = grammar.persona?.docs?.tone?.[persona.tone] ?? '';
-			const entry = personaEntry('Tone', persona.tone, desc);
-			if (entry) personaLines.push(entry);
-		}
-	}
-	// Intent is always rendered if present — independent of whether a preset is active.
-	if (persona?.intent) {
-		const desc = grammar.persona?.docs?.intent?.[persona.intent] ?? '';
-		const entry = personaEntry('Intent', persona.intent, desc);
-		if (entry) personaLines.push(entry);
-	}
-	parts.push(writeSectionWithContract('=== PERSONA 人格 (STANCE) ===', grammar.reference_key.persona, personaLines.join('\n') || '(none)'));
-
-	// Subject framing line (SSOT: grammar.subject_framing)
-	if (grammar.subject_framing?.trim()) {
-		parts.push(grammar.subject_framing.trim() + '\n\n');
-	}
-
-	// SUBJECT section (ADR-0176: inline contract, no standalone REFERENCE KEY block)
-	const subjectText = subject.trim() || SUBJECT_PLACEHOLDER;
-	parts.push(writeSectionWithContract('=== SUBJECT 題材 (CONTEXT) ===', grammar.reference_key.subject, subjectText));
-
-	// META INTERPRETATION GUIDANCE (ADR-0166)
-	if (grammar.meta_interpretation_guidance?.trim()) {
-		parts.push(writeSection('=== META INTERPRETATION ===', grammar.meta_interpretation_guidance));
-	}
-
-	// Planning directive: replaces second EXECUTION REMINDER with explicit
-	// planning instruction - LLM must cite each prompt token by name and
-	// explain how it shapes the response, then include a divider.
-	parts.push(writeSection('=== PLANNING DIRECTIVE ===', grammar.planning_directive));
+	// FORMAT section.
+	parts.push(writeSection('=== FORMAT 形式 ===', grammar.planning_directive));
 
 	return parts.join('').trimEnd() + '\n';
+}
+
+function buildPersonaTokenSummary(persona?: PersonaState): string {
+	if (!persona) return '';
+	if (persona.preset) return persona.preset;
+	const parts: string[] = [];
+	if (persona.voice) parts.push(persona.voice);
+	if (persona.audience) parts.push(persona.audience);
+	if (persona.tone) parts.push(persona.tone);
+	if (persona.intent) parts.push(persona.intent);
+	return parts.join(', ');
+}
+
+function buildPersonaDefinitionLine(grammar: Grammar, persona?: PersonaState): string {
+	if (!persona) return '- persona (none): No communication-identity styling applied.';
+
+	const presetObj = persona.preset ? (grammar.persona?.presets?.[persona.preset] ?? null) : null;
+	if (presetObj) {
+		const key = presetObj.key ?? persona.preset;
+		return `- persona (${key}): ${presetObj.label ?? ''}`.trim();
+	}
+
+	const tokens: string[] = [];
+	const descs: string[] = [];
+
+	const axes: Array<{ key: keyof typeof persona; docKey: 'voice' | 'audience' | 'tone' | 'intent' }> = [
+		{ key: 'voice', docKey: 'voice' },
+		{ key: 'audience', docKey: 'audience' },
+		{ key: 'tone', docKey: 'tone' },
+		{ key: 'intent', docKey: 'intent' },
+	];
+	for (const { key, docKey } of axes) {
+		const tok = persona[key];
+		if (tok) {
+			tokens.push(tok);
+			const desc = grammar.persona?.docs?.[docKey]?.[tok] ?? '';
+			if (desc) descs.push(desc);
+		}
+	}
+
+	if (tokens.length === 0) return '- persona (none): No communication-identity styling applied.';
+	const tokenStr = tokens.join(', ');
+	const descStr = descs.join(' ');
+	return descStr ? `- persona (${tokenStr}): ${descStr}` : `- persona (${tokenStr})`;
 }

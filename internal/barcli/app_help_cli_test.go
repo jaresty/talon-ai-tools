@@ -681,20 +681,20 @@ func TestChannelTokensWithFileModeHaveWriteToDiskInstruction(t *testing.T) {
 			if result.Exit != 0 {
 				t.Fatalf("expected exit 0, got %d: %s", result.Exit, result.Stderr)
 			}
-			// Check the channel constraint line specifically, not the planning directive.
-			// The constraint line contains "Channel (" + token name.
-			constraintLine := ""
+			// Check the token definition line in TOKEN DEFINITIONS section.
+			// New format: "- channel (token ...): desc"
+			defLine := ""
 			for _, line := range strings.Split(result.Stdout, "\n") {
-				if strings.Contains(line, "Channel ("+ch) {
-					constraintLine = line
+				if strings.Contains(line, "("+ch) || strings.Contains(line, "("+ch+" ") {
+					defLine = line
 					break
 				}
 			}
-			if constraintLine == "" {
+			if defLine == "" {
 				t.Fatalf("could not find channel constraint line for %s", ch)
 			}
-			if !strings.Contains(strings.ToLower(constraintLine), "write") {
-				t.Errorf("channel:%s constraint line must include write-to-disk instruction, got:\n%s", ch, constraintLine)
+			if !strings.Contains(strings.ToLower(defLine), "write") {
+				t.Errorf("channel:%s token definition must include write-to-disk instruction, got:\n%s", ch, defLine)
 			}
 		})
 	}

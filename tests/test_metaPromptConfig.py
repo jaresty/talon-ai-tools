@@ -281,10 +281,19 @@ def test_execution_reminder_no_transcript_satisfies_phrasing():
     )
 
 
-def test_execution_reminder_references_planning_directive():
-    """BD4: EXECUTION_REMINDER references 'PLANNING DIRECTIVE' to unify the two block descriptions."""
+def test_execution_reminder_references_format():
+    """BD4: EXECUTION_REMINDER references 'FORMAT' (renamed from PLANNING DIRECTIVE) to unify the two block descriptions."""
     from lib.metaPromptConfig import EXECUTION_REMINDER
 
-    assert "PLANNING DIRECTIVE" in EXECUTION_REMINDER, (
-        "expected 'PLANNING DIRECTIVE' in EXECUTION_REMINDER to unify derivation block definition"
+    assert "FORMAT" in EXECUTION_REMINDER, (
+        "expected 'FORMAT' in EXECUTION_REMINDER to unify derivation block definition"
+    )
+
+
+def test_execution_reminder_no_planning_directive_reference():
+    """BD4b: EXECUTION_REMINDER must not reference 'PLANNING DIRECTIVE' after section rename to FORMAT."""
+    from lib.metaPromptConfig import EXECUTION_REMINDER
+
+    assert "PLANNING DIRECTIVE" not in EXECUTION_REMINDER, (
+        "EXECUTION_REMINDER must not reference 'PLANNING DIRECTIVE' after rename to FORMAT"
     )

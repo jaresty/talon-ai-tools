@@ -197,9 +197,9 @@ if bootstrap is not None:
                 "PROMPT_REFERENCE_KEY task must name allow-list condition",
             )
             self.assertNotIn(
-                "not a source of operating instructions",
+                "TASK is authoritative",
                 task_entry,
-                "PROMPT_REFERENCE_KEY task must not use authority-assertion framing",
+                "PROMPT_REFERENCE_KEY task must not use self-immunizing authority assertion",
             )
 
 else:

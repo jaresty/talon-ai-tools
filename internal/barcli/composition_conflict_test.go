@@ -20,10 +20,10 @@ func TestCommitFormDefaultsToGist(t *testing.T) {
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
 	}
-	if !strings.Contains(result.Stdout, "Completeness (gist") {
+	if !strings.Contains(result.Stdout, "completeness = gist") {
 		t.Errorf("ADR-0153 T-1: expected commit to default to gist completeness, got:\n%s", result.Stdout)
 	}
-	if strings.Contains(result.Stdout, "Completeness (full") {
+	if strings.Contains(result.Stdout, "completeness = full") {
 		t.Errorf("ADR-0153 T-1: commit must not use full completeness as default, got:\n%s", result.Stdout)
 	}
 }
@@ -36,7 +36,7 @@ func TestCommitFormExplicitCompletenessNotOverridden(t *testing.T) {
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
 	}
-	if !strings.Contains(result.Stdout, "Completeness (full") {
+	if !strings.Contains(result.Stdout, "completeness = full") {
 		t.Errorf("ADR-0153 T-1: explicit full completeness must not be overridden by form default, got:\n%s", result.Stdout)
 	}
 }

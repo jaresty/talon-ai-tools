@@ -111,6 +111,8 @@ export interface Grammar {
 		persona: string;
 		subject: string;
 	};
+	preamble?: string;
+	axis_interaction?: string;
 	execution_reminder: string;
 	planning_directive: string;
 	meta_interpretation_guidance: string;

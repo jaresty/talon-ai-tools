@@ -920,7 +920,13 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "video": "映",
         "zettel": "箋",
     },
-    "completeness": {"grow": "増", "taper": "曲", "triage": "険", "zoom": "比"},
+    "completeness": {
+        "full": "全",
+        "grow": "増",
+        "taper": "曲",
+        "triage": "険",
+        "zoom": "比",
+    },
     "directional": {
         "bog": "反",
         "dig": "具",

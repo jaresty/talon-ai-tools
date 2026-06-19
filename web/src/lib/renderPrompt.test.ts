@@ -85,15 +85,22 @@ const grammar: Grammar = {
 };
 
 describe('renderPrompt', () => {
-	it('includes TASK section with task description', () => {
+	it('task description appears in REQUEST section', () => {
 		const result = renderPrompt(grammar, { task: ['show'] }, 'hello', '');
-		expect(result).toContain('=== TASK 任務 (DO THIS) ===');
+		expect(result).not.toContain('=== TASK 任務 (DO THIS) ===');
 		expect(result).toContain('Reveal the structure');
+		expect(result).toContain('=== REQUEST 依頼 ===');
 	});
 
-	it('includes SUBJECT section with provided text', () => {
+	it('section is named REQUEST not SUBJECT', () => {
 		const result = renderPrompt(grammar, {}, 'my subject text', '');
-		expect(result).toContain('=== SUBJECT 題材 (CONTEXT) ===');
+		expect(result).toContain('=== REQUEST');
+		expect(result).not.toContain('=== SUBJECT');
+	});
+
+	it('includes REQUEST section with provided text', () => {
+		const result = renderPrompt(grammar, {}, 'my subject text', '');
+		expect(result).toContain('=== REQUEST');
 		expect(result).toContain('my subject text');
 	});
 
@@ -102,10 +109,13 @@ describe('renderPrompt', () => {
 		expect(result).toContain('(none provided)');
 	});
 
-	it('includes ADDENDUM section when provided', () => {
+	it('addendum text appears in REQUEST section when provided', () => {
 		const result = renderPrompt(grammar, {}, 'subject', 'Focus on security');
-		expect(result).toContain('=== ADDENDUM 追加 (CLARIFICATION) ===');
-		expect(result).toContain('Focus on security');
+		expect(result).not.toContain('=== ADDENDUM 追加 (CLARIFICATION) ===');
+		const requestIdx = result.indexOf('=== REQUEST 依頼 ===');
+		const axesIdx = result.indexOf('=== AXES');
+		const requestBlock = result.slice(requestIdx, axesIdx);
+		expect(requestBlock).toContain('Focus on security');
 	});
 
 	it('omits ADDENDUM section when empty', () => {
@@ -113,18 +123,19 @@ describe('renderPrompt', () => {
 		expect(result).not.toContain('=== ADDENDUM');
 	});
 
-	it('includes constraint tokens with their descriptions', () => {
+	it('includes constraint tokens with their descriptions in TOKEN DEFINITIONS', () => {
 		const result = renderPrompt(grammar, { completeness: ['full'], scope: ['mean'] }, 'x', '');
-		expect(result).toContain('Completeness (full 全): Comprehensive coverage');
-		expect(result).toContain('Scope (mean 意): Core meaning');
+		expect(result).toContain('- completeness (full 全): Comprehensive coverage');
+		expect(result).toContain('- scope (mean 意): Core meaning');
 	});
 
-	it('shows (none) in constraints when no tokens selected', () => {
+	it('shows (none) in AXES/TOKENS/TOKEN DEFINITIONS when no tokens selected', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
-		expect(result).toMatch(/=== CONSTRAINTS 制約.*\n\(none\)/s);
+		expect(result).toMatch(/=== AXES 軸.*\n\(none\)/s);
+		expect(result).not.toContain('=== CONSTRAINTS 制約');
 	});
 
-	it('includes PERSONA section with preset values', () => {
+	it('persona token appears in TOKENS section with preset', () => {
 		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: 'designer',
 			voice: '',
@@ -132,20 +143,11 @@ describe('renderPrompt', () => {
 			tone: '',
 			intent: ''
 		});
-		expect(result).toContain('=== PERSONA 人格 (STANCE) ===');
-		expect(result).toContain('Voice: Design practitioner');
-		expect(result).toContain('Audience: Product team');
-	});
-
-	it('omits ADDENDUM section when empty', () => {
-		const result = renderPrompt(grammar, {}, 'subject', '');
-		expect(result).not.toContain('=== ADDENDUM');
-	});
-
-	it('includes constraint tokens with their descriptions', () => {
-		const result = renderPrompt(grammar, { completeness: ['full'], scope: ['mean'] }, 'x', '');
-		expect(result).toContain('Completeness (full 全): Comprehensive coverage');
-		expect(result).toContain('Scope (mean 意): Core meaning');
+		expect(result).not.toContain('=== PERSONA 人格 (STANCE) ===');
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const tokensBlock = result.slice(tokensIdx, defsIdx);
+		expect(tokensBlock).toContain('- persona = designer');
 	});
 
 	it('includes kanji in constraint tokens when available (ADR-0143)', () => {
@@ -155,12 +157,9 @@ describe('renderPrompt', () => {
 		expect(result).toContain('探'); // method probe kanji
 	});
 
-	it('shows (none) in constraints when no tokens selected', () => {
-		const result = renderPrompt(grammar, {}, 'x', '');
-		expect(result).toMatch(/=== CONSTRAINTS.*\n\(none\)/s);
-	});
+	// duplicate removed — covered by 'shows (none) in AXES/TOKENS/TOKEN DEFINITIONS' above
 
-	it('uses custom persona fields when no preset', () => {
+	it('persona row in TOKENS shows custom voice/audience tokens', () => {
 		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: '',
 			voice: 'custom voice',
@@ -168,11 +167,13 @@ describe('renderPrompt', () => {
 			tone: 'direct',
 			intent: ''
 		});
-		expect(result).toContain('Voice: custom voice');
-		expect(result).toContain('Audience: engineers');
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const tokensBlock = result.slice(tokensIdx, defsIdx);
+		expect(tokensBlock).toContain('- persona = custom voice, engineers, direct');
 	});
 
-	it('includes Intent in PERSONA section when set', () => {
+	it('persona row in TOKENS includes intent when set', () => {
 		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: '',
 			voice: '',
@@ -180,10 +181,13 @@ describe('renderPrompt', () => {
 			tone: '',
 			intent: 'persuade'
 		});
-		expect(result).toContain('Intent: persuade');
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const tokensBlock = result.slice(tokensIdx, defsIdx);
+		expect(tokensBlock).toContain('- persona = persuade');
 	});
 
-	it('omits Intent line when intent is empty', () => {
+	it('persona row in TOKENS omits empty fields', () => {
 		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: '',
 			voice: 'as programmer',
@@ -191,7 +195,10 @@ describe('renderPrompt', () => {
 			tone: 'direct',
 			intent: ''
 		});
-		expect(result).not.toContain('Intent:');
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const tokensBlock = result.slice(tokensIdx, defsIdx);
+		expect(tokensBlock).not.toContain('intent');
 	});
 
 	it('does not include standalone REFERENCE KEY block (ADR-0176)', () => {
@@ -199,58 +206,34 @@ describe('renderPrompt', () => {
 		expect(result).not.toContain('=== REFERENCE KEY ===');
 	});
 
-	it('emits TASK inline contract bracket-wrapped before task body (ADR-0176)', () => {
-		const result = renderPrompt(grammar, { task: ['show'] }, 'x', '');
-		expect(result).toContain('↓ [SENTINEL_TASK_CONTRACT]');
-		const taskHeaderIdx = result.indexOf('=== TASK');
-		const contractIdx = result.indexOf('↓ [SENTINEL_TASK_CONTRACT]');
-		const bodyIdx = result.indexOf('Reveal the structure');
-		expect(contractIdx).toBeGreaterThan(taskHeaderIdx);
-		expect(contractIdx).toBeLessThan(bodyIdx);
+	it('REQUEST section emits no ↓ contract', () => {
+		const result = renderPrompt(grammar, {}, 'my text', '');
+		expect(result).not.toContain('↓ [SENTINEL_SUBJECT_CONTRACT]');
 	});
 
-	it('CONSTRAINTS section-level contract has no ↓ arrow; per-axis contracts do', () => {
-		const result = renderPrompt(grammar, { completeness: ['full'] }, 'x', '');
-		// Section-level: bare brackets
-		expect(result).not.toContain('↓ [SENTINEL_CONSTRAINTS_CONTRACT]');
-		expect(result).toContain('[SENTINEL_CONSTRAINTS_CONTRACT]');
-		// Per-axis: arrow prefix
-		expect(result).toContain('↓ [SENTINEL_COMPLETENESS_CONTRACT]');
-	});
-
-	it('includes EXECUTION REMINDER section', () => {
+	it('EXECUTION REMINDER section is absent from redesigned output', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
-		expect(result).toContain('=== EXECUTION REMINDER ===');
+		expect(result).not.toContain('=== EXECUTION REMINDER ===');
 	});
 
-	it('includes META INTERPRETATION section (ADR-0166)', () => {
+	it('META INTERPRETATION section is absent from redesigned output', () => {
 		const result = renderPrompt(grammar, {}, 'x', '');
-		expect(result).toContain('=== META INTERPRETATION ===');
-		expect(result).toContain('META INTERPRETATION GUIDANCE TEXT');
-	});
-
-	it('omits META INTERPRETATION section when meta_interpretation_guidance is empty (ADR-0166)', () => {
-		const grammarNoMeta: Grammar = { ...grammar, meta_interpretation_guidance: '' };
-		const result = renderPrompt(grammarNoMeta, {}, 'x', '');
 		expect(result).not.toContain('=== META INTERPRETATION ===');
 	});
 
-	it('EXECUTION REMINDER appears before CONSTRAINTS section', () => {
-		const result = renderPrompt(grammar, { completeness: ['full'] }, 'x', '');
-		const reminderIdx = result.indexOf('=== EXECUTION REMINDER ===');
-		const constraintsIdx = result.indexOf('=== CONSTRAINTS 制約 (GUARDRAILS) ===');
-		expect(reminderIdx).toBeGreaterThan(-1);
-		expect(constraintsIdx).toBeGreaterThan(-1);
-		expect(reminderIdx).toBeLessThan(constraintsIdx);
+	it('section is named FORMAT not PLANNING DIRECTIVE', () => {
+		const result = renderPrompt(grammar, { completeness: ['full'] }, 'some subject', '');
+		expect(result).toContain('=== FORMAT');
+		expect(result).not.toContain('=== PLANNING DIRECTIVE');
 	});
 
-	it('PLANNING DIRECTIVE appears after SUBJECT as final section', () => {
+	it('FORMAT appears after REQUEST as final section', () => {
 		const result = renderPrompt(grammar, { completeness: ['full'] }, 'some subject', '');
-		const subjectIdx = result.indexOf('=== SUBJECT 題材 (CONTEXT) ===');
-		const planningDirectiveIdx = result.indexOf('=== PLANNING DIRECTIVE ===');
-		expect(subjectIdx).toBeGreaterThan(-1);
-		expect(planningDirectiveIdx).toBeGreaterThan(-1);
-		expect(planningDirectiveIdx).toBeGreaterThan(subjectIdx);
+		const requestIdx = result.indexOf('=== REQUEST');
+		const formatIdx = result.indexOf('=== FORMAT');
+		expect(requestIdx).toBeGreaterThan(-1);
+		expect(formatIdx).toBeGreaterThan(-1);
+		expect(formatIdx).toBeGreaterThan(requestIdx);
 	});
 
 	it('output ends with a single newline', () => {
@@ -261,7 +244,7 @@ describe('renderPrompt', () => {
 
 	// --- persona hydration tests ---
 
-	it('renders intent alongside preset axes when both are present', () => {
+	it('persona TOKENS row includes preset and intent when both active', () => {
 		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: 'designer',
 			voice: '',
@@ -269,13 +252,13 @@ describe('renderPrompt', () => {
 			tone: '',
 			intent: 'persuade'
 		});
-		// Preset axes should appear
-		expect(result).toContain('Voice: Design practitioner');
-		// Intent must also appear even though a preset is active
-		expect(result).toContain('Intent: persuade');
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const tokensBlock = result.slice(tokensIdx, defsIdx);
+		expect(tokensBlock).toContain('- persona = designer');
 	});
 
-	it('renders persona token descriptions from grammar.persona.docs when available', () => {
+	it('persona TOKEN DEFINITIONS row includes description from grammar.persona.docs', () => {
 		const grammarWithDocs: Grammar = {
 			...grammar,
 			persona: {
@@ -294,11 +277,13 @@ describe('renderPrompt', () => {
 			tone: '',
 			intent: ''
 		});
-		// Description from docs must appear in parenthetical format matching Go CLI
-		expect(result).toContain('Voice (Design practitioner): Leads with usability');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const formatIdx = result.indexOf('=== FORMAT');
+		const defsBlock = result.slice(defsIdx, formatIdx);
+		expect(defsBlock).toContain('- persona (designer)');
 	});
 
-	it('renders descriptions for individual (non-preset) persona axes', () => {
+	it('persona TOKEN DEFINITIONS row includes descriptions for individual axes', () => {
 		const grammarWithDocs: Grammar = {
 			...grammar,
 			persona: {
@@ -318,9 +303,10 @@ describe('renderPrompt', () => {
 			tone: 'direct',
 			intent: 'coach'
 		});
-		expect(result).toContain('Voice (custom voice): A custom speaker role.');
-		expect(result).toContain('Audience (engineers): Technical, implementation-ready.');
-		expect(result).toContain('Intent (coach): Guide growth and development.');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const formatIdx = result.indexOf('=== FORMAT');
+		const defsBlock = result.slice(defsIdx, formatIdx);
+		expect(defsBlock).toContain('- persona (custom voice, engineers, direct, coach)');
 	});
 
 	// ADR-0153 T-1: form tokens with form_default_completeness override the global default.
@@ -341,8 +327,8 @@ describe('renderPrompt', () => {
 			},
 		};
 		const result = renderPrompt(grammarWithDefault, { task: ['show'], form: ['commit'] }, 'x', '');
-		expect(result).toContain('Completeness (gist): Brief but complete.');
-		expect(result).not.toContain('Completeness (full');
+		expect(result).toContain('- completeness (gist): Brief but complete.');
+		expect(result).not.toContain('- completeness (full');
 	});
 
 	it('does not override explicit completeness when form_default_completeness is set (ADR-0153 T-1)', () => {
@@ -363,7 +349,7 @@ describe('renderPrompt', () => {
 			'x',
 			''
 		);
-		expect(result).toContain('Completeness (full 全): Comprehensive coverage');
+		expect(result).toContain('- completeness (full 全): Comprehensive coverage');
 	});
 
 	// ADR-0153 T-2: cautionary_notes render as ↳ conflict lines.
@@ -442,11 +428,11 @@ describe('renderPrompt', () => {
 		);
 		expect(result).toContain('=== COMPOSITION RULES');
 		expect(result).toContain('GROUND_GATE_PROSE');
-		const constraintsIdx = result.indexOf('=== CONSTRAINTS');
+		const tokenDefsIdx = result.indexOf('=== TOKEN DEFINITIONS');
 		const compositionIdx = result.indexOf('=== COMPOSITION RULES');
-		const personaIdx = result.indexOf('=== PERSONA');
-		expect(compositionIdx).toBeGreaterThan(constraintsIdx);
-		expect(compositionIdx).toBeLessThan(personaIdx);
+		const formatIdx = result.indexOf('=== FORMAT');
+		expect(compositionIdx).toBeGreaterThan(tokenDefsIdx);
+		expect(compositionIdx).toBeLessThan(formatIdx);
 	});
 
 	it('does not inject COMPOSITION RULES section when only one composition token is active (ADR-0227)', () => {
@@ -463,5 +449,150 @@ describe('renderPrompt', () => {
 			''
 		);
 		expect(result).not.toContain('=== COMPOSITION RULES');
+	});
+});
+
+describe('renderPrompt — AXES/TOKENS/TOKEN DEFINITIONS/FORMAT redesign', () => {
+	const grammarWithAxisDescriptions: Grammar = {
+		...grammar,
+		axes: {
+			...grammar.axes,
+			axis_descriptions: {
+				completeness: 'Depth of coverage — from a quick pass to exhaustive treatment.',
+				method: 'Reasoning approach — how to think through the problem.',
+			},
+		},
+		preamble: 'I want my responses formatted with a token derivation structure.',
+		axis_interaction: 'Axis interaction: completeness sets the depth at which each method step runs.',
+	};
+
+	it('renders AXES 軸 section header with descriptor suffix', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		expect(result).toContain('=== AXES 軸 (token types — each governs a different dimension) ===');
+	});
+
+	it('renders TOKENS 役割 section header', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		expect(result).toContain('=== TOKENS 役割 ===');
+	});
+
+	it('renders TOKEN DEFINITIONS 定義 section header', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		expect(result).toContain('=== TOKEN DEFINITIONS 定義 ===');
+	});
+
+	it('renders FORMAT 形式 section header with kanji', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		expect(result).toContain('=== FORMAT 形式 ===');
+	});
+
+	it('does not render CONSTRAINTS 制約 (GUARDRAILS) section header', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		expect(result).not.toContain('=== CONSTRAINTS 制約 (GUARDRAILS) ===');
+	});
+
+	it('AXES block contains axis description for active axis', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		const axesIdx = result.indexOf('=== AXES 軸 (token types');
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		expect(axesIdx).toBeGreaterThan(-1);
+		expect(tokensIdx).toBeGreaterThan(axesIdx);
+		const axesBlock = result.slice(axesIdx, tokensIdx);
+		expect(axesBlock).toContain('Depth of coverage');
+	});
+
+	it('TOKEN DEFINITIONS block contains verbatim token description', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const formatIdx = result.indexOf('=== FORMAT');
+		expect(defsIdx).toBeGreaterThan(-1);
+		expect(formatIdx).toBeGreaterThan(defsIdx);
+		const defsBlock = result.slice(defsIdx, formatIdx);
+		expect(defsBlock).toContain('Comprehensive coverage');
+	});
+
+	it('preamble appears before REQUEST section', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		const preambleIdx = result.indexOf('I want my responses formatted with a token derivation structure.');
+		const requestIdx = result.indexOf('=== REQUEST');
+		expect(preambleIdx).toBeGreaterThan(-1);
+		expect(requestIdx).toBeGreaterThan(preambleIdx);
+	});
+
+	it('REQUEST section uses 依頼 kanji not 題材', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		expect(result).toContain('=== REQUEST 依頼 ===');
+		expect(result).not.toContain('題材');
+	});
+
+	it('does not render TASK section', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		expect(result).not.toContain('=== TASK');
+	});
+
+	it('does not render EXECUTION REMINDER section', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		expect(result).not.toContain('=== EXECUTION REMINDER ===');
+	});
+
+	it('does not render standalone PERSONA section', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '', { preset: '', voice: 'as teacher', audience: '', tone: '', intent: '' });
+		expect(result).not.toContain('=== PERSONA 人格 (STANCE) ===');
+	});
+
+	it('axis_interaction appears in AXES block', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		const axesIdx = result.indexOf('=== AXES 軸 (token types');
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		const axesBlock = result.slice(axesIdx, tokensIdx);
+		expect(axesBlock).toContain('Axis interaction:');
+	});
+
+	it('AXES bullets use "- axis: desc" format', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		const axesIdx = result.indexOf('=== AXES 軸 (token types');
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		const axesBlock = result.slice(axesIdx, tokensIdx);
+		expect(axesBlock).toContain('- completeness: Depth of coverage');
+	});
+
+	it('TOKENS bullets use "- axis = token" format', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const tokensBlock = result.slice(tokensIdx, defsIdx);
+		expect(tokensBlock).toContain('- completeness = full');
+	});
+
+	it('TOKEN DEFINITIONS bullets use "- axis (token): desc" format', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const formatIdx = result.indexOf('=== FORMAT');
+		const defsBlock = result.slice(defsIdx, formatIdx);
+		expect(defsBlock).toMatch(/- completeness \(full/);
+	});
+
+	it('persona row appears in TOKENS section', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '', { preset: '', voice: 'as teacher', audience: '', tone: '', intent: '' });
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const tokensBlock = result.slice(tokensIdx, defsIdx);
+		expect(tokensBlock).toContain('- persona =');
+	});
+
+	it('persona = (none) when no persona active', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
+		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
+		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
+		const tokensBlock = result.slice(tokensIdx, defsIdx);
+		expect(tokensBlock).toContain('- persona = (none)');
+	});
+
+	it('REQUEST section merges task token desc and subject', () => {
+		const result = renderPrompt(grammarWithAxisDescriptions, { task: ['show'], completeness: ['full'] }, 'my subject text', '');
+		const requestIdx = result.indexOf('=== REQUEST 依頼 ===');
+		const axesIdx = result.indexOf('=== AXES');
+		const requestBlock = result.slice(requestIdx, axesIdx);
+		expect(requestBlock).toContain('my subject text');
 	});
 });

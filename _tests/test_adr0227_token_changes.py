@@ -112,13 +112,13 @@ def test_falsify_governing_artifact_creation_not_gated():
     """
     text = _falsify()
     assert (
-        "does not appear as the target of any Write or Edit tool call at any earlier position in the transcript" in text
+        "creation step" in text
     ) and (
-        "if-and-only-if requirement does not apply" in text
+        "absent before the action and present after it" in text
     ), (
         "falsify must explicitly exempt governing artifact creation from the result-block requirement, "
-        "with a structural boundary: file path must not appear as target of any prior Write or Edit "
-        "(file-nonexistence condition replaces old string-absence proxy — ADR rewrite 2026-06-16)"
+        "defined structurally: the governed action is the creation step only if (c) is absent before "
+        "the action and present after it"
     )
 
 

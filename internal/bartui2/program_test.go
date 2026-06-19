@@ -703,9 +703,9 @@ func TestSubjectModalRendering(t *testing.T) {
 
 	view := modelViewContent(m)
 
-	// Should show subject modal header
-	if !strings.Contains(view, "SUBJECT INPUT") {
-		t.Error("expected 'SUBJECT INPUT' header in modal")
+	// Should show request modal header (renamed from SUBJECT INPUT)
+	if !strings.Contains(view, "REQUEST INPUT") {
+		t.Error("expected 'REQUEST INPUT' header in modal (renamed from SUBJECT INPUT)")
 	}
 
 	// Should show hotkey hints for modal

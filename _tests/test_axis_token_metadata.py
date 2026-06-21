@@ -340,6 +340,7 @@ class FormAxisMetadataTests(unittest.TestCase):
     EXPECTED_TOKENS = {
         "actions",
         "activities",
+        "animation",
         "bug",
         "bullets",
         "cards",

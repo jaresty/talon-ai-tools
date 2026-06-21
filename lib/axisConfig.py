@@ -182,6 +182,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "form": {
         "actions": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
         "activities": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
+        "animation": "The response is organized as a named-state sequence: each state is a labeled block, each transition names its source state and target state, and each segment carries a "
+        "duration value — a number with a time unit or a percentage position. At least two named states must be present. Any notation is permitted; the token governs structure, not "
+        "medium.",
         "bug": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable "
         "details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction "
         "with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live "
@@ -709,6 +712,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     "form": {
         "actions": "Concrete actions and tasks",
         "activities": "Session activities and segments",
+        "animation": "Named-state sequence with transitions and timing",
         "bug": "Bug report format",
         "bullets": "Concise bullet points",
         "cards": "Discrete cards with headings",
@@ -948,6 +952,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     "form": {
         "actions": "行",
         "activities": "動",
+        "animation": "動",
         "bug": "虫",
         "bullets": "列",
         "cards": "卡",
@@ -1392,6 +1397,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     "form": {
         "actions": "Actionable next steps",
         "activities": "Session activities",
+        "animation": "Temporal state sequence",
         "bug": "Bug report",
         "bullets": "Bullet points",
         "cards": "Cards/items",
@@ -3718,6 +3724,34 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "design sprint activities",
                 "what happens in each segment",
                 "activities list for the workshop",
+            ],
+        },
+        "animation": {
+            "distinctions": [
+                {
+                    "note": "walkthrough = sequential steps toward a goal, no temporal state structure; animation = named states with transitions and timing",
+                    "token": "walkthrough",
+                },
+                {
+                    "note": "slideshow = discrete slides, no transitions or timing required; animation = transitions between named states with duration values",
+                    "token": "slideshow",
+                },
+                {
+                    "note": "ghost = autonomous action trace with observed results; animation = named-state sequence with transitions and timing",
+                    "token": "ghost",
+                },
+            ],
+            "heuristics": [
+                "animate this",
+                "animation spec",
+                "keyframe sequence",
+                "describe the animation",
+                "motion design",
+                "state transitions with timing",
+                "how does it animate",
+                "describe the motion",
+                "storyboard the animation",
+                "temporal states",
             ],
         },
         "bug": {

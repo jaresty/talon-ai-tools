@@ -4250,6 +4250,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "metrics with targets",
             ],
         },
+        "slides": {
+            "distinctions": [
+                {
+                    "note": "cards = discrete units with headings and prose body, no point limit; slides = each unit has a title and exactly two to four bullet points",
+                    "token": "cards",
+                },
+                {
+                    "note": "bullets = flat list, no heading per item; slides = titled slide units each with a bounded bullet body",
+                    "token": "bullets",
+                },
+                {
+                    "note": "table = rows/columns structure; slides = titled slide units",
+                    "token": "table",
+                },
+            ],
+            "heuristics": [
+                "slide deck",
+                "slides",
+                "presentation",
+                "make slides",
+                "create a deck",
+                "slide format",
+                "powerpoint format",
+                "keynote format",
+            ],
+        },
         "snap": {
             "distinctions": [
                 {

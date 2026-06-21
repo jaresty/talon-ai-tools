@@ -366,6 +366,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "questions",
         "quiz",
         "scorecard",
+        "slides",
         "recipe",
         "scaffold",
         "socratic",

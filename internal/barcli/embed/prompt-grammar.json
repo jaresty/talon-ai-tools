@@ -830,6 +830,7 @@
         "recipe": "法",
         "scaffold": "足",
         "scorecard": "績",
+        "slides": "映",
         "snap": "残",
         "socratic": "導",
         "spike": "査",
@@ -1191,6 +1192,7 @@
         "recipe": "Step-by-step with custom notation",
         "scaffold": "Building understanding",
         "scorecard": "KPI metrics with targets and status",
+        "slides": "Presentation slide deck",
         "snap": "State snapshot for resumption",
         "socratic": "Question-led inquiry",
         "spike": "Research spike",
@@ -124252,7 +124254,7 @@
     }
   ],
   "checksums": {
-    "axes": "9fd34cad71dc0e02e624cc75d6f08461dcb50e9b47cfc4c6c5a9d99519ec6262",
+    "axes": "36aead418789a6a44df7efdeeeac6f09fe9abb2f14816017d3927b922ccfbccc",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "1ef0b036441f96c01edbc3983f664528351c6ffb46e1514308ad907ceebacccb",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

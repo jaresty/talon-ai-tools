@@ -16,7 +16,7 @@ import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from lib.axisConfig import AXIS_KEY_TO_VALUE, AXIS_TOKEN_METADATA
+from lib.axisConfig import AXIS_KEY_TO_VALUE, AXIS_KEY_TO_LABEL, AXIS_KEY_TO_KANJI, AXIS_KEY_TO_ROUTING_CONCEPT, AXIS_TOKEN_METADATA
 
 
 CHART_DEF = AXIS_KEY_TO_VALUE.get("form", {}).get("chart", "")
@@ -58,24 +58,24 @@ def test_chart_navigational_aids_clause():
     )
 
 
-def test_chart_short_desc_present():
-    short_desc = AXIS_KEY_TO_VALUE.get("short_desc", {}).get("form", {})
-    assert "chart" in short_desc, (
-        "'chart' must be present in short_desc['form']"
+def test_chart_label_present():
+    label = AXIS_KEY_TO_LABEL.get("form", {})
+    assert "chart" in label, (
+        "'chart' must be present in AXIS_KEY_TO_LABEL['form']"
     )
 
 
 def test_chart_kanji_present():
-    kanji = AXIS_KEY_TO_VALUE.get("kanji", {}).get("form", {})
+    kanji = AXIS_KEY_TO_KANJI.get("form", {})
     assert "chart" in kanji, (
-        "'chart' must be present in kanji['form']"
+        "'chart' must be present in AXIS_KEY_TO_KANJI['form']"
     )
 
 
 def test_chart_routing_concept_present():
-    routing = AXIS_KEY_TO_VALUE.get("routing_concept", {}).get("form", {})
+    routing = AXIS_KEY_TO_ROUTING_CONCEPT.get("form", {})
     assert "chart" in routing, (
-        "'chart' must be present in routing_concept['form']"
+        "'chart' must be present in AXIS_KEY_TO_ROUTING_CONCEPT['form']"
     )
 
 

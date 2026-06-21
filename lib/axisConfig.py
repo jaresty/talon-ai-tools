@@ -190,6 +190,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "cards": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
         "case": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a "
         "clearrecommendation that addresses objections and constraints.",
+        "chart": "The response is a data visualization in which quantities or categories are encoded using position, size, color, or motion — when motion is used, it encodes a data variable such "
+        "as time — with all data values embedded in the artifact. Prose labels, legends, and titles within the artifact are permitted as navigational aids.",
         "cheatsheet": "The response is structured as a quick-reference where each entry is a single line: a label of 2–5 words, followed by exactly one ' — ' or ': ', followed by the explanation. "
         "Each entry line is immediately followed by the next entry line or a heading. When the response contains more than 8 entries, entries are grouped under headings; a heading is "
         "a line containing no ' — ' or ': ' delimiter.",
@@ -256,6 +258,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "where first-principles exposition contradicts assumed expertise.",
         "scorecard": "The response structures the output as a scorecard: a set of quantitative metrics each with a baseline, target, current value, and RAG (red/amber/green) status — suitable for "
         "tracking and reporting progress to stakeholders over time.",
+        "slides": "The response is structured as a presentation slide deck: each slide has a title and two to four bullet points. At least two slides must be present. Any visual format is "
+        "permitted; the token governs structure, not medium.",
         "snap": "The response structures the output as a state snapshot: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from "
         "this point. Forward-oriented — captures where things stand for later pickup, not what happened during the work.",
         "socratic": "The response asks questions rather than stating conclusions — each question names an assumption, definition, or gap that the answer would resolve — withholding conclusions "
@@ -715,6 +719,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "bullets": "Concise bullet points",
         "cards": "Discrete cards with headings",
         "case": "Build the case before the conclusion",
+        "chart": "Data visualization with spatial encoding",
         "cheatsheet": "Scannable single-line quick-reference",
         "checklist": "Actionable checklist",
         "cocreate": "Collaborative small-move process",
@@ -737,6 +742,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "recipe": "Recipe with ingredients and steps",
         "scaffold": "First-principles scaffolded explanation",
         "scorecard": "KPI scorecard with targets and RAG status",
+        "slides": "Presentation slide deck structure",
         "snap": "State snapshot for resumption or handoff",
         "socratic": "Question-led Socratic dialogue",
         "spike": "Research spike backlog item",
@@ -955,6 +961,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "bullets": "列",
         "cards": "卡",
         "case": "策",
+        "chart": "棒",
         "cheatsheet": "覧",
         "checklist": "検",
         "cocreate": "共",
@@ -1400,6 +1407,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "bullets": "Bullet points",
         "cards": "Cards/items",
         "case": "Decision documentation",
+        "chart": "Data visualization",
         "cheatsheet": "Quick-reference lookup",
         "checklist": "Actionable next steps",
         "cocreate": "Collaborative process",
@@ -3791,6 +3799,37 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "present the case",
                 "evidence then conclusion",
                 "case for X",
+            ],
+        },
+        "chart": {
+            "distinctions": [
+                {
+                    "note": "diagram = structural/relational Mermaid output (nodes and edges); chart = data visualization with quantities encoded spatially",
+                    "token": "diagram",
+                },
+                {
+                    "note": "table = data in rows/columns (text positions); chart = data encoded spatially via position, size, color, or motion",
+                    "token": "table",
+                },
+                {
+                    "note": "visual (method) = spatial framing of ideas regardless of output format; chart (form) = data artifact with spatial encoding",
+                    "token": "visual",
+                },
+            ],
+            "heuristics": [
+                "show this as a chart",
+                "visualize the data",
+                "data visualization",
+                "plot this",
+                "graph this data",
+                "bar chart",
+                "line chart",
+                "scatter plot",
+                "heatmap",
+                "animated chart",
+                "motion chart",
+                "show how this changes over time visually",
+                "visualize the relationships between these numbers",
             ],
         },
         "cheatsheet": {

@@ -268,8 +268,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays "
         "focused on questions and learning rather than implementation tasks.",
         "stage": "The response presents a named-state sequence: each state is a named block whose name appears in at least one transition source or target field; each transition is a separate "
-        "artifact naming its source and target state; each state carries an explicit quantification of time occupancy — a literal value, not a qualitative descriptor. At least two named "
-        "state blocks and at least one transition connecting them must be present.",
+        "artifact naming its source and target state. At least two named state blocks and at least one transition connecting them must be present.",
         "story": 'The response formats the backlog item as a user story using "As a <persona>, I want <capability>, so that <value>." It may include a short description and high-level acceptance '
         "criteria in plain prose but avoids Gherkin or test-case syntax.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
@@ -748,7 +747,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "snap": "State snapshot for resumption or handoff",
         "socratic": "Question-led Socratic dialogue",
         "spike": "Research spike backlog item",
-        "stage": "Named-state sequence with transitions and timing",
+        "stage": "Named-state sequence with explicit transition artifacts",
         "story": "User story format",
         "table": "Markdown table presentation",
         "taxonomy": "Classification or type hierarchy",
@@ -1437,7 +1436,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "snap": "State snapshot for resumption",
         "socratic": "Question-led inquiry",
         "spike": "Research spike",
-        "stage": "Temporal state sequence",
+        "stage": "Named-state sequence with explicit transition artifacts",
         "story": "User story",
         "table": "Structured comparison",
         "taxonomy": "Classification system",
@@ -4350,16 +4349,25 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "stage": {
             "distinctions": [
                 {
-                    "note": "walkthrough = sequential steps toward a goal, no temporal state structure; stage = named states with transitions and timing",
+                    "note": "walkthrough = sequential steps toward a goal, no named-state structure or transition artifacts; stage = named states with explicit transition artifacts",
                     "token": "walkthrough",
                 },
                 {
-                    "note": "slideshow = discrete slides, no transitions or timing required; animation = transitions between named states with duration values",
+                    "note": "timeline = temporal layout of events or milestones at fixed points in time; stage = named states with explicit transition artifacts between them",
+                    "token": "timeline",
+                },
+                {
+                    "note": "slideshow = discrete slides, no transition artifacts required; stage = named states with explicit transition artifacts",
                     "token": "slideshow",
                 },
                 {
-                    "note": "ghost = autonomous action trace with observed results; animation = named-state sequence with transitions and timing",
+                    "note": "ghost = autonomous action trace with observed results; stage = named-state sequence with explicit transition artifacts",
                     "token": "ghost",
+                },
+                {
+                    "note": "flow = linear ordering of steps without structurally distinct transition artifacts; stage = named states where each transition is a separate artifact "
+                    "naming its source and target",
+                    "token": "flow",
                 },
             ],
             "heuristics": [

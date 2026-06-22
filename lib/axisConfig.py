@@ -258,16 +258,18 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "where first-principles exposition contradicts assumed expertise.",
         "scorecard": "The response structures the output as a scorecard: a set of quantitative metrics each with a baseline, target, current value, and RAG (red/amber/green) status — suitable for "
         "tracking and reporting progress to stakeholders over time.",
-        "slides": "The response is structured as a presentation slide deck: each slide has a title and two to four bullet points. At least two slides must be present. Any visual format is "
-        "permitted; the token governs structure, not medium.",
+        "slides": "The response is organized as a sequence of slide units. A slide unit is a heading line followed by a body of at most four lines. Before emitting any content, count the planned "
+        "slide units and confirm each has a heading line; a slide unit with no heading line or a body exceeding four lines does not satisfy this token. At least two slide units must be "
+        "present. Any rendering format is permitted; the token governs structure, not medium.",
         "snap": "The response structures the output as a state snapshot: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from "
         "this point. Forward-oriented — captures where things stand for later pickup, not what happened during the work.",
         "socratic": "The response asks questions rather than stating conclusions — each question names an assumption, definition, or gap that the answer would resolve — withholding conclusions "
         "until the questions have been posed or the user explicitly requests a summary.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays "
         "focused on questions and learning rather than implementation tasks.",
-        "stage": "The response is organized as a named-state sequence: each state is a labeled block, each transition names its source state and target state, and each segment carries a duration "
-        "value — a number with a time unit or a percentage position. At least two named states must be present. Any notation is permitted; the token governs structure, not medium.",
+        "stage": "The response presents a named-state sequence: each state is a named block whose name appears in at least one transition source or target field; each transition is a separate "
+        "artifact naming its source and target state; each state carries an explicit quantification of time occupancy — a literal value, not a qualitative descriptor. At least two named "
+        "state blocks and at least one transition connecting them must be present.",
         "story": 'The response formats the backlog item as a user story using "As a <persona>, I want <capability>, so that <value>." It may include a short description and high-level acceptance '
         "criteria in plain prose but avoids Gherkin or test-case syntax.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
@@ -742,7 +744,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "recipe": "Recipe with ingredients and steps",
         "scaffold": "First-principles scaffolded explanation",
         "scorecard": "KPI scorecard with targets and RAG status",
-        "slides": "Presentation slide deck structure",
+        "slides": "Sequence of titled slide units with bounded bodies",
         "snap": "State snapshot for resumption or handoff",
         "socratic": "Question-led Socratic dialogue",
         "spike": "Research spike backlog item",
@@ -4361,16 +4363,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
             ],
             "heuristics": [
-                "animate this",
-                "animation spec",
-                "keyframe sequence",
-                "describe the animation",
-                "motion design",
+                "state machine",
                 "state transitions with timing",
-                "how does it animate",
-                "describe the motion",
-                "storyboard the animation",
+                "define the lifecycle phases",
+                "named phases with entry and exit",
+                "lifecycle diagram",
+                "protocol states",
+                "named states with transitions",
                 "temporal states",
+                "phase diagram",
+                "document the states and transitions",
             ],
         },
         "story": {

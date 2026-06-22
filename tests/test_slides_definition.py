@@ -2,11 +2,14 @@
 Falsifiable tests for the 'slides' form token definition.
 
 Definition being implemented:
-  'The response is structured as a presentation slide deck: each slide has a
-   title and two to four bullet points. At least two slides must be present.
-   Any visual format is permitted; the token governs structure, not medium.'
+  'The response is organized as a sequence of slide units. A slide unit is a
+   heading line followed by a body of at most four lines. Before emitting any
+   content, count the planned slide units and confirm each has a heading line;
+   a slide unit with no heading line or a body exceeding four lines does not
+   satisfy this token. At least two slide units must be present. Any rendering
+   format is permitted; the token governs structure, not medium.'
 
-Tests FAIL when 'slides' key is absent; PASS after the key is added.
+Tests FAIL against the old definition; PASS after the new definition is in place.
 """
 
 import sys
@@ -25,31 +28,37 @@ def test_slides_key_present():
     )
 
 
-def test_slides_slide_deck():
-    assert "slide deck" in SLIDES_DEF, (
-        "slides definition must contain 'slide deck' (root criterion)"
+def test_slides_sequence_of_slide_units():
+    assert "sequence of slide units" in SLIDES_DEF, (
+        "slides definition must contain 'sequence of slide units' (root criterion — replaces 'slide deck')"
     )
 
 
-def test_slides_title_per_slide():
-    assert "each slide has a title" in SLIDES_DEF, (
-        "slides definition must contain 'each slide has a title' (D1)"
+def test_slides_unit_is_heading_line():
+    assert "A slide unit is a heading line" in SLIDES_DEF, (
+        "slides definition must contain 'A slide unit is a heading line' (structural definition)"
     )
 
 
-def test_slides_bounded_points():
-    assert "two to four bullet points" in SLIDES_DEF, (
-        "slides definition must contain 'two to four bullet points' (D2)"
+def test_slides_body_at_most_four_lines():
+    assert "a body of at most four lines" in SLIDES_DEF, (
+        "slides definition must contain 'a body of at most four lines' (replaces bullet-only constraint)"
+    )
+
+
+def test_slides_derivation_gate():
+    assert "count the planned slide units" in SLIDES_DEF, (
+        "slides definition must contain 'count the planned slide units' (derivation gate — closes G3)"
     )
 
 
 def test_slides_minimum_count():
-    assert "At least two slides" in SLIDES_DEF, (
-        "slides definition must contain 'At least two slides' (D3)"
+    assert "At least two slide units" in SLIDES_DEF, (
+        "slides definition must contain 'At least two slide units' (minimum count)"
     )
 
 
 def test_slides_notation_agnostic():
     assert "the token governs structure, not medium" in SLIDES_DEF, (
-        "slides definition must contain 'the token governs structure, not medium' (hollow)"
+        "slides definition must contain 'the token governs structure, not medium' (hollow-closure)"
     )

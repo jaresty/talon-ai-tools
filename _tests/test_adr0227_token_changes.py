@@ -182,27 +182,26 @@ def test_atomic_multiple_scope_lines_quote_distinct_signals():
     without the call having changed exactly one independently observable behavior.
     """
     text = _atomic()
-    assert "one independently observable" in text or "independently observable behavior" in text, (
-        "atomic must require exactly one independently observable behavior change per call "
+    assert "independently testable" in text or "one independently observable" in text or "independently observable behavior" in text, (
+        "atomic must require exactly one independently testable change per call "
         "(derivation-based form of hollow audit fix D3)"
     )
 
 
-def test_atomic_smaller_gate_requires_visible_application_tool_call():
-    """atomic path enumeration must close paths that cannot be named by string elimination.
+def test_ground_unnamed_paths_require_structural_elimination():
+    """ground must require that paths which cannot be closed by naming a string be eliminated structurally.
 
-    hollow audit finding D4 (updated for derivation-based definition): the old Smaller gate
-    required causal provenance tracking. The derivation-based atomic closes provenance gaps
-    via the elimination clause — a path that cannot be closed by naming a string must be
-    eliminated by bringing the system to a state where the commitments can be satisfied
-    structurally.
+    hollow audit finding D4: a path enumeration escape route exists when a model encounters a
+    path it cannot close by naming a literal string, and asserts closure rather than restructuring.
+    ground closes this by requiring structural elimination — the required property must be present
+    before the heading is written, not asserted after.
+    This invariant moved from atomic to ground during the atomic rewrite (ADR-0227).
     """
-    text = _atomic()
-    assert "path that cannot be closed by naming a string" in text or (
-        "cannot be closed by naming a string" in text
-    ), (
-        "atomic must require paths that cannot be closed by naming a string to be eliminated "
-        "structurally (derivation-based form of hollow audit fix D4)"
+    text = _ground()
+    assert "cannot be closed by naming a string must be eliminated" in text, (
+        "ground must require that paths which cannot be closed by naming a string "
+        "be eliminated by ensuring the required structural property is present before the heading "
+        "(D4 invariant, now in ground after atomic rewrite)"
     )
 
 
@@ -257,7 +256,8 @@ def test_atomic_scope_text_derives_from_most_recent_run_result():
     assert (
         "most recently produced before that" in text or
         "intervening tool-executed run result" in text or
-        "most recent" in text and "before that specific call" in text
+        ("most recent" in text and "before that specific call" in text) or
+        "immediately preceding" in text
     ), (
         "atomic must require quoted scope text to derive from the run result most recently "
         "produced before that specific call — a stale quote with an intervening run result "

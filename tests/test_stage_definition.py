@@ -1,14 +1,15 @@
 """
 Falsifiable tests for the 'stage' form token definition.
 
-Definition being implemented:
-  'The response is organized as a named-state sequence: each state is a
-   labeled block, each transition names its source state and target state,
-   and each segment carries a duration value — a number with a time unit or
-   a percentage position. At least two named states must be present. Any
-   notation is permitted; the token governs structure, not medium.'
+Definition being tested:
+  'The response presents a named-state sequence: each state is a named block
+   whose name appears in at least one transition source or target field; each
+   transition is a separate artifact naming its source and target state. At
+   least two named state blocks and at least one transition connecting them
+   must be present.'
 
-Tests FAIL when 'stage' key is absent; PASS after the key is added.
+Duration and medium-agnosticism clauses removed (animation residue).
+Transitions are the sole structural differentiator from other sequence forms.
 """
 
 import sys
@@ -33,31 +34,42 @@ def test_stage_named_state_sequence():
     )
 
 
-def test_stage_labeled_block():
-    assert "labeled block" in STAGE_DEF, (
-        "stage definition must contain 'labeled block' (D1+D2: state identifier addressability)"
+def test_stage_named_block_with_transition_reference():
+    assert "named block whose name appears in at least one transition" in STAGE_DEF, (
+        "stage definition must contain 'named block whose name appears in at least one transition' "
+        "(state identity established via transition reference, not label alone)"
     )
 
 
-def test_stage_transition_source_target():
-    assert "each transition names its source state and target state" in STAGE_DEF, (
-        "stage definition must contain 'each transition names its source state and target state' (D3)"
+def test_stage_transition_separate_artifact():
+    assert "separate artifact" in STAGE_DEF, (
+        "stage definition must contain 'separate artifact' "
+        "(each transition is structurally distinct from the state blocks)"
     )
 
 
-def test_stage_duration_value():
-    assert "a number with a time unit or a percentage position" in STAGE_DEF, (
-        "stage definition must contain 'a number with a time unit or a percentage position' (G2+R3)"
+def test_stage_transition_names_source_and_target():
+    assert "naming its source and target state" in STAGE_DEF, (
+        "stage definition must contain 'naming its source and target state' "
+        "(transition artifact must name both endpoints)"
     )
 
 
-def test_stage_minimum_states():
-    assert "At least two named states" in STAGE_DEF, (
-        "stage definition must contain 'At least two named states' (G1)"
+def test_stage_minimum_gate():
+    assert "At least two named state blocks and at least one transition" in STAGE_DEF, (
+        "stage definition must contain 'At least two named state blocks and at least one transition' "
+        "(joint minimum: states and a transition connecting them)"
     )
 
 
-def test_stage_notation_agnostic():
-    assert "the token governs structure, not medium" in STAGE_DEF, (
-        "stage definition must contain 'the token governs structure, not medium' (G3+C1)"
+def test_stage_no_duration_clause():
+    assert "number with a time unit" not in STAGE_DEF, (
+        "stage definition must not contain duration-value format (animation residue removed)"
+    )
+
+
+def test_stage_no_labeled_block():
+    assert "labeled block" not in STAGE_DEF, (
+        "stage definition must not contain 'labeled block' "
+        "(replaced by 'named block whose name appears in at least one transition')"
     )

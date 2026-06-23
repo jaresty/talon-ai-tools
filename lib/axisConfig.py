@@ -263,8 +263,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "present. Any rendering format is permitted; the token governs structure, not medium.",
         "snap": "The response structures the output as a state snapshot: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from "
         "this point. Forward-oriented — captures where things stand for later pickup, not what happened during the work.",
-        "socratic": "The response asks questions rather than stating conclusions — each question names an assumption, definition, or gap that the answer would resolve — withholding conclusions "
-        "until the questions have been posed or the user explicitly requests a summary.",
+        "socratic": "The response interrogates the user's stated or implied position. Before producing any question, name the specific claim, belief, or reasoning step from the user's input that "
+        "will be examined — if no such claim is identifiable in the user's input, state this before proceeding. Each question must quote or name a specific phrase from the user's input "
+        "that it targets. This response contains no declarative sentence asserting the agent's position on the subject — only questions directed at the user's claim. The response ends "
+        "with an explicit invitation for the user to respond, not with any conclusion, summary, verdict, or recommendation.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays "
         "focused on questions and learning rather than implementation tasks.",
         "stage": "The response presents a named-state sequence: each state is a named block whose name appears in at least one transition source or target field; each transition is a separate "

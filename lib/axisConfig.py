@@ -989,7 +989,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "questions": "問",
         "quiz": "試",
         "recipe": "法",
-        "reel": "幕",
+        "reel": "巻",
         "scaffold": "足",
         "scorecard": "績",
         "slides": "映",

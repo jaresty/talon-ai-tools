@@ -135,7 +135,7 @@ describe('renderPrompt', () => {
 		expect(result).not.toContain('=== CONSTRAINTS 制約');
 	});
 
-	it('persona token appears in TOKENS section with preset', () => {
+	it('persona token appears in TOKENS section with preset — no collapsed persona= line', () => {
 		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: 'designer',
 			voice: '',
@@ -147,7 +147,8 @@ describe('renderPrompt', () => {
 		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
 		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
 		const tokensBlock = result.slice(tokensIdx, defsIdx);
-		expect(tokensBlock).toContain('- persona = designer');
+		// Preset with no resolved axes → no individual lines → falls back to (none)
+		expect(tokensBlock).toContain('- persona = (none)');
 	});
 
 	it('includes kanji in constraint tokens when available (ADR-0143)', () => {
@@ -159,7 +160,7 @@ describe('renderPrompt', () => {
 
 	// duplicate removed — covered by 'shows (none) in AXES/TOKENS/TOKEN DEFINITIONS' above
 
-	it('persona row in TOKENS shows custom voice/audience tokens', () => {
+	it('persona axes appear as individual lines in TOKENS', () => {
 		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: '',
 			voice: 'custom voice',
@@ -170,10 +171,13 @@ describe('renderPrompt', () => {
 		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
 		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
 		const tokensBlock = result.slice(tokensIdx, defsIdx);
-		expect(tokensBlock).toContain('- persona = custom voice, engineers, direct');
+		expect(tokensBlock).toContain('- voice = custom voice');
+		expect(tokensBlock).toContain('- audience = engineers');
+		expect(tokensBlock).toContain('- tone = direct');
+		expect(tokensBlock).not.toContain('- persona =');
 	});
 
-	it('persona row in TOKENS includes intent when set', () => {
+	it('persona intent appears as individual line in TOKENS', () => {
 		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: '',
 			voice: '',
@@ -184,10 +188,10 @@ describe('renderPrompt', () => {
 		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
 		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
 		const tokensBlock = result.slice(tokensIdx, defsIdx);
-		expect(tokensBlock).toContain('- persona = persuade');
+		expect(tokensBlock).toContain('- intent = persuade');
 	});
 
-	it('persona row in TOKENS omits empty fields', () => {
+	it('persona TOKENS omits empty axis fields', () => {
 		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: '',
 			voice: 'as programmer',
@@ -198,7 +202,7 @@ describe('renderPrompt', () => {
 		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
 		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
 		const tokensBlock = result.slice(tokensIdx, defsIdx);
-		expect(tokensBlock).not.toContain('intent');
+		expect(tokensBlock).not.toContain('- intent =');
 	});
 
 	it('does not include standalone REFERENCE KEY block (ADR-0176)', () => {
@@ -252,7 +256,7 @@ describe('renderPrompt', () => {
 
 	// --- persona hydration tests ---
 
-	it('persona TOKENS row includes preset and intent when both active', () => {
+	it('persona TOKENS shows intent line when preset and intent both active', () => {
 		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: 'designer',
 			voice: '',
@@ -263,22 +267,12 @@ describe('renderPrompt', () => {
 		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
 		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
 		const tokensBlock = result.slice(tokensIdx, defsIdx);
-		expect(tokensBlock).toContain('- persona = designer');
+		expect(tokensBlock).toContain('- intent = persuade');
+		expect(tokensBlock).not.toContain('- persona = designer');
 	});
 
-	it('persona TOKEN DEFINITIONS row includes description from grammar.persona.docs', () => {
-		const grammarWithDocs: Grammar = {
-			...grammar,
-			persona: {
-				...grammar.persona,
-				docs: {
-					voice: { 'Design practitioner': 'Leads with usability and interaction clarity.' },
-					audience: {},
-					tone: {}
-				}
-			}
-		};
-		const result = renderPrompt(grammarWithDocs, {}, 'x', '', {
+	it('persona TOKEN DEFINITIONS shows (none) when only preset with no resolved axes', () => {
+		const result = renderPrompt(grammar, {}, 'x', '', {
 			preset: 'designer',
 			voice: '',
 			audience: '',
@@ -288,10 +282,10 @@ describe('renderPrompt', () => {
 		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
 		const formatIdx = result.indexOf('=== FORMAT');
 		const defsBlock = result.slice(defsIdx, formatIdx);
-		expect(defsBlock).toContain('- persona (designer)');
+		expect(defsBlock).toContain('- persona (none)');
 	});
 
-	it('persona TOKEN DEFINITIONS row includes descriptions for individual axes', () => {
+	it('persona TOKEN DEFINITIONS has individual axis lines with descriptions', () => {
 		const grammarWithDocs: Grammar = {
 			...grammar,
 			persona: {
@@ -314,7 +308,11 @@ describe('renderPrompt', () => {
 		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
 		const formatIdx = result.indexOf('=== FORMAT');
 		const defsBlock = result.slice(defsIdx, formatIdx);
-		expect(defsBlock).toContain('- persona (custom voice, engineers, direct, coach)');
+		expect(defsBlock).toContain('- voice (custom voice): A custom speaker role.');
+		expect(defsBlock).toContain('- audience (engineers): Technical, implementation-ready.');
+		expect(defsBlock).toContain('- tone (direct)');
+		expect(defsBlock).toContain('- intent (coach): Guide growth and development.');
+		expect(defsBlock).not.toContain('- persona (custom voice');
 	});
 
 	// ADR-0153 T-1: form tokens with form_default_completeness override the global default.
@@ -580,12 +578,12 @@ describe('renderPrompt — AXES/TOKENS/TOKEN DEFINITIONS/FORMAT redesign', () =>
 		expect(defsBlock).toMatch(/- completeness \(full/);
 	});
 
-	it('persona row appears in TOKENS section', () => {
+	it('persona voice appears as individual line in TOKENS section', () => {
 		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '', { preset: '', voice: 'as teacher', audience: '', tone: '', intent: '' });
 		const tokensIdx = result.indexOf('=== TOKENS 役割 ===');
 		const defsIdx = result.indexOf('=== TOKEN DEFINITIONS 定義 ===');
 		const tokensBlock = result.slice(tokensIdx, defsIdx);
-		expect(tokensBlock).toContain('- persona =');
+		expect(tokensBlock).toContain('- voice = as teacher');
 	});
 
 	it('persona = (none) when no persona active', () => {

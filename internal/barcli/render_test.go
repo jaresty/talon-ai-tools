@@ -34,7 +34,7 @@ func TestRenderPlainTextSections(t *testing.T) {
 		"=== TOKEN DEFINITIONS 定義 ===",
 		"Format this as a todo list.",
 		"Fix onboarding",
-		"- persona =",
+		"- voice = as teacher",
 	}
 
 	for _, marker := range required {
@@ -113,7 +113,7 @@ func TestRenderPlainTextAddendumInlineContract(t *testing.T) {
 // TestRenderPlainTextIncludesKanjiInPromptlets specifies that hydrated promptlets
 // include kanji characters when available (ADR-0143).
 // TestRenderPersonaAllFourAxes specifies that RenderPlainText renders persona axes
-// in the TOKEN DEFINITIONS section (persona folds into TOKENS + TOKEN DEFINITIONS).
+// as individual axis=token lines in TOKENS (not a collapsed persona= row).
 func TestRenderPersonaAllFourAxes(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
@@ -133,23 +133,46 @@ func TestRenderPersonaAllFourAxes(t *testing.T) {
 
 	output := RenderPlainText(result)
 
-	// Persona tokens appear in TOKENS section as a combined row.
 	tokensIdx := strings.Index(output, sectionTokens)
 	defsIdx := strings.Index(output, sectionTokenDefinitions)
 	tokensBlock := output[tokensIdx:defsIdx]
-	if !strings.Contains(tokensBlock, "- persona =") {
-		t.Errorf("expected persona row in TOKENS section, got block:\n%s", tokensBlock)
+
+	// Each persona axis appears as an individual axis=token line in TOKENS.
+	for _, want := range []string{
+		"- voice = as teacher",
+		"- audience = to junior engineer",
+		"- tone = kindly",
+		"- intent = coach",
+	} {
+		if !strings.Contains(tokensBlock, want) {
+			t.Errorf("expected %q in TOKENS section, got block:\n%s", want, tokensBlock)
+		}
 	}
-	// Persona descriptions appear in TOKEN DEFINITIONS section.
+	// No collapsed persona= line when individual axes are present.
+	if strings.Contains(tokensBlock, "- persona =") {
+		t.Errorf("expected no collapsed '- persona =' line in TOKENS section, got block:\n%s", tokensBlock)
+	}
+
+	// Persona axes appear as individual lines in TOKEN DEFINITIONS.
 	formatIdx := strings.Index(output, sectionFormat)
 	defsBlock := output[defsIdx:formatIdx]
-	if !strings.Contains(defsBlock, "- persona") {
-		t.Errorf("expected persona row in TOKEN DEFINITIONS section, got block:\n%s", defsBlock)
+	for _, want := range []string{
+		"- voice (as teacher)",
+		"- audience (to junior engineer)",
+		"- tone (kindly)",
+		"- intent (coach)",
+	} {
+		if !strings.Contains(defsBlock, want) {
+			t.Errorf("expected %q in TOKEN DEFINITIONS section, got block:\n%s", want, defsBlock)
+		}
+	}
+	if strings.Contains(defsBlock, "- persona (") {
+		t.Errorf("expected no collapsed '- persona (...)' in TOKEN DEFINITIONS, got block:\n%s", defsBlock)
 	}
 }
 
 // TestRenderPersonaPresetWithIntent specifies that when a preset is active,
-// the preset token appears in the TOKENS persona row.
+// the resolved individual axes appear in the TOKENS section (not the preset name).
 func TestRenderPersonaPresetWithIntent(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
@@ -175,8 +198,20 @@ func TestRenderPersonaPresetWithIntent(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	defsIdx := strings.Index(output, sectionTokenDefinitions)
 	tokensBlock := output[tokensIdx:defsIdx]
-	if !strings.Contains(tokensBlock, "- persona = designer_to_pm") {
-		t.Errorf("expected preset in persona TOKENS row, got block:\n%s", tokensBlock)
+
+	// Individual persona axes appear as separate lines, not a collapsed preset row.
+	for _, want := range []string{
+		"- voice = as designer",
+		"- audience = to product manager",
+		"- tone = directly",
+		"- intent = persuade",
+	} {
+		if !strings.Contains(tokensBlock, want) {
+			t.Errorf("expected %q in TOKENS section, got block:\n%s", want, tokensBlock)
+		}
+	}
+	if strings.Contains(tokensBlock, "- persona = designer_to_pm") {
+		t.Errorf("expected no collapsed preset line in TOKENS section, got block:\n%s", tokensBlock)
 	}
 }
 
@@ -550,7 +585,7 @@ func TestRenderPlainText_TokenDefsBulletFormat(t *testing.T) {
 }
 
 // TestRenderPlainText_PersonaFoldsIntoTokensSection specifies that when a persona
-// is active, a persona row appears in the TOKENS section.
+// is active, individual axis=token lines appear in the TOKENS section.
 func TestRenderPlainText_PersonaFoldsIntoTokensSection(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
@@ -566,8 +601,8 @@ func TestRenderPlainText_PersonaFoldsIntoTokensSection(t *testing.T) {
 	tokensIdx := strings.Index(output, "=== TOKENS")
 	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
 	tokensBlock := output[tokensIdx:defsIdx]
-	if !strings.Contains(tokensBlock, "- persona =") {
-		t.Fatalf("expected persona row in TOKENS section, got block:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "- voice = as teacher") {
+		t.Fatalf("expected '- voice = as teacher' in TOKENS section, got block:\n%s", tokensBlock)
 	}
 }
 
@@ -590,7 +625,7 @@ func TestRenderPlainText_PersonaNoneWhenAbsent(t *testing.T) {
 }
 
 // TestRenderPlainText_PersonaFoldsIntoTokenDefsSection specifies that when a persona
-// is active, a persona row appears in the TOKEN DEFINITIONS section.
+// is active, individual axis lines appear in the TOKEN DEFINITIONS section.
 func TestRenderPlainText_PersonaFoldsIntoTokenDefsSection(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
@@ -606,8 +641,8 @@ func TestRenderPlainText_PersonaFoldsIntoTokenDefsSection(t *testing.T) {
 	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
 	formatIdx := strings.Index(output, "=== FORMAT")
 	defsBlock := output[defsIdx:formatIdx]
-	if !strings.Contains(defsBlock, "- persona") {
-		t.Fatalf("expected persona row in TOKEN DEFINITIONS section, got block:\n%s", defsBlock)
+	if !strings.Contains(defsBlock, "- voice (as teacher)") {
+		t.Fatalf("expected '- voice (as teacher)' in TOKEN DEFINITIONS section, got block:\n%s", defsBlock)
 	}
 }
 

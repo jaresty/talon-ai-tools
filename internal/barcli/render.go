@@ -96,10 +96,19 @@ func RenderPlainText(result *BuildResult) string {
 			token := strings.TrimSpace(constraint.Token)
 			fmt.Fprintf(&b, "- %s = %s\n", axisKey, token)
 		}
-		personaTokens := buildPersonaTokenSummary(result.Persona)
-		if personaTokens != "" {
-			fmt.Fprintf(&b, "- persona = %s\n", personaTokens)
-		} else {
+		personaWritten := false
+		for _, p := range result.HydratedPersona {
+			axisKey := strings.ToLower(strings.TrimSpace(p.Axis))
+			if axisKey == "persona_preset" {
+				continue
+			}
+			tok := strings.TrimSpace(p.Token)
+			if tok != "" {
+				fmt.Fprintf(&b, "- %s = %s\n", axisKey, tok)
+				personaWritten = true
+			}
+		}
+		if !personaWritten {
 			b.WriteString("- persona = (none)\n")
 		}
 		b.WriteString("\n")
@@ -174,10 +183,10 @@ func buildPersonaTokenSummary(p PersonaResult) string {
 	return strings.Join(parts, ", ")
 }
 
-// writePersonaDefinitionRow emits a "- persona (...): ..." line into TOKEN DEFINITIONS.
+// writePersonaDefinitionRow emits one "- <axis> (<token>): <desc>" line per persona axis
+// into TOKEN DEFINITIONS, matching the format of constraint token lines.
 func writePersonaDefinitionRow(b *strings.Builder, promptlets []HydratedPromptlet) {
-	var tokens []string
-	var descs []string
+	written := false
 	for _, p := range promptlets {
 		axisKey := strings.ToLower(strings.TrimSpace(p.Axis))
 		if axisKey == "persona_preset" {
@@ -186,27 +195,22 @@ func writePersonaDefinitionRow(b *strings.Builder, promptlets []HydratedPromptle
 		tok := strings.TrimSpace(p.Token)
 		kanji := strings.TrimSpace(p.Kanji)
 		desc := strings.TrimSpace(p.Description)
-		if tok != "" {
-			if kanji != "" {
-				tokens = append(tokens, fmt.Sprintf("%s %s", tok, kanji))
-			} else {
-				tokens = append(tokens, tok)
-			}
+		if tok == "" {
+			continue
+		}
+		tokenWithKanji := tok
+		if kanji != "" {
+			tokenWithKanji = fmt.Sprintf("%s %s", tok, kanji)
 		}
 		if desc != "" {
-			descs = append(descs, desc)
+			fmt.Fprintf(b, "- %s (%s): %s\n", axisKey, tokenWithKanji, desc)
+		} else {
+			fmt.Fprintf(b, "- %s (%s)\n", axisKey, tokenWithKanji)
 		}
+		written = true
 	}
-	if len(tokens) == 0 {
+	if !written {
 		b.WriteString("- persona (none): No communication-identity styling applied.\n")
-		return
-	}
-	tokenStr := strings.Join(tokens, ", ")
-	descStr := strings.Join(descs, " ")
-	if descStr != "" {
-		fmt.Fprintf(b, "- persona (%s): %s\n", tokenStr, descStr)
-	} else {
-		fmt.Fprintf(b, "- persona (%s)\n", tokenStr)
 	}
 }
 

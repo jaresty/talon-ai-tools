@@ -110,7 +110,7 @@ export function renderPrompt(
 		parts.push(`=== AXES 軸 (token types — each governs a different dimension) ===\n${axesBody}\n`);
 	}
 
-	// TOKENS: one bullet per active axis including persona row.
+	// TOKENS: one bullet per active axis including persona axes.
 	const tokenLines: string[] = [];
 	for (const axis of CONSTRAINT_AXES) {
 		const tokens = effectiveSelected[axis] ?? [];
@@ -118,9 +118,21 @@ export function renderPrompt(
 			tokenLines.push(`- ${axis} = ${token}`);
 		}
 	}
-	// Persona row.
-	const personaSummary = buildPersonaTokenSummary(persona);
-	tokenLines.push(personaSummary ? `- persona = ${personaSummary}` : '- persona = (none)');
+	// Persona axes: emit individual axis=token lines.
+	const PERSONA_AXES = ['voice', 'audience', 'tone', 'intent'] as const;
+	let personaWritten = false;
+	if (persona) {
+		for (const axis of PERSONA_AXES) {
+			const tok = persona[axis];
+			if (tok) {
+				tokenLines.push(`- ${axis} = ${tok}`);
+				personaWritten = true;
+			}
+		}
+	}
+	if (!personaWritten) {
+		tokenLines.push('- persona = (none)');
+	}
 
 	parts.push(`=== TOKENS 役割 ===\n${tokenLines.join('\n')}\n\n`);
 
@@ -141,9 +153,9 @@ export function renderPrompt(
 			}
 		}
 	}
-	// Persona definition row.
-	const personaDefLine = buildPersonaDefinitionLine(grammar, persona);
-	defLines.push(personaDefLine);
+	// Persona definition lines (one per active axis).
+	const personaDefLines = buildPersonaDefinitionLines(grammar, persona);
+	defLines.push(personaDefLines);
 
 	const defsBody = defLines.length > 0 ? defLines.join('\n') + '\n' : '(none)\n';
 	parts.push(`=== TOKEN DEFINITIONS 定義 ===\n${defsBody}\n`);
@@ -185,35 +197,24 @@ function buildPersonaTokenSummary(persona?: PersonaState): string {
 	return parts.join(', ');
 }
 
-function buildPersonaDefinitionLine(grammar: Grammar, persona?: PersonaState): string {
+function buildPersonaDefinitionLines(grammar: Grammar, persona?: PersonaState): string {
 	if (!persona) return '- persona (none): No communication-identity styling applied.';
 
-	const presetObj = persona.preset ? (grammar.persona?.presets?.[persona.preset] ?? null) : null;
-	if (presetObj) {
-		const key = presetObj.key ?? persona.preset;
-		return `- persona (${key}): ${presetObj.label ?? ''}`.trim();
-	}
-
-	const tokens: string[] = [];
-	const descs: string[] = [];
-
-	const axes: Array<{ key: keyof typeof persona; docKey: 'voice' | 'audience' | 'tone' | 'intent' }> = [
+	const axes: Array<{ key: keyof PersonaState; docKey: 'voice' | 'audience' | 'tone' | 'intent' }> = [
 		{ key: 'voice', docKey: 'voice' },
 		{ key: 'audience', docKey: 'audience' },
 		{ key: 'tone', docKey: 'tone' },
 		{ key: 'intent', docKey: 'intent' },
 	];
+
+	const lines: string[] = [];
 	for (const { key, docKey } of axes) {
 		const tok = persona[key];
-		if (tok) {
-			tokens.push(tok);
-			const desc = grammar.persona?.docs?.[docKey]?.[tok] ?? '';
-			if (desc) descs.push(desc);
-		}
+		if (!tok) continue;
+		const desc = grammar.persona?.docs?.[docKey]?.[tok] ?? '';
+		lines.push(desc ? `- ${key} (${tok}): ${desc}` : `- ${key} (${tok})`);
 	}
 
-	if (tokens.length === 0) return '- persona (none): No communication-identity styling applied.';
-	const tokenStr = tokens.join(', ');
-	const descStr = descs.join(' ');
-	return descStr ? `- persona (${tokenStr}): ${descStr}` : `- persona (${tokenStr})`;
+	if (lines.length === 0) return '- persona (none): No communication-identity styling applied.';
+	return lines.join('\n');
 }

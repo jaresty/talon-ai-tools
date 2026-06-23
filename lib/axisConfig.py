@@ -281,6 +281,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
         "timeline": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each occurs. Pairs "
         "naturally with trace/flow methods and diagram/sketch channels.",
+        "tween": "The response is an animation specification: each keyframe names a progress position (a percentage or named waypoint), a property, and its value at that position; each adjacent "
+        "keyframe pair names a curve token — a word or hyphenated phrase such as 'ease-in', 'spring', or 'linear' — governing the motion between them. At least two keyframes and one curve "
+        "token must be present.",
         "twin": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when "
         "helpful while avoiding near-duplicate alternatives.",
@@ -756,6 +759,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "test": "Structured test cases",
         "tight": "Concise dense prose",
         "timeline": "Timeline or sequence layout",
+        "tween": "Keyframe animation specification with progress positions, property values, and curve tokens",
         "twin": "Side-by-side comparison layout",
         "variants": "Several distinct labeled options",
         "vet": "Post-experiment review",
@@ -1445,6 +1449,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "test": "Test cases",
         "tight": "Concise prose",
         "timeline": "Timeline or sequence layout",
+        "tween": "Keyframe animation specification",
         "twin": "Side-by-side comparison",
         "variants": "Multiple alternatives",
         "vet": "Post-experiment review",
@@ -4495,6 +4500,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "temporal order with markers",
                 "sequence of stages over time",
                 "show this as a timeline",
+            ],
+        },
+        "tween": {
+            "distinctions": [
+                {
+                    "note": "tween = animation specification with progress positions and curve tokens between keyframes; stage = named-state sequence where identity comes from "
+                    "transition artifacts, not progress position",
+                    "token": "stage",
+                },
+                {
+                    "note": "tween = keyframe animation with progress positions (percentages or waypoints on the motion arc); timeline = temporal layout of events at clock or "
+                    "calendar time points",
+                    "token": "timeline",
+                },
+            ],
+            "heuristics": [
+                "animate this element",
+                "write the keyframes for",
+                "define the easing",
+                "transition from X to Y with",
+                "what's the animation spec",
+                "CSS keyframe animation",
+                "describe how this should animate",
+                "motion curve between states",
             ],
         },
         "twin": {

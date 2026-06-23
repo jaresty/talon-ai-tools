@@ -376,6 +376,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "taxonomy",
         "test",
         "tight",
+        "tween",
         "timeline",
         "twin",
         "variants",

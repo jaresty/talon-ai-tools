@@ -368,6 +368,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "scorecard",
         "slides",
         "recipe",
+        "reel",
         "scaffold",
         "socratic",
         "spike",

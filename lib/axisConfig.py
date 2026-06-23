@@ -253,6 +253,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "or a gap-reveal sentence in the transcript, or the user explicitly declines to continue; then close with a terminal declaration containing the verbatim name of every concept from "
         "the opening list — an evaluator determines completeness by comparing the terminal declaration against the opening list and confirming every name appears.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
+        "reel": "The response is an animated scene specification: each scene record names an ordinal, a scene name, a duration (a number and time unit such as 2s or 400ms), and a narrative label "
+        "as the final field; each motion entry names an element identifier, a state — absent, entering, holding, or exiting — and, when entering or exiting, a curve token; each scene "
+        "record must have at least one motion entry. At least two scene records must be present.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
         "where first-principles exposition contradicts assumed expertise.",
@@ -746,6 +749,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
+        "reel": "Animated scene specification with ordered scenes, element motion entries, and curve tokens",
         "scaffold": "First-principles scaffolded explanation",
         "scorecard": "KPI scorecard with targets and RAG status",
         "slides": "Sequence of titled slide units with bounded bodies",
@@ -989,6 +993,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "questions": "問",
         "quiz": "試",
         "recipe": "法",
+        "reel": "幕",
         "scaffold": "足",
         "scorecard": "績",
         "slides": "映",
@@ -1436,6 +1441,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "questions": "Probing questions",
         "quiz": "Quiz structure",
         "recipe": "Step-by-step with custom notation",
+        "reel": "Animated scene sequence specification",
         "scaffold": "Building understanding",
         "scorecard": "KPI metrics with targets and status",
         "slides": "Presentation slide deck",
@@ -4217,6 +4223,36 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "using a custom notation",
                 "with a symbolic key",
                 "repeating pattern I can express as a formula",
+            ],
+        },
+        "reel": {
+            "distinctions": [
+                {
+                    "note": "slides = static content units with no motion spec or timing; reel = ordered scenes with duration, element motion states, and curve tokens",
+                    "token": "slides",
+                },
+                {
+                    "note": "stage = semantic state identity established via transition artifacts; reel = temporal scene sequence with explicit duration and element motion",
+                    "token": "stage",
+                },
+                {
+                    "note": "timeline = time-based event layout for narration or history; reel = implementable animation spec with element motion states and curve tokens",
+                    "token": "timeline",
+                },
+                {
+                    "note": "tween = single-property keyframe animation per element; reel = multi-element coordinated scene sequence at the whole-scene level",
+                    "token": "tween",
+                },
+            ],
+            "heuristics": [
+                "make an animated introduction",
+                "animated explainer for",
+                "scene-by-scene animation spec",
+                "build an animated short",
+                "how each element enters and exits",
+                "storyboard with motion curves",
+                "animated alternative to a presentation",
+                "produce a motion spec for",
             ],
         },
         "scaffold": {

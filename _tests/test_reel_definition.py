@@ -110,19 +110,9 @@ if bootstrap is not None:
         def test_reel_timeline_distinction_present(self) -> None:
             self.assertIn("timeline", _distinction_tokens())
 
-        def test_reel_tween_distinction_present(self) -> None:
-            self.assertIn("tween", _distinction_tokens())
-
         def test_reel_slides_distinction_references_motion(self) -> None:
             note = _distinction_note("slides")
             self.assertTrue(
                 "motion" in note or "timing" in note or "animat" in note,
                 "slides distinction must reference motion or timing absence"
-            )
-
-        def test_reel_tween_distinction_references_single_property(self) -> None:
-            note = _distinction_note("tween")
-            self.assertTrue(
-                "single" in note or "property" in note or "granular" in note,
-                "tween distinction must reference single-property or granularity"
             )

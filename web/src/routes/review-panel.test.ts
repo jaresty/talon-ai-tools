@@ -238,4 +238,70 @@ describe('ADR-0157: Selected Token Review Panel', () => {
 			document.body.removeChild(target);
 		});
 	});
+
+	describe('Persona chips in review panel', () => {
+		async function mountWithPersona(personaState: Record<string, string>) {
+			const state = {
+				selected: { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] },
+				subject: '',
+				addendum: '',
+				persona: { preset: '', voice: '', audience: '', tone: '', intent: '', ...personaState }
+			};
+			mockLocalStorage.getItem.mockReturnValueOnce(btoa(JSON.stringify(state)));
+			const Page = (await import('../routes/+page.svelte')).default;
+			const target = document.createElement('div');
+			document.body.appendChild(target);
+			mount(Page, { target });
+			await new Promise((resolve) => setTimeout(resolve, 50));
+			flushSync();
+			return target;
+		}
+
+		it('Dim-A: hasSelectedTokens is truthy when only persona.preset is set', async () => {
+			const target = await mountWithPersona({ preset: 'researcher' });
+			const panel = target.querySelector('.review-panel');
+			expect(panel?.classList.contains('review-panel-empty')).toBe(false);
+			document.body.removeChild(target);
+		});
+
+		it('Dim-B: preset persona chip appears in review panel', async () => {
+			const target = await mountWithPersona({ preset: 'researcher' });
+			const chips = Array.from(target.querySelectorAll('.review-panel-chip'));
+			const presetChip = chips.find(c => c.textContent?.includes('persona=researcher'));
+			expect(presetChip).toBeTruthy();
+			document.body.removeChild(target);
+		});
+
+		it('Dim-C: voice persona chip appears in review panel', async () => {
+			const target = await mountWithPersona({ voice: 'as-writer' });
+			const chips = Array.from(target.querySelectorAll('.review-panel-chip'));
+			const voiceChip = chips.find(c => c.textContent?.includes('voice=as-writer'));
+			expect(voiceChip).toBeTruthy();
+			document.body.removeChild(target);
+		});
+
+		it('Dim-D: audience persona chip appears in review panel', async () => {
+			const target = await mountWithPersona({ audience: 'to-team' });
+			const chips = Array.from(target.querySelectorAll('.review-panel-chip'));
+			const audienceChip = chips.find(c => c.textContent?.includes('audience=to-team'));
+			expect(audienceChip).toBeTruthy();
+			document.body.removeChild(target);
+		});
+
+		it('Dim-E: tone persona chip appears in review panel', async () => {
+			const target = await mountWithPersona({ tone: 'direct' });
+			const chips = Array.from(target.querySelectorAll('.review-panel-chip'));
+			const toneChip = chips.find(c => c.textContent?.includes('tone=direct'));
+			expect(toneChip).toBeTruthy();
+			document.body.removeChild(target);
+		});
+
+		it('Dim-F: intent persona chip appears in review panel', async () => {
+			const target = await mountWithPersona({ intent: 'teach' });
+			const chips = Array.from(target.querySelectorAll('.review-panel-chip'));
+			const intentChip = chips.find(c => c.textContent?.includes('intent=teach'));
+			expect(intentChip).toBeTruthy();
+			document.body.removeChild(target);
+		});
+	});
 });

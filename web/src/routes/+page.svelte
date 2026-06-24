@@ -412,7 +412,8 @@
 	let showPreview = $state(false); // Hidden by default; toggle reveals on mobile
 	let fabOpen = $state(false); // FAB menu state
 	let reviewPanelHeight = $state(0); // Tracks review panel height for dynamic layout padding
-	let hasSelectedTokens = $derived(Object.values(selected).some((toks) => toks.length > 0));
+	let hasPersonaTokens = $derived(Object.values(persona).some((v) => v.length > 0));
+	let hasSelectedTokens = $derived(Object.values(selected).some((toks) => toks.length > 0) || hasPersonaTokens);
 	let previewPanelEl = $state<HTMLElement | null>(null);
 
 	$effect(() => {
@@ -894,6 +895,36 @@
 		bind:clientHeight={reviewPanelHeight}
 	>
 		{#if hasSelectedTokens}
+			{#if persona.preset}
+				<button class="review-panel-chip" tabindex="0"
+					onclick={() => { persona = { preset: '', voice: '', audience: '', tone: '', intent: persona.intent }; }}
+					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); persona = { preset: '', voice: '', audience: '', tone: '', intent: persona.intent }; } }}
+				>persona={persona.preset}</button>
+			{/if}
+			{#if persona.voice}
+				<button class="review-panel-chip" tabindex="0"
+					onclick={() => { persona = { ...persona, preset: '', voice: '' }; }}
+					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); persona = { ...persona, preset: '', voice: '' }; } }}
+				>voice={persona.voice}</button>
+			{/if}
+			{#if persona.audience}
+				<button class="review-panel-chip" tabindex="0"
+					onclick={() => { persona = { ...persona, preset: '', audience: '' }; }}
+					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); persona = { ...persona, preset: '', audience: '' }; } }}
+				>audience={persona.audience}</button>
+			{/if}
+			{#if persona.tone}
+				<button class="review-panel-chip" tabindex="0"
+					onclick={() => { persona = { ...persona, preset: '', tone: '' }; }}
+					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); persona = { ...persona, preset: '', tone: '' }; } }}
+				>tone={persona.tone}</button>
+			{/if}
+			{#if persona.intent}
+				<button class="review-panel-chip" tabindex="0"
+					onclick={() => { persona = { ...persona, intent: '' }; }}
+					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); persona = { ...persona, intent: '' }; } }}
+				>intent={persona.intent}</button>
+			{/if}
 			{#each Object.entries(selected) as [axis, tokens]}
 				{#each tokens as token (token)}
 					{@const isConflict = conflicts.some(c => c.tokenA === token || c.tokenB === token)}

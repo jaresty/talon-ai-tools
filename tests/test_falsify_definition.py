@@ -15,21 +15,21 @@ from lib.axisConfig import AXIS_KEY_TO_VALUE
 
 
 def test_falsify_allow_list_clause():
-    """Dimension A: tool call must name the governed subject directly."""
+    """Dimension A: executor invocation must name the governed subject (via layer gate)."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "the tool call names the governed subject directly" in defn
+    assert "the governed symbol name must appear in the executor invocation for (g)" in defn
 
 
 def test_falsify_retroactive_clause():
-    """Dimension B: definition must name the revert-run-restore path for the retroactive case."""
+    """Dimension B: universal (g) requirement covers the retroactive case — observed FAIL before every implementation action."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "If implementation already exists: revert the implementation" in defn
+    assert "(g) is required for every action that modifies the implementation" in defn
 
 
 def test_falsify_separation_rule():
-    """Dim 3: (a)+(c) separation rule replaces consecutive-lines — closes C2."""
+    """Dim 3: (a)+(c) separation rule within (g) — closes C2."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "(a) is not separated from (c) by any line naming a different governed behavior identifier" in defn
+    assert "(a) is not separated from (c) in (g) by any line naming a different governed behavior identifier" in defn
 
 
 def test_falsify_creation_step_string_absence():
@@ -39,9 +39,9 @@ def test_falsify_creation_step_string_absence():
 
 
 def test_falsify_symbol_substring():
-    """Dim 4: (d) must be a literal substring of the symbol name — closes Gap 2."""
+    """Dim 4: (d) must appear as a substring in the symbol name — closes Gap 2."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "which must be a literal substring of the symbol name added or modified by the governed action" in defn
+    assert "which must appear as a substring in the name of the symbol added or modified" in defn
 
 
 def test_falsify_old_file_nonexistence_clause_absent():
@@ -57,41 +57,41 @@ def test_falsify_derivation_block_label():
 
 
 def test_falsify_execution_layer_agnostic():
-    """D2: domain-agnostic layer description present; software taxonomy absent."""
+    """D2: layer classification derived from test body structure; no hardcoded taxonomy."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "the layer at which the governed behavior manifests" in defn
+    assert "the layer classification" in defn
     assert "one of: unit, integration, end-to-end, or static-content" not in defn
 
 
 def test_falsify_executor_agnostic():
-    """D3: domain-agnostic executor constraint present; software deny-list absent."""
+    """D3: executor constraint requires output only producible by exercising behavior; no software deny-list."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "a tool call whose output could be produced by reading or inspecting the subject at rest does not satisfy this requirement" in defn
+    assert "the executor must produce output that could only exist if the governed behavior was exercised" in defn
     assert "grep, cat, head, tail, sed, awk, and find" not in defn
 
 
 def test_falsify_layer_gate():
-    """D4: layer gate clause must be explicit — closes G2."""
+    """D4: layer gate clause must be explicit — derives from (e) unit/integration binary."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "Layer gate: the executor named in (f) must operate at the layer named in (e)" in defn
+    assert "Layer gate: if (e) is 'unit', the governed symbol name must appear in the executor invocation for (g)" in defn
 
 
 def test_falsify_domain_agnostic_layer():
-    """DA-D1: domain-agnostic layer description present; software taxonomy absent."""
+    """DA-D1: layer derived from test body structure; no hardcoded software taxonomy."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "the layer at which the governed behavior manifests" in defn
+    assert "the layer classification" in defn
     assert "one of: unit, integration, end-to-end, or static-content" not in defn
 
 
 def test_falsify_domain_agnostic_executor():
-    """DA-D2: domain-agnostic executor constraint present; software deny-list absent."""
+    """DA-D2: executor constraint uses 'executed-artifact result'; no tool-call software deny-list."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "a tool call whose output could be produced by reading or inspecting the subject at rest does not satisfy this requirement" in defn
+    assert "executed-artifact result" in defn
     assert "grep, cat, head, tail, sed, awk, and find" not in defn
 
 
 def test_falsify_domain_agnostic_subject():
-    """DA-D3: domain-agnostic subject reference present; file-path clause absent."""
+    """DA-D3: layer gate names governed symbol in executor invocation; no file-path clause."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "the tool call names the governed subject directly" in defn
+    assert "executor invocation for (g)" in defn
     assert "the tool call names a file whose path appears as the target of a prior Write, Edit, or tool-executed directory-listing result" not in defn

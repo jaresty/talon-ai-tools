@@ -648,6 +648,30 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "context-to-interactive-guided": {
+        "description": "Examine the current context to surface model candidates, pause for the user to confirm what to represent, derive the generative model from confirmed selections, then produce the interactive first-move.",
+        "example": "Building an interactive simulation of a team practice — surface candidate stocks, flows, and parameters from the context, ask the user which variables matter and what behavior is interesting, then derive the equation system and produce the opening state.",
+        "heuristics": ["build an interactive model of this", "make this into an interactive simulation", "what should we model here", "help me explore this system interactively", "let me control the parameters", "build a simulation I can tune"],
+        "mode": "linear",
+        "steps": [
+            {
+                "token": "probe contextualise",
+                "role": "candidate surface",
+                "prompt_hint": "Examine what is present in the current context. Surface candidate stocks (accumulated variables), flows (rates of change), coupling relationships, and parameters that could be user-controlled. For each candidate, name what it represents and why it might matter. Do not commit to any model yet — present candidates as options for the user to confirm, prune, or extend.",
+                "requires_user_input": True,
+            },
+            {
+                "token": "sim mint",
+                "role": "generative model derivation",
+                "prompt_hint": "Using the stocks, flows, and parameters confirmed by the user in the prior step: build the full model explicitly. Each equation term must be derived from a named assumption by a visible reasoning step (mint) — assert nothing; derive everything. Trace feedback loops and identify equilibria where possible. Produce the complete private model: all equations, all parameter ranges, numerical verification of interesting behavior. Do not produce interactive output yet.",
+            },
+            {
+                "token": "make form:interactive",
+                "role": "first-move production",
+                "prompt_hint": "Produce the opening state of the simulation. Name what is currently visible (stocks at t=0, default parameter values) and name the available inputs (the parameters the user can adjust). End with a prompt that itself names at least one of those inputs. Do not reveal what any input produces until the user acts.",
+            },
+        ],
+    },
     "contradiction-scan": {
         "description": "Decompose a subject into structural parts, surface where those parts create irresolvable tensions, then recommend which tension to address first.",
         "example": "Reviewing a service architecture where the ownership model requires each team to own its data store but the reporting requirements demand cross-store joins — decompose the structural concerns, surface the irresolvable tension between ownership isolation and query access, then recommend the first tension to address.",

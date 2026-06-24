@@ -124179,6 +124179,37 @@
         }
       ]
     },
+    "context-to-interactive-guided": {
+      "description": "Examine the current context to surface model candidates, pause for the user to confirm what to represent, derive the generative model from confirmed selections, then produce the interactive first-move.",
+      "example": "Building an interactive simulation of a team practice — surface candidate stocks, flows, and parameters from the context, ask the user which variables matter and what behavior is interesting, then derive the equation system and produce the opening state.",
+      "heuristics": [
+        "build an interactive model of this",
+        "make this into an interactive simulation",
+        "what should we model here",
+        "help me explore this system interactively",
+        "let me control the parameters",
+        "build a simulation I can tune"
+      ],
+      "mode": "linear",
+      "steps": [
+        {
+          "token": "probe contextualise",
+          "role": "candidate surface",
+          "prompt_hint": "Examine what is present in the current context. Surface candidate stocks (accumulated variables), flows (rates of change), coupling relationships, and parameters that could be user-controlled. For each candidate, name what it represents and why it might matter. Do not commit to any model yet — present candidates as options for the user to confirm, prune, or extend.",
+          "requires_user_input": true
+        },
+        {
+          "token": "sim mint",
+          "role": "generative model derivation",
+          "prompt_hint": "Using the stocks, flows, and parameters confirmed by the user in the prior step: build the full model explicitly. Each equation term must be derived from a named assumption by a visible reasoning step (mint) — assert nothing; derive everything. Trace feedback loops and identify equilibria where possible. Produce the complete private model: all equations, all parameter ranges, numerical verification of interesting behavior. Do not produce interactive output yet."
+        },
+        {
+          "token": "make form:interactive",
+          "role": "first-move production",
+          "prompt_hint": "Produce the opening state of the simulation. Name what is currently visible (stocks at t=0, default parameter values) and name the available inputs (the parameters the user can adjust). End with a prompt that itself names at least one of those inputs. Do not reveal what any input produces until the user acts."
+        }
+      ]
+    },
     "contradiction-scan": {
       "description": "Decompose a subject into structural parts, surface where those parts create irresolvable tensions, then recommend which tension to address first.",
       "example": "Reviewing a service architecture where the ownership model requires each team to own its data store but the reporting requirements demand cross-store joins — decompose the structural concerns, surface the irresolvable tension between ownership isolation and query access, then recommend the first tension to address.",
@@ -124721,7 +124752,7 @@
     "slugs": "b31aeb65a3581db7cfa8a8368b27f84051163c01d1c483e43413a930781c7158",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "3dbfa879a8de5bac6586c9c5c6acc7bffc19b27cd220aebca9a3009a7dae2461",
+    "sequences": "62ed09aeeafa38446d8206d2524b35f98031ed639a9624c9a7cb88306d575ed7",
     "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
     "guidebook": "c978d0ce9e8e68a74aa3407d26aa7e272cad9bbad79bf30ba93ba916108fa8dc"
   }

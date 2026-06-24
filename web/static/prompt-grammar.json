@@ -124149,6 +124149,36 @@
         }
       ]
     },
+    "context-to-interactive": {
+      "description": "Examine the current context to surface a generative model, then produce the interactive first-move the model implies.",
+      "example": "Building a CLI tutorial — surface what the CLI does, derive the state machine of possible interactions, then produce the opening prompt naming the available commands without revealing what each one does.",
+      "heuristics": [
+        "build an interactive experience from this",
+        "make this into an interactive",
+        "turn this into a tutorial",
+        "generate an interactive first move",
+        "context to interactive",
+        "simulate then present choices"
+      ],
+      "mode": "autonomous",
+      "steps": [
+        {
+          "token": "probe contextualise",
+          "role": "context examination",
+          "prompt_hint": "Examine what is present in the current context — domain, constraints, known states, available inputs. Package the findings as a structured handoff: name the domain, what is known, and what the user can do from the current state."
+        },
+        {
+          "token": "sim mint",
+          "role": "generative model derivation",
+          "prompt_hint": "Build the full state machine explicitly. Each state must be derived from a prior user action by a visible reasoning step (mint) — assert nothing; derive everything. Trace feedback loops and emergent effects over time (sim). Produce the complete private state graph: every reachable state, every available input per state, and every resulting state. This graph is internal to this step — do not produce interactive output yet."
+        },
+        {
+          "token": "make form:interactive",
+          "role": "first-move production",
+          "prompt_hint": "Produce only the first node of the state machine: name the current state and the available inputs from that state, then end with a prompt that itself names at least one of those inputs. Do not name the system state any input produces — withhold all output states. The user's action will traverse the edge; the resulting state is the next response."
+        }
+      ]
+    },
     "contradiction-scan": {
       "description": "Decompose a subject into structural parts, surface where those parts create irresolvable tensions, then recommend which tension to address first.",
       "example": "Reviewing a service architecture where the ownership model requires each team to own its data store but the reporting requirements demand cross-store joins — decompose the structural concerns, surface the irresolvable tension between ownership isolation and query access, then recommend the first tension to address.",
@@ -124691,7 +124721,7 @@
     "slugs": "b31aeb65a3581db7cfa8a8368b27f84051163c01d1c483e43413a930781c7158",
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "fea262eada849fa45eaa06e9db4dd0ad26d460429f842d4c33b6682af5c1ddc6",
+    "sequences": "3dbfa879a8de5bac6586c9c5c6acc7bffc19b27cd220aebca9a3009a7dae2461",
     "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
     "guidebook": "c978d0ce9e8e68a74aa3407d26aa7e272cad9bbad79bf30ba93ba916108fa8dc"
   }

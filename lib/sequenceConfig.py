@@ -625,6 +625,29 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "context-to-interactive": {
+        "description": "Examine the current context to surface a generative model, then produce the interactive first-move the model implies.",
+        "example": "Building a CLI tutorial — surface what the CLI does, derive the state machine of possible interactions, then produce the opening prompt naming the available commands without revealing what each one does.",
+        "heuristics": ["build an interactive experience from this", "make this into an interactive", "turn this into a tutorial", "generate an interactive first move", "context to interactive", "simulate then present choices"],
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "probe contextualise",
+                "role": "context examination",
+                "prompt_hint": "Examine what is present in the current context — domain, constraints, known states, available inputs. Package the findings as a structured handoff: name the domain, what is known, and what the user can do from the current state.",
+            },
+            {
+                "token": "sim mint",
+                "role": "generative model derivation",
+                "prompt_hint": "Build the full state machine explicitly. Each state must be derived from a prior user action by a visible reasoning step (mint) — assert nothing; derive everything. Trace feedback loops and emergent effects over time (sim). Produce the complete private state graph: every reachable state, every available input per state, and every resulting state. This graph is internal to this step — do not produce interactive output yet.",
+            },
+            {
+                "token": "make form:interactive",
+                "role": "first-move production",
+                "prompt_hint": "Produce only the first node of the state machine: name the current state and the available inputs from that state, then end with a prompt that itself names at least one of those inputs. Do not name the system state any input produces — withhold all output states. The user's action will traverse the edge; the resulting state is the next response.",
+            },
+        ],
+    },
     "contradiction-scan": {
         "description": "Decompose a subject into structural parts, surface where those parts create irresolvable tensions, then recommend which tension to address first.",
         "example": "Reviewing a service architecture where the ownership model requires each team to own its data store but the reporting requirements demand cross-store joins — decompose the structural concerns, surface the irresolvable tension between ownership isolation and query access, then recommend the first tension to address.",

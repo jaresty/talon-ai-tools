@@ -392,20 +392,19 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "redirected outcome — the redirection is derived from a named premise of the incoming structure, not introduced externally.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
-        "falsify": "The response establishes, before any governed action, that the governing artifact can observe the absence of each governed behavior. Derivation phase (required before any "
-        "governed action — complete only when a literal block labeled 'Falsify derivation:' containing entries for (a) through (f) appears in the transcript; prose description does "
-        "not satisfy this requirement): Name — (a) the assertion-failure marker: the string in a result that signals the artifact detected the behavior absence; (b) the string in a "
-        "result that signals a governed behavior is present; (c) the string identifying each governed behavior in a result; (d) the string identifying the governed action, which must "
-        "be a literal substring of the symbol name added or modified by the governed action; (e) the layer at which the governed behavior manifests — named explicitly before the "
-        "artifact is chosen; (f) the executor class of the tool call — the tool call must produce output that could only exist if the governed behavior was exercised; a tool call "
-        "whose output could be produced by reading or inspecting the subject at rest does not satisfy this requirement. Layer gate: the executor named in (f) must operate at the layer "
-        "named in (e) — a tool call at a different layer does not satisfy this requirement even if its output matches (a) and (c). A result satisfies this token if and only if: (a) is "
-        "not separated from (c) by any line naming a different governed behavior identifier, (b) appears on a line immediately preceding a governed behavior identifier, the result was "
-        "produced by a tool call whose text names (d) directly, the tool call names the governed subject directly, and the tool call satisfies (f) at the layer named in (e). "
-        "Exception: the result-block requirement does not apply to the single governed action whose effect introduces (c) as a new string — a governed action is the creation step only "
-        "if (c) is absent before the action and present after it; any other governed action is not exempt. If implementation already exists: revert the implementation, run the "
-        "artifact to produce a result where (a) precedes (c), then restore and run again to produce a result where (b) precedes a governed behavior identifier — both results must "
-        "appear in the transcript before the governed action.",
+        "falsify": "The response establishes, before any governed action, that the governing artifact has been observed to detect the absence of each governed behavior. Derivation phase "
+        "(required before any governed action — complete only when a literal block labeled 'Falsify derivation:' containing entries for (a) through (g) appears in the transcript; "
+        "prose does not satisfy this requirement): Name — (a) the assertion-failure marker: the literal string in an executed-artifact result signaling the artifact detected behavior "
+        "absence; (b) the literal string signaling the governed behavior is present; (c) the literal string identifying each governed behavior in an executed-artifact result; (d) the "
+        "literal string identifying the governed action, which must appear as a substring in the name of the symbol added or modified; (e) the layer classification — if the governed "
+        "symbol name appears as a direct call in the test body, the layer is 'unit'; if the governed symbol name does not appear in the test body, the layer is 'integration'; (f) the "
+        "executor class — the executor must produce output that could only exist if the governed behavior was exercised at the layer named in (e); (g) the observed FAIL result: a "
+        "verbatim excerpt from an executed-artifact result appearing in the transcript after the artifact was applied to the subject and before the first governed action that modifies "
+        "the implementation, where (a) precedes (c) and the executor named in (f) produced the result. Layer gate: if (e) is 'unit', the governed symbol name must appear in the "
+        "executor invocation for (g); if (e) is 'integration', it must not. A result satisfies this token if and only if: (g) is present at the required position; (a) is not separated "
+        "from (c) in (g) by any line naming a different governed behavior identifier; and a subsequent executed-artifact result contains (b) at the position where (a) was absent. "
+        "Exception: (g) is not required for the single action that produces the governing artifact's assertion text — the creation step is that action only; (g) is required for every "
+        "action that modifies the implementation, including in the same session — a creation step is that action only if (c) is absent before the action and present after it.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

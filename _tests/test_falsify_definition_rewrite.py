@@ -1,0 +1,87 @@
+"""Tests for falsify token definition rewrite (token-rewrite sequence).
+
+Gaps closed:
+- D1: 'has been observed' replaces 'can observe' (actuality not potential)
+- D3/G1: (e) unit/integration binary derived from test body, not self-declared
+- G3/C1: (g) observed FAIL result required before implementation; exception is creation step only
+- Domain: 'executed-artifact result' replaces 'tool call result block' (domain-agnostic)
+"""
+
+import sys
+import os
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+from lib.axisConfig import AXIS_KEY_TO_VALUE
+
+
+def _falsify() -> str:
+    return AXIS_KEY_TO_VALUE["method"]["falsify"]
+
+
+def test_falsify_requires_observed_actuality_not_potential():
+    """falsify opening sentence must require observed actuality, not potential observability.
+
+    Gap D1: old definition said 'can observe the absence' (potential). New definition
+    must say 'has been observed to detect the absence' (actuality).
+    """
+    text = _falsify()
+    assert "has been observed to detect the absence" in text, (
+        "falsify must require 'has been observed to detect the absence' — "
+        "observed actuality, not potential observability (gap D1)"
+    )
+
+
+def test_falsify_derivation_block_extends_to_g():
+    """falsify derivation block must cover entries (a) through (g), not just (a) through (f).
+
+    Gap D1/new requirement: (g) is the observed FAIL result, required before any
+    implementation action. The derivation block header must name (g).
+    """
+    text = _falsify()
+    assert "(a) through (g)" in text, (
+        "falsify derivation block must extend to (g) — "
+        "old definition only required (a) through (f) (gap D1)"
+    )
+
+
+def test_falsify_uses_executed_artifact_result_not_tool_call():
+    """falsify must use domain-agnostic 'executed-artifact result', not 'tool call result block'.
+
+    Domain-scope finding: 'tool call result block' presupposes a software runtime.
+    'executed-artifact result' covers any executor (test runner, proof checker, policy harness).
+    """
+    text = _falsify()
+    assert "executed-artifact result" in text, (
+        "falsify must use 'executed-artifact result' instead of 'tool call result block' "
+        "to remain domain-agnostic"
+    )
+
+
+def test_falsify_defines_g_as_observed_fail_result():
+    """falsify must define (g) as the observed FAIL result entry.
+
+    New requirement: (g) names the verbatim FAIL excerpt that must appear in the transcript
+    after writing the governing artifact and before modifying the implementation.
+    """
+    text = _falsify()
+    assert "(g) the observed FAIL result" in text or "(g)" in text and "observed FAIL result" in text, (
+        "falsify must define (g) as the observed FAIL result — "
+        "verbatim excerpt required before implementation tool call"
+    )
+
+
+def test_falsify_e_derives_unit_integration_from_test_body():
+    """falsify must derive (e) layer classification from whether symbol appears in test body.
+
+    Gap D3/G1: old (e) was self-declared with no constraint. New (e) is a structural binary:
+    'unit' if governed symbol name appears as direct call in test body; 'integration' if not.
+    """
+    text = _falsify()
+    assert "layer is 'unit'" in text or 'layer is "unit"' in text, (
+        "falsify (e) must define the 'unit' layer classification derived from test body "
+        "— governed symbol name appears as direct call (gap D3/G1)"
+    )
+    assert "layer is 'integration'" in text or 'layer is "integration"' in text, (
+        "falsify (e) must define the 'integration' layer classification derived from test body "
+        "— governed symbol name does not appear in test body (gap D3/G1)"
+    )

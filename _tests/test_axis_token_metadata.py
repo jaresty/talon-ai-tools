@@ -979,7 +979,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "complete only when a literal block labeled 'Falsify derivation:' containing entries for (a) through (f) appears in the transcript",
+            "complete only when a literal block labeled 'Falsify derivation:' containing entries for (a) through (g) appears in the transcript",
             definition,
             "falsify must explicitly block the governed action until derivation and satisfying result are present in the transcript",
         )
@@ -989,7 +989,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "(a) is not separated from (c) by any line naming a different governed behavior identifier",
+            "(a) is not separated from (c) in (g) by any line naming a different governed behavior identifier",
             definition,
             "falsify condition must name the observable that excludes pre-execution failures: (a) is not separated from (c) by any line naming a different governed behavior identifier",
         )
@@ -999,7 +999,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "(a) is not separated from (c) by any line naming a different governed behavior identifier",
+            "(a) is not separated from (c) in (g) by any line naming a different governed behavior identifier",
             definition,
             "falsify must structurally require elimination of non-execution paths — behaviors must produce (a) or (b), not some other signal",
         )
@@ -1009,9 +1009,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "result was produced by a tool call whose text names (d) directly",
+            "the governed symbol name must appear in the executor invocation for (g)",
             definition,
-            "falsify must name the observable that distinguishes direct invocation: result was produced by a tool call whose text names (d) directly",
+            "falsify must name the observable that distinguishes direct invocation: governed symbol name must appear in executor invocation for (g)",
         )
 
     def test_falsify_creation_step_boundary_required(self):
@@ -1049,7 +1049,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "(c) the string identifying each governed behavior",
+            "(c) the literal string identifying each governed behavior",
             definition,
             "falsify must require (c) to identify each governed behavior specifically — closes the integration-level FAIL scope gap",
         )
@@ -1059,9 +1059,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "the tool call names the governed subject directly",
+            "executor invocation for (g)",
             definition,
-            "falsify must require the tool call to name the governed subject directly — 'the tool call names the governed subject directly' must appear in the definition",
+            "falsify must require the executor invocation to name the governed subject — encoded via layer gate: 'executor invocation for (g)'",
         )
 
     def test_falsify_disposable_artifact_constraint_in_primary_condition(self):
@@ -1071,9 +1071,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         exception_start = definition.find("Exception:")
         primary_condition = definition[:exception_start] if exception_start != -1 else definition
         self.assertIn(
-            "the tool call names the governed subject directly",
+            "executor invocation for (g)",
             primary_condition,
-            "falsify primary condition must require tool call to name governed subject — allow-list clause must appear before 'Exception:'",
+            "falsify primary condition must require executor invocation to name governed subject — allow-list clause must appear before 'Exception:'",
         )
 
     def test_falsify_governed_action_boundary_named(self):

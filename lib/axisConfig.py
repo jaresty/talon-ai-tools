@@ -217,8 +217,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
         "trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
-        "interactive": "The response presents at least one open element that names what the user must determine — and names at least two distinct outcomes, continuations, or states that depend on "
-        "that determination.",
+        "interactive": "The response names at least one user-driven state transition: a specific input or action and the specific state or outcome it produces.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
@@ -4080,13 +4079,13 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "interactive": {
             "distinctions": [
                 {
-                    "note": "cocreate = drives toward a finished shared artifact, resolving all open elements within the exchange; interactive = names what the user must "
-                    "determine and presents at least two distinct outcomes that depend on it",
+                    "note": "cocreate = drives toward a finished shared artifact, resolving all open elements within the exchange; interactive = names at least one "
+                    "user-driven state transition: a specific input or action and the specific state or outcome it produces",
                     "token": "cocreate",
                 },
                 {
-                    "note": "socratic = LLM drives by questioning the user to surface their existing reasoning; interactive = response names a determination point and "
-                    "presents branching outcomes, without prescribing the form of user input",
+                    "note": "socratic = LLM drives by questioning the user to surface their existing reasoning; interactive = response names at least one user-driven state "
+                    "transition (specific input → specific state), without prescribing the form of user input",
                     "token": "socratic",
                 },
             ],

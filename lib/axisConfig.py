@@ -218,7 +218,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response names a current state and at least one available input from that state, and ends with a prompt that itself names at least one of those inputs. The response "
-        "does not name by name the system state any input produces.",
+        "does not assert that any named input produces a named system state — causal claims of the form 'input → state' are withheld until the user acts.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
@@ -4081,12 +4081,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "distinctions": [
                 {
                     "note": "cocreate = drives toward a finished shared artifact, resolving all open elements within the exchange; interactive = names a current state and "
-                    "available inputs, ends with a prompt naming at least one input, and withholds the resulting system state until the user acts",
+                    "available inputs, ends with a prompt naming at least one input, and withholds causal claims (input → state) until the user acts",
                     "token": "cocreate",
                 },
                 {
                     "note": "socratic = LLM drives by questioning the user to surface their existing reasoning; interactive = response names a current state and available "
-                    "inputs, ends with a prompt naming an input, and withholds the resulting system state — the exchange continues when the user acts",
+                    "inputs, ends with a prompt naming an input, and withholds causal claims (input → state) — the exchange continues when the user acts",
                     "token": "socratic",
                 },
             ],

@@ -217,8 +217,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
         "trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
-        "interactive": "The response names at least one user-driven state transition: a specific input or action and the specific state it produces. Where the response names more than one "
-        "transition, at least one produced state must also appear as the starting condition for a subsequent transition.",
+        "interactive": "The response names a current state and at least one available input from that state, and ends with a prompt that itself names at least one of those inputs. The response "
+        "does not name by name the system state any input produces.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
@@ -4080,14 +4080,13 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "interactive": {
             "distinctions": [
                 {
-                    "note": "cocreate = drives toward a finished shared artifact, resolving all open elements within the exchange; interactive = names at least one "
-                    "user-driven state transition (specific input → specific state); where multiple transitions are named, at least one produced state feeds a "
-                    "subsequent transition",
+                    "note": "cocreate = drives toward a finished shared artifact, resolving all open elements within the exchange; interactive = names a current state and "
+                    "available inputs, ends with a prompt naming at least one input, and withholds the resulting system state until the user acts",
                     "token": "cocreate",
                 },
                 {
-                    "note": "socratic = LLM drives by questioning the user to surface their existing reasoning; interactive = response names at least one user-driven state "
-                    "transition (specific input → specific state), without prescribing the form of user input",
+                    "note": "socratic = LLM drives by questioning the user to surface their existing reasoning; interactive = response names a current state and available "
+                    "inputs, ends with a prompt naming an input, and withholds the resulting system state — the exchange continues when the user acts",
                     "token": "socratic",
                 },
             ],

@@ -35,10 +35,10 @@ Do NOT use bar-manual for:
 
 ### With `bar help llm` (preferred)
 
-1. **Load navigation guide**: Run `bar help llm` (no args) — it is a small navigation endpoint listing available sections and sub-commands. Teach users the same pattern.
+1. **Load navigation guide**: Run `bar help llm` (no args) as a standalone Bash command — do not pipe its output. A compliant invocation produces a tool-result block containing `## Context window`. Teach users the same pattern.
 2. **Guide to relevant sections on demand**:
    - `bar help llm --section heuristics` → Token Selection Heuristics (Choosing Method/Scope/Form)
-   - `bar help llm --section tokens` → full Token Catalog
+   - `bar help llm --section tokens` → full Token Catalog (compliant when tool-result contains `### Directional (0-1 token)`)
    - `bar help llm --section patterns` → Usage Patterns by Task Type
    - `bar help llm --section rules` → Composition Rules
    - `bar help token <slug>` → deep detail for one token (definition, heuristics, distinctions)

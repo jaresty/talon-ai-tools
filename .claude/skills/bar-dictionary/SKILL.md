@@ -129,20 +129,22 @@ Output: `axis:token<TAB>label<TAB>heuristics<TAB>distinctions`
 
 **Use when:** You need all tokens on an axis (e.g., to show options or verify a token exists).
 
+**Preferred:**
 ```bash
-bar help tokens --plain <axis>
+bar help llm --section tokens
 ```
+A compliant invocation produces a tool-result block containing `### Directional (0-1 token)` — this string appears only at the end of the full token catalog. A tool-result block that does not contain it has not loaded the full catalog. Do not pipe this command to any other command — run it standalone.
 
 Valid axis values: `task`, `scope`, `method`, `form`, `channel`, `completeness`,
 `directional`, `voice`, `audience`, `tone`, `intent`
 
-**Example:**
+**Legacy fallback** (older bar versions without `bar help llm`):
 ```bash
 bar help tokens --plain task    # all task tokens
 bar help tokens --plain method  # all 80+ method tokens
 ```
 
-**Output:** one tab-separated line per token (same four-field format as Operation 2).
+**Output:** `bar help llm --section tokens` produces human-readable catalog with definitions. Legacy `--plain` produces one tab-separated line per token (same four-field format as Operation 2).
 
 ---
 
@@ -159,7 +161,8 @@ Use bar-dictionary to find tokens matching "<intent>"
 ```bash
 bar lookup "<intent>"
 bar lookup "<intent>" --axis method --json
-bar help tokens --plain <axis>
+bar help llm --section tokens          # full catalog (preferred)
+bar help tokens --plain <axis>         # legacy fallback only
 ```
 
 Both patterns are equivalent in result. Pattern B is simpler and lower-overhead for

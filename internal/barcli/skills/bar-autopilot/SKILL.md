@@ -64,6 +64,11 @@ Each step is a required gate. Do not advance to the next step until the current 
    - `bar help llm --section rules` → Composition Rules (ordering, caps, incompatibilities)
    - `bar help llm --section patterns` → Usage Patterns by Task Type
    - `bar help token <slug>` → definition, heuristics, distinctions for one token
+
+   **Loading constraint:** Each `bar help llm` invocation must be run as a standalone Bash command with no pipe operators. Compliance is verified by the literal string present in the tool-result block:
+   - `bar help llm` (no args): tool-result must contain `## Context window` — this string appears only at the end of the navigation dispatch page
+   - `bar help llm --section tokens`: tool-result must contain `### Directional (0-1 token)` — this string appears only at the end of the full token catalog
+   A tool-result block that does not contain the expected literal string has not loaded the full output and does not satisfy this requirement.
 4. **Token selection strategy:**
    - Use `bar lookup "<intent>"` for intent-to-token discovery (no section load needed)
    - Consult **"Usage Patterns by Task Type"** (`--section patterns`) for similar use case examples

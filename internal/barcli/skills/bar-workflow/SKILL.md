@@ -81,10 +81,10 @@ Each step is a required gate. Do not advance to the next step until the current 
 **For bar versions with `bar help llm` support:**
 
 1. **Check for cached navigation guide** - If `bar help llm` was already run in this conversation, reuse it
-2. **Load navigation guide** - Run `bar help llm` (no args) to get the navigation endpoint. It lists available `--section` names and the `bar help token <slug>` command.
+2. **Load navigation guide** - Run `bar help llm` (no args) as a standalone Bash command. A compliant invocation produces a tool-result block containing `## Context window` — a tool-result block that does not contain this string has not loaded the full dispatch page. Do not pipe any `bar help llm` invocation to any other command.
 3. **Load only what you need:**
    - `bar help llm --section heuristics` → Choosing Method/Scope/Form guidance
-   - `bar help llm --section tokens` → full token catalog with definitions
+   - `bar help llm --section tokens` → full token catalog with definitions (compliant when tool-result contains `### Directional (0-1 token)`)
    - `bar help llm --section rules` → composition rules and incompatibilities
    - `bar help llm --section sequences` → sequence list, execution modes, dispatch step protocol
    - `bar help token <slug>` → definition, heuristics, distinctions for one token

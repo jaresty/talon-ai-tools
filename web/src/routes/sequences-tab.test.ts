@@ -296,6 +296,22 @@ describe('Page — Sequences mode', () => {
 		expect(text).toContain('Provide your input');
 	});
 
+	it('review panel (selected token chips) is hidden when Sequences mode is active', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+		flushSync();
+
+		const btn = Array.from(container.querySelectorAll('button')).find(
+			b => b.textContent?.trim() === 'Sequences'
+		) as HTMLElement;
+		btn.click();
+		flushSync();
+
+		const reviewPanel = container.querySelector('.review-panel');
+		expect(reviewPanel).toBeFalsy();
+	});
+
 	it('Build Prompt button returns to build mode and shows axis tab bar', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });

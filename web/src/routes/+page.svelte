@@ -983,6 +983,7 @@
 	{/if}
 
 	<!-- ADR-0157: Selected Token Review Panel - fixed bottom bar -->
+	{#if activeMode !== 'sequences'}
 	<div
 		class="review-panel"
 		class:review-panel-empty={!hasSelectedTokens}
@@ -1043,6 +1044,7 @@
 			Select tokens from the axes above
 		{/if}
 	</div>
+	{/if}
 
 	<!-- FAB and mobile action overlay — always accessible, outside preview panel -->
 	<button class="fab-btn" onclick={() => { if (Date.now() - swipeCompletedAt >= 600) fabOpen = !fabOpen; }} aria-label="Actions">

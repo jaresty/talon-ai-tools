@@ -653,7 +653,8 @@
 								parts.push(`=== Step ${i + 1}/${steps.length}: ${step.role} ===\nYour subject for this step is the full output of the previous step.\n\n${rendered}`);
 							}
 						}
-						const output = parts.join('\n\n---\n\n');
+						const preamble = `You must complete all ${steps.length} steps in sequence within this response. After completing each step, proceed immediately to the next.\n\n`;
+						const output = preamble + parts.join('\n\n---\n\n');
 						try {
 							await navigator.clipboard.writeText(output);
 							seqCopied = true;

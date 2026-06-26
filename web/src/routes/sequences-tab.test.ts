@@ -195,6 +195,37 @@ describe('Page — Sequences mode', () => {
 		expect(text).toContain('⏸');
 	});
 
+	it('copied prompt includes preamble instructing LLM to complete all steps', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+		flushSync();
+
+		const seqBtn = Array.from(container.querySelectorAll('button')).find(
+			b => b.textContent?.trim() === 'Sequences'
+		) as HTMLElement;
+		seqBtn.click();
+		flushSync();
+
+		const cardHeader = Array.from(container.querySelectorAll('.seq-card-header')).find(
+			el => el.textContent?.includes('debug-cycle')
+		) as HTMLElement;
+		cardHeader.click();
+		flushSync();
+
+		const copyBtn = Array.from(container.querySelectorAll('.seq-copy-btn')).find(
+			el => el.textContent?.includes('Copy as Prompt')
+		) as HTMLElement;
+		copyBtn.click();
+		await new Promise(r => setTimeout(r, 50));
+		flushSync();
+
+		// clipboard unavailable in jsdom — output falls back to modal textarea
+		const textarea = container.querySelector('.seq-modal-textarea') as HTMLTextAreaElement;
+		expect(textarea).toBeTruthy();
+		expect(textarea.value).toContain('complete all');
+	});
+
 	it('top-level subject input is hidden when Sequences mode is active', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });

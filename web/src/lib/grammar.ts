@@ -32,6 +32,22 @@ export interface PersonaPreset {
 	spoken: string;
 }
 
+export interface SequenceStep {
+	token?: string;
+	role: string;
+	prompt_hint?: string;
+	type?: string;
+}
+
+export interface Sequence {
+	description: string;
+	example?: string;
+	heuristics?: string[];
+	mode: string;
+	stop_when?: string;
+	steps: SequenceStep[];
+}
+
 // ADR-0227: Pairwise token composition — activates COMPOSITION RULES section in rendered prompt.
 export interface GrammarComposition {
 	name: string;
@@ -99,6 +115,7 @@ export interface Grammar {
 			axis_tokens?: Record<string, string[]>;
 		};
 	};
+	sequences?: Record<string, Sequence>;
 	patterns?: GrammarPattern[];
 	starter_packs?: StarterPack[]; // ADR-0144 Phase 2
 	compositions?: GrammarComposition[]; // ADR-0227
@@ -305,6 +322,11 @@ export function getUsagePatterns(grammar: Grammar): GrammarPattern[] {
 
 export function getStarterPacks(grammar: Grammar): StarterPack[] {
 	return grammar.starter_packs ?? [];
+}
+
+export function getSequences(grammar: Grammar): Array<{ key: string } & Sequence> {
+	const seqs = grammar.sequences ?? {};
+	return Object.entries(seqs).map(([key, seq]) => ({ key, ...seq }));
 }
 
 // getCompositionData returns the cross-axis composition entry for a channel/form token (ADR-0148).

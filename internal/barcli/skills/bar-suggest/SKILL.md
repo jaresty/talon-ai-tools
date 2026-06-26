@@ -132,17 +132,19 @@ Each refinement turn must follow the `form:interactive` contract:
 
 2. **Build the primary option**: the derived `bar build` command with confirmed tokens and task token from the dialogue.
 
-3. **Generate alternative framings**: run 1-2 additional `bar lookup` calls with different intent phrases to surface method variants:
+3. **Generate alternative framings**: run 1-2 additional `bar lookup` calls with meaningfully different intent phrases — not minor rewordings of the primary:
    ```bash
    bar lookup "<alternative framing of intent>"   # e.g., "failure modes assumptions" vs "compare options"
    ```
-   Each alternative framing becomes a distinct menu option with a different method emphasis.
+   For each alternative framing, assemble a full token set using judgment over the lookup results — select whichever tokens across method, scope, form, and completeness best serve that framing given the subject matter. Do not default to the top result; pick tokens that produce a meaningfully different response. An option that differs from the primary by only one token does not satisfy this requirement — options must be differentiable by what they produce, not just by one token swap.
 
 4. **Include sequences if applicable**: check the running list of `kind=sequence` results collected during dialogue lookups. If any named sequence fits, include it as a menu option. If the domain inherently benefits from staged output (e.g., explore→evaluate, diagnose→fix) and no named sequence matches, generate an ad-hoc 2-3 step sequence as an additional option.
 
-5. **Present the final menu** to the user — 2-4 options, each with a label, the bar command(s), and one sentence on what it emphasizes. End with `[1 / 2 / 3 ...]`.
+5. **Distinctness check**: before presenting, verify each option would produce noticeably different output from the others — different reasoning process, different output shape, or different angle of attack. If two options are too similar (same methods, same scope, same form — differing only in one minor token), replace one with a more divergent framing by running a new `bar lookup` with a more contrasting intent phrase.
 
-6. **Execute the chosen option**:
+6. **Present the final menu** to the user — 2-4 options, each with a label, the bar command(s), and one sentence on what it emphasizes. End with `[1 / 2 / 3 ...]`.
+
+7. **Execute the chosen option**:
    - Single `bar build`: execute directly
    - Named sequence: run `bar sequence show <name>` then hand off to bar-workflow
    - Ad-hoc sequence: hand the step list to bar-workflow for execution

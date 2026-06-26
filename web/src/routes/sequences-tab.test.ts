@@ -27,6 +27,15 @@ const MOCK_SEQUENCES = {
 			{ token: 'fix method:atomic', role: 'repair', prompt_hint: 'Apply minimal fix.' }
 		]
 	},
+	'experiment-cycle': {
+		description: 'Frame a hypothesis then run an experiment.',
+		mode: 'cycle',
+		steps: [
+			{ token: 'make form:prep', role: 'pre-experiment framing', prompt_hint: 'State the hypothesis.' },
+			{ type: 'action', role: 'experiment execution', prompt_hint: 'Run the experiment.', requires_user_input: true },
+			{ token: 'check form:vet', role: 'post-experiment review', prompt_hint: 'Evaluate the evidence.' }
+		]
+	},
 	'frame-explore': {
 		description: 'Explore a problem from multiple frames.',
 		mode: 'interactive',
@@ -71,7 +80,8 @@ vi.mock('$lib/grammar.js', () => ({
 	getChipStateWithReason: vi.fn().mockReturnValue({ state: null, naturalWith: [], cautionWith: [] }),
 	getSequences: vi.fn().mockReturnValue(
 		Object.entries(MOCK_SEQUENCES).map(([key, seq]) => ({ key, ...seq }))
-	)
+	),
+	renderPrompt: vi.fn().mockReturnValue('MOCK RENDERED PROMPT')
 }));
 
 vi.mock('$lib/incompatibilities.js', () => ({
@@ -324,6 +334,61 @@ describe('Page — Sequences mode', () => {
 
 		const text = container.textContent ?? '';
 		expect(text).toContain('Provide your input');
+	});
+
+	it('action steps are shown in the step list with a user badge', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+		flushSync();
+
+		const seqBtn = Array.from(container.querySelectorAll('button')).find(
+			b => b.textContent?.trim() === 'Sequences'
+		) as HTMLElement;
+		seqBtn.click();
+		flushSync();
+
+		const cardHeader = Array.from(container.querySelectorAll('.seq-card-header')).find(
+			el => el.textContent?.includes('experiment-cycle')
+		) as HTMLElement;
+		cardHeader.click();
+		flushSync();
+
+		const text = container.textContent ?? '';
+		expect(text).toContain('experiment execution');
+		expect(text).toContain('👤');
+	});
+
+	it('action step in copied prompt renders as YOUR ACTION block with AWAITING INPUT', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+		flushSync();
+
+		const seqBtn = Array.from(container.querySelectorAll('button')).find(
+			b => b.textContent?.trim() === 'Sequences'
+		) as HTMLElement;
+		seqBtn.click();
+		flushSync();
+
+		const cardHeader = Array.from(container.querySelectorAll('.seq-card-header')).find(
+			el => el.textContent?.includes('experiment-cycle')
+		) as HTMLElement;
+		cardHeader.click();
+		flushSync();
+
+		const copyBtn = Array.from(container.querySelectorAll('.seq-copy-btn')).find(
+			el => el.textContent?.includes('Copy as Prompt')
+		) as HTMLElement;
+		copyBtn.click();
+		await new Promise(r => setTimeout(r, 50));
+		flushSync();
+
+		const textarea = container.querySelector('.seq-modal-textarea') as HTMLTextAreaElement;
+		expect(textarea).toBeTruthy();
+		expect(textarea.value).toContain('YOUR ACTION');
+		expect(textarea.value).toContain('Run the experiment.');
+		expect(textarea.value).toContain('--- AWAITING INPUT ---');
 	});
 
 	it('review panel (selected token chips) is hidden when Sequences mode is active', async () => {

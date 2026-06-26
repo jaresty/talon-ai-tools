@@ -621,40 +621,49 @@
 				{#if seqExpandedKey === seq.key}
 					<ol class="seq-steps">
 						{#each seq.steps as step, i}
-							<li class="seq-step">
-								{#if step.token}<code class="seq-step-token">{step.token}</code>{/if}
+							<li class="seq-step" class:seq-step-action={step.type === 'action'}>
+								{#if step.type === 'action'}
+									<span class="seq-step-user-badge">👤 You</span>
+								{:else if step.token}
+									<code class="seq-step-token">{step.token}</code>
+								{/if}
 								<span class="seq-step-role">{step.role}</span>
 								{#if step.prompt_hint}<p class="seq-step-hint">{step.prompt_hint}</p>{/if}
 							</li>
-							{#if step.requires_user_input}
+							{#if step.requires_user_input && step.type !== 'action'}
 								<li class="seq-pause-indicator" aria-label="Provide your input before continuing to next step">⏸ Provide your input before continuing to the next step</li>
 							{/if}
 						{/each}
 					</ol>
 					<button class="seq-copy-btn" onclick={async () => {
-						const steps = seq.steps.filter(s => s.token);
+						const steps = seq.steps;
+						const total = steps.length;
 						const parts: string[] = [];
 						for (let i = 0; i < steps.length; i++) {
 							const step = steps[i];
-							const axisMap: Record<string, string[]> = {};
-							for (const pair of (step.token ?? '').split(' ')) {
-								const colonIdx = pair.indexOf(':');
-								if (colonIdx === -1) continue;
-								const axis = pair.slice(0, colonIdx);
-								const value = pair.slice(colonIdx + 1);
-								if (!axis || !value) continue;
-								if (!axisMap[axis]) axisMap[axis] = [];
-								axisMap[axis].push(value);
-							}
-							const rendered = renderPrompt(grammar, axisMap, seqSubject, step.prompt_hint ?? '');
-							const terminal = step.requires_user_input ? '\n\n--- AWAITING INPUT ---' : '';
-							if (i === 0) {
-								parts.push(`=== SEQUENCE: ${seq.key} — Step ${i + 1}/${steps.length}: ${step.role} ===\n\n${rendered}${terminal}`);
+							const header = i === 0
+								? `=== SEQUENCE: ${seq.key} — Step ${i + 1}/${total}: ${step.role} ===`
+								: `=== Step ${i + 1}/${total}: ${step.role} ===`;
+							if (step.type === 'action') {
+								parts.push(`${header}\n\n👤 YOUR ACTION: ${step.prompt_hint ?? step.role}\n\n--- AWAITING INPUT ---`);
 							} else {
-								parts.push(`=== Step ${i + 1}/${steps.length}: ${step.role} ===\nYour subject for this step is the full output of the previous step.\n\n${rendered}${terminal}`);
+								const axisMap: Record<string, string[]> = {};
+								for (const pair of (step.token ?? '').split(' ')) {
+									const colonIdx = pair.indexOf(':');
+									if (colonIdx === -1) continue;
+									const axis = pair.slice(0, colonIdx);
+									const value = pair.slice(colonIdx + 1);
+									if (!axis || !value) continue;
+									if (!axisMap[axis]) axisMap[axis] = [];
+									axisMap[axis].push(value);
+								}
+								const rendered = renderPrompt(grammar, axisMap, seqSubject, step.prompt_hint ?? '');
+								const terminal = step.requires_user_input ? '\n\n--- AWAITING INPUT ---' : '';
+								const chain = i === 0 ? '' : 'Your subject for this step is the full output of the previous step.\n\n';
+								parts.push(`${header}\n\n${chain}${rendered}${terminal}`);
 							}
 						}
-						const hasPause = steps.some(s => s.requires_user_input);
+						const hasPause = steps.some(s => s.requires_user_input || s.type === 'action');
 						const preamble = hasPause
 							? `Work through each step in sequence. When a step ends with "--- AWAITING INPUT ---", your response must end there. Do not continue to the next step until the user replies.\n\n`
 							: `You must complete all ${steps.length} steps in sequence within this response. After completing each step, proceed immediately to the next.\n\n`;

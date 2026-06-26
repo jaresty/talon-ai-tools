@@ -37,6 +37,7 @@ export interface SequenceStep {
 	role: string;
 	prompt_hint?: string;
 	type?: string;
+	requires_user_input?: boolean;
 }
 
 export interface Sequence {

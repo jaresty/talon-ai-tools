@@ -48,9 +48,11 @@ If the request is **not** ambiguous — the user has given sufficient signal abo
 
 1. **Detect open-ended or ambiguous request**
 2. **Load navigation guide** via `bar help llm` (no args), then load sections on demand
-3. **Run `bar build ... form:interactive`** to initiate intent-driven refinement dialogue
-4. **Refine across turns** following `form:interactive` contract until stop condition fires
-5. **Execute final `bar build`** with tokens derived from the dialogue and return structured response
+3. **Initial `bar lookup`** on the original request to surface seed token candidates
+4. **Run `bar build form:interactive`** with confirmed seed tokens but no task token
+5. **Refine across turns** — `bar lookup` after each user answer; accumulate token set
+6. **Stop condition fires** — select task token from dialogue answers; `bar guide` near-neighbors
+7. **Execute final `bar build`** with task + all derived tokens
 
 ## Skill Behavior Rules
 
@@ -87,16 +89,20 @@ Use bar-suggest when the request is:
 
 **With `bar help llm` Reference:**
 
-1. **Select an initiation task token** — the task token is determined by the verb the user's request implies: if the request asks to understand, explore, or analyze → `probe`; if it asks to create or produce → `make`; if it asks to evaluate or compare → `diff`; if it asks to find or fix a problem → `fix`. A task token is valid when the request's implied verb appears in the token's definition in `bar help llm` output loaded before this call. Discover all available task tokens from the reference § "Token Catalog" § "Tasks" — do not select a token whose definition text is not present in a prior tool result in this transcript.
+1. **Initial lookup pass** — before starting the dialogue, run `bar lookup` on the original request to surface first-pass token candidates:
+   ```bash
+   bar lookup "<original request phrase>"
+   ```
+   Note which tokens surface and their axes. These seed the dialogue — include any that are clearly confirmed by the request as tokens in the `bar build form:interactive` initiation; leave ambiguous ones for the dialogue to resolve.
 
-2. **Run a single `bar build <task> form:interactive`** — this is the only bar invocation during refinement. Include any tokens already clearly signaled by the request; leave ambiguous dimensions unspecified (they are what the refinement resolves).
+2. **Run `bar build form:interactive`** — with any clearly-confirmed seed tokens, but **without a task token**. Task token selection happens after the dialogue, once the user's intent is established. This is the only `bar build` invocation during refinement.
 
 3. **Follow the `form:interactive` contract** across N turns:
    - Name the current state of understanding (what is clear, what is ambiguous)
    - Name at least one available input — the dimension most likely to resolve the remaining ambiguity (scope? method? audience? depth?)
    - End each turn with a prompt that names those inputs
 
-4. **Derive the final token set** — as the user's answers accumulate, build the final `bar build` command. When the stop condition fires, execute it.
+4. **Derive the final token set** — as the user's answers accumulate, build the final `bar build` command. When the stop condition fires: select the task token from the dialogue answers (what verb did the user's intent resolve to?), combine with all accumulated axis tokens, then execute.
 
 **Token discovery during dialogue (required after each user answer):**
 
@@ -137,26 +143,31 @@ Each refinement turn must follow the `form:interactive` contract:
 # Step 1: Load reference
 bar help llm
 
-# Step 2: Initiate refinement with a single bar build form:interactive
-bar build probe form:interactive --subject "microservices architecture"
+# Step 2: Initial lookup on original request — seed token candidates before dialogue
+bar lookup "explain microservices architecture"
+# → surfaces: show, probe, full, struct, depends, mapping
+# "show" and "struct" clearly confirmed; task token (probe/show?) still ambiguous — leave for dialogue
 
-# Step 3: Follow form:interactive contract — after each user answer, run bar lookup
-# Turn 1: "Currently understood: you want an explanation of microservices.
-#           Still unclear: are you looking to understand the concept broadly,
-#           evaluate whether to adopt it, or diagnose a specific problem? [concept / evaluate / diagnose]"
+# Step 3: Initiate refinement — seed tokens included, no task token yet
+bar build form:interactive struct --subject "microservices architecture"
+
+# Step 4: Follow form:interactive contract — bar lookup after each user answer
+# Turn 1: "Currently understood: you want structural coverage of microservices.
+#           Still unclear: explain to understand broadly, evaluate whether to adopt,
+#           or diagnose a specific problem? [understand / evaluate / diagnose]"
 # User: "evaluate"
-bar lookup "evaluate tradeoffs compare options"   # → surfaces: diff, depends, contrast, tradeoffs
-# Show top results, fold confirmed tokens into accumulating set: diff, depends
+bar lookup "evaluate tradeoffs compare options"   # → surfaces: diff, depends, contrast
+# Fold confirmed: diff, depends; task token resolves to: diff
 
-# Turn 2: "Got it — evaluation framing (diff, depends). Is the audience technical
-#           or mixed? [technical / mixed]"
+# Turn 2: "Got it — evaluation framing (diff, depends). Technical or mixed audience?
+#           [technical / mixed]"
 # User: "technical, just go"
-bar lookup "technical audience deep"             # → surfaces: full, narrow, as-programmer
+bar lookup "technical depth"                     # → surfaces: full, narrow
 # Stop condition fires: sufficient signal + user said "go"
 
-# Step 4: Disambiguate near-neighbors, then execute
-bar guide diff        # confirms diff vs check vs probe for evaluation framing
-bar build probe full diff depends --subject "microservices architecture"
+# Step 5: Disambiguate near-neighbors, then execute with derived task token
+bar guide diff        # confirms diff vs check for evaluation framing
+bar build diff full struct depends --subject "microservices architecture"
 ```
 
 ## Integration with Other Skills

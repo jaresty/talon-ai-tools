@@ -52,7 +52,8 @@ If the request is **not** ambiguous — the user has given sufficient signal abo
 4. **Run `bar build form:interactive`** with confirmed seed tokens but no task token
 5. **Refine across turns** — `bar lookup` after each user answer; accumulate token set
 6. **Stop condition fires** — select task token from dialogue answers; `bar guide` near-neighbors
-7. **Execute final `bar build`** with task + all derived tokens
+7. **Generate final menu** — primary command + alternative framings + any sequences (named or ad-hoc)
+8. **User picks** — execute single command directly or hand sequence to bar-workflow
 
 ## Skill Behavior Rules
 
@@ -113,7 +114,7 @@ bar lookup "<user's stated intent>"               # surface token candidates acr
 bar lookup "<user's stated intent>" --axis method # restrict to method tokens if the answer names an approach
 ```
 
-Show the top 2-3 results to the user (token name + short label) and note which axis each comes from. Fold confirmed candidates into the accumulating token set. A refinement turn that does not run `bar lookup` on the user's answer does not satisfy this requirement — prose inference from the answer alone does not substitute for a tool-executed lookup result.
+Show the top 2-3 results to the user (token name + short label) and note which axis each comes from. Fold confirmed candidates into the accumulating token set. **Track any `kind=sequence` results separately** — these are candidates for the final menu. A refinement turn that does not run `bar lookup` on the user's answer does not satisfy this requirement — prose inference from the answer alone does not substitute for a tool-executed lookup result.
 
 ### Refinement Turn Structure
 
@@ -122,18 +123,29 @@ Each refinement turn must follow the `form:interactive` contract:
 - **Name available inputs**: the turn must name at least one dimension as a bracketed choice list — e.g., "[concept / evaluate / diagnose]" — a turn without a bracketed choice list does not satisfy this requirement
 - **End with a prompt**: the final line of the turn must be a question that names the bracketed choice list — a turn whose final line is not a question does not satisfy this requirement
 
-**After stop condition fires**, before running the final `bar build`:
+**After stop condition fires**, generate a final menu of 2-4 options before executing:
 
-1. **Disambiguate near-neighbor tokens**: for any token in the accumulated set where a similar token exists (e.g., `probe` vs `check`, `full` vs `deep`), run `bar guide <token>` to confirm the right choice:
+1. **Disambiguate near-neighbor tokens**: run `bar guide <token>` for any ambiguous token in the accumulated set:
    ```bash
    bar guide <token>   # side-by-side distinctions and combination guidance
    ```
-2. **Run the final `bar build`** with the confirmed token set.
-3. **Explain**: "Based on your answers I used `bar build [tokens]` — [token]: [reason], ..."
 
-**If the derived final command is a named sequence or multi-step sequence**, do not execute it as a single `bar build` command. Instead, invoke bar-workflow:
-1. Run `bar sequence show <sequence-name>` to load the full sequence definition
-2. Hand off execution to bar-workflow, which will execute each step in order
+2. **Build the primary option**: the derived `bar build` command with confirmed tokens and task token from the dialogue.
+
+3. **Generate alternative framings**: run 1-2 additional `bar lookup` calls with different intent phrases to surface method variants:
+   ```bash
+   bar lookup "<alternative framing of intent>"   # e.g., "failure modes assumptions" vs "compare options"
+   ```
+   Each alternative framing becomes a distinct menu option with a different method emphasis.
+
+4. **Include sequences if applicable**: check the running list of `kind=sequence` results collected during dialogue lookups. If any named sequence fits, include it as a menu option. If the domain inherently benefits from staged output (e.g., explore→evaluate, diagnose→fix) and no named sequence matches, generate an ad-hoc 2-3 step sequence as an additional option.
+
+5. **Present the final menu** to the user — 2-4 options, each with a label, the bar command(s), and one sentence on what it emphasizes. End with `[1 / 2 / 3 ...]`.
+
+6. **Execute the chosen option**:
+   - Single `bar build`: execute directly
+   - Named sequence: run `bar sequence show <name>` then hand off to bar-workflow
+   - Ad-hoc sequence: hand the step list to bar-workflow for execution
 
 ## Example Refinement Flow
 
@@ -165,9 +177,28 @@ bar lookup "evaluate tradeoffs compare options"   # → surfaces: diff, depends,
 bar lookup "technical depth"                     # → surfaces: full, narrow
 # Stop condition fires: sufficient signal + user said "go"
 
-# Step 5: Disambiguate near-neighbors, then execute with derived task token
-bar guide diff        # confirms diff vs check for evaluation framing
+# Step 5: Generate final menu
+bar guide diff        # disambiguate diff vs check
+bar lookup "failure modes assumptions evaluation"   # alternative framing → adversarial, contrast
+# No kind=sequence results surfaced during dialogue; domain (evaluate architecture) benefits
+# from staged output → generate ad-hoc sequence as option 3
+
+# Present menu:
+# 1. Structured evaluation — compare with dependencies mapped
+#    bar build diff full struct depends --subject "microservices architecture"
+#
+# 2. Tradeoff deep-dive — surface assumptions and failure modes
+#    bar build diff full adversarial contrast --subject "microservices architecture"
+#
+# 3. Step-by-step — map space then evaluate (2-step sequence)
+#    Step 1: bar build probe full mapping --subject "microservices architecture"
+#    Step 2: bar build diff depends contrast --subject "microservices architecture"
+#
+# Which fits best? [1 / 2 / 3]
+
+# User picks 1 → execute directly:
 bar build diff full struct depends --subject "microservices architecture"
+# User picks 3 → hand to bar-workflow with step list
 ```
 
 ## Integration with Other Skills

@@ -91,11 +91,14 @@ Use bar-suggest when the request is:
 
 **With `bar help llm` Reference:**
 
-1. **Initial lookup pass** — before starting the dialogue, run `bar lookup` on the original request to surface first-pass token candidates:
+1. **Initial lookup pass** — before starting the dialogue, run `bar lookup` with a query that names the cognitive operation the request implies, not the task content itself:
    ```bash
-   bar lookup "<original request phrase>"
+   bar lookup "<cognitive operation> <what it applies to>"
+   # e.g., "audit UI for missing data" not "sequences tab SPA"
+   # e.g., "diagnose performance bottleneck" not "slow API endpoint"
+   # e.g., "evaluate architectural tradeoffs" not "microservices vs monolith"
    ```
-   Note which tokens surface and their axes. These seed the dialogue — include any that are clearly confirmed by the request as tokens in the `bar build form:interactive` initiation; leave ambiguous ones for the dialogue to resolve.
+   The query must contain a verb naming how to think about the task (audit, compare, diagnose, evaluate, surface, map, review, trace). A query containing only task-content words without such a verb does not satisfy this requirement. Note which tokens surface and their axes — include any clearly confirmed by the request as seed tokens; leave ambiguous ones for the dialogue to resolve.
 
 2. **Run `bar build probe form:interactive`** — always use `probe` as the task token for the initiation; `probe` reflects that the dialogue itself is probing to understand the request, not yet executing it. Include any clearly-confirmed seed tokens from the initial lookup. This is the only `bar build` invocation during refinement. The final task token (which may differ from `probe`) is derived from the dialogue answers at the stop condition.
 
@@ -108,14 +111,17 @@ Use bar-suggest when the request is:
 
 **Token discovery during dialogue (required after each user answer):**
 
-After each user answer in a refinement turn, run `bar lookup` on the intent phrase the user expressed before asking the next question:
+After each user answer in a refinement turn, translate the answer into a reasoning mode and run `bar lookup` on that mode — not on the answer text itself:
 
 ```bash
-bar lookup "<user's stated intent>"               # surface token candidates across all axes
-bar lookup "<user's stated intent>" --axis method # restrict to method tokens if the answer names an approach
+bar lookup "<cognitive operation implied by the answer>"
+bar lookup "<cognitive operation>" --axis method  # restrict if the answer names an approach
+# e.g., user says "I want to find bugs" → bar lookup "diagnose surface failure modes"
+# e.g., user says "compare options" → bar lookup "evaluate tradeoffs contrast alternatives"
+# e.g., user says "just give me the plan" → bar lookup "sequence ordered steps structured plan"
 ```
 
-Show the top 2-3 results to the user (token name + short label) and note which axis each comes from. Fold confirmed candidates into the accumulating token set. **Track any `kind=sequence` results separately** — these are candidates for the final menu. A refinement turn that does not run `bar lookup` on the user's answer does not satisfy this requirement — prose inference from the answer alone does not substitute for a tool-executed lookup result.
+The query must name how the user wants to think about the task, not what they said. A query that copies the user's words without a cognitive operation verb does not satisfy this requirement. Show the top 2-3 results (token name + short label + axis). Fold confirmed candidates into the accumulating token set. **Track any `kind=sequence` results separately** — these are candidates for the final menu. A refinement turn that does not run `bar lookup` does not satisfy this requirement.
 
 ### Refinement Turn Structure
 
@@ -133,9 +139,15 @@ Each refinement turn must follow the `form:interactive` contract:
 
 2. **Build the primary option**: the derived `bar build` command with confirmed tokens and task token from the dialogue.
 
-3. **Generate alternative framings**: run 1-2 additional `bar lookup` calls with meaningfully different intent phrases — not minor rewordings of the primary:
+3. **Generate alternative framings**: run 1-2 additional `bar lookup` calls using contrasting cognitive operations — not rewordings of the primary framing's verb:
    ```bash
-   bar lookup "<alternative framing of intent>"   # e.g., "failure modes assumptions" vs "compare options"
+   bar lookup "<contrasting cognitive operation>"
+   # Primary used "evaluate tradeoffs" → alternatives might use:
+   #   "surface failure modes adversarial"
+   #   "map structure dependencies"
+   #   "diagnose root cause"
+   # The alternative verb must differ from the primary verb — a query using the same
+   # cognitive operation as the primary does not satisfy this requirement.
    ```
    For each alternative framing, assemble a full token set using judgment over the lookup results — select whichever tokens across method, scope, form, and completeness best serve that framing given the subject matter. Do not default to the top result; pick tokens that produce a meaningfully different response. An option that differs from the primary by only one token does not satisfy this requirement — options must be differentiable by what they produce, not just by one token swap.
 

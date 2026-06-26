@@ -95,7 +95,7 @@ Use bar-suggest when the request is:
    ```
    Note which tokens surface and their axes. These seed the dialogue — include any that are clearly confirmed by the request as tokens in the `bar build form:interactive` initiation; leave ambiguous ones for the dialogue to resolve.
 
-2. **Run `bar build form:interactive`** — with any clearly-confirmed seed tokens, but **without a task token**. Task token selection happens after the dialogue, once the user's intent is established. This is the only `bar build` invocation during refinement.
+2. **Run `bar build probe form:interactive`** — always use `probe` as the task token for the initiation; `probe` reflects that the dialogue itself is probing to understand the request, not yet executing it. Include any clearly-confirmed seed tokens from the initial lookup. This is the only `bar build` invocation during refinement. The final task token (which may differ from `probe`) is derived from the dialogue answers at the stop condition.
 
 3. **Follow the `form:interactive` contract** across N turns:
    - Name the current state of understanding (what is clear, what is ambiguous)
@@ -148,8 +148,8 @@ bar lookup "explain microservices architecture"
 # → surfaces: show, probe, full, struct, depends, mapping
 # "show" and "struct" clearly confirmed; task token (probe/show?) still ambiguous — leave for dialogue
 
-# Step 3: Initiate refinement — seed tokens included, no task token yet
-bar build form:interactive struct --subject "microservices architecture"
+# Step 3: Initiate refinement — always probe, seed tokens included
+bar build probe form:interactive struct --subject "microservices architecture"
 
 # Step 4: Follow form:interactive contract — bar lookup after each user answer
 # Turn 1: "Currently understood: you want structural coverage of microservices.

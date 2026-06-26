@@ -25,7 +25,7 @@ For ambiguous or open-ended requests, bar-suggest uses a **single `bar build ...
 3. The dialogue continues until the **stop condition** is met:
    - **Sufficient signal**: the transcript contains a named token value for every axis the final `bar build` command requires — task, and at least one of scope/method/form — each derived from a user answer appearing above the stop declaration in the transcript. A stop declaration that appears before these named token values are present does not satisfy this requirement. OR
    - **User says "go"**: the user explicitly asks to proceed with the current understanding.
-4. Once the stop condition fires, derive and run the final `bar build` command with tokens accumulated through the dialogue, then execute as normal.
+4. Once the stop condition fires, generate the final menu (see Refinement Turn Structure) — do not execute any `bar build` command before the user has selected from the menu. A `bar build` execution that appears before the user's menu selection does not satisfy this requirement.
 
 **Ambiguous or partial user answers:** If the user's answer does not name a specific value for the asked dimension (e.g., "maybe" / "I'm not sure" / answers a different question), treat the dimension as still unresolved and ask a more specific follow-up that names two concrete options. A turn that exits refinement without a named token value for each required axis does not satisfy the sufficient-signal stop condition.
 
@@ -57,8 +57,8 @@ If the request is **not** ambiguous — the user has given sufficient signal abo
 
 ## Skill Behavior Rules
 
-- **Do not answer directly before refinement completes.** Run `bar build ... form:interactive` first and follow the refinement dialogue until the stop condition fires.
-- **A response that addresses the original request is permitted only when the stop condition has fired and a final `bar build` result appears above it in the transcript — a response addressing the original request before these appear does not satisfy this requirement.**
+- **Do not answer directly before the menu is presented and the user has selected.** Run `bar build probe form:interactive` first, follow the refinement dialogue until the stop condition fires, then generate the final menu.
+- **A response that addresses the original request is permitted only when a final menu containing at least one literal `` `bar build `` string and the user's numbered selection both appear above it in the transcript — a response addressing the original request before both are present does not satisfy this requirement.**
 - **Use `form:interactive` for refinement, not a flat menu.** The refinement is intent-driven: ask the question that eliminates the most ambiguity given the current state of understanding.
 - **Never hardcode tokens.** Discover via `bar help llm` and `bar lookup`.
 - **Use kebab-case for multi-word tokens.** Convert spaces to hyphens (e.g., "as-kent-beck").

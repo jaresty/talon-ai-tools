@@ -653,7 +653,10 @@
 								parts.push(`=== Step ${i + 1}/${steps.length}: ${step.role} ===\nYour subject for this step is the full output of the previous step.\n\n${rendered}`);
 							}
 						}
-						const preamble = `You must complete all ${steps.length} steps in sequence within this response. After completing each step, proceed immediately to the next.\n\n`;
+						const hasPause = steps.some(s => s.requires_user_input);
+						const preamble = hasPause
+							? `Work through each step in sequence. Where you see ⏸, stop and wait for user input before continuing to the next step.\n\n`
+							: `You must complete all ${steps.length} steps in sequence within this response. After completing each step, proceed immediately to the next.\n\n`;
 						const output = preamble + parts.join('\n\n---\n\n');
 						try {
 							await navigator.clipboard.writeText(output);

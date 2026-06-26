@@ -647,15 +647,16 @@
 								axisMap[axis].push(value);
 							}
 							const rendered = renderPrompt(grammar, axisMap, seqSubject, step.prompt_hint ?? '');
+							const terminal = step.requires_user_input ? '\n\n--- AWAITING INPUT ---' : '';
 							if (i === 0) {
-								parts.push(`=== SEQUENCE: ${seq.key} — Step ${i + 1}/${steps.length}: ${step.role} ===\n\n${rendered}`);
+								parts.push(`=== SEQUENCE: ${seq.key} — Step ${i + 1}/${steps.length}: ${step.role} ===\n\n${rendered}${terminal}`);
 							} else {
-								parts.push(`=== Step ${i + 1}/${steps.length}: ${step.role} ===\nYour subject for this step is the full output of the previous step.\n\n${rendered}`);
+								parts.push(`=== Step ${i + 1}/${steps.length}: ${step.role} ===\nYour subject for this step is the full output of the previous step.\n\n${rendered}${terminal}`);
 							}
 						}
 						const hasPause = steps.some(s => s.requires_user_input);
 						const preamble = hasPause
-							? `Work through each step in sequence. Where you see ⏸, stop and wait for user input before continuing to the next step.\n\n`
+							? `Work through each step in sequence. When a step ends with "--- AWAITING INPUT ---", your response must end there. Do not continue to the next step until the user replies.\n\n`
 							: `You must complete all ${steps.length} steps in sequence within this response. After completing each step, proceed immediately to the next.\n\n`;
 						const output = preamble + parts.join('\n\n---\n\n');
 						try {

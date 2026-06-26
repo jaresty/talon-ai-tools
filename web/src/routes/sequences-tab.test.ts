@@ -195,6 +195,36 @@ describe('Page — Sequences mode', () => {
 		expect(text).toContain('⏸');
 	});
 
+	it('copied prompt injects AWAITING INPUT terminal string after requires_user_input steps', async () => {
+		const { default: Page } = await import('../routes/+page.svelte');
+		mount(Page, { target: container });
+		await new Promise(r => setTimeout(r, 100));
+		flushSync();
+
+		const seqBtn = Array.from(container.querySelectorAll('button')).find(
+			b => b.textContent?.trim() === 'Sequences'
+		) as HTMLElement;
+		seqBtn.click();
+		flushSync();
+
+		const cardHeader = Array.from(container.querySelectorAll('.seq-card-header')).find(
+			el => el.textContent?.includes('debug-cycle')
+		) as HTMLElement;
+		cardHeader.click();
+		flushSync();
+
+		const copyBtn = Array.from(container.querySelectorAll('.seq-copy-btn')).find(
+			el => el.textContent?.includes('Copy as Prompt')
+		) as HTMLElement;
+		copyBtn.click();
+		await new Promise(r => setTimeout(r, 50));
+		flushSync();
+
+		const textarea = container.querySelector('.seq-modal-textarea') as HTMLTextAreaElement;
+		expect(textarea).toBeTruthy();
+		expect(textarea.value).toContain('--- AWAITING INPUT ---');
+	});
+
 	it('copied prompt with requires_user_input steps instructs LLM to pause for input', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
@@ -223,7 +253,7 @@ describe('Page — Sequences mode', () => {
 		const textarea = container.querySelector('.seq-modal-textarea') as HTMLTextAreaElement;
 		expect(textarea).toBeTruthy();
 		// pause-mode preamble: instructs stop-and-wait, not complete-all
-		expect(textarea.value).toContain('stop and wait');
+		expect(textarea.value).toContain('--- AWAITING INPUT ---');
 		expect(textarea.value).not.toContain('complete all');
 	});
 

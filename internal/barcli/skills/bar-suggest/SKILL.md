@@ -11,7 +11,7 @@ This skill enables the LLM to **present users with bar-based choices** for how t
 
 Assumes:
 - **REQUIRED:** `bar` CLI is installed and accessible — this skill cannot function without it
-- The LLM can run `bar help llm` (or `bar help tokens` for older versions) to discover available tokens
+- The LLM can run `bar help llm` to discover available tokens
 - The LLM has access to a tool for executing bar commands (Bash or equivalent)
 
 ## Interactive Refinement Mode
@@ -29,7 +29,7 @@ For ambiguous or open-ended requests, bar-suggest uses a **single `bar build ...
 
 **Ambiguous or partial user answers:** If the user's answer does not name a specific value for the asked dimension (e.g., "maybe" / "I'm not sure" / answers a different question), treat the dimension as still unresolved and ask a more specific follow-up that names two concrete options. A turn that exits refinement without a named token value for each required axis does not satisfy the sufficient-signal stop condition.
 
-**No additional bar invocations occur during refinement turns** — the single `bar build form:interactive` output governs the whole dialogue until the stop condition.
+**No additional `bar build` invocations occur during refinement turns** — the single `bar build form:interactive` output governs the whole dialogue until the stop condition. `bar lookup` and `bar guide` calls are permitted and required during refinement (see Refinement Turn Structure).
 
 ### Example initiation
 
@@ -57,46 +57,23 @@ If the request is **not** ambiguous — the user has given sufficient signal abo
 - **Do not answer directly before refinement completes.** Run `bar build ... form:interactive` first and follow the refinement dialogue until the stop condition fires.
 - **A response that addresses the original request is permitted only when the stop condition has fired and a final `bar build` result appears above it in the transcript — a response addressing the original request before these appear does not satisfy this requirement.**
 - **Use `form:interactive` for refinement, not a flat menu.** The refinement is intent-driven: ask the question that eliminates the most ambiguity given the current state of understanding.
-- **Never hardcode tokens.** Discover via `bar help llm` (preferred) or `bar help tokens` (fallback).
+- **Never hardcode tokens.** Discover via `bar help llm` and `bar lookup`.
 - **Use kebab-case for multi-word tokens.** Convert spaces to hyphens (e.g., "as-kent-beck").
 - **Be transparent about usage.** After the stop condition fires and the final `bar build` executes, state: "Based on your answers I used `bar build [tokens]` — [token]: [reason], ..."
 - **Execute final command.** A final `bar build` tool result must appear in the transcript above the substantive response — a substantive response that appears before this result does not satisfy this requirement.
 
 ## Discovery Workflow
 
-### With `bar help llm` (preferred)
-
-**For bar versions with `bar help llm` support:**
-
-1. **Check for cached reference** - If already loaded in conversation, reuse it
-2. **Load reference once** - Run `bar help llm` (no args) as a standalone Bash command to get the navigation dispatch. A compliant invocation produces a tool-result block containing the literal string `## Context window` — a tool-result block that does not contain this string has not loaded the full dispatch page. Then load sections on demand (e.g. `bar help llm --section tokens`); a compliant `--section tokens` invocation produces a tool-result block containing `### Directional (0-1 token)`. Do not pipe any `bar help llm` invocation to any other command — run each as a standalone Bash command.
-3. **Option generation strategy:**
-   - Consult **"Usage Patterns by Task Type"** section for diverse examples
-   - Reference **"Choosing Method"** section to understand method categorization
-   - Use **"Token Catalog"** to discover tokens across all axes
-   - Check **"Composition Rules"** for valid combinations
-
-**Performance benefit:** Single reference load enables generating multiple diverse options
-
-**Method categorization for option diversity:**
-- **Exploration Methods** → For discovery-oriented options
-- **Understanding Methods** → For analysis-oriented options
-- **Decision Methods** → For evaluation-oriented options
-- **Diagnostic Methods** → For problem-focused options
-
-### Fallback (legacy `bar help tokens`)
-
-**For older bar versions without `bar help llm`:**
-
-1. Run `bar help tokens` to discover available tokens
-2. Use sectioned queries: `bar help tokens scope method form`
-3. Apply embedded heuristics for option generation
+1. **Check for cached reference** — if `bar help llm` was already run in this conversation, reuse it
+2. **Load reference once** — run `bar help llm` (no args) as a standalone Bash command. A compliant invocation produces a tool-result block containing `## Context window`. Do not pipe any `bar help llm` invocation to any other command.
+3. **Discover tokens by intent** — use `bar lookup "<intent>"` after each user answer during refinement (see Refinement Turn Structure)
+4. **Disambiguate near-neighbors** — use `bar guide <token>` after the stop condition fires for any ambiguous token choices
 
 **Grammar note:** Token order is: persona → static → completeness → scope (1-2) → method (1-3) → form → channel → directional.
 
 ## Option Generation Strategy
 
-**IMPORTANT:** Never hardcode tokens. Always discover them from `bar help llm` or `bar help tokens` first.
+**IMPORTANT:** Never hardcode tokens. Discover them via `bar lookup` during the refinement dialogue.
 
 ### Step 1: Detect When to Offer Choices
 
@@ -121,26 +98,16 @@ Use bar-suggest when the request is:
 
 4. **Derive the final token set** — as the user's answers accumulate, build the final `bar build` command. When the stop condition fires, execute it.
 
-**Token derivation during dialogue:**
-- Each user answer maps to one or more token dimensions (e.g., "go deep" → `full` or `narrow`, "just me" → audience token, "show tradeoffs" → method token)
-- Read reference § "Choosing Method", § "Choosing Scope", § "Choosing Form" to translate user intent into discovered tokens
+**Token discovery during dialogue (required after each user answer):**
 
-### Legacy Option Generation (without bar help llm)
-
-If `bar help llm` is unavailable, use `bar lookup` to find tokens by intent:
+After each user answer in a refinement turn, run `bar lookup` on the intent phrase the user expressed before asking the next question:
 
 ```bash
-bar lookup "<your intent>"               # find matching tokens across all axes
-bar lookup "<your intent>" --axis method # restrict to method tokens only
+bar lookup "<user's stated intent>"               # surface token candidates across all axes
+bar lookup "<user's stated intent>" --axis method # restrict to method tokens if the answer names an approach
 ```
 
-For generating distinct options, run several lookups with different intent framings
-(e.g., "explore broadly", "diagnose root cause", "evaluate tradeoffs") to surface
-tokens from different method categories.
-
-Or invoke `bar-dictionary` for a guided lookup session.
-
-Fall back to `bar help tokens scope method form` only if `bar lookup` is also unavailable.
+Show the top 2-3 results to the user (token name + short label) and note which axis each comes from. Fold confirmed candidates into the accumulating token set. A refinement turn that does not run `bar lookup` on the user's answer does not satisfy this requirement — prose inference from the answer alone does not substitute for a tool-executed lookup result.
 
 ### Refinement Turn Structure
 
@@ -149,7 +116,14 @@ Each refinement turn must follow the `form:interactive` contract:
 - **Name available inputs**: the turn must name at least one dimension as a bracketed choice list — e.g., "[concept / evaluate / diagnose]" — a turn without a bracketed choice list does not satisfy this requirement
 - **End with a prompt**: the final line of the turn must be a question that names the bracketed choice list — a turn whose final line is not a question does not satisfy this requirement
 
-**After stop condition fires**, execute the final `bar build` with derived tokens and produce the response. Explain: "Based on your answers I used `bar build [tokens]` to [reason]."
+**After stop condition fires**, before running the final `bar build`:
+
+1. **Disambiguate near-neighbor tokens**: for any token in the accumulated set where a similar token exists (e.g., `probe` vs `check`, `full` vs `deep`), run `bar guide <token>` to confirm the right choice:
+   ```bash
+   bar guide <token>   # side-by-side distinctions and combination guidance
+   ```
+2. **Run the final `bar build`** with the confirmed token set.
+3. **Explain**: "Based on your answers I used `bar build [tokens]` — [token]: [reason], ..."
 
 **If the derived final command is a named sequence or multi-step sequence**, do not execute it as a single `bar build` command. Instead, invoke bar-workflow:
 1. Run `bar sequence show <sequence-name>` to load the full sequence definition
@@ -164,37 +138,25 @@ Each refinement turn must follow the `form:interactive` contract:
 bar help llm
 
 # Step 2: Initiate refinement with a single bar build form:interactive
-# Example for "Explain microservices architecture":
 bar build probe form:interactive --subject "microservices architecture"
 
-# Step 3: Follow form:interactive contract across turns
-# Turn 1: "Currently I understand you want an explanation of microservices.
-#           What's unclear: are you looking to understand the concept broadly,
-#           evaluate whether to adopt it, or diagnose a specific problem with
-#           an existing system? [concept / evaluate / diagnose]"
+# Step 3: Follow form:interactive contract — after each user answer, run bar lookup
+# Turn 1: "Currently understood: you want an explanation of microservices.
+#           Still unclear: are you looking to understand the concept broadly,
+#           evaluate whether to adopt it, or diagnose a specific problem? [concept / evaluate / diagnose]"
 # User: "evaluate"
-# Turn 2: "Got it — evaluation framing. Is the audience technical (can absorb
-#           tradeoffs directly) or mixed (needs grounding first)? [technical / mixed]"
+bar lookup "evaluate tradeoffs compare options"   # → surfaces: diff, depends, contrast, tradeoffs
+# Show top results, fold confirmed tokens into accumulating set: diff, depends
+
+# Turn 2: "Got it — evaluation framing (diff, depends). Is the audience technical
+#           or mixed? [technical / mixed]"
 # User: "technical, just go"
+bar lookup "technical audience deep"             # → surfaces: full, narrow, as-programmer
 # Stop condition fires: sufficient signal + user said "go"
 
-# Step 4: Derive and execute final bar build from dialogue answers
+# Step 4: Disambiguate near-neighbors, then execute
+bar guide diff        # confirms diff vs check vs probe for evaluation framing
 bar build probe full diff depends --subject "microservices architecture"
-```
-
-**Legacy approach:**
-
-```bash
-# Step 1: Discover tokens
-bar help tokens scope method form
-
-# Step 2: Initiate refinement
-bar build probe form:interactive --subject "<topic>"
-
-# Step 3: Refine across turns, translate answers to tokens
-
-# Step 4: Execute final command with derived tokens
-bar build <derived-tokens> --subject "<topic>"
 ```
 
 ## Integration with Other Skills
@@ -207,16 +169,6 @@ bar build <derived-tokens> --subject "<topic>"
 - If request has single obvious framing → use bar-autopilot
 - If request is ambiguous or open-ended → use bar-suggest
 - If request is complex multi-faceted task → use bar-workflow
-
-## Performance Notes
-
-**With `bar help llm`:**
-- **Tool calls:** 1 navigation guide + on-demand section loads
-- **Benefits:** Method categorization provides natural option diversity; load only sections needed
-
-**Legacy approach:**
-- **Tool calls:** 1-2 discovery queries per suggestion request
-- Still fully functional with embedded heuristics
 
 ## Cross-Agent Compatibility
 

@@ -57,68 +57,66 @@
 
 <style>
 	.presets-panel {
-		margin-top: 0.5rem;
+		margin-bottom: 0.75rem;
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		overflow: hidden;
 	}
 
 	.presets-summary {
+		padding: 0.4rem 0.75rem;
+		font-size: 0.75rem;
+		text-transform: uppercase;
+		letter-spacing: 0.05em;
 		cursor: pointer;
-		font-size: 0.85rem;
-		color: var(--color-muted, #aaa);
 		user-select: none;
+		background: var(--color-surface);
+		color: var(--color-text-muted);
 	}
 
 	.presets-save-row {
 		display: flex;
 		gap: 0.5rem;
-		margin: 0.5rem 0;
+		padding: 0.5rem 0.75rem 0.25rem;
 	}
 
 	.presets-name-input {
 		flex: 1;
-		background: var(--color-surface, #1a1a1a);
-		border: 1px solid var(--color-border, #444);
-		border-radius: 4px;
-		color: inherit;
 		padding: 0.3rem 0.5rem;
-		font-size: 0.85rem;
+		font-size: 0.8rem;
+		background: var(--color-bg);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		color: var(--color-text);
 	}
 
 	.presets-save-btn {
 		padding: 0.3rem 0.75rem;
-		background: var(--color-accent, #4a9eff);
-		color: #fff;
+		font-size: 0.8rem;
+		background: var(--color-accent);
+		color: #1a1b26;
 		border: none;
-		border-radius: 4px;
+		border-radius: var(--radius);
 		cursor: pointer;
-		font-size: 0.85rem;
+		white-space: nowrap;
 	}
 
-	.presets-save-btn:disabled {
-		opacity: 0.4;
-		cursor: default;
-	}
+	.presets-save-btn:disabled { opacity: 0.4; cursor: default; }
 
 	.presets-empty {
-		font-size: 0.82rem;
-		color: var(--color-muted, #888);
-		margin: 0.25rem 0;
+		font-size: 0.8rem;
+		color: var(--color-text-muted);
+		padding: 0.5rem 0.75rem 0.75rem;
+		margin: 0;
 	}
 
-	.presets-list {
-		list-style: none;
-		padding: 0;
-		margin: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 0.4rem;
-	}
+	.presets-list { list-style: none; margin: 0; padding: 0.25rem 0 0.5rem; }
 
 	.preset-item {
-		background: var(--color-surface, #1a1a1a);
-		border: 1px solid var(--color-border, #333);
-		border-radius: 4px;
-		padding: 0.4rem 0.6rem;
+		padding: 0.35rem 0.75rem;
+		border-bottom: 1px solid var(--color-border);
 	}
+	.preset-item:last-child { border-bottom: none; }
 
 	.preset-item-top {
 		display: flex;
@@ -127,40 +125,39 @@
 		gap: 0.5rem;
 	}
 
-	.preset-item-name {
-		font-size: 0.85rem;
-		font-weight: 500;
-	}
+	.preset-item-name { font-size: 0.85rem; font-weight: 500; color: var(--color-text); }
 
-	.preset-item-actions {
-		display: flex;
-		gap: 0.3rem;
-	}
+	.preset-item-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
 
 	.preset-load-btn {
-		font-size: 0.78rem;
 		padding: 0.15rem 0.5rem;
-		background: var(--color-accent, #4a9eff);
-		color: #fff;
-		border: none;
-		border-radius: 3px;
+		font-size: 0.75rem;
+		background: var(--color-surface);
+		border: 1px solid var(--color-border);
+		border-radius: var(--radius);
+		color: var(--color-text);
 		cursor: pointer;
 	}
+	.preset-load-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
 
 	.preset-delete-btn {
-		font-size: 0.78rem;
 		padding: 0.15rem 0.4rem;
+		font-size: 0.75rem;
 		background: transparent;
-		color: var(--color-muted, #888);
-		border: 1px solid var(--color-border, #444);
-		border-radius: 3px;
+		border: 1px solid transparent;
+		border-radius: var(--radius);
+		color: var(--color-text-muted);
 		cursor: pointer;
 	}
+	.preset-delete-btn:hover { border-color: #f7768e; color: #f7768e; }
 
 	.preset-item-tokens {
 		display: block;
-		margin-top: 0.2rem;
+		margin-top: 0.15rem;
 		font-size: 0.75rem;
-		color: var(--color-muted, #999);
+		color: var(--color-text-muted);
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 </style>

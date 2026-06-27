@@ -85,3 +85,32 @@ def test_falsify_e_derives_unit_integration_from_test_body():
         "falsify (e) must define the 'integration' layer classification derived from test body "
         "— governed symbol name does not appear in test body (gap D3/G1)"
     )
+
+
+def test_falsify_import_error_exclusion():
+    """falsify (g) must explicitly exclude collection-phase/import-phase error outputs.
+
+    Gap D1/C1/D2/G1: the (a)-(c) ordering proxy is satisfied by ImportError outputs
+    without the executor having reached any assertion. The new sentence closes this:
+    a failure line naming only a file path, module path, or import location does not
+    satisfy (g) regardless of whether (a) precedes (c).
+    """
+    text = _falsify()
+    assert "failure line whose content includes a substring from the assert statement" in text, (
+        "falsify must require failure line to contain a substring from the assert statement "
+        "— closes import-error escape route (D1/C1/D2/G1)"
+    )
+
+
+def test_falsify_no_assertion_substring_exclusion():
+    """falsify must state the domain-agnostic negative: no assertion substring means (g) not satisfied.
+
+    Gap D2: the allow-list clause (assertion substring required) is the closure mechanism.
+    The negative form must appear explicitly so it applies across all executor domains,
+    not just Python/pytest (which have 'import locations').
+    """
+    text = _falsify()
+    assert "a failure line that contains no such substring does not satisfy (g)" in text, (
+        "falsify must state 'a failure line that contains no such substring does not satisfy (g)' "
+        "— domain-agnostic negative closes D2 without enumerating software-specific error types"
+    )

@@ -402,9 +402,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "verbatim excerpt from an executed-artifact result appearing in the transcript after the artifact was applied to the subject and before the first governed action that modifies "
         "the implementation, where (a) precedes (c) and the executor named in (f) produced the result. Layer gate: if (e) is 'unit', the governed symbol name must appear in the "
         "executor invocation for (g); if (e) is 'integration', it must not. A result satisfies this token if and only if: (g) is present at the required position; (a) is not separated "
-        "from (c) in (g) by any line naming a different governed behavior identifier; and a subsequent executed-artifact result contains (b) at the position where (a) was absent. "
-        "Exception: (g) is not required for the single action that produces the governing artifact's assertion text — the creation step is that action only; (g) is required for every "
-        "action that modifies the implementation, including in the same session — a creation step is that action only if (c) is absent before the action and present after it.",
+        "from (c) in (g) by any line naming a different governed behavior identifier; and a subsequent executed-artifact result contains (b) at the position where (a) was absent. A "
+        "result satisfying (g) must contain a failure line whose content includes a substring from the assert statement of the governed assertion; a failure line that contains no such "
+        "substring does not satisfy (g) regardless of whether (a) precedes (c) in its output. Exception: (g) is not required for the single action that produces the governing "
+        "artifact's assertion text — the creation step is that action only; (g) is required for every action that modifies the implementation, including in the same session — a "
+        "creation step is that action only if (c) is absent before the action and present after it.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

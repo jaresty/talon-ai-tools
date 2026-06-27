@@ -805,6 +805,13 @@
 		.shortcut-legend { display: none; }
 	}
 
+	div.selector-panel-root {
+		min-width: 0;
+		width: 100%;
+		max-width: 100%;
+		box-sizing: border-box;
+	}
+
 	.selector-panel {
 		position: relative;
 		padding-left: 3px;

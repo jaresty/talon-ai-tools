@@ -406,7 +406,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "result satisfying (g) must contain a failure line whose content includes a substring from the assert statement of the governed assertion; a failure line that contains no such "
         "substring does not satisfy (g) regardless of whether (a) precedes (c) in its output. Exception: (g) is not required for the single action that produces the governing "
         "artifact's assertion text — the creation step is that action only; (g) is required for every action that modifies the implementation, including in the same session — a "
-        "creation step is that action only if (c) is absent before the action and present after it.",
+        "creation step is that action only if (c) is absent before the action and present after it, and an executor invocation against the governing artifact immediately following the "
+        "action produces a tool-executed result containing (c).",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

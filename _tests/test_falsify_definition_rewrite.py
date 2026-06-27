@@ -114,3 +114,21 @@ def test_falsify_no_assertion_substring_exclusion():
         "falsify must state 'a failure line that contains no such substring does not satisfy (g)' "
         "— domain-agnostic negative closes D2 without enumerating software-specific error types"
     )
+
+
+def test_falsify_creation_step_requires_executor_run():
+    """falsify creation step exception must require executor invocation against governing artifact.
+
+    Gap D1/C1/D2/C2: the (c)-absent-before/present-after check admits implementation-only
+    writes that introduce (c) without writing the governing artifact. The new clause closes
+    this: after the creation step action, the executor must produce a tool-executed result
+    containing (c) when invoked against the governing artifact.
+    """
+    text = _falsify()
+    assert (
+        "executor invocation against the governing artifact immediately following the action "
+        "produces a tool-executed result containing (c)" in text
+    ), (
+        "falsify creation step must require executor invocation producing (c) in result — "
+        "closes implementation-bundling escape route (D1/C1/D2/C2)"
+    )

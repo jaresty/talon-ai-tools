@@ -1,12 +1,11 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokensMeta, getPresetHint, toPersonaSlug, toAxisTokenSlug, buildCommandTokens, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks } from '$lib/grammar.js';
+	import { loadGrammar, getAxisTokens, getTaskTokens, toPersonaSlug, toAxisTokenSlug, buildCommandTokens, AXES, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks } from '$lib/grammar.js';
 	import { findConflicts } from '$lib/incompatibilities.js';
-	import TokenSelector from '$lib/TokenSelector.svelte';
 	import PreviewPanel from '$lib/PreviewPanel.svelte';
-	import PatternsLibrary from '$lib/PatternsLibrary.svelte';
 	import { renderPrompt, type PersonaState } from '$lib/renderPrompt.js';
 	import SequencesPanel from '$lib/SequencesPanel.svelte';
+	import SelectorPanel from '$lib/SelectorPanel.svelte';
 
 	import ReviewPanel from '$lib/ReviewPanel.svelte';
 	import { parseCommand } from '$lib/parseCommand.js';
@@ -88,7 +87,7 @@
 
 		// On desktop, focus the active tab so keyboard navigation works immediately
 		if (!window.matchMedia('(hover: none)').matches) {
-			setTimeout(focusActiveTab, 0);
+			setTimeout(() => selectorPanelEl?.focusActiveTab(), 0);
 		}
 
 		function handleGlobalKey(e: KeyboardEvent) {
@@ -111,13 +110,13 @@
 			} else if (e.code === 'Period' && e.altKey) {
 				if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
 				e.preventDefault();
-				goToNextTab(false);
-				setTimeout(focusFilterOrFirst, 0);
+				selectorPanelEl?.goToNextTab();
+				setTimeout(() => selectorPanelEl?.focusFilterOrFirst(), 0);
 			} else if (e.code === 'Comma' && e.altKey) {
 				if ((e.target as HTMLElement).tagName === 'TEXTAREA') return;
 				e.preventDefault();
-				goToPrevTab(false);
-				setTimeout(focusFilterOrFirst, 0);
+				selectorPanelEl?.goToPrevTab();
+				setTimeout(() => selectorPanelEl?.focusFilterOrFirst(), 0);
 			} else if (
 				e.key.length === 1 &&
 				e.key !== ' ' &&
@@ -168,7 +167,6 @@
 	// Keep conflicts store in sync
 	$effect(() => { $conflictsStore = $grammarStore ? findConflicts($grammarStore, $selected) : []; });
 
-	let activePresetMeta = $derived($grammarStore && $persona.preset ? getPersonaPresets($grammarStore).find(p => p.key === $persona.preset) ?? null : null);
 	let promptText = $derived($grammarStore ? renderPrompt($grammarStore, $selected, $subject, $addendum, $persona) : '');
 
 	// ADR-0233: BM25 suggestion scores — derived from subject + addendum to dim irrelevant chips
@@ -303,86 +301,20 @@
 		}
 	}
 
-	let touchStartX = 0;
-	let touchStartY = 0;
-	let touchStartedInModal = false;
-	let swipeOffset = $state(0);
-	let swipeAnimating = $state(false);
-	let panelSlideDir = $state<'next' | 'prev' | null>(null);
-
-	// Per-instance capture listener on .layout absorbs ghost clicks after a swipe.
-	// Using bind:this keeps the listener isolated to this component instance.
 	let layoutEl = $state<HTMLElement | null>(null);
-	let swipeCompletedAt = 0;
+	let selectorPanelEl = $state<{ focusFilterOrFirst: () => void; goToNextTab: () => void; goToPrevTab: () => void; focusActiveTab: () => void; getSwipeCompletedAt: () => number } | null>(null);
+
 	$effect(() => {
 		if (!layoutEl) return;
 		const absorb = (e: MouseEvent) => {
-			if (Date.now() - swipeCompletedAt < 600) {
+			const completedAt = selectorPanelEl?.getSwipeCompletedAt() ?? 0;
+			if (Date.now() - completedAt < 600) {
 				e.stopImmediatePropagation();
-				swipeCompletedAt = 0;
 			}
 		};
 		layoutEl.addEventListener('click', absorb, { capture: true });
-		return () => {
-			layoutEl?.removeEventListener('click', absorb);
-		};
+		return () => layoutEl?.removeEventListener('click', absorb);
 	});
-
-	function handleTouchStart(e: TouchEvent) {
-		touchStartX = e.touches[0].clientX;
-		touchStartY = e.touches[0].clientY;
-		touchStartedInModal = !!(e.target as Element)?.closest?.('.meta-panel');
-		swipeOffset = 0;
-		swipeAnimating = false;
-	}
-
-	function handleTouchMove(e: TouchEvent) {
-		if (touchStartedInModal) return;
-		const dx = e.touches[0].clientX - touchStartX;
-		const dy = e.touches[0].clientY - touchStartY;
-		if (Math.abs(dx) > Math.abs(dy)) {
-			swipeOffset = dx;
-		}
-	}
-
-	function handleTouchEnd(e: TouchEvent) {
-		const dx = e.changedTouches[0].clientX - touchStartX;
-		const dy = e.changedTouches[0].clientY - touchStartY;
-		const target = e.target as Element;
-
-		if (touchStartedInModal) {
-			swipeAnimating = true;
-			swipeOffset = 0;
-			return;
-		}
-
-		if (target.closest('input, textarea, select')) {
-			swipeAnimating = true;
-			swipeOffset = 0;
-			return;
-		}
-
-		if (Math.abs(dx) < 50 || Math.abs(dy) >= Math.abs(dx)) {
-			swipeAnimating = true;
-			swipeOffset = 0;
-			return;
-		}
-
-		e.preventDefault(); // belt-and-suspenders: suppresses ghost click in mobile browsers
-		swipeCompletedAt = Date.now(); // layout capture listener absorbs the ghost click
-		const dir = dx < 0 ? -1 : 1;
-		const slideWidth = Math.max(window.innerWidth, 400);
-		swipeAnimating = true;
-		swipeOffset = dir * slideWidth; // slide out in the direction of the swipe
-
-		setTimeout(() => {
-			swipeAnimating = false;
-			swipeOffset = 0;
-			if (dx < 0) goToNextTab(false, false);
-			else goToPrevTab(false, false);
-		}, 250);
-	}
-
 
 	function clearState() {
 		$selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] };
@@ -393,19 +325,10 @@
 		localStorage.removeItem(STORAGE_KEY);
 	}
 
-	function loadPattern(pattern: GrammarPattern) {
-		$selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...pattern.tokens };
-	}
-
-	let cmdInput = $state('');
-	let cmdInputOpen = $state(false);
-	let cmdInputWarnings = $state<string[]>([]);
-
-	let activeTab = $state('task');
 	let activeMode = $state<'build' | 'sequences'>('build');
-	let showPreview = $state(false); // Hidden by default; toggle reveals on mobile
-	let fabOpen = $state(false); // FAB menu state
-	let reviewPanelHeight = $state(0); // Tracks review panel height for dynamic layout padding
+	let showPreview = $state(false);
+	let fabOpen = $state(false);
+	let reviewPanelHeight = $state(0);
 	let hasPersonaTokens = $derived(Object.values($persona).some((v) => v.length > 0));
 	let hasSelectedTokens = $derived(Object.values($selected).some((toks) => toks.length > 0) || hasPersonaTokens);
 	let previewPanelEl = $state<HTMLElement | null>(null);
@@ -413,11 +336,7 @@
 	$effect(() => {
 		if (!previewPanelEl) return;
 		const update = () => {
-			// On mobile the panel is position:static and flows naturally — no maxHeight constraint needed.
-			if (window.innerWidth <= 767) {
-				previewPanelEl!.style.maxHeight = '';
-				return;
-			}
+			if (window.innerWidth <= 767) { previewPanelEl!.style.maxHeight = ''; return; }
 			const rect = previewPanelEl!.getBoundingClientRect();
 			const available = window.innerHeight - Math.max(rect.top, 16) - (reviewPanelHeight + 16);
 			previewPanelEl!.style.maxHeight = available + 'px';
@@ -425,105 +344,14 @@
 		window.addEventListener('scroll', update, { passive: true });
 		window.addEventListener('resize', update, { passive: true });
 		update();
-		return () => {
-			window.removeEventListener('scroll', update);
-			window.removeEventListener('resize', update);
-		};
+		return () => { window.removeEventListener('scroll', update); window.removeEventListener('resize', update); };
 	});
-	let hoveredDistinctionPreset = $state<string | null>(null);
-
-
-	const AXES_WITH_PERSONA = ['persona', 'task', 'topology', 'completeness', 'scope', 'method', 'form', 'channel', 'directional'];
-
-	function focusActiveTab() {
-		document.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')?.focus();
-	}
-
-	function focusFirstChip() {
-		const chip = document.querySelector<HTMLElement>('[role="option"]');
-		if (chip) { chip.focus(); return; }
-		// Fallback for panels with no [role="option"] (e.g. persona)
-		document.querySelector<HTMLElement>('.selector-panel button, .selector-panel select, .selector-panel input')?.focus();
-	}
-
-	function focusLastChip() {
-		const chips = document.querySelectorAll<HTMLElement>('[role="option"]');
-		const last = chips[chips.length - 1];
-		last?.focus();
-	}
-
-	function goToNextTab(moveFocus = true, animate = true) {
-		if (animate) panelSlideDir = 'next';
-		const n = AXES_WITH_PERSONA.length;
-		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
-		activeTab = AXES_WITH_PERSONA[(cur + 1) % n];
-		if (moveFocus) setTimeout(focusFirstChip, 0);
-	}
-
-	function goToPrevTab(moveFocus = true, animate = true) {
-		if (animate) panelSlideDir = 'prev';
-		const n = AXES_WITH_PERSONA.length;
-		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
-		activeTab = AXES_WITH_PERSONA[(cur - 1 + n) % n];
-		if (moveFocus) setTimeout(focusLastChip, 0);
-	}
-
-	function switchTab(tab: string) {
-		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
-		const next = AXES_WITH_PERSONA.indexOf(tab);
-		panelSlideDir = next > cur ? 'next' : next < cur ? 'prev' : null;
-		activeTab = tab;
-	}
-
-	function focusFilterOrFirst() {
-		const filterEl = document.querySelector<HTMLElement>('.selector-panel .filter-input');
-		if (filterEl) { filterEl.focus(); return; }
-		focusFirstChip();
-	}
-
-	function handleTabBarKey(e: KeyboardEvent) {
-		const n = AXES_WITH_PERSONA.length;
-		const cur = AXES_WITH_PERSONA.indexOf(activeTab);
-		if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-			e.preventDefault();
-			panelSlideDir = 'next';
-			activeTab = AXES_WITH_PERSONA[(cur + 1) % n];
-			setTimeout(focusActiveTab, 0);
-		} else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-			e.preventDefault();
-			panelSlideDir = 'prev';
-			activeTab = AXES_WITH_PERSONA[(cur - 1 + n) % n];
-			setTimeout(focusActiveTab, 0);
-		} else if (e.key === 'Home') {
-			e.preventDefault();
-			panelSlideDir = cur > 0 ? 'prev' : null;
-			activeTab = AXES_WITH_PERSONA[0];
-		} else if (e.key === 'End') {
-			e.preventDefault();
-			panelSlideDir = cur < n - 1 ? 'next' : null;
-			activeTab = AXES_WITH_PERSONA[n - 1];
-		}
-	}
 
 	function togglePreview() {
 		showPreview = !showPreview;
 	}
 
-	function loadCommand() {
-		if (!$grammarStore || !cmdInput.trim()) return;
-		const result = parseCommand(cmdInput, $grammarStore);
-		$selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...result.selected };
-		if (result.subject) $subject = result.subject;
-		if (result.addendum) $addendum = result.addendum;
-		if (result.persona.preset || result.persona.voice || result.persona.audience || result.persona.tone || result.persona.intent) {
-			$persona = result.persona;
-		}
-		cmdInputWarnings = result.unrecognized;
-		if (result.unrecognized.length === 0) {
-			cmdInput = '';
-			cmdInputOpen = false;
-		}
-	}
+
 </script>
 
 <div class="layout" bind:this={layoutEl} style:padding-bottom="{reviewPanelHeight + 16}px" style:--review-h="{reviewPanelHeight + 16}px">
@@ -544,252 +372,30 @@
 		</div>
 	{/if}
 
-	<!-- Mode switcher -->
+	<!-- Mode switcher — always visible in both build and sequences modes -->
 	<div class="mode-switcher">
 		<button class="mode-btn" class:mode-btn--active={activeMode === 'build'} onclick={() => activeMode = 'build'}>Build Prompt</button>
 		<button class="mode-btn" class:mode-btn--active={activeMode === 'sequences'} onclick={() => activeMode = 'sequences'}>Sequences</button>
 	</div>
 
-	{#if activeMode === 'sequences'}
-		{#if $grammarStore}<SequencesPanel grammar={$grammarStore} />{/if}
-	{:else}
-	<!-- Subject input — above tabs, first-class input -->
-	<label class="input-group subject-top">
-		<span class="input-label">--subject <span class="input-hint">source material</span></span>
-		<textarea
-			class="input-area"
-			data-field="subject"
-			rows="4"
-			placeholder="Paste code, document, or topic…"
-			bind:value={$subject}
-		></textarea>
-	</label>
-
-	<!-- svelte-ignore a11y_no_noninteractive_element_to_interactive_role -->
-	<nav class="tab-bar" role="tablist" onkeydown={handleTabBarKey}>
-		{#each AXES_WITH_PERSONA as tab (tab)}
-			<button
-				class="tab"
-				class:active={activeTab === tab}
-				role="tab"
-				id="tab-{tab}"
-				aria-selected={activeTab === tab}
-				aria-controls="panel-{tab}"
-				tabindex={activeTab === tab ? 0 : -1}
-				onclick={() => switchTab(tab)}
-			>
-				{tab}
-			</button>
-		{/each}
-	</nav>
-
 	{#if error}
 		<div class="error">Failed to load grammar: {error}</div>
+	{:else if activeMode === 'sequences'}
+		{#if $grammarStore}<SequencesPanel grammar={$grammarStore} />{/if}
 	{:else if !$grammarStore}
 		<div class="loading">Loading grammar…</div>
 	{:else}
-		{@const grammar = $grammarStore}
 		<div class="main">
-			<section
-				class="selector-panel"
-				class:slide-next={panelSlideDir === 'next'}
-				class:slide-prev={panelSlideDir === 'prev'}
-				role="region"
-				aria-label="Token selector"
-				style:transform={swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined}
-				style:transition={swipeAnimating ? 'transform 0.25s ease-out' : 'none'}
-				ontouchstart={handleTouchStart}
-				ontouchmove={handleTouchMove}
-				ontouchend={handleTouchEnd}
-				onanimationend={() => panelSlideDir = null}
-			>
-				{#if activeTab === 'persona'}
-				<!-- Persona -->
-				<div class="persona-section">
-					<div class="persona-header">Persona</div>
-					{#if grammar?.axes?.axis_descriptions?.['persona']}
-						<p class="axis-desc">{grammar.axes.axis_descriptions['persona']}</p>
-					{/if}
-
-					<!-- Presets -->
-					<div class="persona-group">
-						<div class="persona-group-label">Preset</div>
-						<div class="persona-chips">
-							{#each getPersonaPresets(grammar) as preset (preset.key)}
-								<button
-									class="persona-chip"
-									class:active={$persona.preset === preset.key}
-									class:chip--distinction-ref={hoveredDistinctionPreset === preset.key}
-									onclick={() => {
-										if ($persona.preset === preset.key) {
-											$persona = { preset: '', voice: '', audience: '', tone: '', intent: $persona.intent };
-										} else {
-											$persona = { preset: preset.key, voice: '', audience: '', tone: '', intent: $persona.intent };
-										}
-									}}
-								>{preset.label}{#if getPresetHint(grammar, preset.key)}<span class="persona-chip-hint">{getPresetHint(grammar, preset.key)}</span>{/if}</button>
-							{/each}
-						</div>
-						{#if $persona.preset}
-							{@const presetMeta = getPersonaPresets(grammar).find(p => p.key === $persona.preset)}
-							<div class="persona-use-when preset-axis-summary">
-								{#if presetMeta?.voice}<code class="preset-axis-tag">voice={presetMeta.voice}</code>{/if}
-								{#if presetMeta?.audience}<code class="preset-axis-tag">audience={presetMeta.audience}</code>{/if}
-								{#if presetMeta?.tone}<code class="preset-axis-tag">tone={presetMeta.tone}</code>{/if}
-							</div>
-						{/if}
-					</div>
-
-					<!-- Override axes: voice, audience, tone (mutually exclusive with preset) -->
-					<div class="override-group">
-						<div class="override-group-label">or customize</div>
-						<TokenSelector
-							axis="voice"
-							tokens={getPersonaAxisTokensMeta(grammar, 'voice')}
-							selected={$persona.voice ? [$persona.voice] : activePresetMeta?.voice ? [activePresetMeta.voice] : []}
-							maxSelect={1}
-							onToggle={(t) => {
-								if ($persona.voice === t || activePresetMeta?.voice === t) $persona = { ...$persona, preset: '', voice: '' };
-								else $persona = { preset: '', voice: t, audience: $persona.audience || activePresetMeta?.audience || '', tone: $persona.tone || activePresetMeta?.tone || '', intent: $persona.intent };
-							}}
-						/>
-						<TokenSelector
-							axis="audience"
-							tokens={getPersonaAxisTokensMeta(grammar, 'audience')}
-							selected={$persona.audience ? [$persona.audience] : activePresetMeta?.audience ? [activePresetMeta.audience] : []}
-							maxSelect={1}
-							onToggle={(t) => {
-								if ($persona.audience === t || activePresetMeta?.audience === t) $persona = { ...$persona, preset: '', audience: '' };
-								else $persona = { preset: '', voice: $persona.voice || activePresetMeta?.voice || '', audience: t, tone: $persona.tone || activePresetMeta?.tone || '', intent: $persona.intent };
-							}}
-						/>
-						<TokenSelector
-							axis="tone"
-							tokens={getPersonaAxisTokensMeta(grammar, 'tone')}
-							selected={$persona.tone ? [$persona.tone] : activePresetMeta?.tone ? [activePresetMeta.tone] : []}
-							maxSelect={1}
-							onToggle={(t) => {
-								if ($persona.tone === t || activePresetMeta?.tone === t) $persona = { ...$persona, preset: '', tone: '' };
-								else $persona = { preset: '', voice: $persona.voice || activePresetMeta?.voice || '', audience: $persona.audience || activePresetMeta?.audience || '', tone: t, intent: $persona.intent };
-							}}
-						/>
-					</div>
-					<!-- Intent: additive, does not clear preset -->
-					<div class="intent-group">
-						<TokenSelector
-							axis="intent"
-							tokens={getPersonaAxisTokensMeta(grammar, 'intent')}
-							selected={$persona.intent ? [$persona.intent] : []}
-							maxSelect={1}
-							onToggle={(t) => {
-								if ($persona.intent === t) $persona = { ...$persona, intent: '' };
-								else $persona = { ...$persona, intent: t };
-							}}
-						/>
-					</div>
-				</div>
-				{/if}
-
-				{#if activeTab === 'task'}
-				<div class="task-tab-section">
-				<TokenSelector
-					axis="task"
-					tokens={getTaskTokens(grammar)}
-					selected={$selected.task}
-					maxSelect={1}
-					onToggle={(t) => toggle('task', t)}
-					onTabNext={goToNextTab}
-					onTabPrev={focusActiveTab}
-					{grammar}
-					activeTokensByAxis={$selected}
-					axisDescription={grammar?.axes?.axis_descriptions?.['task']}
-					{suggestionScores}
-					{embedder}
-				/>
-				<label class="input-group">
-					<span class="input-label">--addendum <span class="input-hint">task directive</span></span>
-					<textarea
-						class="input-area"
-						data-field="addendum"
-						rows="4"
-						placeholder="e.g. Focus on error handling, include examples…"
-						bind:value={$addendum}
-					></textarea>
-				</label>
-				</div>
-				{/if}
-				{#each AXES as axis (axis)}
-					{#if activeTab === axis}
-					<TokenSelector
-						{axis}
-						tokens={getAxisTokens(grammar, axis)}
-						selected={$selected[axis] ?? []}
-						maxSelect={softCap(axis)}
-						onToggle={(t) => toggle(axis, t)}
-						onTabNext={goToNextTab}
-						onTabPrev={goToPrevTab}
-						{grammar}
-						activeTokensByAxis={$selected}
-						axisDescription={grammar?.axes?.axis_descriptions?.[axis]}
-						{suggestionScores}
-						{embedder}
-					/>
-					{/if}
-				{/each}
-
-				<!-- Load command input (collapsible) — below axis panel for correct Tab order -->
-				<div class="load-cmd-section">
-					<button class="load-cmd-toggle" onclick={() => { cmdInputOpen = !cmdInputOpen; cmdInputWarnings = []; }}>
-						<span class="load-cmd-toggle-label">Load command</span>
-						<span class="load-cmd-caret">{cmdInputOpen ? '▲' : '▼'}</span>
-					</button>
-					{#if cmdInputOpen}
-						<div class="load-cmd-body">
-							<input
-								class="load-cmd-input"
-								type="text"
-								placeholder="bar build show mean full plain --subject &quot;…&quot;"
-								bind:value={cmdInput}
-								onkeydown={(e) => e.key === 'Enter' && loadCommand()}
-							/>
-							<button class="load-cmd-btn" onclick={loadCommand}>Load</button>
-							{#if cmdInputWarnings.length > 0}
-								<div class="load-cmd-warnings">
-									Unrecognized tokens: {cmdInputWarnings.map(t => `"${t}"`).join(', ')}
-								</div>
-							{/if}
-						</div>
-					{/if}
-				</div>
-
-				<PatternsLibrary {patterns} {starterPacks} {grammar} onLoad={loadPattern} />
-
-				<!-- Shortcut legend — after axis panel so Tab flow is uninterrupted -->
-				<details class="shortcut-legend">
-					<summary class="shortcut-legend-summary">Keyboard shortcuts ▸</summary>
-					<table class="shortcut-table">
-						<thead>
-							<tr><th>Keys</th><th>Action</th></tr>
-						</thead>
-						<tbody>
-							<tr><td><kbd>←</kbd> <kbd>→</kbd> on tab-bar</td><td>Switch axis</td></tr>
-							<tr><td><kbd>↑</kbd> <kbd>↓</kbd> <kbd>Home</kbd> <kbd>End</kbd> on tab-bar</td><td>Switch axis</td></tr>
-							<tr><td>Arrow keys in panel</td><td>Navigate chips</td></tr>
-							<tr><td><kbd>Enter</kbd> / <kbd>Space</kbd></td><td>Select focused chip</td></tr>
-							<tr><td><kbd>Tab</kbd> from last chip</td><td>Advance to next axis</td></tr>
-							<tr><td><kbd>Shift+Tab</kbd> from first chip</td><td>Retreat to previous axis</td></tr>
-							<tr><td><kbd>⌘K</kbd> / <kbd>Ctrl+K</kbd></td><td>Clear all</td></tr>
-							<tr><td><kbd>⌘⇧C</kbd> / <kbd>Ctrl+Shift+C</kbd></td><td>Copy command</td></tr>
-							<tr><td><kbd>⌘⇧P</kbd> / <kbd>Ctrl+Shift+P</kbd></td><td>Copy rendered prompt</td></tr>
-							<tr><td><kbd>⌘⇧U</kbd> / <kbd>Ctrl+Shift+U</kbd></td><td>Share URL</td></tr>
-						<tr><td><kbd>⌘⇧L</kbd> / <kbd>Ctrl+Shift+L</kbd></td><td>Copy link</td></tr>
-						<tr><td><kbd>Alt+.</kbd></td><td>Next axis (focus filter)</td></tr>
-						<tr><td><kbd>Alt+,</kbd></td><td>Previous axis (focus filter)</td></tr>
-						</tbody>
-					</table>
-				</details>
-
-			</section>
+			<SelectorPanel
+				bind:this={selectorPanelEl}
+				{patterns}
+				{starterPacks}
+				{suggestionScores}
+				{embedder}
+				{activeMode}
+				onClear={clearState}
+				onModeChange={(m) => activeMode = m}
+			/>
 
 		<PreviewPanel
 				{command}
@@ -823,6 +429,7 @@
 		</div>
 	{/if}
 
+	{#if activeMode === 'build'}
 	<!-- ADR-0157: Selected Token Review Panel - fixed bottom bar -->
 	<ReviewPanel
 		selected={$selected}
@@ -839,10 +446,10 @@
 			else if (field === 'intent') $persona = { ...$persona, intent: '' };
 		}}
 	/>
-	{/if}<!-- end build mode / end activeMode router -->
+	{/if}
 
 	<!-- FAB and mobile action overlay — always accessible, outside preview panel -->
-	<button class="fab-btn" onclick={() => { if (Date.now() - swipeCompletedAt >= 600) fabOpen = !fabOpen; }} aria-label="Actions">
+	<button class="fab-btn" onclick={() => { if (Date.now() - (selectorPanelEl?.getSwipeCompletedAt() ?? 0) >= 600) fabOpen = !fabOpen; }} aria-label="Actions">
 		{fabOpen ? '✕' : '⋯'}
 	</button>
 	{#if fabOpen}

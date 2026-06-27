@@ -58,6 +58,8 @@ describe('Page — Mobile Tabbed Axis Interface', () => {
 	it('renders horizontal tab bar for axis navigation', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
+		await new Promise((r) => setTimeout(r, 100));
+		flushSync();
 		expect(container.querySelector('.tab-bar')).toBeTruthy();
 	});
 

@@ -3,12 +3,11 @@
 	import { loadGrammar, getAxisTokens, getTaskTokens, getPersonaPresets, getPersonaAxisTokensMeta, getPresetHint, toPersonaSlug, toAxisTokenSlug, buildCommandTokens, AXES, type Grammar, type GrammarPattern, type StarterPack, getUsagePatterns, getStarterPacks } from '$lib/grammar.js';
 	import { findConflicts } from '$lib/incompatibilities.js';
 	import TokenSelector from '$lib/TokenSelector.svelte';
-	import LLMPanel from '$lib/LLMPanel.svelte';
+	import PreviewPanel from '$lib/PreviewPanel.svelte';
 	import PatternsLibrary from '$lib/PatternsLibrary.svelte';
 	import { renderPrompt, type PersonaState } from '$lib/renderPrompt.js';
 	import SequencesPanel from '$lib/SequencesPanel.svelte';
-	import PresetsPanel from '$lib/PresetsPanel.svelte';
-	import HistoryPanel from '$lib/HistoryPanel.svelte';
+
 	import ReviewPanel from '$lib/ReviewPanel.svelte';
 	import { parseCommand } from '$lib/parseCommand.js';
 	import { savePreset, listPresets, deletePreset, type SpaPreset } from '$lib/presets.js';
@@ -801,63 +800,35 @@
 
 			</section>
 
-		<button class="preview-toggle" onclick={togglePreview}>
-				{showPreview ? 'Hide Output' : 'Show Output'}
-			</button>
-
-			<section class="preview-panel" class:visible={showPreview} bind:this={previewPanelEl}>
-				<!-- Command preview -->
-				<div class="command-box">
-					<div class="command-label">Command</div>
-					<code class="command">{command}</code>
-					<!-- Desktop action row (always visible on desktop) -->
-					<div class="action-row">
-						<button class="copy-btn" onclick={copyCommand}>
-							{copied ? '✓ Copied' : 'Copy cmd'}
-						</button>
-						<button class="copy-prompt-btn" onclick={copyPrompt}>
-							{copiedPrompt ? '✓ Copied' : 'Copy prompt'}
-						</button>
-						<button class="share-prompt-btn" onclick={sharePromptNative}>
-							Share prompt
-						</button>
-						<button class="share-link-btn" onclick={shareLink}>
-							{shared ? '✓ Link copied' : 'Share link'}
-						</button>
-						<button class="copy-link-btn" onclick={copyLink} title="Copy link (⌘⇧L / Ctrl+Shift+L)">
-							{linkCopied ? '✓ Link copied' : 'Copy link'}
-						</button>
-						<button class="clear-btn" onclick={clearState} title="Clear all (⌘K)">Clear</button>
-					</div>
-				</div>
-
-				<!-- Named preset panel (ADR-0165) -->
-				<PresetsPanel
-					{savedPresets}
-					{presetNameInput}
-					{presetSaved}
-					onSave={handleSavePreset}
-					onLoad={handleLoadPreset}
-					onDelete={handleDeletePreset}
-					onNameInput={(v) => presetNameInput = v}
-				/>
-
-				<!-- ADR-0231: Prompt History -->
-				<HistoryPanel
-					{historyEntries}
-					onLoad={(hash) => deserialize(hash)}
-					onDelete={(ts) => { deleteHistoryEntry(localStorage, ts); refreshHistory(); }}
-					onClearAll={() => { clearHistory(localStorage); refreshHistory(); }}
-				/>
-
-				<!-- Rendered prompt -->
-				<details class="prompt-preview-section">
-					<summary class="prompt-preview-label">Rendered Prompt</summary>
-					<pre class="prompt-preview">{promptText}</pre>
-				</details>
-
-				<LLMPanel {command} {subject} {addendum} />
-			</section>
+		<PreviewPanel
+				{command}
+				{subject}
+				{addendum}
+				{promptText}
+				{showPreview}
+				{copied}
+				{copiedPrompt}
+				{shared}
+				{linkCopied}
+				{savedPresets}
+				{presetNameInput}
+				{presetSaved}
+				{historyEntries}
+				onTogglePreview={togglePreview}
+				onCopyCommand={copyCommand}
+				onCopyPrompt={copyPrompt}
+				onSharePrompt={sharePromptNative}
+				onShareLink={shareLink}
+				onCopyLink={copyLink}
+				onClear={clearState}
+				onSavePreset={handleSavePreset}
+				onLoadPreset={handleLoadPreset}
+				onDeletePreset={handleDeletePreset}
+				onLoadHistory={(hash) => deserialize(hash)}
+				onDeleteHistory={(ts) => { deleteHistoryEntry(localStorage, ts); refreshHistory(); }}
+				onClearHistory={() => { clearHistory(localStorage); refreshHistory(); }}
+				onNameInput={(v) => presetNameInput = v}
+			/>
 		</div>
 	{/if}
 
@@ -968,71 +939,6 @@
 		overflow-x: hidden; /* prevent horizontal scroll during swipe slide-out */
 	}
 
-	.preview-panel {
-		position: sticky;
-		top: 1rem;
-		overflow-y: auto;
-		scrollbar-width: thin;
-		scrollbar-color: var(--color-border) transparent;
-	}
-
-	.preview-panel::-webkit-scrollbar {
-		width: 4px;
-	}
-
-	.preview-panel::-webkit-scrollbar-track {
-		background: transparent;
-	}
-
-	.preview-panel::-webkit-scrollbar-thumb {
-		background: var(--color-border);
-		border-radius: 2px;
-	}
-
-	.preview-panel::-webkit-scrollbar-thumb:hover {
-		background: var(--color-accent-muted);
-	}
-
-	.preview-toggle {
-		display: none;
-		width: 100%;
-		padding: 0.75rem;
-		background: var(--color-accent-muted);
-		border: 1px solid var(--color-accent);
-		border-radius: var(--radius);
-		color: var(--color-text);
-		cursor: pointer;
-		font-size: 1rem;
-		margin-bottom: 1rem;
-	}
-
-	/* Command box */
-	.command-box {
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		padding: 1rem;
-		margin-bottom: 0.75rem;
-	}
-
-	.command-label {
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: var(--color-text-muted);
-		margin-bottom: 0.5rem;
-	}
-
-	.command {
-		display: block;
-		font-family: var(--font-mono);
-		font-size: 0.8rem;
-		word-break: break-all;
-		margin-bottom: 0.75rem;
-		color: var(--color-success);
-		line-height: 1.5;
-	}
-
 	.action-row {
 		display: flex;
 		gap: 0.5rem;
@@ -1071,222 +977,12 @@
 
 	.clear-btn:hover { border-color: #f7768e; color: #f7768e; }
 
-
 	.fab-btn {
 		display: none;
 	}
 
 	.fab-backdrop {
 		display: none;
-	}
-
-	/* Named preset panel (ADR-0165) */
-
-	.history-panel {
-		margin-bottom: 0.75rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		overflow: hidden;
-	}
-	.history-summary {
-		padding: 0.4rem 0.75rem;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		cursor: pointer;
-		user-select: none;
-		background: var(--color-surface);
-		color: var(--color-text-muted);
-	}
-	.history-empty {
-		font-size: 0.8rem;
-		color: var(--color-text-muted);
-		padding: 0.5rem 0.75rem 0.75rem;
-		margin: 0;
-	}
-	.history-header-row {
-		display: flex;
-		justify-content: flex-end;
-		padding: 0.4rem 0.75rem 0.1rem;
-	}
-	.history-clear-btn {
-		font-size: 0.75rem;
-		color: var(--color-text-muted);
-		background: none;
-		border: none;
-		cursor: pointer;
-		padding: 0.1rem 0.25rem;
-	}
-	.history-clear-btn:hover { color: #f7768e; }
-	.history-list { list-style: none; margin: 0; padding: 0.25rem 0 0.5rem; }
-	.history-entry {
-		display: flex;
-		align-items: center;
-		gap: 0.25rem;
-		padding: 0 0.5rem;
-		border-bottom: 1px solid var(--color-border);
-	}
-	.history-entry:last-child { border-bottom: none; }
-	.history-entry-load {
-		flex: 1;
-		text-align: left;
-		background: none;
-		border: none;
-		cursor: pointer;
-		padding: 0.35rem 0.25rem;
-		min-width: 0;
-	}
-	.history-entry-command {
-		display: block;
-		font-size: 0.75rem;
-		color: var(--color-accent);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-	.history-entry-subject {
-		display: block;
-		font-size: 0.72rem;
-		color: var(--color-text-muted);
-		white-space: nowrap;
-		overflow: hidden;
-		text-overflow: ellipsis;
-	}
-	.history-delete-btn {
-		background: none;
-		border: none;
-		cursor: pointer;
-		color: var(--color-text-muted);
-		font-size: 0.8rem;
-		padding: 0.2rem 0.35rem;
-		flex-shrink: 0;
-	}
-	.history-delete-btn:hover { color: #f7768e; }
-
-	.presets-panel {
-		margin-bottom: 0.75rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		overflow: hidden;
-	}
-	.presets-summary {
-		padding: 0.4rem 0.75rem;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		cursor: pointer;
-		user-select: none;
-		background: var(--color-surface);
-		color: var(--color-text-muted);
-	}
-	.presets-save-row {
-		display: flex;
-		gap: 0.5rem;
-		padding: 0.5rem 0.75rem 0.25rem;
-	}
-	.presets-name-input {
-		flex: 1;
-		padding: 0.3rem 0.5rem;
-		font-size: 0.8rem;
-		background: var(--color-bg);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		color: var(--color-text);
-	}
-	.presets-save-btn {
-		padding: 0.3rem 0.75rem;
-		font-size: 0.8rem;
-		background: var(--color-accent);
-		color: #1a1b26;
-		border: none;
-		border-radius: var(--radius);
-		cursor: pointer;
-		white-space: nowrap;
-	}
-	.presets-save-btn:disabled { opacity: 0.4; cursor: default; }
-	.presets-empty {
-		font-size: 0.8rem;
-		color: var(--color-text-muted);
-		padding: 0.5rem 0.75rem 0.75rem;
-		margin: 0;
-	}
-	.presets-list { list-style: none; margin: 0; padding: 0.25rem 0 0.5rem; }
-	.preset-item {
-		padding: 0.35rem 0.75rem;
-		border-bottom: 1px solid var(--color-border);
-	}
-	.preset-item:last-child { border-bottom: none; }
-	.preset-item-top {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-	}
-	.preset-item-name { font-size: 0.85rem; font-weight: 500; color: var(--color-text); }
-	.preset-item-tokens {
-		display: block;
-		font-size: 0.7rem;
-		color: var(--color-text-muted);
-		margin-top: 0.15rem;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.preset-item-actions { display: flex; gap: 0.3rem; flex-shrink: 0; }
-	.preset-load-btn {
-		padding: 0.15rem 0.5rem;
-		font-size: 0.75rem;
-		background: var(--color-surface);
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		color: var(--color-text);
-		cursor: pointer;
-	}
-	.preset-load-btn:hover { border-color: var(--color-accent); color: var(--color-accent); }
-	.preset-delete-btn {
-		padding: 0.15rem 0.4rem;
-		font-size: 0.75rem;
-		background: transparent;
-		border: 1px solid transparent;
-		border-radius: var(--radius);
-		color: var(--color-text-muted);
-		cursor: pointer;
-	}
-	.preset-delete-btn:hover { border-color: #f7768e; color: #f7768e; }
-
-	/* Rendered prompt preview */
-	.prompt-preview-section {
-		margin-bottom: 0.75rem;
-		border: 1px solid var(--color-border);
-		border-radius: var(--radius);
-		overflow: hidden;
-	}
-
-	.prompt-preview-label {
-		padding: 0.4rem 0.75rem;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		color: var(--color-text-muted);
-		cursor: pointer;
-		user-select: none;
-	}
-
-	.prompt-preview-label:hover { color: var(--color-text); }
-
-	.prompt-preview {
-		font-family: var(--font-mono);
-		font-size: 0.75rem;
-		line-height: 1.5;
-		color: var(--color-text);
-		padding: 0.5rem 0.75rem;
-		margin: 0;
-		white-space: pre-wrap;
-		word-break: break-word;
-		background: var(--color-bg);
-		border-top: 1px solid var(--color-border);
-		max-height: 300px;
-		overflow-y: auto;
 	}
 
 	/* Inputs */
@@ -1741,24 +1437,6 @@
 	}
 
 	@media (max-width: 767px) {
-		.preview-toggle {
-			display: block;
-		}
-
-		.preview-panel {
-			position: static;
-			display: none;
-		}
-
-		.preview-panel.visible {
-			display: block;
-		}
-
-		/* Desktop action-row inside command-box — hide on mobile (replaced by overlay) */
-		.command-box .action-row {
-			display: none;
-		}
-
 		.main {
 			grid-template-columns: 1fr;
 		}

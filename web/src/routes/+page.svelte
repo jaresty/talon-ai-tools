@@ -7,6 +7,7 @@
 	import PatternsLibrary from '$lib/PatternsLibrary.svelte';
 	import { renderPrompt, type PersonaState } from '$lib/renderPrompt.js';
 	import SequencesPanel from '$lib/SequencesPanel.svelte';
+	import PresetsPanel from '$lib/PresetsPanel.svelte';
 	import { parseCommand } from '$lib/parseCommand.js';
 	import { savePreset, listPresets, deletePreset, type SpaPreset } from '$lib/presets.js';
 	import { addHistoryEntry, loadHistory, deleteHistoryEntry, clearHistory, type HistoryEntry } from '$lib/history.js';
@@ -829,39 +830,15 @@
 				</div>
 
 				<!-- Named preset panel (ADR-0165) -->
-				<details class="presets-panel">
-					<summary class="presets-summary">Presets</summary>
-					<div class="presets-save-row">
-						<input
-							class="presets-name-input"
-							type="text"
-							placeholder="Preset name…"
-							bind:value={presetNameInput}
-							onkeydown={(e) => { if (e.key === 'Enter') handleSavePreset(); }}
-						/>
-						<button class="presets-save-btn" onclick={handleSavePreset} disabled={!presetNameInput.trim()}>
-							{presetSaved ? '✓ Saved' : 'Save'}
-						</button>
-					</div>
-					{#if savedPresets.length === 0}
-						<p class="presets-empty">No presets saved.</p>
-					{:else}
-						<ul class="presets-list">
-							{#each savedPresets as preset (preset.name)}
-								<li class="preset-item">
-									<div class="preset-item-top">
-										<span class="preset-item-name">{preset.name}</span>
-										<div class="preset-item-actions">
-											<button class="preset-load-btn" onclick={() => handleLoadPreset(preset)}>Load</button>
-											<button class="preset-delete-btn" onclick={() => handleDeletePreset(preset.name)}>✕</button>
-										</div>
-									</div>
-									<code class="preset-item-tokens">{preset.tokens.join(' ')}</code>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				</details>
+				<PresetsPanel
+					{savedPresets}
+					{presetNameInput}
+					{presetSaved}
+					onSave={handleSavePreset}
+					onLoad={handleLoadPreset}
+					onDelete={handleDeletePreset}
+					onNameInput={(v) => presetNameInput = v}
+				/>
 
 				<!-- ADR-0231: Prompt History -->
 				<details class="history-panel">

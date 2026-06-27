@@ -6,6 +6,7 @@
 	import LLMPanel from '$lib/LLMPanel.svelte';
 	import PatternsLibrary from '$lib/PatternsLibrary.svelte';
 	import { renderPrompt, type PersonaState } from '$lib/renderPrompt.js';
+	import { buildCopyPrompt } from '$lib/sequenceRenderer.js';
 	import { parseCommand } from '$lib/parseCommand.js';
 	import { savePreset, listPresets, deletePreset, type SpaPreset } from '$lib/presets.js';
 	import { addHistoryEntry, loadHistory, deleteHistoryEntry, clearHistory, type HistoryEntry } from '$lib/history.js';
@@ -636,38 +637,7 @@
 						{/each}
 					</ol>
 					<button class="seq-copy-btn" onclick={async () => {
-						const steps = seq.steps;
-						const total = steps.length;
-						const parts: string[] = [];
-						for (let i = 0; i < steps.length; i++) {
-							const step = steps[i];
-							const header = i === 0
-								? `=== SEQUENCE: ${seq.key} — Step ${i + 1}/${total}: ${step.role} ===`
-								: `=== Step ${i + 1}/${total}: ${step.role} ===`;
-							if (step.type === 'action') {
-								parts.push(`${header}\n\n👤 YOUR ACTION: ${step.prompt_hint ?? step.role}\n\n--- AWAITING INPUT ---`);
-							} else {
-								const axisMap: Record<string, string[]> = {};
-								for (const pair of (step.token ?? '').split(' ')) {
-									const colonIdx = pair.indexOf(':');
-									if (colonIdx === -1) continue;
-									const axis = pair.slice(0, colonIdx);
-									const value = pair.slice(colonIdx + 1);
-									if (!axis || !value) continue;
-									if (!axisMap[axis]) axisMap[axis] = [];
-									axisMap[axis].push(value);
-								}
-								const rendered = renderPrompt(grammar, axisMap, seqSubject, step.prompt_hint ?? '');
-								const terminal = step.requires_user_input ? '\n\n--- AWAITING INPUT ---' : '';
-								const chain = i === 0 ? '' : 'Your subject for this step is the full output of the previous step.\n\n';
-								parts.push(`${header}\n\n${chain}${rendered}${terminal}`);
-							}
-						}
-						const hasPause = steps.some(s => s.requires_user_input || s.type === 'action');
-						const preamble = hasPause
-							? `Work through each step in sequence. When a step ends with "--- AWAITING INPUT ---", your response must end there. Do not continue to the next step until the user replies.\n\n`
-							: `You must complete all ${steps.length} steps in sequence within this response. After completing each step, proceed immediately to the next.\n\n`;
-						const output = preamble + parts.join('\n\n---\n\n');
+						const output = buildCopyPrompt(seq, seqSubject, grammar, seq.key);
 						try {
 							await navigator.clipboard.writeText(output);
 							seqCopied = true;

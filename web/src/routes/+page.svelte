@@ -8,6 +8,7 @@
 	import { renderPrompt, type PersonaState } from '$lib/renderPrompt.js';
 	import SequencesPanel from '$lib/SequencesPanel.svelte';
 	import PresetsPanel from '$lib/PresetsPanel.svelte';
+	import HistoryPanel from '$lib/HistoryPanel.svelte';
 	import { parseCommand } from '$lib/parseCommand.js';
 	import { savePreset, listPresets, deletePreset, type SpaPreset } from '$lib/presets.js';
 	import { addHistoryEntry, loadHistory, deleteHistoryEntry, clearHistory, type HistoryEntry } from '$lib/history.js';
@@ -841,29 +842,12 @@
 				/>
 
 				<!-- ADR-0231: Prompt History -->
-				<details class="history-panel">
-					<summary class="history-summary">History</summary>
-					{#if historyEntries.length === 0}
-						<p class="history-empty">No history yet. History is saved when you copy or share a prompt.</p>
-					{:else}
-						<div class="history-header-row">
-							<button class="history-clear-btn" onclick={() => { clearHistory(localStorage); refreshHistory(); }}>Clear all</button>
-						</div>
-						<ul class="history-list">
-							{#each historyEntries as entry (entry.ts)}
-								<li class="history-entry">
-									<button class="history-entry-load" onclick={() => { deserialize(entry.hash); }}>
-										<code class="history-entry-command">{entry.command_preview || '(no command)'}</code>
-										{#if entry.subject_preview}
-											<span class="history-entry-subject">{entry.subject_preview}</span>
-										{/if}
-									</button>
-									<button class="history-delete-btn" onclick={() => { deleteHistoryEntry(localStorage, entry.ts); refreshHistory(); }}>✕</button>
-								</li>
-							{/each}
-						</ul>
-					{/if}
-				</details>
+				<HistoryPanel
+					{historyEntries}
+					onLoad={(hash) => deserialize(hash)}
+					onDelete={(ts) => { deleteHistoryEntry(localStorage, ts); refreshHistory(); }}
+					onClearAll={() => { clearHistory(localStorage); refreshHistory(); }}
+				/>
 
 				<!-- Rendered prompt -->
 				<details class="prompt-preview-section">

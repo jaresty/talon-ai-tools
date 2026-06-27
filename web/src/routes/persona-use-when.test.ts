@@ -1,6 +1,7 @@
 import { flushSync } from 'svelte';
 import { mount } from 'svelte';
 import { vi, describe, it, expect, beforeEach, afterEach } from 'vitest';
+import { selected, persona, grammar, conflicts } from '$lib/stores.js';
 
 const mockLocalStorage = {
 	getItem: vi.fn(() => null),
@@ -97,6 +98,10 @@ describe('Persona use_when visibility', () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
+		selected.set({ task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] });
+		persona.set({ preset: '', voice: '', audience: '', tone: '', intent: '' });
+		grammar.set(null);
+		conflicts.set([]);
 		container = document.createElement('div');
 		document.body.appendChild(container);
 	});

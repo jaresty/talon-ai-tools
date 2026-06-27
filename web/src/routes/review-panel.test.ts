@@ -6,6 +6,7 @@
 import { flushSync } from 'svelte';
 import { mount } from 'svelte';
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { selected, persona, grammar, conflicts } from '$lib/stores.js';
 
 const mockLocalStorage = {
 	getItem: vi.fn(() => null),
@@ -90,6 +91,13 @@ vi.mock('$lib/renderPrompt.js', () => ({
 }));
 
 describe('ADR-0157: Selected Token Review Panel', () => {
+	beforeEach(() => {
+		selected.set({ task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] });
+		persona.set({ preset: '', voice: '', audience: '', tone: '', intent: '' });
+		grammar.set(null);
+		conflicts.set([]);
+	});
+
 	describe('Happy Path', () => {
 		it('review panel displays selected tokens in axis=token format', async () => {
 			const Page = (await import('../routes/+page.svelte')).default;

@@ -15,6 +15,7 @@
 	import { encodeState, decodeState } from '$lib/stateCodec.js';
 	import { bm25Score } from '$lib/bm25.js';
 	import { createEmbedder } from '$lib/embedder.js';
+	import { selected, persona, subject, addendum, grammar as grammarStore, conflicts as conflictsStore } from '$lib/stores.js';
 
 	const embedder = createEmbedder();
 
@@ -28,25 +29,12 @@
 		localStorage.setItem(RELEASE_NOTE_KEY, '1');
 	}
 
-	let grammar: Grammar | null = $state(null);
 	let error: string | null = $state(null);
 	let patterns = $state<GrammarPattern[]>([]);
 	let starterPacks = $state<StarterPack[]>([]);
 
-	let selected = $state<Record<string, string[]>>({
-		task: [],
-		completeness: [],
-		scope: [],
-		method: [],
-		form: [],
-		channel: [],
-		directional: []
-	});
-
-	let persona = $state<PersonaState>({ preset: '', voice: '', audience: '', tone: '', intent: '' });
-
-	let subject = $state('');
-	let addendum = $state('');
+	// Initialize selected store with axis keys
+	$selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] };
 	let copied = $state(false);
 	let shared = $state(false);
 	let copiedPrompt = $state(false);
@@ -58,18 +46,18 @@
 
 	// Serialize/deserialize prompt state
 	function serialize(): string {
-		return encodeState({ selected, subject, addendum, persona });
+		return encodeState({ selected: $selected, subject: $subject, addendum: $addendum, persona: $persona });
 	}
 
 	function deserialize(raw: string): void {
 		const parsed = decodeState(raw);
 		if (parsed && typeof parsed === 'object') {
 			const p = parsed as Record<string, unknown>;
-			if (p.selected) selected = { ...selected, ...(p.selected as Record<string, string[]>) };
-			if (typeof p.subject === 'string') subject = p.subject;
-			if (typeof p.addendum === 'string') addendum = p.addendum;
+			if (p.selected) $selected = { ...$selected, ...(p.selected as Record<string, string[]>) };
+			if (typeof p.subject === 'string') $subject = p.subject;
+			if (typeof p.addendum === 'string') $addendum = p.addendum;
 			if (p.persona && typeof p.persona === 'object') {
-				persona = { preset: '', voice: '', audience: '', tone: '', ...(p.persona as PersonaState) };
+				$persona = { preset: '', voice: '', audience: '', tone: '', ...(p.persona as PersonaState) };
 			}
 		}
 	}
@@ -89,11 +77,11 @@
 		refreshHistory();
 
 		try {
-			grammar = await loadGrammar();
-			if (grammar) {
-			patterns = getUsagePatterns(grammar);
-			starterPacks = getStarterPacks(grammar);
-		}
+			$grammarStore = await loadGrammar();
+			if ($grammarStore) {
+				patterns = getUsagePatterns($grammarStore);
+				starterPacks = getStarterPacks($grammarStore);
+			}
 		} catch (e) {
 			error = String(e);
 		}
@@ -159,56 +147,58 @@
 	});
 
 	function softCap(axis: string): number {
-		if (!grammar) return 1;
-		return grammar.hierarchy.axis_soft_caps[axis] ?? 1;
+		if (!$grammarStore) return 1;
+		return $grammarStore.hierarchy.axis_soft_caps[axis] ?? 1;
 	}
 
 	function toggle(axis: string, token: string) {
-		const cur = selected[axis] ?? [];
+		const cur = $selected[axis] ?? [];
 		if (cur.includes(token)) {
-			selected[axis] = cur.filter((t) => t !== token);
+			$selected = { ...$selected, [axis]: cur.filter((t) => t !== token) };
 		} else {
 			const cap = softCap(axis);
 			if (cur.length < cap) {
-				selected[axis] = [...cur, token];
+				$selected = { ...$selected, [axis]: [...cur, token] };
 			} else if (cap === 1) {
-				selected[axis] = [token];
+				$selected = { ...$selected, [axis]: [token] };
 			}
 		}
 	}
 
-	let conflicts = $derived(grammar ? findConflicts(grammar, selected) : []);
-	let activePresetMeta = $derived(grammar && persona.preset ? getPersonaPresets(grammar).find(p => p.key === persona.preset) ?? null : null);
-	let promptText = $derived(grammar ? renderPrompt(grammar, selected, subject, addendum, persona) : '');
+	// Keep conflicts store in sync
+	$effect(() => { $conflictsStore = $grammarStore ? findConflicts($grammarStore, $selected) : []; });
+
+	let activePresetMeta = $derived($grammarStore && $persona.preset ? getPersonaPresets($grammarStore).find(p => p.key === $persona.preset) ?? null : null);
+	let promptText = $derived($grammarStore ? renderPrompt($grammarStore, $selected, $subject, $addendum, $persona) : '');
 
 	// ADR-0233: BM25 suggestion scores — derived from subject + addendum to dim irrelevant chips
 	let suggestionScores = $derived.by(() => {
-		const query = (subject + ' ' + addendum).trim();
-		if (!grammar || query.length < 10) return new Map<string, number>();
+		const query = ($subject + ' ' + $addendum).trim();
+		if (!$grammarStore || query.length < 10) return new Map<string, number>();
 		const allTokens = [
-			...getTaskTokens(grammar),
-			...AXES.flatMap(ax => getAxisTokens(grammar, ax))
+			...getTaskTokens($grammarStore),
+			...AXES.flatMap(ax => getAxisTokens($grammarStore!, ax))
 		];
 		return bm25Score(allTokens, query);
 	});
 
 	let tokens = $derived.by(() => {
 		const personaTokens: string[] = [];
-		if (persona.preset) {
-			personaTokens.push(`persona=${persona.preset}`);
+		if ($persona.preset) {
+			personaTokens.push(`persona=${$persona.preset}`);
 		} else {
-			if (persona.voice) personaTokens.push(toPersonaSlug(persona.voice));
-			if (persona.audience) personaTokens.push(toPersonaSlug(persona.audience));
-			if (persona.tone) personaTokens.push(persona.tone);
-			if (persona.intent) personaTokens.push(persona.intent);
+			if ($persona.voice) personaTokens.push(toPersonaSlug($persona.voice));
+			if ($persona.audience) personaTokens.push(toPersonaSlug($persona.audience));
+			if ($persona.tone) personaTokens.push($persona.tone);
+			if ($persona.intent) personaTokens.push($persona.intent);
 		}
-		return [...personaTokens, ...buildCommandTokens(selected, toAxisTokenSlug)];
+		return [...personaTokens, ...buildCommandTokens($selected, toAxisTokenSlug)];
 	});
 
 	let command = $derived.by(() => {
 		let cmd = tokens.length === 0 ? 'bar build' : `bar build ${tokens.join(' ')}`;
-		if (subject.trim()) cmd += ` --subject "${subject.trim().replace(/"/g, '\\"')}"`;
-		if (addendum.trim()) cmd += ` --addendum "${addendum.trim().replace(/"/g, '\\"')}"`;
+		if ($subject.trim()) cmd += ` --subject "${$subject.trim().replace(/"/g, '\\"')}"`;
+		if ($addendum.trim()) cmd += ` --addendum "${$addendum.trim().replace(/"/g, '\\"')}"`;
 		return cmd;
 	});
 
@@ -224,13 +214,13 @@
 		const name = presetNameInput.trim();
 		if (!name) return;
 		const axes: Record<string, string[]> = {};
-		for (const [axis, toks] of Object.entries(selected)) axes[axis] = [...toks];
+		for (const [axis, toks] of Object.entries($selected)) axes[axis] = [...toks];
 		savePreset(localStorage, name, tokens, axes, {
-			preset: persona.preset || undefined,
-			voice: persona.voice || undefined,
-			audience: persona.audience || undefined,
-			tone: persona.tone || undefined,
-			intent: persona.intent || undefined
+			preset: $persona.preset || undefined,
+			voice: $persona.voice || undefined,
+			audience: $persona.audience || undefined,
+			tone: $persona.tone || undefined,
+			intent: $persona.intent || undefined
 		});
 		presetNameInput = '';
 		refreshPresets();
@@ -239,8 +229,8 @@
 	}
 
 	function handleLoadPreset(preset: SpaPreset) {
-		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...preset.result.axes };
-		persona = {
+		$selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...preset.result.axes };
+		$persona = {
 			preset: preset.result.persona.preset ?? '',
 			voice: preset.result.persona.voice ?? '',
 			audience: preset.result.persona.audience ?? '',
@@ -257,17 +247,17 @@
 
 	function copyCommand() {
 		navigator.clipboard.writeText(command);
-		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'copy-command', subject_preview: subject.slice(0, 80), command_preview: command });
+		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'copy-command', subject_preview: $subject.slice(0, 80), command_preview: command });
 		refreshHistory();
 		copied = true;
 		setTimeout(() => (copied = false), 1500);
 	}
 
 	function copyPrompt() {
-		if (!grammar) return;
-		const text = renderPrompt(grammar, selected, subject, addendum, persona);
+		if (!$grammarStore) return;
+		const text = renderPrompt($grammarStore, $selected, $subject, $addendum, $persona);
 		navigator.clipboard.writeText(text);
-		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'copy-prompt', subject_preview: subject.slice(0, 80), command_preview: command });
+		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'copy-prompt', subject_preview: $subject.slice(0, 80), command_preview: command });
 		refreshHistory();
 		copiedPrompt = true;
 		setTimeout(() => (copiedPrompt = false), 1500);
@@ -277,7 +267,7 @@
 		const encoded = serialize();
 		const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
 		window.history.replaceState(null, '', `#${encoded}`);
-		addHistoryEntry(localStorage, { hash: encoded, trigger: 'share-link', subject_preview: subject.slice(0, 80), command_preview: command });
+		addHistoryEntry(localStorage, { hash: encoded, trigger: 'share-link', subject_preview: $subject.slice(0, 80), command_preview: command });
 		refreshHistory();
 		if (navigator.share) {
 			await navigator.share({ url });
@@ -293,16 +283,16 @@
 		const url = `${window.location.origin}${window.location.pathname}#${encoded}`;
 		window.history.replaceState(null, '', `#${encoded}`);
 		await navigator.clipboard.writeText(url);
-		addHistoryEntry(localStorage, { hash: encoded, trigger: 'copy-link', subject_preview: subject.slice(0, 80), command_preview: command });
+		addHistoryEntry(localStorage, { hash: encoded, trigger: 'copy-link', subject_preview: $subject.slice(0, 80), command_preview: command });
 		refreshHistory();
 		linkCopied = true;
 		setTimeout(() => (linkCopied = false), 1500);
 	}
 
 	async function sharePromptNative() {
-		if (!grammar) return;
-		const text = renderPrompt(grammar, selected, subject, addendum, persona);
-		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'share-prompt', subject_preview: subject.slice(0, 80), command_preview: command });
+		if (!$grammarStore) return;
+		const text = renderPrompt($grammarStore, $selected, $subject, $addendum, $persona);
+		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'share-prompt', subject_preview: $subject.slice(0, 80), command_preview: command });
 		refreshHistory();
 		if (navigator.share) {
 			await navigator.share({ text });
@@ -395,16 +385,16 @@
 
 
 	function clearState() {
-		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] };
-		persona = { preset: '', voice: '', audience: '', tone: '', intent: '' };
-		subject = '';
-		addendum = '';
+		$selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [] };
+		$persona = { preset: '', voice: '', audience: '', tone: '', intent: '' };
+		$subject = '';
+		$addendum = '';
 		window.history.replaceState(null, '', window.location.pathname);
 		localStorage.removeItem(STORAGE_KEY);
 	}
 
 	function loadPattern(pattern: GrammarPattern) {
-		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...pattern.tokens };
+		$selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...pattern.tokens };
 	}
 
 	let cmdInput = $state('');
@@ -416,8 +406,8 @@
 	let showPreview = $state(false); // Hidden by default; toggle reveals on mobile
 	let fabOpen = $state(false); // FAB menu state
 	let reviewPanelHeight = $state(0); // Tracks review panel height for dynamic layout padding
-	let hasPersonaTokens = $derived(Object.values(persona).some((v) => v.length > 0));
-	let hasSelectedTokens = $derived(Object.values(selected).some((toks) => toks.length > 0) || hasPersonaTokens);
+	let hasPersonaTokens = $derived(Object.values($persona).some((v) => v.length > 0));
+	let hasSelectedTokens = $derived(Object.values($selected).some((toks) => toks.length > 0) || hasPersonaTokens);
 	let previewPanelEl = $state<HTMLElement | null>(null);
 
 	$effect(() => {
@@ -520,13 +510,13 @@
 	}
 
 	function loadCommand() {
-		if (!grammar || !cmdInput.trim()) return;
-		const result = parseCommand(cmdInput, grammar);
-		selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...result.selected };
-		if (result.subject) subject = result.subject;
-		if (result.addendum) addendum = result.addendum;
+		if (!$grammarStore || !cmdInput.trim()) return;
+		const result = parseCommand(cmdInput, $grammarStore);
+		$selected = { task: [], completeness: [], scope: [], method: [], form: [], channel: [], directional: [], ...result.selected };
+		if (result.subject) $subject = result.subject;
+		if (result.addendum) $addendum = result.addendum;
 		if (result.persona.preset || result.persona.voice || result.persona.audience || result.persona.tone || result.persona.intent) {
-			persona = result.persona;
+			$persona = result.persona;
 		}
 		cmdInputWarnings = result.unrecognized;
 		if (result.unrecognized.length === 0) {
@@ -561,7 +551,7 @@
 	</div>
 
 	{#if activeMode === 'sequences'}
-		{#if grammar}<SequencesPanel {grammar} />{/if}
+		{#if $grammarStore}<SequencesPanel grammar={$grammarStore} />{/if}
 	{:else}
 	<!-- Subject input — above tabs, first-class input -->
 	<label class="input-group subject-top">
@@ -571,7 +561,7 @@
 			data-field="subject"
 			rows="4"
 			placeholder="Paste code, document, or topic…"
-			bind:value={subject}
+			bind:value={$subject}
 		></textarea>
 	</label>
 
@@ -595,9 +585,10 @@
 
 	{#if error}
 		<div class="error">Failed to load grammar: {error}</div>
-	{:else if !grammar}
+	{:else if !$grammarStore}
 		<div class="loading">Loading grammar…</div>
 	{:else}
+		{@const grammar = $grammarStore}
 		<div class="main">
 			<section
 				class="selector-panel"
@@ -627,20 +618,20 @@
 							{#each getPersonaPresets(grammar) as preset (preset.key)}
 								<button
 									class="persona-chip"
-									class:active={persona.preset === preset.key}
+									class:active={$persona.preset === preset.key}
 									class:chip--distinction-ref={hoveredDistinctionPreset === preset.key}
 									onclick={() => {
-										if (persona.preset === preset.key) {
-											persona = { preset: '', voice: '', audience: '', tone: '', intent: persona.intent };
+										if ($persona.preset === preset.key) {
+											$persona = { preset: '', voice: '', audience: '', tone: '', intent: $persona.intent };
 										} else {
-											persona = { preset: preset.key, voice: '', audience: '', tone: '', intent: persona.intent };
+											$persona = { preset: preset.key, voice: '', audience: '', tone: '', intent: $persona.intent };
 										}
 									}}
 								>{preset.label}{#if getPresetHint(grammar, preset.key)}<span class="persona-chip-hint">{getPresetHint(grammar, preset.key)}</span>{/if}</button>
 							{/each}
 						</div>
-						{#if persona.preset}
-							{@const presetMeta = getPersonaPresets(grammar).find(p => p.key === persona.preset)}
+						{#if $persona.preset}
+							{@const presetMeta = getPersonaPresets(grammar).find(p => p.key === $persona.preset)}
 							<div class="persona-use-when preset-axis-summary">
 								{#if presetMeta?.voice}<code class="preset-axis-tag">voice={presetMeta.voice}</code>{/if}
 								{#if presetMeta?.audience}<code class="preset-axis-tag">audience={presetMeta.audience}</code>{/if}
@@ -655,31 +646,31 @@
 						<TokenSelector
 							axis="voice"
 							tokens={getPersonaAxisTokensMeta(grammar, 'voice')}
-							selected={persona.voice ? [persona.voice] : activePresetMeta?.voice ? [activePresetMeta.voice] : []}
+							selected={$persona.voice ? [$persona.voice] : activePresetMeta?.voice ? [activePresetMeta.voice] : []}
 							maxSelect={1}
 							onToggle={(t) => {
-								if (persona.voice === t || activePresetMeta?.voice === t) persona = { ...persona, preset: '', voice: '' };
-								else persona = { preset: '', voice: t, audience: persona.audience || activePresetMeta?.audience || '', tone: persona.tone || activePresetMeta?.tone || '', intent: persona.intent };
+								if ($persona.voice === t || activePresetMeta?.voice === t) $persona = { ...$persona, preset: '', voice: '' };
+								else $persona = { preset: '', voice: t, audience: $persona.audience || activePresetMeta?.audience || '', tone: $persona.tone || activePresetMeta?.tone || '', intent: $persona.intent };
 							}}
 						/>
 						<TokenSelector
 							axis="audience"
 							tokens={getPersonaAxisTokensMeta(grammar, 'audience')}
-							selected={persona.audience ? [persona.audience] : activePresetMeta?.audience ? [activePresetMeta.audience] : []}
+							selected={$persona.audience ? [$persona.audience] : activePresetMeta?.audience ? [activePresetMeta.audience] : []}
 							maxSelect={1}
 							onToggle={(t) => {
-								if (persona.audience === t || activePresetMeta?.audience === t) persona = { ...persona, preset: '', audience: '' };
-								else persona = { preset: '', voice: persona.voice || activePresetMeta?.voice || '', audience: t, tone: persona.tone || activePresetMeta?.tone || '', intent: persona.intent };
+								if ($persona.audience === t || activePresetMeta?.audience === t) $persona = { ...$persona, preset: '', audience: '' };
+								else $persona = { preset: '', voice: $persona.voice || activePresetMeta?.voice || '', audience: t, tone: $persona.tone || activePresetMeta?.tone || '', intent: $persona.intent };
 							}}
 						/>
 						<TokenSelector
 							axis="tone"
 							tokens={getPersonaAxisTokensMeta(grammar, 'tone')}
-							selected={persona.tone ? [persona.tone] : activePresetMeta?.tone ? [activePresetMeta.tone] : []}
+							selected={$persona.tone ? [$persona.tone] : activePresetMeta?.tone ? [activePresetMeta.tone] : []}
 							maxSelect={1}
 							onToggle={(t) => {
-								if (persona.tone === t || activePresetMeta?.tone === t) persona = { ...persona, preset: '', tone: '' };
-								else persona = { preset: '', voice: persona.voice || activePresetMeta?.voice || '', audience: persona.audience || activePresetMeta?.audience || '', tone: t, intent: persona.intent };
+								if ($persona.tone === t || activePresetMeta?.tone === t) $persona = { ...$persona, preset: '', tone: '' };
+								else $persona = { preset: '', voice: $persona.voice || activePresetMeta?.voice || '', audience: $persona.audience || activePresetMeta?.audience || '', tone: t, intent: $persona.intent };
 							}}
 						/>
 					</div>
@@ -688,11 +679,11 @@
 						<TokenSelector
 							axis="intent"
 							tokens={getPersonaAxisTokensMeta(grammar, 'intent')}
-							selected={persona.intent ? [persona.intent] : []}
+							selected={$persona.intent ? [$persona.intent] : []}
 							maxSelect={1}
 							onToggle={(t) => {
-								if (persona.intent === t) persona = { ...persona, intent: '' };
-								else persona = { ...persona, intent: t };
+								if ($persona.intent === t) $persona = { ...$persona, intent: '' };
+								else $persona = { ...$persona, intent: t };
 							}}
 						/>
 					</div>
@@ -704,13 +695,13 @@
 				<TokenSelector
 					axis="task"
 					tokens={getTaskTokens(grammar)}
-					selected={selected.task}
+					selected={$selected.task}
 					maxSelect={1}
 					onToggle={(t) => toggle('task', t)}
 					onTabNext={goToNextTab}
 					onTabPrev={focusActiveTab}
 					{grammar}
-					activeTokensByAxis={selected}
+					activeTokensByAxis={$selected}
 					axisDescription={grammar?.axes?.axis_descriptions?.['task']}
 					{suggestionScores}
 					{embedder}
@@ -722,7 +713,7 @@
 						data-field="addendum"
 						rows="4"
 						placeholder="e.g. Focus on error handling, include examples…"
-						bind:value={addendum}
+						bind:value={$addendum}
 					></textarea>
 				</label>
 				</div>
@@ -732,13 +723,13 @@
 					<TokenSelector
 						{axis}
 						tokens={getAxisTokens(grammar, axis)}
-						selected={selected[axis] ?? []}
+						selected={$selected[axis] ?? []}
 						maxSelect={softCap(axis)}
 						onToggle={(t) => toggle(axis, t)}
 						onTabNext={goToNextTab}
 						onTabPrev={goToPrevTab}
 						{grammar}
-						activeTokensByAxis={selected}
+						activeTokensByAxis={$selected}
 						axisDescription={grammar?.axes?.axis_descriptions?.[axis]}
 						{suggestionScores}
 						{embedder}
@@ -802,8 +793,8 @@
 
 		<PreviewPanel
 				{command}
-				{subject}
-				{addendum}
+				subject={$subject}
+				addendum={$addendum}
 				{promptText}
 				{showPreview}
 				{copied}
@@ -834,18 +825,18 @@
 
 	<!-- ADR-0157: Selected Token Review Panel - fixed bottom bar -->
 	<ReviewPanel
-		{selected}
-		{persona}
-		{conflicts}
+		selected={$selected}
+		persona={$persona}
+		conflicts={$conflictsStore}
 		{hasSelectedTokens}
 		bind:panelHeight={reviewPanelHeight}
 		onToggle={(axis, token) => toggle(axis, token)}
 		onClearPersonaField={(field) => {
-			if (field === 'preset') persona = { preset: '', voice: '', audience: '', tone: '', intent: persona.intent };
-			else if (field === 'voice') persona = { ...persona, preset: '', voice: '' };
-			else if (field === 'audience') persona = { ...persona, preset: '', audience: '' };
-			else if (field === 'tone') persona = { ...persona, preset: '', tone: '' };
-			else if (field === 'intent') persona = { ...persona, intent: '' };
+			if (field === 'preset') $persona = { preset: '', voice: '', audience: '', tone: '', intent: $persona.intent };
+			else if (field === 'voice') $persona = { ...$persona, preset: '', voice: '' };
+			else if (field === 'audience') $persona = { ...$persona, preset: '', audience: '' };
+			else if (field === 'tone') $persona = { ...$persona, preset: '', tone: '' };
+			else if (field === 'intent') $persona = { ...$persona, intent: '' };
 		}}
 	/>
 	{/if}<!-- end build mode / end activeMode router -->

@@ -9,6 +9,7 @@
 	import SequencesPanel from '$lib/SequencesPanel.svelte';
 	import PresetsPanel from '$lib/PresetsPanel.svelte';
 	import HistoryPanel from '$lib/HistoryPanel.svelte';
+	import ReviewPanel from '$lib/ReviewPanel.svelte';
 	import { parseCommand } from '$lib/parseCommand.js';
 	import { savePreset, listPresets, deletePreset, type SpaPreset } from '$lib/presets.js';
 	import { addHistoryEntry, loadHistory, deleteHistoryEntry, clearHistory, type HistoryEntry } from '$lib/history.js';
@@ -861,66 +862,21 @@
 	{/if}
 
 	<!-- ADR-0157: Selected Token Review Panel - fixed bottom bar -->
-	<div
-		class="review-panel"
-		class:review-panel-empty={!hasSelectedTokens}
-		bind:clientHeight={reviewPanelHeight}
-	>
-		{#if hasSelectedTokens}
-			{#if persona.preset}
-				<button class="review-panel-chip" tabindex="0"
-					onclick={() => { persona = { preset: '', voice: '', audience: '', tone: '', intent: persona.intent }; }}
-					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); persona = { preset: '', voice: '', audience: '', tone: '', intent: persona.intent }; } }}
-				>persona={persona.preset}</button>
-			{/if}
-			{#if persona.voice}
-				<button class="review-panel-chip" tabindex="0"
-					onclick={() => { persona = { ...persona, preset: '', voice: '' }; }}
-					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); persona = { ...persona, preset: '', voice: '' }; } }}
-				>voice={persona.voice}</button>
-			{/if}
-			{#if persona.audience}
-				<button class="review-panel-chip" tabindex="0"
-					onclick={() => { persona = { ...persona, preset: '', audience: '' }; }}
-					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); persona = { ...persona, preset: '', audience: '' }; } }}
-				>audience={persona.audience}</button>
-			{/if}
-			{#if persona.tone}
-				<button class="review-panel-chip" tabindex="0"
-					onclick={() => { persona = { ...persona, preset: '', tone: '' }; }}
-					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); persona = { ...persona, preset: '', tone: '' }; } }}
-				>tone={persona.tone}</button>
-			{/if}
-			{#if persona.intent}
-				<button class="review-panel-chip" tabindex="0"
-					onclick={() => { persona = { ...persona, intent: '' }; }}
-					onkeydown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); persona = { ...persona, intent: '' }; } }}
-				>intent={persona.intent}</button>
-			{/if}
-			{#each Object.entries(selected) as [axis, tokens]}
-				{#each tokens as token (token)}
-					{@const isConflict = conflicts.some(c => c.tokenA === token || c.tokenB === token)}
-					<button
-						class="review-panel-chip"
-						class:conflict={isConflict}
-						tabindex="0"
-						onclick={() => toggle(axis, token)}
-						onkeydown={(e) => {
-							if (e.key === 'Enter' || e.key === ' ') {
-								e.preventDefault();
-								toggle(axis, token);
-							}
-						}}
-					>
-						{axis}={token}
-						{#if isConflict} ⚠{/if}
-					</button>
-				{/each}
-			{/each}
-		{:else}
-			Select tokens from the axes above
-		{/if}
-	</div>
+	<ReviewPanel
+		{selected}
+		{persona}
+		{conflicts}
+		{hasSelectedTokens}
+		bind:panelHeight={reviewPanelHeight}
+		onToggle={(axis, token) => toggle(axis, token)}
+		onClearPersonaField={(field) => {
+			if (field === 'preset') persona = { preset: '', voice: '', audience: '', tone: '', intent: persona.intent };
+			else if (field === 'voice') persona = { ...persona, preset: '', voice: '' };
+			else if (field === 'audience') persona = { ...persona, preset: '', audience: '' };
+			else if (field === 'tone') persona = { ...persona, preset: '', tone: '' };
+			else if (field === 'intent') persona = { ...persona, intent: '' };
+		}}
+	/>
 	{/if}<!-- end build mode / end activeMode router -->
 
 	<!-- FAB and mobile action overlay — always accessible, outside preview panel -->
@@ -1115,51 +1071,6 @@
 
 	.clear-btn:hover { border-color: #f7768e; color: #f7768e; }
 
-	/* ADR-0157: Review Panel */
-	.review-panel {
-		position: fixed;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		background: var(--color-bg);
-		border-top: 1px solid var(--color-border);
-		padding: 0.5rem 1rem;
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.5rem;
-		z-index: 100;
-		max-height: 30vh;
-		overflow-y: auto;
-	}
-
-	.review-panel-empty {
-		color: var(--color-text-muted);
-		font-size: 0.85rem;
-		justify-content: center;
-	}
-
-	.review-panel-chip {
-		background: var(--color-accent);
-		border: 1px solid var(--color-accent);
-		border-radius: var(--radius);
-		padding: 0.25rem 0.5rem;
-		font-size: 0.8rem;
-		font-family: var(--font-mono);
-		color: var(--color-text);
-		cursor: pointer;
-	}
-
-	@media (hover: hover) {
-		.review-panel-chip:hover {
-			background: #6b3040;
-			border-color: #f7768e;
-		}
-	}
-
-	.review-panel-chip.conflict {
-		opacity: 0.6;
-		text-decoration: line-through;
-	}
 
 	.fab-btn {
 		display: none;
@@ -1830,11 +1741,6 @@
 	}
 
 	@media (max-width: 767px) {
-		/* FAB clearance: prevent chips from hiding under the fixed bottom-right FAB */
-		.review-panel {
-			padding-right: 4rem;
-		}
-
 		.preview-toggle {
 			display: block;
 		}

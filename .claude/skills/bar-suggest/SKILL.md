@@ -100,7 +100,7 @@ Use bar-suggest when the request is:
    ```
    The query must contain a verb naming how to think about the task (audit, compare, diagnose, evaluate, surface, map, review, trace). A query containing only task-content words without such a verb does not satisfy this requirement. Note which tokens surface and their axes — include any clearly confirmed by the request as seed tokens; leave ambiguous ones for the dialogue to resolve.
 
-2. **Run `bar build probe form:interactive`** — always use `probe` as the task token for the initiation; `probe` reflects that the dialogue itself is probing to understand the request, not yet executing it. Include any clearly-confirmed seed tokens from the initial lookup. This is the only `bar build` invocation during refinement. The final task token (which may differ from `probe`) is derived from the dialogue answers at the stop condition.
+2. **Run `bar build probe form:interactive`** — always use `probe` as the task token for the initiation; `probe` reflects that the dialogue itself is probing to understand the request, not yet executing it. Include any clearly-confirmed seed tokens from the initial lookup. This is the only `bar build` invocation during refinement. The final task token (which may differ from `probe`) is derived from the dialogue answers at the stop condition. A `bar build form:interactive` invocation that does not have a `bar lookup` tool result block appearing above it in the transcript does not satisfy this requirement.
 
 3. **Follow the `form:interactive` contract** across N turns:
    - Name the current state of understanding (what is clear, what is ambiguous)

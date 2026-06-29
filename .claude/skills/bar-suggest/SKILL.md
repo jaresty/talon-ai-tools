@@ -23,7 +23,7 @@ For ambiguous or open-ended requests, bar-suggest uses a **single `bar build ...
 1. Run one `bar build` command with `form:interactive` and tokens appropriate to the request domain — this is the only bar invocation during the refinement phase.
 2. Follow the `form:interactive` contract across N turns: each response names the current state of understanding, names at least one available input (dimension the user could clarify), and ends with a prompt that names those inputs.
 3. The dialogue continues until the **stop condition** is met:
-   - **Sufficient signal**: the transcript contains a named token value for every axis the final `bar build` command requires — task, and at least one of scope/method/form — each derived from a user answer appearing above the stop declaration in the transcript. A named token value is a token slug appearing in the form `<axis>: <token>` or as a backtick-quoted slug preceded by the axis name within the same sentence — a prose mention of a token name without this format does not satisfy the named-token-value requirement. A stop declaration that appears before these named token values are present does not satisfy this requirement. OR
+   - **Sufficient signal**: the transcript contains a named token value for every axis the final `bar build` command requires — task, at least one of scope/method/form, and any persona axes (voice, audience, tone, intent) that are relevant to the request — each derived from a user answer appearing above the stop declaration in the transcript. A named token value is a token slug appearing in the form `<axis>: <token>` or as a backtick-quoted slug preceded by the axis name within the same sentence — a prose mention of a token name without this format does not satisfy the named-token-value requirement. A stop declaration that appears before these named token values are present does not satisfy this requirement. OR
    - **User says "go"**: the user explicitly asks to proceed with the current understanding.
 4. Once the stop condition fires, generate the final menu (see Refinement Turn Structure) — do not execute any `bar build` command before the user has selected from the menu. A menu selection is a user message that begins with or contains a digit matching an option number (`1`, `2`, `3`, or `4`) or contains the phrase `option <N>` — a message lacking either pattern does not satisfy the menu-selection gate. A `bar build` execution that appears before a qualifying user menu selection does not satisfy this requirement.
 
@@ -50,7 +50,7 @@ If the request is **not** ambiguous — the user has given sufficient signal abo
 2. **Load navigation guide** via `bar help llm` (no args), then load sections on demand
 3. **Initial `bar lookup`** on the original request to surface seed token candidates
 4. **Run `bar build form:interactive`** with confirmed seed tokens but no task token
-5. **Refine across turns** — `bar lookup` after each user answer; accumulate token set
+5. **Refine across turns** — `bar lookup` after each user answer; accumulate token set across all axes (task, scope, method, form, completeness, voice, audience, tone, intent)
 6. **Stop condition fires** — select task token from dialogue answers; `bar guide` near-neighbors
 7. **Generate final menu** — primary command + alternative framings + any sequences (named or ad-hoc)
 8. **User picks** — execute single command directly or hand sequence to bar-workflow
@@ -104,7 +104,7 @@ Use bar-suggest when the request is:
 
 3. **Follow the `form:interactive` contract** across N turns:
    - Name the current state of understanding (what is clear, what is ambiguous)
-   - Name at least one available input — the dimension most likely to resolve the remaining ambiguity (scope? method? audience? depth?)
+   - Name at least one available input — the dimension most likely to resolve the remaining ambiguity across all axes: task, scope, method, form, completeness, and persona (voice, audience, tone, intent)
    - End each turn with a prompt that names those inputs
 
 4. **Derive the final token set** — as the user's answers accumulate, build the final `bar build` command. When the stop condition fires: select the task token from the dialogue answers (what verb did the user's intent resolve to?), combine with all accumulated axis tokens, then execute.

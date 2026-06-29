@@ -23,11 +23,11 @@ For ambiguous or open-ended requests, bar-suggest uses a **single `bar build ...
 1. Run one `bar build` command with `form:interactive` and tokens appropriate to the request domain — this is the only bar invocation during the refinement phase.
 2. Follow the `form:interactive` contract across N turns: each response names the current state of understanding, names at least one available input (dimension the user could clarify), and ends with a prompt that names those inputs.
 3. The dialogue continues until the **stop condition** is met:
-   - **Sufficient signal**: the transcript contains a named token value for every axis the final `bar build` command requires — task, and at least one of scope/method/form — each derived from a user answer appearing above the stop declaration in the transcript. A stop declaration that appears before these named token values are present does not satisfy this requirement. OR
+   - **Sufficient signal**: the transcript contains a named token value for every axis the final `bar build` command requires — task, and at least one of scope/method/form — each derived from a user answer appearing above the stop declaration in the transcript. A named token value is a token slug appearing in the form `<axis>: <token>` or as a backtick-quoted slug preceded by the axis name within the same sentence — a prose mention of a token name without this format does not satisfy the named-token-value requirement. A stop declaration that appears before these named token values are present does not satisfy this requirement. OR
    - **User says "go"**: the user explicitly asks to proceed with the current understanding.
-4. Once the stop condition fires, generate the final menu (see Refinement Turn Structure) — do not execute any `bar build` command before the user has selected from the menu. A `bar build` execution that appears before the user's menu selection does not satisfy this requirement.
+4. Once the stop condition fires, generate the final menu (see Refinement Turn Structure) — do not execute any `bar build` command before the user has selected from the menu. A menu selection is a user message that begins with or contains a digit matching an option number (`1`, `2`, `3`, or `4`) or contains the phrase `option <N>` — a message lacking either pattern does not satisfy the menu-selection gate. A `bar build` execution that appears before a qualifying user menu selection does not satisfy this requirement.
 
-**Ambiguous or partial user answers:** If the user's answer does not name a specific value for the asked dimension (e.g., "maybe" / "I'm not sure" / answers a different question), treat the dimension as still unresolved and ask a more specific follow-up that names two concrete options. A turn that exits refinement without a named token value for each required axis does not satisfy the sufficient-signal stop condition.
+**Ambiguous or partial user answers:** If the user's answer does not name a specific value for the asked dimension (e.g., "maybe" / "I'm not sure" / answers a different question), treat the dimension as still unresolved and ask a more specific follow-up that names two concrete options. A turn that exits refinement without a named token value (in the form `<axis>: <token>` or backtick-quoted slug preceded by axis name) for each required axis does not satisfy the sufficient-signal stop condition.
 
 **No additional `bar build` invocations occur during refinement turns** — the single `bar build form:interactive` output governs the whole dialogue until the stop condition. `bar lookup` and `bar guide` calls are permitted and required during refinement (see Refinement Turn Structure).
 
@@ -58,18 +58,18 @@ If the request is **not** ambiguous — the user has given sufficient signal abo
 ## Skill Behavior Rules
 
 - **Do not answer directly before the menu is presented and the user has selected.** Run `bar build probe form:interactive` first, follow the refinement dialogue until the stop condition fires, then generate the final menu.
-- **A response that addresses the original request is permitted only when a final menu containing at least one literal `` `bar build `` string and the user's numbered selection both appear above it in the transcript — a response addressing the original request before both are present does not satisfy this requirement.**
+- **A response that addresses the original request is permitted only when a final menu containing at least one literal `` `bar build `` string and the user's menu selection (a message beginning with or containing a digit `1`–`4` or the phrase `option <N>`) both appear above it in the transcript — a response addressing the original request before both are present does not satisfy this requirement.**
 - **Use `form:interactive` for refinement, not a flat menu.** The refinement is intent-driven: ask the question that eliminates the most ambiguity given the current state of understanding.
 - **Never hardcode tokens.** Discover via `bar help llm` and `bar lookup`.
 - **Use kebab-case for multi-word tokens.** Convert spaces to hyphens (e.g., "as-kent-beck").
 - **Be transparent about usage.** After the stop condition fires and the final `bar build` executes, state: "Based on your answers I used `bar build [tokens]` — [token]: [reason], ..."
 - **Show commands in menu.** Each menu option must contain a literal `` `bar build `` or `` `bar sequence show `` string — a menu option without one does not satisfy this requirement.
-- **Execute final command.** A final `bar build` tool result must appear in the transcript above the substantive response — a substantive response that appears before this result does not satisfy this requirement.
+- **Execute final command.** A final `bar build` tool result must appear in the transcript above a response whose content addresses the user's original request domain (identifiable by the presence of the user's original subject matter or a direct answer to the request) — such a response appearing before the `bar build` tool result does not satisfy this requirement.
 
 ## Discovery Workflow
 
 1. **Check for cached reference** — if `bar help llm` was already run in this conversation, reuse it
-2. **Load reference once** — run `bar help llm` (no args) as a standalone Bash command. A compliant invocation produces a tool-result block containing `## Context window`. Do not pipe any `bar help llm` invocation to any other command.
+2. **Load reference once** — run `bar help llm` (no args) as a standalone Bash command. A compliant invocation produces a tool-result block containing `## Context window`. The tool call text must be exactly `bar help llm` with no `|` character — a compliant invocation contains no pipe operator in the same shell command.
 3. **Discover tokens by intent** — use `bar lookup "<intent>"` after each user answer during refinement (see Refinement Turn Structure)
 4. **Disambiguate near-neighbors** — use `bar guide <token>` after the stop condition fires for any ambiguous token choices
 
@@ -121,14 +121,14 @@ bar lookup "<cognitive operation>" --axis method  # restrict if the answer names
 # e.g., user says "just give me the plan" → bar lookup "sequence ordered steps structured plan"
 ```
 
-The query must name how the user wants to think about the task, not what they said. A query that copies the user's words without a cognitive operation verb does not satisfy this requirement. Show the top 2-3 results (token name + short label + axis). Fold confirmed candidates into the accumulating token set. **Track any `kind=sequence` results separately** — these are candidates for the final menu. A refinement turn that does not run `bar lookup` does not satisfy this requirement.
+Show the top 2-3 results (token name + short label + axis). Fold confirmed candidates into the accumulating token set. **Track any `kind=sequence` results separately** — these are candidates for the final menu. A refinement turn that does not run `bar lookup` does not satisfy this requirement.
 
 ### Refinement Turn Structure
 
 Each refinement turn must follow the `form:interactive` contract:
-- **Name current state**: the turn must contain a sentence of the form "Currently understood: [X]; still unclear: [Y]" — a turn that restates the original request without this structure does not satisfy this requirement
-- **Name available inputs**: the turn must name at least one dimension as a bracketed choice list — e.g., "[concept / evaluate / diagnose]" — a turn without a bracketed choice list does not satisfy this requirement
-- **End with a prompt**: the final line of the turn must be a question that names the bracketed choice list — a turn whose final line is not a question does not satisfy this requirement
+- **Name current state**: the turn must contain a sentence beginning with the literal prefix `Currently understood:` — a turn that restates the original request without this prefix does not satisfy this requirement
+- **Name available inputs**: the turn must name at least one dimension as a bracketed choice list using `[` and `/` as the literal delimiters — e.g., `[concept / evaluate / diagnose]` — a turn without a `[` ... `/` ... `]` pattern does not satisfy this requirement
+- **End with a prompt**: the final line of the turn must end with `?` as its last character — a turn whose final line does not end with `?` does not satisfy this requirement
 
 **After stop condition fires**, generate a final menu of 2-4 options before executing:
 
@@ -149,7 +149,7 @@ Each refinement turn must follow the `form:interactive` contract:
    # The alternative verb must differ from the primary verb — a query using the same
    # cognitive operation as the primary does not satisfy this requirement.
    ```
-   For each alternative framing, assemble a full token set using judgment over the lookup results — select whichever tokens across method, scope, form, and completeness best serve that framing given the subject matter. Do not default to the top result; pick tokens that produce a meaningfully different response. An option that differs from the primary by only one token does not satisfy this requirement — options must be differentiable by what they produce, not just by one token swap.
+   For each alternative framing, assemble a full token set using judgment over the lookup results — select whichever tokens across method, scope, form, and completeness best serve that framing given the subject matter. Do not default to the top result; pick tokens that produce a meaningfully different response. An option that differs from the primary in exactly one axis token position does not satisfy this requirement — each option must differ from every other option in at least two axis token positions, evaluator-checkable by comparing the two `bar build` token lists.
 
 4. **Include sequences if applicable**: check the running list of `kind=sequence` results collected during dialogue lookups. If any named sequence fits, include it as a menu option. If the domain inherently benefits from staged output (e.g., explore→evaluate, diagnose→fix) and no named sequence matches, generate an ad-hoc 2-3 step sequence as an additional option.
 

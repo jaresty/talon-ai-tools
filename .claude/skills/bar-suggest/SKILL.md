@@ -71,7 +71,7 @@ If the request is **not** ambiguous — the user has given sufficient signal abo
 1. **Check for cached reference** — if `bar help llm` was already run in this conversation, reuse it
 2. **Load reference once** — run `bar help llm` (no args) as a standalone Bash command. A compliant invocation produces a tool-result block containing `## Context window`. The tool call text must be exactly `bar help llm` with no `|` character — a compliant invocation contains no pipe operator in the same shell command.
 3. **Discover tokens by intent** — use `bar lookup "<intent>"` after each user answer during refinement (see Refinement Turn Structure)
-4. **Disambiguate near-neighbors** — use `bar guide <token>` after the stop condition fires for any ambiguous token choices
+4. **Disambiguate near-neighbors** — use `bar guide <token>` after the stop condition fires only if a prior `bar lookup` result contained a guide indicator for that token
 
 **Grammar note:** Token order is: persona → static → completeness → scope (1-2) → method (1-3) → form → channel → directional.
 
@@ -132,7 +132,7 @@ Each refinement turn must follow the `form:interactive` contract:
 
 **After stop condition fires**, generate a final menu of 2-4 options before executing:
 
-1. **Disambiguate near-neighbor tokens**: run `bar guide <token>` for any ambiguous token in the accumulated set:
+1. **Disambiguate near-neighbor tokens**: if any `bar lookup` result during the dialogue returned a `guide` entry for an ambiguous token, run `bar guide <token>` for that token. Skip this step if no lookup result contained a guide indicator — a `bar guide` invocation with no prior guide indicator in a lookup result does not satisfy this requirement and will error.
    ```bash
    bar guide <token>   # side-by-side distinctions and combination guidance
    ```

@@ -1017,6 +1017,36 @@ func TestHelpTokenAxisTokenShowsAxisDescription(t *testing.T) {
 	}
 }
 
+// TestHelpTokenPersona verifies that bar help token works for persona tokens (audience, voice, tone, intent).
+func TestHelpTokenPersona(t *testing.T) {
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	cases := []struct {
+		slug string
+		axis string
+	}{
+		{"to-programmer", "audience"},
+		{"to-managers", "audience"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.slug, func(t *testing.T) {
+			var buf bytes.Buffer
+			if err := renderHelpToken(&buf, grammar, tc.slug); err != nil {
+				t.Fatalf("renderHelpToken(%q) returned error: %v", tc.slug, err)
+			}
+			output := buf.String()
+			if !strings.Contains(output, tc.slug) && !strings.Contains(output, tc.axis) {
+				t.Errorf("renderHelpToken(%q) output missing slug or axis\noutput:\n%s", tc.slug, output)
+			}
+			if !strings.Contains(strings.ToLower(output), "description") && !strings.Contains(output, "**") {
+				t.Errorf("renderHelpToken(%q) output missing description content\noutput:\n%s", tc.slug, output)
+			}
+		})
+	}
+}
+
 // TestLLMHelpSequencesDispatchPointer verifies that the sequences section points
 // agents to `bar help dispatch` for the live protocol instead of inlining prose steps.
 func TestLLMHelpSequencesDispatchPointer(t *testing.T) {

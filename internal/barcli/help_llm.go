@@ -83,7 +83,40 @@ func renderHelpToken(w io.Writer, grammar *Grammar, slug string) error {
 		return nil
 	}
 
-	return fmt.Errorf("token %q not found in any axis", slug)
+	// Try persona tokens (voice, audience, tone, intent)
+	for _, personaAxis := range []string{"voice", "audience", "tone", "intent"} {
+		set := grammar.PersonaTokenSet(personaAxis)
+		if _, ok := set[canonical]; !ok {
+			continue
+		}
+		fmt.Fprintf(w, "# Token: %s (%s)\n\n", slug, personaAxis)
+		label := grammar.PersonaLabel(personaAxis, canonical)
+		if label != "" {
+			fmt.Fprintf(w, "**Label**: %s\n\n", label)
+		}
+		desc := grammar.PersonaDescription(personaAxis, canonical)
+		if desc != "" {
+			fmt.Fprintf(w, "**Description**: %s\n\n", strings.TrimSpace(desc))
+		}
+		if meta := grammar.PersonaMetadataFor(personaAxis, canonical); meta != nil {
+			if len(meta.Heuristics) > 0 {
+				fmt.Fprintf(w, "**Heuristics** (when to use): %s\n\n", strings.Join(meta.Heuristics, "; "))
+			}
+			if len(meta.Distinctions) > 0 {
+				fmt.Fprintf(w, "**Distinctions** (vs. similar tokens):\n")
+				for _, d := range meta.Distinctions {
+					fmt.Fprintf(w, "- **%s**: %s\n", d.Token, d.Note)
+				}
+				fmt.Fprintf(w, "\n")
+			}
+		}
+		if rc := grammar.PersonaRoutingConcept(personaAxis, canonical); rc != "" {
+			fmt.Fprintf(w, "**Routing concept**: %s\n\n", rc)
+		}
+		return nil
+	}
+
+	return fmt.Errorf("token %q not found in any axis or persona", slug)
 }
 
 // renderNavigationGuide emits a small (<10KB) navigation index for bar help llm with no section argument.

@@ -32,12 +32,23 @@ export interface PersonaPreset {
 	spoken: string;
 }
 
+export interface InnerSequence {
+	mode: string;
+	stop_when?: string;
+	steps: SequenceStep[];
+}
+
 export interface SequenceStep {
 	token?: string;
 	role: string;
 	prompt_hint?: string;
 	type?: string;
 	requires_user_input?: boolean;
+	fan_out?: string;
+	join?: string;
+	isolation?: boolean;
+	inner?: InnerSequence;
+	during_dispatch?: string;
 }
 
 export interface Sequence {

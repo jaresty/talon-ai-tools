@@ -63,7 +63,7 @@ If the request is **not** ambiguous — the user has given sufficient signal abo
 - **Never hardcode tokens.** Discover via `bar help llm` and `bar lookup`.
 - **Use kebab-case for multi-word tokens.** Convert spaces to hyphens (e.g., "as-kent-beck").
 - **Be transparent about usage.** After the stop condition fires and the final `bar build` executes, state: "Based on your answers I used `bar build [tokens]` — [token]: [reason], ..."
-- **Show commands in menu.** Each menu option must contain a literal `` `bar build `` or `` `bar sequence show `` string — a menu option without one does not satisfy this requirement.
+- **Show commands in menu.** Each menu option must contain a literal `` `bar build `` or `` `bar sequence show `` string — a menu option without one does not satisfy this requirement. Every `` `bar build` `` command in the menu must include a task token — a command string without a task token does not satisfy this requirement.
 - **Execute final command.** A final `bar build` tool result must appear in the transcript above a response whose content addresses the user's original request domain (identifiable by the presence of the user's original subject matter or a direct answer to the request) — such a response appearing before the `bar build` tool result does not satisfy this requirement.
 
 ## Discovery Workflow
@@ -155,7 +155,7 @@ Each refinement turn must follow the `form:interactive` contract:
 
 5. **Distinctness check**: before presenting, verify each option would produce noticeably different output from the others — different reasoning process, different output shape, or different angle of attack. If two options are too similar (same methods, same scope, same form — differing only in one minor token), replace one with a more divergent framing by running a new `bar lookup` with a more contrasting intent phrase.
 
-6. **Present the final menu** to the user — 2-4 options. Each option must contain: a short label, a literal `` `bar build <tokens>` `` command (or named sequence identifier of the form `` `bar sequence show <name>` ``), and one sentence naming what it emphasizes. End with `[1 / 2 / 3 ...]`. A menu option whose text does not contain a literal `` `bar build `` or `` `bar sequence show `` string does not satisfy this requirement — prose descriptions of approach without a command string do not satisfy this requirement.
+6. **Present the final menu** to the user — 2-4 options. Each option must contain: a short label, a literal `` `bar build <tokens>` `` command (or named sequence identifier of the form `` `bar sequence show <name>` ``), and one sentence naming what it emphasizes. End with `[1 / 2 / 3 ...]`. A menu option whose text does not contain a literal `` `bar build `` or `` `bar sequence show `` string does not satisfy this requirement — prose descriptions of approach without a command string do not satisfy this requirement. Every `` `bar build` `` command in the menu must include a task token — a `` `bar build` `` command string that does not contain a task token does not satisfy this requirement.
 
 7. **Execute the chosen option**:
    - Single `bar build`: execute directly

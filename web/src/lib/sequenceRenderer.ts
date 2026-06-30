@@ -15,7 +15,7 @@ export function buildCopyPrompt(seq: Sequence, subject: string, grammar: Grammar
 		if (step.type === 'action') {
 			parts.push(`${header}\n\n👤 YOUR ACTION: ${step.prompt_hint ?? step.role}\n\n--- AWAITING INPUT ---`);
 		} else if (step.type === 'dispatch') {
-			parts.push(`${header}\n\n${buildDispatchBlock(step, grammar, subject)}`);
+			parts.push(`${header}\n\n${buildDispatchBlock(step, grammar, subject, key)}`);
 		} else {
 			const axisMap: Record<string, string[]> = {};
 			for (const pair of (step.token ?? '').split(' ')) {
@@ -42,7 +42,7 @@ export function buildCopyPrompt(seq: Sequence, subject: string, grammar: Grammar
 	return preamble + parts.join('\n\n---\n\n');
 }
 
-function buildDispatchBlock(step: SequenceStep, grammar: Grammar, subject: string): string {
+function buildDispatchBlock(step: SequenceStep, grammar: Grammar, subject: string, sequenceKey: string): string {
 	const lines: string[] = [];
 
 	if (step.prompt_hint) {
@@ -50,10 +50,9 @@ function buildDispatchBlock(step: SequenceStep, grammar: Grammar, subject: strin
 		lines.push('');
 	}
 
-	lines.push('[dispatch protocol — required]');
+	lines.push(`[dispatch protocol — required] This is the dispatch step of the ${sequenceKey} sequence — a structured parallel analysis workflow initiated by the user. You are the orchestrator.`);
 	lines.push('');
-	lines.push('This step fans out work to parallel agents. You are the orchestrator.');
-	lines.push('');
+	lines.push('This step fans out work to parallel agents.');
 
 	const fanOutDesc = step.fan_out === 'enumerate'
 		? 'enumerate — treat the prior step\'s output as a list; send one item per agent'
@@ -74,9 +73,10 @@ function buildDispatchBlock(step: SequenceStep, grammar: Grammar, subject: strin
 
 	lines.push('Before spawning agents, write a ## Agent Configuration block containing:');
 	lines.push('1. The literal string `subagent_type: general-purpose`');
-	lines.push('2. The assigned item — verbatim text of the item this agent is processing from the enumerated list');
-	lines.push('3. Factual statements about the task domain traceable to the orchestrator\'s prior output');
-	lines.push('A block is compliant only when every sentence in it can be matched to one of these three categories by an evaluator reading the transcript — persona, behavioral stance, reasoning style, and approach must not appear here; a sentence naming any of these makes the block non-compliant.');
+	lines.push(`2. The sequence context: "You are a dispatched agent in the ${sequenceKey} sequence — a structured parallel analysis workflow initiated by the user."`);
+	lines.push('3. The assigned item — verbatim text of the item this agent is processing from the enumerated list');
+	lines.push('4. Factual statements about the task domain traceable to the orchestrator\'s prior output');
+	lines.push('A block is compliant only when every sentence in it can be matched to one of these four categories by an evaluator reading the transcript — persona, behavioral stance, reasoning style, and approach must not appear here; a sentence naming any of these makes the block non-compliant.');
 	lines.push('');
 
 	if (step.during_dispatch) {

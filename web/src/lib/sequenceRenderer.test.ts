@@ -76,6 +76,20 @@ describe('buildCopyPrompt', () => {
 		expect(result).toContain('your response must end there');
 	});
 
+	it('requires sequence name in ## Agent Configuration block spec', () => {
+		const result = buildCopyPrompt(dispatchSeq, 'subject', stubGrammar, 'dispatch-seq');
+		expect(result).toContain('dispatch-seq sequence');
+		// The agent config block spec must name the sequence so isolated agents have provenance
+		const agentConfigIdx = result.indexOf('## Agent Configuration');
+		const seqNameAfterConfig = result.indexOf('dispatch-seq', agentConfigIdx);
+		expect(seqNameAfterConfig).toBeGreaterThan(agentConfigIdx);
+	});
+
+	it('renders sequence key provenance in dispatch steps', () => {
+		const result = buildCopyPrompt(dispatchSeq, 'subject', stubGrammar, 'dispatch-seq');
+		expect(result).toContain('dispatch step of the dispatch-seq sequence');
+	});
+
 	it('renders [DISPATCH GATE] for dispatch steps', () => {
 		const result = buildCopyPrompt(dispatchSeq, 'subject', stubGrammar, 'dispatch-seq');
 		expect(result).toContain('[DISPATCH GATE]');

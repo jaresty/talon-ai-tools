@@ -57,9 +57,14 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "including stub additions. Each file-modifying tool call must be immediately preceded "
             "by a tool-result block whose output contains the name of the function or symbol that "
             "tool call adds or modifies; a tool-result block that does not name that symbol does "
-            "not gate that tool call. A Symbols list with more than one entry — where the Symbols "
-            "list is the string appearing between 'Symbols:' and 'Lines:' in the pre-edit line — "
-            "requires a separate Scope line and separate tool call for each entry."
+            "not gate that tool call. Recency: non-run tool calls (Read, Write, Edit, or any tool "
+            "call that does not produce a test-executor result) between the gating tool-result "
+            "block and the file-modifying tool call do not break recency — the string confirming "
+            "recency is the absence of any tool-executed run result between the gating block and "
+            "the edit; a tool-executed run result appearing between them resets the gate and a new "
+            "gating tool-result block is required. A Symbols list with more than one entry — where "
+            "the Symbols list is the string appearing between 'Symbols:' and 'Lines:' in the "
+            "pre-edit line — requires a separate Scope line and separate tool call for each entry."
         ),
     },
     {

@@ -124265,7 +124265,7 @@
         "gate",
         "atomic"
       ],
-      "prose": "gate + atomic: gate's blocking condition applies to every file-modifying tool call, including stub additions. Each file-modifying tool call must be immediately preceded by a tool-result block whose output contains the name of the function or symbol that tool call adds or modifies; a tool-result block that does not name that symbol does not gate that tool call. A Symbols list with more than one entry — where the Symbols list is the string appearing between 'Symbols:' and 'Lines:' in the pre-edit line — requires a separate Scope line and separate tool call for each entry."
+      "prose": "gate + atomic: gate's blocking condition applies to every file-modifying tool call, including stub additions. Each file-modifying tool call must be immediately preceded by a tool-result block whose output contains the name of the function or symbol that tool call adds or modifies; a tool-result block that does not name that symbol does not gate that tool call. Recency: non-run tool calls (Read, Write, Edit, or any tool call that does not produce a test-executor result) between the gating tool-result block and the file-modifying tool call do not break recency — the string confirming recency is the absence of any tool-executed run result between the gating block and the edit; a tool-executed run result appearing between them resets the gate and a new gating tool-result block is required. A Symbols list with more than one entry — where the Symbols list is the string appearing between 'Symbols:' and 'Lines:' in the pre-edit line — requires a separate Scope line and separate tool call for each entry."
     },
     {
       "name": "falsify+atomic",
@@ -124753,7 +124753,7 @@
     "patterns": "f59300b117c89e10d359f0304e3ce78f5213ac15a344635833120751c15619ff",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
     "sequences": "62ed09aeeafa38446d8206d2524b35f98031ed639a9624c9a7cb88306d575ed7",
-    "compositions": "7b7a2dfae9ea0df11290de95cd3dbd6eebdf15444636739780f0b4e834b41e13",
+    "compositions": "00b4c89ce6cb783ff170ee722c6705308a74933c65923560130f6a6089b6e127",
     "guidebook": "c978d0ce9e8e68a74aa3407d26aa7e272cad9bbad79bf30ba93ba916108fa8dc"
   }
 }

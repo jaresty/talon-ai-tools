@@ -87,6 +87,17 @@ def test_falsify_atomic_prose_contains_per_call_independence_clause():
     )
 
 
+def test_gate_atomic_prose_contains_recency_clause():
+    from lib.compositionConfig import COMPOSITIONS
+    entry = next(c for c in COMPOSITIONS if c["name"] == "gate+atomic")
+    assert "Recency: non-run tool calls" in entry["prose"], (
+        "gate+atomic prose must contain recency clause "
+        "'Recency: non-run tool calls' — closes the addressability gap where "
+        "non-run tool calls between the gating result and the edit have ambiguous "
+        "effect on recency"
+    )
+
+
 def test_grammar_json_composition_entries_have_required_fields():
     grammar_path = ROOT / "build" / "prompt-grammar.json"
     data = json.loads(grammar_path.read_text())

@@ -407,7 +407,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "substring does not satisfy (g) regardless of whether (a) precedes (c) in its output. Exception: (g) is not required for the single action that produces the governing "
         "artifact's assertion text — the creation step is that action only; (g) is required for every action that modifies the implementation, including in the same session — a "
         "creation step is that action only if (c) is absent before the action and present after it, and an executor invocation against the governing artifact immediately following the "
-        "action produces a tool-executed result containing (c).",
+        "action produces a tool-executed result containing (c). Semantically-equivalent refactor exception: (g) may also be satisfied by perturbing the refactored form — executing the "
+        "governing artifact against a state where a specific string in the executor output is expected to shift from (b) to (a), named in a prose declaration appearing immediately "
+        "before the perturbation — and producing a tool-executed result containing (a) before (c). The perturbation is complete when that tool-executed result appears; revert is "
+        "complete when a subsequent executor invocation produces (b) at the position where (a) was absent. This exception applies only when the governed action's diff contains no new "
+        "function definition, no new conditional branch token, and no change to a function signature.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

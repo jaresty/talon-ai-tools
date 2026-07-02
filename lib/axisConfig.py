@@ -283,6 +283,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
         "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes "
         "clearly. Output adapts to channel: code channel → type system (interfaces, enums, hierarchies); markup → hierarchical structure; no channel → prose sections.",
+        "template": "The response is an artifact in which every content position is a labeled slot of the form [ContentType], where ContentType is a noun-phrase naming the type of content "
+        "expected. Each slot's content is absent from the response — no slot is pre-filled. The artifact contains at least two slots. Structural connectors (headings, separators, "
+        "relational phrases) are permitted between slots; prose content outside slot positions is not.",
         "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, "
         "boundaries) and including descriptive test names.",
         "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
@@ -767,6 +770,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "story": "User story format",
         "table": "Markdown table presentation",
         "taxonomy": "Classification or type hierarchy",
+        "template": "Fill-in-the-blank structured artifact",
         "test": "Structured test cases",
         "tight": "Concise dense prose",
         "timeline": "Timeline or sequence layout",
@@ -1017,6 +1021,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "story": "話",
         "table": "表",
         "taxonomy": "別",
+        "template": "型",
         "test": "験",
         "tight": "簡",
         "timeline": "歴",
@@ -1466,6 +1471,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "story": "User story",
         "table": "Structured comparison",
         "taxonomy": "Classification system",
+        "template": "Fill-in-the-blank artifact",
         "test": "Test cases",
         "tight": "Concise prose",
         "timeline": "Timeline or sequence layout",
@@ -2047,6 +2053,16 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "shellscript": "recipe prose structure cannot be rendered as shell script; schema has no prose slot; use plain or no channel",
                     "svg": "recipe cannot be expressed as SVG markup; use plain or no channel",
                     "presenterm": "recipe prose structure cannot be expressed as presenterm slide sections; use plain or sync instead",
+                },
+            }
+        },
+        "template": {
+            "channel": {
+                "natural": ["plain", "slack", "html"],
+                "cautionary": {
+                    "shellscript": "template produces a prose artifact with labeled slots — cannot be rendered as executable shell code; use plain or no channel",
+                    "codetour": "template produces a fill-in artifact; CodeTour JSON has no slot for placeholder-based prose; use plain or no channel",
+                    "gherkin": "template slots cannot be expressed as Given/When/Then assertions; use plain or no channel",
                 },
             }
         },
@@ -4525,6 +4541,36 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "build a taxonomy of",
                 "how do these things relate in a hierarchy",
                 "structured categorization with distinguishing attributes",
+            ],
+        },
+        "template": {
+            "distinctions": [
+                {
+                    "note": "scaffold = builds understanding from first principles; template = produces a reusable artifact with labeled slots the reader fills in",
+                    "token": "scaffold",
+                },
+                {
+                    "note": "recipe = step-by-step procedural instructions; template = fill-in-the-blank artifact with labeled placeholders, not a sequence of steps",
+                    "token": "recipe",
+                },
+                {
+                    "note": "checklist = verifiable action items to tick off; template = labeled slots to fill in, producing a completed artifact",
+                    "token": "checklist",
+                },
+            ],
+            "heuristics": [
+                "fill in the blank",
+                "mad libs",
+                "template with placeholders",
+                "structured completion",
+                "give me a template",
+                "connect these ideas",
+                "bridge these concepts",
+                "create a template for",
+                "slots to fill in",
+                "blank slate with structure",
+                "reusable artifact",
+                "labeled placeholders",
             ],
         },
         "test": {

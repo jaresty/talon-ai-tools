@@ -389,10 +389,11 @@ class ScopeAxisMetadataTests(unittest.TestCase):
 
 
 class FormAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-7: form axis has structured metadata for all 40 tokens."""
+    """ADR-0155 T-7: form axis has structured metadata for all 41 tokens."""
 
     AXIS = "form"
     EXPECTED_TOKENS = {
+        "template",
         "actions",
         "activities",
         "stage",

@@ -154,6 +154,19 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
             "prime must be in AXIS_KEY_TO_ROUTING_CONCEPT completeness",
         )
 
+    def test_completeness_kanji_coverage(self):
+        """All completeness tokens must have a kanji entry."""
+        from lib.axisConfig import AXIS_KEY_TO_KANJI, AXIS_KEY_TO_VALUE
+
+        completeness_tokens = set(AXIS_KEY_TO_VALUE.get("completeness", {}).keys())
+        kanji_tokens = set(AXIS_KEY_TO_KANJI.get("completeness", {}).keys())
+        missing = completeness_tokens - kanji_tokens
+        self.assertEqual(
+            missing,
+            set(),
+            f"completeness tokens missing kanji: {missing}",
+        )
+
 
 class ChannelAxisMetadataTests(unittest.TestCase):
     """ADR-0155 T-4: channel axis has structured metadata for all 23 tokens."""

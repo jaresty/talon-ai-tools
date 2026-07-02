@@ -782,9 +782,15 @@
         "zettel": "箋"
       },
       "completeness": {
+        "deep": "深",
         "full": "全",
+        "gist": "旨",
         "grow": "増",
+        "max": "尽",
+        "minimal": "小",
+        "narrow": "狭",
         "prime": "要",
+        "skim": "略",
         "taper": "曲",
         "triage": "険",
         "zoom": "比"
@@ -125174,7 +125180,7 @@
     }
   ],
   "checksums": {
-    "axes": "e7c5b802403e104fd63030354d7bf3559e0b239783160c5a4e097c81b081d941",
+    "axes": "1f9fa581b4c4cd18270eb88a57e1bc236e9cfe4571a6965890518c97b8f5318c",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "1ef0b036441f96c01edbc3983f664528351c6ffb46e1514308ad907ceebacccb",
     "hierarchy": "3ac4d2ebd634be0d043fef5eda88678369486ab29984cde382e9cf790cd616a1",

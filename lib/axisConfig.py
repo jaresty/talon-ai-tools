@@ -141,6 +141,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "max": "The response covers every element of the subject and every sub-element it can derive — any nameable element absent from the response is an omission requiring justification.",
         "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
+        "prime": "The response ranks the subject's concepts by learning leverage — the ratio of understanding unlocked to learning effort required — naming this ranking criterion before "
+        "covering any concept. It covers only the highest-leverage subset. After naming that subset, it writes a closure statement declaring coverage complete at the functional "
+        "competence threshold: the point at which the reader can operate without having mastered the full domain.",
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
         "taper": "The response adjusts coverage depth by following the contour of the subject — expanding in high-complexity regions where analysis demands depth, contracting where "
         "resolution emerges. Like a derivative: the rate of change matters more than the total span. Accelerates toward dense regions, decelerates near resolution.",
@@ -701,6 +704,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "max": "Exhaustive, treat omissions as errors",
         "minimal": "Smallest satisfying answer only",
         "narrow": "Restricted to a very small slice",
+        "prime": "Highest-leverage concepts only, stop at functional grounding",
         "skim": "Light pass, obvious issues only",
         "taper": "Coverage follows subject contour",
         "triage": "Stakes-weighted coverage depth",
@@ -945,6 +949,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     "completeness": {
         "full": "全",
         "grow": "増",
+        "prime": "要",
         "taper": "曲",
         "triage": "険",
         "zoom": "比",
@@ -1392,6 +1397,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "max": "Exhaustive — every case, every edge",
         "minimal": "Briefest valid response",
         "narrow": "Focused depth on a specific slice",
+        "prime": "Highest-leverage concepts first, stop at functional grounding",
         "skim": "Surface-level coverage",
         "taper": "Follow subject contour",
         "triage": "Stakes-proportionate coverage depth",
@@ -3308,6 +3314,39 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "restricted to",
                 "nothing beyond",
                 "only X",
+            ],
+        },
+        "prime": {
+            "distinctions": [
+                {
+                    "note": "prime = ranks by learning leverage, stops at functional competence; triage = ranks by consequence × uncertainty (risk)",
+                    "token": "triage",
+                },
+                {
+                    "note": "prime = selects highest-leverage subset and writes closure statement; gist = brief summary of everything",
+                    "token": "gist",
+                },
+                {
+                    "note": "prime = pre-commits to a ranked subset, never expands beyond it; grow = expands on demand under analysis pressure",
+                    "token": "grow",
+                },
+                {
+                    "note": "prime = deliberate high-ROI selection with explicit threshold; skim = light pass over everything",
+                    "token": "skim",
+                },
+            ],
+            "heuristics": [
+                "give me the 80/20",
+                "what's the 20% I need to know",
+                "fast primer on",
+                "crash course",
+                "enough to get started",
+                "working knowledge only",
+                "don't need to be an expert",
+                "just what I need to operate",
+                "highest leverage concepts first",
+                "pareto",
+                "functional grounding",
             ],
         },
         "skim": {

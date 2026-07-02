@@ -23,6 +23,7 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
         "max",
         "minimal",
         "narrow",
+        "prime",
         "skim",
         "taper",
         "triage",
@@ -110,6 +111,47 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
         distinction_tokens = [d["token"] for d in triage.get("distinctions", [])]
         self.assertIn(
             "grow", distinction_tokens, "triage distinctions must reference grow"
+        )
+
+    def test_prime_distinguishes_from_triage_and_gist(self):
+        """prime must distinguish from triage (different ranking axis) and gist (subset vs summary)."""
+        prime = self.meta.get("prime", {})
+        distinction_tokens = [d["token"] for d in prime.get("distinctions", [])]
+        self.assertIn(
+            "triage", distinction_tokens, "prime distinctions must reference triage"
+        )
+        self.assertIn(
+            "gist", distinction_tokens, "prime distinctions must reference gist"
+        )
+
+    def test_prime_present_in_axis_key_to_value(self):
+        """prime must be present in AXIS_KEY_TO_VALUE completeness dict."""
+        from lib.axisConfig import AXIS_KEY_TO_VALUE
+
+        self.assertIn(
+            "prime",
+            AXIS_KEY_TO_VALUE.get("completeness", {}),
+            "prime must be in AXIS_KEY_TO_VALUE completeness",
+        )
+
+    def test_prime_present_in_axis_key_to_label(self):
+        """prime must be present in AXIS_KEY_TO_LABEL completeness dict."""
+        from lib.axisConfig import AXIS_KEY_TO_LABEL
+
+        self.assertIn(
+            "prime",
+            AXIS_KEY_TO_LABEL.get("completeness", {}),
+            "prime must be in AXIS_KEY_TO_LABEL completeness",
+        )
+
+    def test_prime_present_in_axis_key_to_routing_concept(self):
+        """prime must be present in AXIS_KEY_TO_ROUTING_CONCEPT completeness dict."""
+        from lib.axisConfig import AXIS_KEY_TO_ROUTING_CONCEPT
+
+        self.assertIn(
+            "prime",
+            AXIS_KEY_TO_ROUTING_CONCEPT.get("completeness", {}),
+            "prime must be in AXIS_KEY_TO_ROUTING_CONCEPT completeness",
         )
 
 

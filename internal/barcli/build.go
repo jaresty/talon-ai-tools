@@ -289,8 +289,8 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 			}
 			return s.unknownValue(axisHint, token)
 		}
-		if s.isAxisToken(axisHint, token) {
-			return s.applyShorthandAxis(axisHint, token)
+		if canonical := s.canonicalAxisToken(axisHint, token); canonical != "" {
+			return s.applyShorthandAxis(axisHint, canonical)
 		}
 		return s.unknownValue(axisHint, token)
 	}
@@ -303,8 +303,8 @@ func (s *buildState) applyShorthandToken(token string) *CLIError {
 		return s.applyPersonaAxis(personaAxisHint, canonical, false)
 	}
 
-	if axis, ok := s.resolveAxisToken(token); ok {
-		return s.applyShorthandAxis(axis, token)
+	if axis, canonical, ok := s.resolveAxisToken(token); ok {
+		return s.applyShorthandAxis(axis, canonical)
 	}
 
 	if axis, ok := s.resolvePersonaToken(token); ok {
@@ -517,18 +517,18 @@ func (s *buildState) applyPersonaAxis(axis, token string, override bool) *CLIErr
 	return nil
 }
 
-func (s *buildState) resolveAxisToken(token string) (string, bool) {
-	for _, axis := range s.grammar.Hierarchy.AxisPriority {
-		if s.isAxisToken(axis, token) {
-			return axis, true
+func (s *buildState) resolveAxisToken(token string) (axis string, canonical string, ok bool) {
+	for _, a := range s.grammar.Hierarchy.AxisPriority {
+		if c := s.canonicalAxisToken(a, token); c != "" {
+			return a, c, true
 		}
 	}
-	for axis := range s.grammar.axisTokens {
-		if s.isAxisToken(axis, token) {
-			return axis, true
+	for a := range s.grammar.axisTokens {
+		if c := s.canonicalAxisToken(a, token); c != "" {
+			return a, c, true
 		}
 	}
-	return "", false
+	return "", "", false
 }
 
 func (s *buildState) resolvePersonaToken(token string) (string, bool) {
@@ -541,15 +541,31 @@ func (s *buildState) resolvePersonaToken(token string) (string, bool) {
 }
 
 func (s *buildState) isAxisToken(axis, token string) bool {
+	return s.canonicalAxisToken(axis, token) != ""
+}
+
+func (s *buildState) canonicalAxisToken(axis, token string) string {
 	if axis == "" {
-		return false
+		return ""
 	}
 	set := s.grammar.axisTokens[axis]
 	if set == nil {
-		return false
+		return ""
 	}
-	_, ok := set[token]
-	return ok
+	if _, ok := set[token]; ok {
+		return token
+	}
+	lower := strings.ToLower(token)
+	if _, ok := set[lower]; ok {
+		return lower
+	}
+	deslug := strings.ReplaceAll(lower, "-", " ")
+	if deslug != lower {
+		if _, ok := set[deslug]; ok {
+			return deslug
+		}
+	}
+	return ""
 }
 
 func (s *buildState) isPersonaToken(axis, token string) bool {

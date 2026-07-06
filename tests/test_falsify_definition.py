@@ -27,9 +27,9 @@ def test_falsify_retroactive_clause():
 
 
 def test_falsify_separation_rule():
-    """Dim 3: (a)+(c) separation rule within (g) — closes C2."""
+    """Dim 3: (a)+(c) separation rule within (g) — tightened to name (c) explicitly."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "(a) is not separated from (c) in (g) by any line naming a different governed behavior identifier" in defn
+    assert "whose content contains (c) for a different governed behavior" in defn
 
 
 def test_falsify_creation_step_string_absence():
@@ -64,9 +64,9 @@ def test_falsify_execution_layer_agnostic():
 
 
 def test_falsify_executor_agnostic():
-    """D3: executor constraint requires output only producible by exercising behavior; no software deny-list."""
+    """D3: executor constraint requires output only producible by governed assertion reaching execution; no software deny-list."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "the executor must produce output that could only exist if the governed behavior was exercised" in defn
+    assert "the executor must produce output that could only exist if the governed assertion reached execution" in defn
     assert "grep, cat, head, tail, sed, awk, and find" not in defn
 
 
@@ -95,3 +95,45 @@ def test_falsify_domain_agnostic_subject():
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
     assert "executor invocation for (g)" in defn
     assert "the tool call names a file whose path appears as the target of a prior Write, Edit, or tool-executed directory-listing result" not in defn
+
+
+def test_falsify_tool_call_result_block():
+    """Gap close: (g) must be a tool call result block, not authored prose."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "the content of a tool call result block appearing in the transcript" in defn
+
+
+def test_falsify_assertion_body_substring():
+    """Gap close G2/D2: failure line must contain a string present in the assertion body."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "the failure line contains a string present in the assertion body" in defn
+
+
+def test_falsify_separation_constraint_tightened():
+    """Gap close: separation constraint names (c) explicitly, not 'governing behavior identifier'."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "whose content contains (c) for a different governed behavior" in defn
+
+
+def test_falsify_creation_step_per_governed_behavior():
+    """Gap close D1: creation-step exception is per governed behavior, not per file-write."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "per governed behavior" in defn
+
+
+def test_falsify_creation_step_confirmation_run_passes():
+    """Gap close C2: creation-step confirmation run must produce (c) and not (a)."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "and not (a)" in defn
+
+
+def test_falsify_perturbation_layer_gate():
+    """Gap close C1: layer gate applies to perturbation executor invocation."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "perturbation executor invocation" in defn
+
+
+def test_falsify_revert_verbatim_quote():
+    """Gap close D3: pre-perturbation run result must be quoted verbatim before revert."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "quoted verbatim" in defn

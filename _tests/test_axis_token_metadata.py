@@ -1045,9 +1045,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "(a) is not separated from (c) in (g) by any line naming a different governed behavior identifier",
+            "whose content contains (c) for a different governed behavior",
             definition,
-            "falsify condition must name the observable that excludes pre-execution failures: (a) is not separated from (c) by any line naming a different governed behavior identifier",
+            "falsify condition must name the observable that excludes pre-execution failures: separation constraint names (c) explicitly",
         )
 
     def test_falsify_self_refuting_closes_entry(self):
@@ -1055,7 +1055,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "(a) is not separated from (c) in (g) by any line naming a different governed behavior identifier",
+            "whose content contains (c) for a different governed behavior",
             definition,
             "falsify must structurally require elimination of non-execution paths — behaviors must produce (a) or (b), not some other signal",
         )

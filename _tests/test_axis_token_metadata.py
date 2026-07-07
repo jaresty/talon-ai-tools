@@ -1157,6 +1157,16 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "falsify must not permit naming-convention escape route — only substring containment is addressable",
         )
 
+    def test_falsify_zero_artifact_implementation_prohibition(self):
+        """falsify's zero-artifact entry branch must specify that writing the artifact means producing (c) in a test or specification file — implementation modification is not permitted before that."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "producing (c) in a test or specification file",
+            definition,
+            "falsify zero-artifact branch must name what 'writing the artifact' means: 'producing (c) in a test or specification file' — implementation modification before that is not permitted",
+        )
+
     def test_falsify_disposable_artifact_clause(self):
         """falsify's (f) must name the disposable-artifact exclusion — a test that passes without the governed symbol in the implementation does not satisfy (f)."""
         falsify = self.meta.get("falsify", {})

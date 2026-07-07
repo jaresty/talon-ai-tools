@@ -98,6 +98,16 @@ def test_gate_atomic_prose_contains_recency_clause():
     )
 
 
+def test_falsify_atomic_governing_artifact_substring_required():
+    from lib.compositionConfig import COMPOSITIONS
+    entry = next(c for c in COMPOSITIONS if c["name"] == "falsify+atomic")
+    assert "whose content is a substring of a tool-executed result block" in entry["prose"], (
+        "falsify+atomic Governing artifact field must require substring of tool-executed result block — "
+        "a prose placeholder ('none yet') has no substring relationship to any tool-executed result "
+        "and must not satisfy this field"
+    )
+
+
 def test_grammar_json_composition_entries_have_required_fields():
     grammar_path = ROOT / "build" / "prompt-grammar.json"
     data = json.loads(grammar_path.read_text())

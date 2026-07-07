@@ -1157,6 +1157,16 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "falsify must not permit naming-convention escape route — only substring containment is addressable",
         )
 
+    def test_falsify_zero_artifact_entry_branch(self):
+        """falsify must name the zero-artifact entry branch — when no governing artifact exists, writing one is the first governed action, so a model cannot skip falsify by citing absence of a pre-existing test."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "If no governing artifact exists",
+            definition,
+            "falsify must name the zero-artifact entry branch — 'If no governing artifact exists' must appear so absence of a prior test cannot be used to skip falsify",
+        )
+
     def test_hollow_root_criterion_encodes_domain_scope(self):
         """hollow's root criterion sentence must name its domain of application so the domain-agnostic language clause is derivable from the criterion rather than independently asserted (ADR-0235 mint/root/collapse finding)."""
         hollow = self.meta.get("hollow", {})

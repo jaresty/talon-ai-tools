@@ -1157,6 +1157,16 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "falsify must not permit naming-convention escape route — only substring containment is addressable",
         )
 
+    def test_falsify_disposable_artifact_clause(self):
+        """falsify's (f) must name the disposable-artifact exclusion — a test that passes without the governed symbol in the implementation does not satisfy (f)."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "removing the governed symbol from the implementation",
+            definition,
+            "falsify (f) must name the disposable-artifact exclusion: 'removing the governed symbol from the implementation' must cause the artifact to FAIL",
+        )
+
     def test_falsify_zero_artifact_entry_branch(self):
         """falsify must name the zero-artifact entry branch — when no governing artifact exists, writing one is the first governed action, so a model cannot skip falsify by citing absence of a pre-existing test."""
         falsify = self.meta.get("falsify", {})

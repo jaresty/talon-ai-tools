@@ -45,7 +45,10 @@ PROMPT_REFERENCE_KEY: dict = {
             "Intermediate steps must be visible in the output — internal correctness and visible "
             "correctness are not the same thing. "
             "If the method requires a governing artifact — a manifest, plan, or validation artifact — "
-            "that precondition gates everything that follows and cannot be deferred."
+            "that precondition gates everything that follows and cannot be deferred. "
+            "The governing artifact must appear as a literal string in the transcript before any "
+            "file-modifying tool call — its presence is verified by locating that string in the "
+            "transcript, not by assessing the model's intent or reasoning."
         ),
         "form": (
             "Output structure only; does not change the underlying reasoning."
@@ -125,7 +128,10 @@ _AXIS_FULL_TEXT = {
         "does the first step require as output? Produce that output now before reading files, "
         "searching code, or planning. The steps of a process method may not be replaced by a "
         "summary, paraphrase, or 'key principles' derived from them. When multiple method tokens "
-        "are present, combine them into a single integrated analytic stance."
+        "are present, combine them into a single integrated analytic stance. "
+        "The governing artifact must appear as a literal string in the transcript before any "
+        "file-modifying tool call — its presence is verified by locating that string in the "
+        "transcript, not by assessing the model's intent or reasoning."
     ),
     "directional": (
         "Execution modifier (adverbial): governs how the task is carried out, shaping sequencing, "

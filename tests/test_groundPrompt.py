@@ -5,7 +5,7 @@ from lib.groundPrompt import build_ground_prompt
 def test_opening_bookend_inside_criteria():
     """Opening bookend is criterion (0) inside the derivation sequence, not an external pre-condition."""
     text = build_ground_prompt()
-    assert "before naming the governing goal, run the subject under observation and record its output under a literal heading" in text, (
+    assert "invoke the subject under observation as a tool call and record its output" in text, (
         "opening bookend must appear as first criterion inside derivation sequence"
     )
     assert "Before writing the governing goal heading, run the system under test" not in text, (
@@ -16,8 +16,8 @@ def test_opening_bookend_inside_criteria():
 def test_closing_bookend_names_subject_directly():
     """Closing bookend names subject-direct invocation, not semantic source."""
     text = build_ground_prompt()
-    assert "every covered dimension must cite a verbatim string from a tool-executed result whose invocation names the subject under observation directly" in text, (
-        "closing bookend must use command-form addressability — invocation names subject, not evaluator"
+    assert "each covered dimension cites a verbatim string from a tool call whose invocation names the §0 identifier directly" in text, (
+        "closing bookend must use command-form addressability — invocation names §0 identifier, not evaluator"
     )
     assert "every covered dimension must cite a verbatim string from a tool-executed result that contains output the system produced directly" not in text, (
         "old semantic-source form must be removed"

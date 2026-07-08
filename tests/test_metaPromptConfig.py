@@ -297,3 +297,27 @@ def test_execution_reminder_no_planning_directive_reference():
     assert "PLANNING DIRECTIVE" not in EXECUTION_REMINDER, (
         "EXECUTION_REMINDER must not reference 'PLANNING DIRECTIVE' after rename to FORMAT"
     )
+
+
+def test_method_axis_requires_literal_string_prompt_reference_key():
+    """D-transcript/D-string: PROMPT_REFERENCE_KEY method description must require the governing artifact
+    to appear as a literal string in the transcript, not merely in the model's reasoning."""
+    from lib.metaPromptConfig import PROMPT_REFERENCE_KEY
+
+    method_desc = PROMPT_REFERENCE_KEY["constraints_axes"]["method"]
+    assert "literal" in method_desc, (
+        "PROMPT_REFERENCE_KEY['constraints_axes']['method'] must contain 'literal' — the governing artifact "
+        "must be required to appear as a literal string in the transcript"
+    )
+
+
+def test_method_axis_requires_literal_string_axis_full_text():
+    """D-transcript/D-string: _AXIS_FULL_TEXT method description must require the governing artifact
+    to appear as a literal string in the transcript, not merely in the model's reasoning."""
+    from lib.metaPromptConfig import _AXIS_FULL_TEXT
+
+    method_desc = _AXIS_FULL_TEXT["method"]
+    assert "literal" in method_desc, (
+        "_AXIS_FULL_TEXT['method'] must contain 'literal' — the governing artifact "
+        "must be required to appear as a literal string in the transcript"
+    )

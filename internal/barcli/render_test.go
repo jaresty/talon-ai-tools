@@ -446,6 +446,27 @@ func TestRenderPlainText_TokenDefinitionNotInlineOutput(t *testing.T) {
 	}
 }
 
+// TestRenderPlainText_LoadedArtifactInstruction specifies that the TOKENS section
+// instruction requires a Loaded: artifact line per token and gates Token derivations:.
+func TestRenderPlainText_LoadedArtifactInstruction(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "Loaded:") {
+		t.Fatalf("TOKENS instruction must require 'Loaded:' artifact lines, got:\n%s", output)
+	}
+	if !strings.Contains(output, "shown after →") {
+		t.Fatalf("TOKENS instruction must resolve slug via '→' hint, got:\n%s", output)
+	}
+	if !strings.Contains(output, "Do not write 'Token derivations:'") {
+		t.Fatalf("TOKENS instruction must gate Token derivations: on Loaded: lines, got:\n%s", output)
+	}
+}
+
 // TestRenderPlainText_UnconditionalFetchInstruction specifies that the TOKENS section
 // opens with an unconditional fetch instruction with no familiarity exception.
 func TestRenderPlainText_UnconditionalFetchInstruction(t *testing.T) {
@@ -459,11 +480,11 @@ func TestRenderPlainText_UnconditionalFetchInstruction(t *testing.T) {
 	if strings.Contains(output, "unfamiliar") {
 		t.Fatalf("fetch instruction must not contain 'unfamiliar' (familiarity exception must be removed), got:\n%s", output)
 	}
-	if !strings.Contains(output, "no exceptions") {
-		t.Fatalf("fetch instruction must contain 'no exceptions', got:\n%s", output)
+	if !strings.Contains(output, "Loaded:") {
+		t.Fatalf("fetch instruction must require Loaded: artifact lines, got:\n%s", output)
 	}
-	if !strings.Contains(output, "before writing 'Token derivations:'") {
-		t.Fatalf("fetch instruction must name the gate ('before writing Token derivations:'), got:\n%s", output)
+	if !strings.Contains(output, "Do not write 'Token derivations:'") {
+		t.Fatalf("fetch instruction must gate Token derivations: on Loaded: lines, got:\n%s", output)
 	}
 }
 
@@ -495,8 +516,8 @@ func TestRenderPlainText_LazyLoadTokenHints(t *testing.T) {
 		tokensBlock = tokensBlock[:formatIdx]
 	}
 
-	if !strings.Contains(tokensBlock, "no exceptions") {
-		t.Fatalf("TOKENS section must contain unconditional fetch instruction, got block:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "Loaded:") {
+		t.Fatalf("TOKENS section must contain Loaded: artifact instruction, got block:\n%s", tokensBlock)
 	}
 	if !strings.Contains(tokensBlock, "→ bar help token deep") {
 		t.Fatalf("token line must contain inline fetch hint '→ bar help token deep', got block:\n%s", tokensBlock)

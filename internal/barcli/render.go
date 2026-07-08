@@ -92,7 +92,7 @@ func RenderPlainText(result *BuildResult) string {
 	if len(result.HydratedConstraints) == 0 && result.Persona == (PersonaResult{}) {
 		b.WriteString("(none)\n\n")
 	} else {
-		b.WriteString("Run bar help token <slug> for every token listed above — no exceptions. Do this before writing 'Token derivations:'.\n")
+		b.WriteString("For each token line above (excluding persona = (none)), run bar help token <slug> where <slug> is the slug shown after →. After each fetch, write one line: Loaded: <slug>. Do not write 'Token derivations:' until a Loaded: line appears for every token slug listed above.\n")
 		for _, constraint := range result.HydratedConstraints {
 			axisKey := strings.ToLower(strings.TrimSpace(constraint.Axis))
 			token := strings.TrimSpace(constraint.Token)

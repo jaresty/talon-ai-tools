@@ -31,10 +31,12 @@ func TestRenderPlainTextSections(t *testing.T) {
 		"=== REQUEST 依頼 ===",
 		"=== AXES 軸 (token types — each governs a different dimension) ===",
 		"=== TOKENS 役割 ===",
-		"=== TOKEN DEFINITIONS 定義 ===",
 		"Format this as a todo list.",
 		"Fix onboarding",
 		"- voice = as teacher",
+	}
+	if strings.Contains(output, "=== TOKEN DEFINITIONS") {
+		t.Fatalf("TOKEN DEFINITIONS section must be absent from output, got:\n%s", output)
 	}
 
 	for _, marker := range required {
@@ -134,8 +136,11 @@ func TestRenderPersonaAllFourAxes(t *testing.T) {
 	output := RenderPlainText(result)
 
 	tokensIdx := strings.Index(output, sectionTokens)
-	defsIdx := strings.Index(output, sectionTokenDefinitions)
-	tokensBlock := output[tokensIdx:defsIdx]
+	formatIdx := strings.Index(output, sectionFormat)
+	if tokensIdx < 0 || formatIdx < 0 {
+		t.Fatal("TOKENS and FORMAT sections must both be present")
+	}
+	tokensBlock := output[tokensIdx:formatIdx]
 
 	// Each persona axis appears as an individual axis=token line in TOKENS.
 	for _, want := range []string{
@@ -152,22 +157,9 @@ func TestRenderPersonaAllFourAxes(t *testing.T) {
 	if strings.Contains(tokensBlock, "- persona =") {
 		t.Errorf("expected no collapsed '- persona =' line in TOKENS section, got block:\n%s", tokensBlock)
 	}
-
-	// Persona axes appear as individual lines in TOKEN DEFINITIONS.
-	formatIdx := strings.Index(output, sectionFormat)
-	defsBlock := output[defsIdx:formatIdx]
-	for _, want := range []string{
-		"- voice (as teacher)",
-		"- audience (to junior engineer)",
-		"- tone (kindly)",
-		"- intent (coach)",
-	} {
-		if !strings.Contains(defsBlock, want) {
-			t.Errorf("expected %q in TOKEN DEFINITIONS section, got block:\n%s", want, defsBlock)
-		}
-	}
-	if strings.Contains(defsBlock, "- persona (") {
-		t.Errorf("expected no collapsed '- persona (...)' in TOKEN DEFINITIONS, got block:\n%s", defsBlock)
+	// TOKEN DEFINITIONS section must be absent.
+	if strings.Contains(output, "=== TOKEN DEFINITIONS") {
+		t.Errorf("TOKEN DEFINITIONS section must be absent from output, got:\n%s", output)
 	}
 }
 
@@ -196,8 +188,11 @@ func TestRenderPersonaPresetWithIntent(t *testing.T) {
 	output := RenderPlainText(result)
 
 	tokensIdx := strings.Index(output, sectionTokens)
-	defsIdx := strings.Index(output, sectionTokenDefinitions)
-	tokensBlock := output[tokensIdx:defsIdx]
+	formatIdx := strings.Index(output, sectionFormat)
+	if tokensIdx < 0 || formatIdx < 0 {
+		t.Fatal("TOKENS and FORMAT sections must both be present")
+	}
+	tokensBlock := output[tokensIdx:formatIdx]
 
 	// Individual persona axes appear as separate lines, not a collapsed preset row.
 	for _, want := range []string{
@@ -260,16 +255,16 @@ func TestRenderPlainTextIncludesKanjiInPromptlets(t *testing.T) {
 
 	output := RenderPlainText(result)
 
-	// Kanji must appear in TOKEN DEFINITIONS section for constraint tokens.
+	// Kanji must appear in TOKENS section for constraint tokens.
 	if !strings.Contains(output, "探") {
-		t.Fatalf("expected TOKEN DEFINITIONS to include kanji 探, got:\n%s", output)
+		t.Fatalf("expected TOKENS section to include kanji 探, got:\n%s", output)
 	}
 	if !strings.Contains(output, "全") {
-		t.Fatalf("expected TOKEN DEFINITIONS to include kanji 全, got:\n%s", output)
+		t.Fatalf("expected TOKENS section to include kanji 全, got:\n%s", output)
 	}
-	// Persona kanji appears in TOKEN DEFINITIONS persona row (persona folds into TOKENS/DEFS).
+	// Persona kanji appears in TOKENS section persona row.
 	if !strings.Contains(output, "質") {
-		t.Fatalf("expected TOKEN DEFINITIONS persona row to include kanji 質, got:\n%s", output)
+		t.Fatalf("expected TOKENS section to include persona kanji 質, got:\n%s", output)
 	}
 }
 
@@ -358,8 +353,8 @@ func TestRenderPlainText_TokensSectionPresent(t *testing.T) {
 }
 
 // TestRenderPlainText_TokenDefinitionsSectionPresent specifies that the
-// TOKEN DEFINITIONS 定義 section header appears in rendered output.
-func TestRenderPlainText_TokenDefinitionsSectionPresent(t *testing.T) {
+// TOKEN DEFINITIONS 定義 section is absent; definitions are loaded on demand via bar help token.
+func TestRenderPlainText_TokenDefinitionsSectionAbsent(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
 		HydratedConstraints: []HydratedPromptlet{
@@ -370,8 +365,8 @@ func TestRenderPlainText_TokenDefinitionsSectionPresent(t *testing.T) {
 		},
 	}
 	output := RenderPlainText(result)
-	if !strings.Contains(output, "=== TOKEN DEFINITIONS 定義 ===") {
-		t.Fatalf("expected TOKEN DEFINITIONS 定義 section header in output, got:\n%s", output)
+	if strings.Contains(output, "=== TOKEN DEFINITIONS") {
+		t.Fatalf("TOKEN DEFINITIONS section must be absent from output, got:\n%s", output)
 	}
 }
 
@@ -430,9 +425,9 @@ func TestRenderPlainText_AxesSectionContainsAxisDescription(t *testing.T) {
 	}
 }
 
-// TestRenderPlainText_TokenDefinitionsSectionContainsDefinitionText specifies
-// that the TOKEN DEFINITIONS section body contains the verbatim token description.
-func TestRenderPlainText_TokenDefinitionsSectionContainsDefinitionText(t *testing.T) {
+// TestRenderPlainText_TokenDefinitionNotInlineOutput specifies that token description
+// text is not inlined in the output; only the fetch hint appears.
+func TestRenderPlainText_TokenDefinitionNotInlineOutput(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
 		HydratedConstraints: []HydratedPromptlet{
@@ -443,14 +438,68 @@ func TestRenderPlainText_TokenDefinitionsSectionContainsDefinitionText(t *testin
 		},
 	}
 	output := RenderPlainText(result)
-	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS 定義 ===")
-	formatIdx := strings.Index(output, "=== FORMAT")
-	if defsIdx < 0 || formatIdx < 0 {
-		t.Fatal("TOKEN DEFINITIONS and FORMAT sections must both be present")
+	if strings.Contains(output, "substantial depth") {
+		t.Fatalf("token description text must not appear inline in output, got:\n%s", output)
 	}
-	defsBlock := output[defsIdx:formatIdx]
-	if !strings.Contains(defsBlock, "substantial depth") {
-		t.Fatalf("TOKEN DEFINITIONS block must contain token description text, got block:\n%s", defsBlock)
+	if !strings.Contains(output, "→ bar help token deep") {
+		t.Fatalf("TOKENS section must contain inline fetch hint for token 'deep', got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_UnconditionalFetchInstruction specifies that the TOKENS section
+// opens with an unconditional fetch instruction with no familiarity exception.
+func TestRenderPlainText_UnconditionalFetchInstruction(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	if strings.Contains(output, "unfamiliar") {
+		t.Fatalf("fetch instruction must not contain 'unfamiliar' (familiarity exception must be removed), got:\n%s", output)
+	}
+	if !strings.Contains(output, "no exceptions") {
+		t.Fatalf("fetch instruction must contain 'no exceptions', got:\n%s", output)
+	}
+	if !strings.Contains(output, "before writing 'Token derivations:'") {
+		t.Fatalf("fetch instruction must name the gate ('before writing Token derivations:'), got:\n%s", output)
+	}
+}
+
+// TestRenderPlainText_LazyLoadTokenHints specifies that TOKEN DEFINITIONS section is absent,
+// each token line carries an inline fetch hint, and the TOKENS section opens with the load instruction.
+func TestRenderPlainText_LazyLoadTokenHints(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "The response goes into substantial depth."},
+		},
+		AxisDescriptions: map[string]string{
+			"completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
+		},
+	}
+	output := RenderPlainText(result)
+
+	if strings.Contains(output, "=== TOKEN DEFINITIONS") {
+		t.Fatalf("TOKEN DEFINITIONS section must be absent from output, got:\n%s", output)
+	}
+
+	tokensIdx := strings.Index(output, "=== TOKENS")
+	if tokensIdx < 0 {
+		t.Fatal("TOKENS section must be present")
+	}
+	tokensBlock := output[tokensIdx:]
+	formatIdx := strings.Index(tokensBlock, "=== FORMAT")
+	if formatIdx > 0 {
+		tokensBlock = tokensBlock[:formatIdx]
+	}
+
+	if !strings.Contains(tokensBlock, "no exceptions") {
+		t.Fatalf("TOKENS section must contain unconditional fetch instruction, got block:\n%s", tokensBlock)
+	}
+	if !strings.Contains(tokensBlock, "→ bar help token deep") {
+		t.Fatalf("token line must contain inline fetch hint '→ bar help token deep', got block:\n%s", tokensBlock)
 	}
 }
 
@@ -559,16 +608,19 @@ func TestRenderPlainText_TokensBulletFormat(t *testing.T) {
 	}
 	output := RenderPlainText(result)
 	tokensIdx := strings.Index(output, "=== TOKENS")
-	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
-	tokensBlock := output[tokensIdx:defsIdx]
+	formatIdx := strings.Index(output, "=== FORMAT")
+	if tokensIdx < 0 || formatIdx < 0 {
+		t.Fatal("TOKENS and FORMAT sections must both be present")
+	}
+	tokensBlock := output[tokensIdx:formatIdx]
 	if !strings.Contains(tokensBlock, "- completeness = deep") {
 		t.Fatalf("expected TOKENS bullet '- completeness = deep' in block:\n%s", tokensBlock)
 	}
 }
 
-// TestRenderPlainText_TokenDefsBulletFormat specifies that TOKEN DEFINITIONS entries
-// use "- axis (token kanji): desc" bullet format.
-func TestRenderPlainText_TokenDefsBulletFormat(t *testing.T) {
+// TestRenderPlainText_TokenFetchHintFormat specifies that TOKENS entries include
+// an inline fetch hint "→ bar help token <name>" and kanji when present.
+func TestRenderPlainText_TokenFetchHintFormat(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
 		HydratedConstraints: []HydratedPromptlet{
@@ -576,11 +628,11 @@ func TestRenderPlainText_TokenDefsBulletFormat(t *testing.T) {
 		},
 	}
 	output := RenderPlainText(result)
-	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
-	formatIdx := strings.Index(output, "=== FORMAT")
-	defsBlock := output[defsIdx:formatIdx]
-	if !strings.Contains(defsBlock, "- completeness (deep 全): Goes deep.") {
-		t.Fatalf("expected TOKEN DEFS bullet '- completeness (deep 全): Goes deep.' in block:\n%s", defsBlock)
+	if !strings.Contains(output, "- completeness = deep 全  → bar help token deep") {
+		t.Fatalf("expected TOKENS fetch hint line in output, got:\n%s", output)
+	}
+	if strings.Contains(output, "Goes deep.") {
+		t.Fatalf("description text must not appear inline, got:\n%s", output)
 	}
 }
 
@@ -599,8 +651,11 @@ func TestRenderPlainText_PersonaFoldsIntoTokensSection(t *testing.T) {
 	}
 	output := RenderPlainText(result)
 	tokensIdx := strings.Index(output, "=== TOKENS")
-	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
-	tokensBlock := output[tokensIdx:defsIdx]
+	formatIdx := strings.Index(output, "=== FORMAT")
+	if tokensIdx < 0 || formatIdx < 0 {
+		t.Fatal("TOKENS and FORMAT sections must both be present")
+	}
+	tokensBlock := output[tokensIdx:formatIdx]
 	if !strings.Contains(tokensBlock, "- voice = as teacher") {
 		t.Fatalf("expected '- voice = as teacher' in TOKENS section, got block:\n%s", tokensBlock)
 	}
@@ -617,15 +672,18 @@ func TestRenderPlainText_PersonaNoneWhenAbsent(t *testing.T) {
 	}
 	output := RenderPlainText(result)
 	tokensIdx := strings.Index(output, "=== TOKENS")
-	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
-	tokensBlock := output[tokensIdx:defsIdx]
+	formatIdx := strings.Index(output, "=== FORMAT")
+	if tokensIdx < 0 || formatIdx < 0 {
+		t.Fatal("TOKENS and FORMAT sections must both be present")
+	}
+	tokensBlock := output[tokensIdx:formatIdx]
 	if !strings.Contains(tokensBlock, "- persona = (none)") {
 		t.Fatalf("expected '- persona = (none)' in TOKENS section when no persona active, got block:\n%s", tokensBlock)
 	}
 }
 
-// TestRenderPlainText_PersonaFoldsIntoTokenDefsSection specifies that when a persona
-// is active, individual axis lines appear in the TOKEN DEFINITIONS section.
+// TestRenderPlainText_PersonaFoldsIntoTokensSection2 specifies that when a persona
+// is active, individual axis=token lines with fetch hints appear in TOKENS section.
 func TestRenderPlainText_PersonaFoldsIntoTokenDefsSection(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
@@ -638,16 +696,21 @@ func TestRenderPlainText_PersonaFoldsIntoTokenDefsSection(t *testing.T) {
 		},
 	}
 	output := RenderPlainText(result)
-	defsIdx := strings.Index(output, "=== TOKEN DEFINITIONS")
+	tokensIdx := strings.Index(output, "=== TOKENS")
 	formatIdx := strings.Index(output, "=== FORMAT")
-	defsBlock := output[defsIdx:formatIdx]
-	if !strings.Contains(defsBlock, "- voice (as teacher)") {
-		t.Fatalf("expected '- voice (as teacher)' in TOKEN DEFINITIONS section, got block:\n%s", defsBlock)
+	if tokensIdx < 0 || formatIdx < 0 {
+		t.Fatal("TOKENS and FORMAT sections must both be present")
+	}
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "- voice = as teacher") {
+		t.Fatalf("expected '- voice = as teacher' in TOKENS section, got block:\n%s", tokensBlock)
+	}
+	if strings.Contains(output, "=== TOKEN DEFINITIONS") {
+		t.Fatalf("TOKEN DEFINITIONS section must be absent, got:\n%s", output)
 	}
 }
 
-// TestCompletednessFullHasKanji specifies that the completeness=full token
-// renders with its kanji 全 in the TOKEN DEFINITIONS section.
+// TestCompletenessFullHasKanji specifies that completeness=full token renders with kanji 全 in TOKENS section.
 func TestCompletenessFullHasKanji(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	result, err := Build(g, []string{"show", "full"})
@@ -655,11 +718,14 @@ func TestCompletenessFullHasKanji(t *testing.T) {
 		t.Fatalf("Build: %v", err)
 	}
 	rendered := RenderPlainText(result)
-	defsIdx := strings.Index(rendered, sectionTokenDefinitions)
+	tokensIdx := strings.Index(rendered, sectionTokens)
 	formatIdx := strings.Index(rendered, sectionFormat)
-	defsBlock := rendered[defsIdx:formatIdx]
-	if !strings.Contains(defsBlock, "全") {
-		t.Fatalf("expected completeness=full to render with kanji 全 in TOKEN DEFINITIONS, got block:\n%s", defsBlock)
+	if tokensIdx < 0 || formatIdx < 0 {
+		t.Fatal("TOKENS and FORMAT sections must both be present")
+	}
+	tokensBlock := rendered[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "全") {
+		t.Fatalf("expected completeness=full to render with kanji 全 in TOKENS section, got block:\n%s", tokensBlock)
 	}
 }
 

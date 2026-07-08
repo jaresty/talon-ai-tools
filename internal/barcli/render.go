@@ -86,15 +86,26 @@ func RenderPlainText(result *BuildResult) string {
 	}
 
 	// TOKENS: one bullet per active axis including persona row.
+	// Definitions are omitted; load any unfamiliar token with: bar help token <name>
 	b.WriteString(sectionTokens)
 	b.WriteString("\n")
 	if len(result.HydratedConstraints) == 0 && result.Persona == (PersonaResult{}) {
 		b.WriteString("(none)\n\n")
 	} else {
+		b.WriteString("Run bar help token <slug> for every token listed above — no exceptions. Do this before writing 'Token derivations:'.\n")
 		for _, constraint := range result.HydratedConstraints {
 			axisKey := strings.ToLower(strings.TrimSpace(constraint.Axis))
 			token := strings.TrimSpace(constraint.Token)
-			fmt.Fprintf(&b, "- %s = %s\n", axisKey, token)
+			kanji := strings.TrimSpace(constraint.Kanji)
+			slug := strings.ReplaceAll(strings.ToLower(token), " ", "-")
+			if kanji != "" {
+				fmt.Fprintf(&b, "- %s = %s %s  → bar help token %s\n", axisKey, token, kanji, slug)
+			} else {
+				fmt.Fprintf(&b, "- %s = %s  → bar help token %s\n", axisKey, token, slug)
+			}
+			if constraint.ConflictNote != "" {
+				fmt.Fprintf(&b, "  ↳ %s\n", constraint.ConflictNote)
+			}
 		}
 		personaWritten := false
 		for _, p := range result.HydratedPersona {
@@ -103,43 +114,19 @@ func RenderPlainText(result *BuildResult) string {
 				continue
 			}
 			tok := strings.TrimSpace(p.Token)
+			pKanji := strings.TrimSpace(p.Kanji)
+			pSlug := strings.ReplaceAll(strings.ToLower(tok), " ", "-")
 			if tok != "" {
-				fmt.Fprintf(&b, "- %s = %s\n", axisKey, tok)
+				if pKanji != "" {
+					fmt.Fprintf(&b, "- %s = %s %s  → bar help token %s\n", axisKey, tok, pKanji, pSlug)
+				} else {
+					fmt.Fprintf(&b, "- %s = %s  → bar help token %s\n", axisKey, tok, pSlug)
+				}
 				personaWritten = true
 			}
 		}
 		if !personaWritten {
 			b.WriteString("- persona = (none)\n")
-		}
-		b.WriteString("\n")
-	}
-
-	// TOKEN DEFINITIONS: one bullet per active token including persona row.
-	b.WriteString(sectionTokenDefinitions)
-	b.WriteString("\n")
-	if len(result.HydratedConstraints) == 0 && len(result.HydratedPersona) == 0 {
-		b.WriteString("(none)\n\n")
-	} else {
-		for _, constraint := range result.HydratedConstraints {
-			axisKey := strings.ToLower(strings.TrimSpace(constraint.Axis))
-			token := strings.TrimSpace(constraint.Token)
-			kanji := strings.TrimSpace(constraint.Kanji)
-			desc := strings.TrimSpace(constraint.Description)
-			if token != "" && desc != "" {
-				tokenWithKanji := token
-				if kanji != "" {
-					tokenWithKanji = fmt.Sprintf("%s %s", token, kanji)
-				}
-				fmt.Fprintf(&b, "- %s (%s): %s\n", axisKey, tokenWithKanji, desc)
-				if constraint.ConflictNote != "" {
-					fmt.Fprintf(&b, "  ↳ %s\n", constraint.ConflictNote)
-				}
-			}
-		}
-		if len(result.HydratedPersona) > 0 {
-			writePersonaDefinitionRow(&b, result.HydratedPersona)
-		} else {
-			b.WriteString("- persona (none): No communication-identity styling applied.\n")
 		}
 		b.WriteString("\n")
 	}

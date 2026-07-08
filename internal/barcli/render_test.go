@@ -935,3 +935,23 @@ func TestCompositionRulesLoadedInstruction(t *testing.T) {
 		t.Errorf("COMPOSITION RULES must contain 'Loaded:' fetch instruction, got:\n%s", compBlock)
 	}
 }
+
+// TestCompositionRulesBindingConstraintSentence verifies the instruction tells the LLM
+// each composition is a binding constraint that applies throughout the response.
+func TestCompositionRulesBindingConstraintSentence(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
+	if cliErr != nil {
+		t.Fatalf("Build: %v", cliErr)
+	}
+	rendered := RenderPlainText(result)
+	compIdx := strings.Index(rendered, sectionCompositionRules)
+	if compIdx == -1 {
+		t.Fatal("COMPOSITION RULES section must be present")
+	}
+	formatIdx := strings.Index(rendered, sectionFormat)
+	compBlock := rendered[compIdx:formatIdx]
+	if !strings.Contains(compBlock, "binding constraint") {
+		t.Errorf("COMPOSITION RULES must contain 'binding constraint', got:\n%s", compBlock)
+	}
+}

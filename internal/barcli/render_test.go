@@ -936,6 +936,49 @@ func TestCompositionRulesLoadedInstruction(t *testing.T) {
 	}
 }
 
+// TestTokensImmediateDerivationTrigger verifies the TOKENS fetch instruction tells the LLM
+// to write Token derivations immediately once all Loaded: lines are present.
+func TestTokensImmediateDerivationTrigger(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, cliErr := Build(g, []string{"make", "gate"})
+	if cliErr != nil {
+		t.Fatalf("Build: %v", cliErr)
+	}
+	rendered := RenderPlainText(result)
+	tokensIdx := strings.Index(rendered, sectionTokens)
+	compIdx := strings.Index(rendered, sectionCompositionRules)
+	var tokensBlock string
+	if compIdx != -1 {
+		tokensBlock = rendered[tokensIdx:compIdx]
+	} else {
+		formatIdx := strings.Index(rendered, sectionFormat)
+		tokensBlock = rendered[tokensIdx:formatIdx]
+	}
+	if !strings.Contains(tokensBlock, "write the Token derivations block immediately") {
+		t.Errorf("TOKENS instruction must contain affirmative trigger, got:\n%s", tokensBlock)
+	}
+}
+
+// TestCompositionRulesImmediateDerivationTrigger verifies the COMPOSITION RULES fetch instruction
+// tells the LLM to write Token derivations immediately once all Loaded: lines are present.
+func TestCompositionRulesImmediateDerivationTrigger(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
+	if cliErr != nil {
+		t.Fatalf("Build: %v", cliErr)
+	}
+	rendered := RenderPlainText(result)
+	compIdx := strings.Index(rendered, sectionCompositionRules)
+	if compIdx == -1 {
+		t.Fatal("COMPOSITION RULES section must be present")
+	}
+	formatIdx := strings.Index(rendered, sectionFormat)
+	compBlock := rendered[compIdx:formatIdx]
+	if !strings.Contains(compBlock, "write the Token derivations block immediately") {
+		t.Errorf("COMPOSITION RULES instruction must contain affirmative trigger, got:\n%s", compBlock)
+	}
+}
+
 // TestCompositionRulesBindingConstraintSentence verifies the instruction tells the LLM
 // each composition is a binding constraint that applies throughout the response.
 func TestCompositionRulesBindingConstraintSentence(t *testing.T) {

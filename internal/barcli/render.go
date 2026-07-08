@@ -92,7 +92,7 @@ func RenderPlainText(result *BuildResult) string {
 	if len(result.HydratedConstraints) == 0 && result.Persona == (PersonaResult{}) {
 		b.WriteString("(none)\n\n")
 	} else {
-		b.WriteString("For each token line above (excluding persona = (none)), run bar help token <slug> where <slug> is the slug shown after →. After each fetch, write one line: Loaded: <slug>. Do not write 'Token derivations:' until a Loaded: line appears for every token slug listed above. Once all Loaded: lines are present, write the Token derivations block immediately.\n")
+		b.WriteString("For each token line above (excluding persona = (none)), run bar help token <slug> as a tool call where <slug> is the slug shown after →. After the tool-result block appears, write Loaded: <slug> — a Loaded: line not immediately preceded by a tool-result block for that slug does not satisfy this requirement. Skip the tool call only if Loaded: <slug> already appears verbatim in the transcript above this TOKENS section; in that case, write Loaded: <slug> again to confirm. Once a Loaded: line exists for every slug, write the Token derivations block immediately.\n")
 		for _, constraint := range result.HydratedConstraints {
 			axisKey := strings.ToLower(strings.TrimSpace(constraint.Axis))
 			token := strings.TrimSpace(constraint.Token)
@@ -136,7 +136,7 @@ func RenderPlainText(result *BuildResult) string {
 		b.WriteString(sectionCompositionRules)
 		b.WriteString("\n")
 		b.WriteString("↓ [Additional rules that apply because specific token combinations are co-present. Applied on top of TOKENS.]\n")
-		b.WriteString("For each composition line below, run bar help composition <slug>. After each fetch, write: Loaded: <slug>. Do not write 'Token derivations:' until a Loaded: line appears for every slug below. Once all Loaded: lines are present, write the Token derivations block immediately. Each composition is a binding constraint on this response — its rules apply throughout.\n")
+		b.WriteString("For each composition line below, run bar help composition <slug> as a tool call. After the tool-result block appears, write Loaded: <slug> — a Loaded: line not immediately preceded by a tool-result block for that slug does not satisfy this requirement. Skip the tool call only if Loaded: <slug> already appears verbatim in the transcript above this COMPOSITION RULES section; in that case, write Loaded: <slug> again to confirm. Once a Loaded: line exists for every slug, write the Token derivations block immediately. Each composition is a binding constraint on this response — its rules apply throughout.\n")
 		for _, comp := range result.ActiveCompositions {
 			name := strings.TrimSpace(comp.Name)
 			fmt.Fprintf(&b, "- %s  → bar help composition %s\n", name, name)

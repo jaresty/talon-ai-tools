@@ -462,7 +462,7 @@ func TestRenderPlainText_LoadedArtifactInstruction(t *testing.T) {
 	if !strings.Contains(output, "shown after →") {
 		t.Fatalf("TOKENS instruction must resolve slug via '→' hint, got:\n%s", output)
 	}
-	if !strings.Contains(output, "Do not write 'Token derivations:'") {
+	if !strings.Contains(output, "write the Token derivations block immediately") {
 		t.Fatalf("TOKENS instruction must gate Token derivations: on Loaded: lines, got:\n%s", output)
 	}
 }
@@ -483,7 +483,7 @@ func TestRenderPlainText_UnconditionalFetchInstruction(t *testing.T) {
 	if !strings.Contains(output, "Loaded:") {
 		t.Fatalf("fetch instruction must require Loaded: artifact lines, got:\n%s", output)
 	}
-	if !strings.Contains(output, "Do not write 'Token derivations:'") {
+	if !strings.Contains(output, "write the Token derivations block immediately") {
 		t.Fatalf("fetch instruction must gate Token derivations: on Loaded: lines, got:\n%s", output)
 	}
 }
@@ -976,6 +976,49 @@ func TestCompositionRulesImmediateDerivationTrigger(t *testing.T) {
 	compBlock := rendered[compIdx:formatIdx]
 	if !strings.Contains(compBlock, "write the Token derivations block immediately") {
 		t.Errorf("COMPOSITION RULES instruction must contain affirmative trigger, got:\n%s", compBlock)
+	}
+}
+
+// TestTokensCacheSkipClause verifies the TOKENS instruction includes the cache-skip clause
+// tied to a prior Loaded: line in the transcript rather than self-assessed familiarity.
+func TestTokensCacheSkipClause(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, cliErr := Build(g, []string{"make", "gate"})
+	if cliErr != nil {
+		t.Fatalf("Build: %v", cliErr)
+	}
+	rendered := RenderPlainText(result)
+	tokensIdx := strings.Index(rendered, sectionTokens)
+	compIdx := strings.Index(rendered, sectionCompositionRules)
+	var tokensBlock string
+	if compIdx != -1 {
+		tokensBlock = rendered[tokensIdx:compIdx]
+	} else {
+		formatIdx := strings.Index(rendered, sectionFormat)
+		tokensBlock = rendered[tokensIdx:formatIdx]
+	}
+	if !strings.Contains(tokensBlock, "already appears verbatim in the transcript") {
+		t.Errorf("TOKENS instruction must contain transcript-verifiable cache-skip clause, got:\n%s", tokensBlock)
+	}
+}
+
+// TestCompositionRulesCacheSkipClause verifies the COMPOSITION RULES instruction includes
+// the cache-skip clause tied to a prior Loaded: line in the transcript.
+func TestCompositionRulesCacheSkipClause(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
+	if cliErr != nil {
+		t.Fatalf("Build: %v", cliErr)
+	}
+	rendered := RenderPlainText(result)
+	compIdx := strings.Index(rendered, sectionCompositionRules)
+	if compIdx == -1 {
+		t.Fatal("COMPOSITION RULES section must be present")
+	}
+	formatIdx := strings.Index(rendered, sectionFormat)
+	compBlock := rendered[compIdx:formatIdx]
+	if !strings.Contains(compBlock, "already appears verbatim in the transcript") {
+		t.Errorf("COMPOSITION RULES instruction must contain transcript-verifiable cache-skip clause, got:\n%s", compBlock)
 	}
 }
 

@@ -14,10 +14,10 @@ def test_opening_bookend_inside_criteria():
 
 
 def test_closing_bookend_names_subject_directly():
-    """Closing bookend names subject-direct invocation, not semantic source."""
+    """Closing bookend requires tool-result substring, not just §0-named invocation (CL2 gate)."""
     text = build_ground_prompt()
-    assert "each covered dimension cites a verbatim string from a tool call whose invocation names the §0 identifier directly" in text, (
-        "closing bookend must use command-form addressability — invocation names §0 identifier, not evaluator"
+    assert "a dimension declared covered without such a substring does not satisfy §4" in text, (
+        "closing bookend must require tool-result substring — CL2 gate string must be present"
     )
     assert "every covered dimension must cite a verbatim string from a tool-executed result that contains output the system produced directly" not in text, (
         "old semantic-source form must be removed"

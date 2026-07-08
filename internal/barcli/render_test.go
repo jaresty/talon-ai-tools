@@ -893,3 +893,45 @@ func TestRenderPlainText_RequestMergesTaskAndSubject(t *testing.T) {
 		t.Fatalf("REQUEST section must contain subject text, got block:\n%s", requestBlock)
 	}
 }
+
+// TestCompositionRulesFetchHintFormat verifies that COMPOSITION RULES emits one fetch-hint
+// line per active composition instead of inline prose.
+func TestCompositionRulesFetchHintFormat(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
+	if cliErr != nil {
+		t.Fatalf("Build: %v", cliErr)
+	}
+	rendered := RenderPlainText(result)
+	compIdx := strings.Index(rendered, sectionCompositionRules)
+	if compIdx == -1 {
+		t.Fatal("COMPOSITION RULES section must be present")
+	}
+	formatIdx := strings.Index(rendered, sectionFormat)
+	compBlock := rendered[compIdx:formatIdx]
+	if !strings.Contains(compBlock, "→ bar help composition gate+falsify") {
+		t.Errorf("COMPOSITION RULES must contain fetch hint '→ bar help composition gate+falsify', got:\n%s", compBlock)
+	}
+	if strings.Contains(compBlock, "the blocking condition gate requires") {
+		t.Errorf("COMPOSITION RULES must not contain inline prose, got:\n%s", compBlock)
+	}
+}
+
+// TestCompositionRulesLoadedInstruction verifies that COMPOSITION RULES emits the Loaded: instruction.
+func TestCompositionRulesLoadedInstruction(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
+	if cliErr != nil {
+		t.Fatalf("Build: %v", cliErr)
+	}
+	rendered := RenderPlainText(result)
+	compIdx := strings.Index(rendered, sectionCompositionRules)
+	if compIdx == -1 {
+		t.Fatal("COMPOSITION RULES section must be present")
+	}
+	formatIdx := strings.Index(rendered, sectionFormat)
+	compBlock := rendered[compIdx:formatIdx]
+	if !strings.Contains(compBlock, "Loaded:") {
+		t.Errorf("COMPOSITION RULES must contain 'Loaded:' fetch instruction, got:\n%s", compBlock)
+	}
+}

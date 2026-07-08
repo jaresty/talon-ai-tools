@@ -135,10 +135,13 @@ func RenderPlainText(result *BuildResult) string {
 	if len(result.ActiveCompositions) > 0 {
 		b.WriteString(sectionCompositionRules)
 		b.WriteString("\n")
-		b.WriteString("↓ [Additional rules that apply because specific token combinations are co-present. Applied on top of CONSTRAINTS.]\n")
+		b.WriteString("↓ [Additional rules that apply because specific token combinations are co-present. Applied on top of TOKENS.]\n")
+		b.WriteString("For each composition line below, run bar help composition <slug>. After each fetch, write: Loaded: <slug>. Do not write 'Token derivations:' until a Loaded: line appears for every slug below.\n")
 		for _, comp := range result.ActiveCompositions {
-			fmt.Fprintf(&b, "%s\n\n", strings.TrimSpace(comp.Prose))
+			name := strings.TrimSpace(comp.Name)
+			fmt.Fprintf(&b, "- %s  → bar help composition %s\n", name, name)
 		}
+		b.WriteString("\n")
 	}
 
 	writeSection(&b, sectionFormat, result.PlanningDirective)

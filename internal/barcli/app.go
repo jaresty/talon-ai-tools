@@ -634,6 +634,21 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 			return 1
 		}
 		return 0
+	case "composition":
+		name := ""
+		if len(opts.Tokens) > 1 {
+			name = opts.Tokens[1]
+		}
+		grammar, err := LoadGrammar(opts.GrammarPath)
+		if err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		if err := renderHelpComposition(stdout, grammar, name); err != nil {
+			writeError(stderr, err.Error())
+			return 1
+		}
+		return 0
 	case "dispatch":
 		sequenceName := ""
 		if len(opts.Tokens) > 1 {

@@ -129,11 +129,11 @@ func TestRenderPlainText_CompositionRulesSectionPresent(t *testing.T) {
 	if !strings.Contains(rendered, "=== COMPOSITION RULES") {
 		t.Error("rendered output must contain COMPOSITION RULES section")
 	}
-	tokenDefsIdx := strings.Index(rendered, "=== TOKEN DEFINITIONS")
+	tokensIdx := strings.Index(rendered, "=== TOKENS")
 	compositionIdx := strings.Index(rendered, "=== COMPOSITION RULES")
 	formatIdx := strings.Index(rendered, "=== FORMAT")
-	if compositionIdx <= tokenDefsIdx {
-		t.Error("COMPOSITION RULES must appear after TOKEN DEFINITIONS")
+	if compositionIdx <= tokensIdx {
+		t.Error("COMPOSITION RULES must appear after TOKENS")
 	}
 	if compositionIdx >= formatIdx {
 		t.Error("COMPOSITION RULES must appear before FORMAT")
@@ -289,5 +289,41 @@ func TestBuildProbeFalsifyInjectsCompositionRules(t *testing.T) {
 	}
 	if !strings.Contains(result.Stdout, "COMPOSITION RULES") {
 		t.Errorf("expected COMPOSITION RULES section for probe+falsify, got:\n%s", result.Stdout)
+	}
+}
+
+// TestHelpComposition_KnownName verifies that bar help composition gate+falsify prints the composition prose.
+func TestHelpComposition_KnownName(t *testing.T) {
+	result := runBuildCLI(t, []string{"help", "composition", "gate+falsify"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "gate") {
+		t.Errorf("expected composition prose containing 'gate', got:\n%s", result.Stdout)
+	}
+	if !strings.Contains(result.Stdout, "falsify") {
+		t.Errorf("expected composition prose containing 'falsify', got:\n%s", result.Stdout)
+	}
+}
+
+// TestHelpComposition_UnknownName verifies that bar help composition <unknown> exits non-zero with error.
+func TestHelpComposition_UnknownName(t *testing.T) {
+	result := runBuildCLI(t, []string{"help", "composition", "no-such-composition"}, nil)
+	if result.Exit == 0 {
+		t.Fatalf("expected non-zero exit for unknown composition, got 0; stdout: %s", result.Stdout)
+	}
+	if !strings.Contains(result.Stderr, "no-such-composition") {
+		t.Errorf("expected error mentioning unknown name, got stderr:\n%s", result.Stderr)
+	}
+}
+
+// TestHelpComposition_NoArg verifies that bar help composition with no arg lists available names.
+func TestHelpComposition_NoArg(t *testing.T) {
+	result := runBuildCLI(t, []string{"help", "composition"}, nil)
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "gate+falsify") {
+		t.Errorf("expected composition list to contain 'gate+falsify', got:\n%s", result.Stdout)
 	}
 }

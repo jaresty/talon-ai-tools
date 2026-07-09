@@ -1041,3 +1041,41 @@ func TestCompositionRulesBindingConstraintSentence(t *testing.T) {
 		t.Errorf("COMPOSITION RULES must contain 'binding constraint', got:\n%s", compBlock)
 	}
 }
+
+// TestTokensSkipConditionRequiresProvenanceCheck verifies that the TOKENS skip condition
+// requires a prior Loaded: line to have been produced with a tool-result block containing
+// "# Token: <slug>" — not merely that the string "Loaded: <slug>" appears verbatim.
+func TestTokensSkipConditionRequiresProvenanceCheck(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, `containing "# Token:`) {
+		t.Errorf("TOKENS skip condition must require tool-result block containing '# Token: <slug>' for provenance, got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensAdjacencyRequiresFirstAssistantText verifies that the TOKENS instruction
+// requires "The first assistant text after that tool-result block must begin with Loaded:"
+// rather than the ambiguous "not immediately preceded by".
+func TestTokensAdjacencyRequiresFirstAssistantText(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "first assistant text after that tool-result block") {
+		t.Errorf("TOKENS instruction must require 'first assistant text after that tool-result block', got:\n%s", tokensBlock)
+	}
+}

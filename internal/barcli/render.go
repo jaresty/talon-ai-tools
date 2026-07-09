@@ -92,7 +92,7 @@ func RenderPlainText(result *BuildResult) string {
 	if len(result.HydratedConstraints) == 0 && result.Persona == (PersonaResult{}) {
 		b.WriteString("(none)\n\n")
 	} else {
-		b.WriteString("For each token line above (excluding persona = (none)), run bar help token <slug> as a tool call where <slug> is the slug shown after →. After the tool-result block appears, write Loaded: <slug> — a Loaded: line not immediately preceded by a tool-result block for that slug does not satisfy this requirement. Skip the tool call only if Loaded: <slug> already appears verbatim in the transcript above this TOKENS section; in that case, write Loaded: <slug> again to confirm. Once a Loaded: line exists for every slug, write the Token derivations block immediately.\n")
+		b.WriteString("For each token line below (excluding persona = (none)), run `bar help token <slug>` as a Bash tool call, where <slug> is the slug shown after →. The first assistant text after that tool-result block must begin with `Loaded: <slug>` — a Loaded: line not preceded by a tool-result block containing \"# Token: <slug>\" does not satisfy this requirement. Skip the tool call only if a compliant `Loaded: <slug>` — one immediately preceded by a tool-result block containing \"# Token: <slug>\" — already appears verbatim in the transcript above this TOKENS section; in that case, write `Loaded: <slug>` again to confirm. Once a Loaded: line exists for every slug, write the Token derivations block immediately.\n")
 		for _, constraint := range result.HydratedConstraints {
 			axisKey := strings.ToLower(strings.TrimSpace(constraint.Axis))
 			token := strings.TrimSpace(constraint.Token)

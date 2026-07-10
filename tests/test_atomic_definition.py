@@ -35,7 +35,7 @@ def test_atomic_four_escape_categories():
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "(i) scope inflation" in defn
     assert "(ii) stale quote" in defn
-    assert "(iii) symbol under-declaration" in defn
+    assert "(iii) symbol cardinality" in defn
     assert "(iv) post-call line mismatch" in defn
 
 

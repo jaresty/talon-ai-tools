@@ -127,7 +127,7 @@ Show the top 2-3 results (token name + short label + axis). Fold confirmed candi
 
 Each refinement turn must follow the `form:interactive` contract:
 - **Name current state**: the turn must contain a sentence beginning with the literal prefix `Currently understood:` — a turn that restates the original request without this prefix does not satisfy this requirement
-- **Name available inputs**: the turn must name at least one dimension as a bracketed choice list using `[` and `/` as the literal delimiters — e.g., `[concept / evaluate / diagnose]` — a turn without a `[` ... `/` ... `]` pattern does not satisfy this requirement
+- **Name available inputs**: the turn must name at least one dimension as a bracketed choice list using `[` and `/` as the literal delimiters — choices must be phrased as user goals or outcomes, not token slugs (e.g., `[understand it broadly / decide whether to adopt it / debug a specific problem]` not `[understand / evaluate / diagnose]`) — a turn without a `[` ... `/` ... `]` pattern does not satisfy this requirement; a bracketed list whose items are bare token slugs without goal context does not satisfy this requirement
 - **End with a prompt**: the final line of the turn must end with `?` as its last character — a turn whose final line does not end with `?` does not satisfy this requirement
 
 **After stop condition fires**, generate a final menu of 2-4 options before executing:
@@ -180,14 +180,16 @@ bar build probe form:interactive struct --subject "microservices architecture"
 
 # Step 4: Follow form:interactive contract — bar lookup after each user answer
 # Turn 1: "Currently understood: you want structural coverage of microservices.
-#           Still unclear: explain to understand broadly, evaluate whether to adopt,
-#           or diagnose a specific problem? [understand / evaluate / diagnose]"
+#           Still unclear: are you trying to understand it broadly, decide whether
+#           to adopt it, or debug a specific problem you're hitting?
+#           [understand it broadly / decide whether to adopt it / debug a specific problem]"
 # User: "evaluate"
 bar lookup "evaluate tradeoffs compare options"   # → surfaces: diff, depends, contrast
 # Fold confirmed: diff, depends; task token resolves to: diff
 
-# Turn 2: "Got it — evaluation framing (diff, depends). Technical or mixed audience?
-#           [technical / mixed]"
+# Turn 2: "Got it — you want to evaluate the tradeoffs. Who's the audience —
+#           engineers who'll implement it, or a mixed technical/non-technical group?
+#           [engineers implementing it / mixed technical and non-technical audience]"
 # User: "technical, just go"
 bar lookup "technical depth"                     # → surfaces: full, narrow
 # Stop condition fires: sufficient signal + user said "go"

@@ -1,9 +1,6 @@
 ---
 name: bar-dictionary
-description: >
-  Shared token-lookup skill for bar. Accepts an intent phrase and returns ranked matching
-  tokens from the live grammar using bar lookup. Use this skill instead of hardcoding token
-  descriptions — it always reflects the current grammar. Call it when you need to find what
+description: Use when user asks which token fits an intent — looks up bar tokens by intent phrase and returns ranked matches.
   token matches a user's intent, when you need the full metadata for a specific token, or
   when you need all tokens on an axis.
 ---

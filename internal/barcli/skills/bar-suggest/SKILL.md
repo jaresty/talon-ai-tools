@@ -1,6 +1,6 @@
 ---
 name: bar-suggest
-description: Present users with bar-based approach options when multiple valid approaches exist.
+description: Use when user wants help choosing an approach or isn't sure where to start — presents bar-based options.
 ---
 
 # Bar Suggest Skill

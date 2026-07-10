@@ -1,6 +1,6 @@
 ---
 name: bar-manual
-description: Guide users on how to manually build bar commands and learn the bar CLI.
+description: Use when user wants to learn bar commands or build prompts manually — guides bar CLI usage step by step.
 ---
 
 # Bar Manual Usage Skill

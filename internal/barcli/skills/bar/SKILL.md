@@ -10,20 +10,17 @@ bar is a structured prompting CLI that shapes LLM responses via token axes (task
 
 ## Start here
 
-Before doing anything bar-related, load the available skills:
+If you have not yet run `bar skills list` this session, run it before any `bar skills get`
+or `bar build` command — its output tells you which skill to load and when:
 
 ```bash
 bar skills list
 ```
 
-Then load the specific skill you need:
+Then load the matching skill before responding:
 
 ```bash
-bar skills get bar-autopilot   # automatically apply bar structuring to responses
-bar skills get bar-workflow    # build and execute multi-step bar command sequences
-bar skills get bar-suggest     # present users with bar-based approach options
-bar skills get bar-manual      # guide users on how to manually build bar commands
-bar skills get bar-dictionary  # look up bar tokens by intent (used by other skills)
+bar skills get <name>
 ```
 
 ## Skill dispatch

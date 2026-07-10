@@ -1,6 +1,6 @@
 ---
 name: bar-autopilot
-description: Automatically detect and apply bar structuring to responses for better thinking and structure.
+description: Use when user wants bar to automatically shape every response — detects and applies bar structuring without being asked.
 ---
 
 # Bar Autopilot Skill

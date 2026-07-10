@@ -1,6 +1,6 @@
 ---
 name: bar-workflow
-description: "Build and execute multi-step bar command sequences for complex tasks requiring progressive refinement. Sequence-aware: checks bar sequence list before composing ad hoc chains, and supports autonomous, interactive, and cyclic execution modes."
+description: Use when user wants to chain multiple steps or build a sequence — constructs and runs multi-step bar command workflows.
 ---
 
 # Bar Workflow Skill

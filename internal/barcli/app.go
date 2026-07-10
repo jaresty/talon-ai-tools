@@ -19,7 +19,7 @@ import (
 
 const (
 	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|shuffle|help|completion|preset|starter|sequence|tui|install-skills|install-hooks]"
+	topUsage   = "usage: bar [build|shuffle|help|completion|preset|starter|sequence|tui|skills|install-skills|install-hooks]"
 )
 
 // barVersion holds the current version of bar, set by main package
@@ -161,10 +161,13 @@ var generalHelpText = strings.TrimSpace(`USAGE
                  successful "bar build" invocation.
                  Use "bar preset use <name>" with --subject/--input or piped text to rebuild
                  the recipe against fresh subject content.
-    install-skills  Install bar skills (bar-autopilot, bar-workflow, bar-suggest, bar-manual) to
-                 .claude/skills directory for LLM integration. Enables LLMs to automatically
-                 use bar for structuring responses and helps users learn bar manually.
-                 Use --location to specify custom installation path, --dry-run to preview,
+    skills          List or retrieve embedded bar skills. Skills are version-matched to the binary.
+                 Use "bar skills list" to see available skills, "bar skills get <name>" to
+                 print a skill's content to stdout.
+    install-skills  Install the bar skill stub to ~/.claude/skills (default) for LLM discovery.
+                 After install, Claude Code loads the stub via /bar, which instructs it to
+                 call "bar skills get <name>" for version-matched skill content.
+                 Use --location to specify a custom installation path, --dry-run to preview,
                  and --force to overwrite existing skills.
     install-hooks   Install a PostCompact Claude hook into ~/.claude/settings.json.
                  The hook injects the compaction summary back into the session so bar's
@@ -262,6 +265,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 
 	if options.Command == "install-skills" {
 		return runInstallSkills(options, stdout, stderr)
+	}
+
+	if options.Command == "skills" {
+		return runSkills(options, stdout, stderr)
 	}
 
 	if options.Command == "install-agents" {

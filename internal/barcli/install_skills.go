@@ -20,36 +20,29 @@ func runInstallSkills(options *cli.Config, stdout, stderr io.Writer) int {
 	if options.Help {
 		fmt.Fprintln(stdout, `usage: bar install-skills [--location PATH] [--dry-run] [--force]
 
-Install bar skills to .claude/skills directory.
+Install the bar skill stub to ~/.claude/skills for LLM discovery.
 
-The install-skills command installs five embedded bar skills:
-  - bar-autopilot: Automatically detect and apply bar structuring to responses
-  - bar-workflow: Chain multi-step bar commands for complex tasks
-  - bar-suggest: Present users with bar-based approach options
-  - bar-manual: Guide users on how to manually build bar commands
-  - bar-dictionary: Shared token-lookup skill (used by other bar skills)
-
-These skills enable LLMs to use bar as a thinking tool (autopilot, workflow, suggest),
-help users learn bar manually (bar-manual), and provide shared token lookup
-(bar-dictionary), working across all agent types.
+The stub tells Claude Code to call "bar skills get <name>" to load version-matched
+skill content directly from the binary. This eliminates sync issues between the
+installed skill files and the binary.
 
 FLAGS
-  --location PATH   Target directory for skills (default: .claude/skills)
+  --location PATH   Target directory for skills (default: ~/.claude/skills)
   --dry-run         Show what would be installed without installing
   --force           Overwrite existing skills
   --help, -h        Show this help message
 
 EXAMPLES
-  # Install to default location (.claude/skills)
+  # Install to default location (~/.claude/skills)
   bar install-skills
 
-  # Install to custom location
-  bar install-skills --location /path/to/skills
+  # Install to project-local location
+  bar install-skills --location .claude/skills
 
   # Preview what would be installed
   bar install-skills --dry-run
 
-  # Force overwrite existing skills
+  # Force overwrite existing stub
   bar install-skills --force`)
 		return 0
 	}
@@ -57,22 +50,25 @@ EXAMPLES
 	// Determine installation location
 	location := options.Location
 	if location == "" {
-		location = ".claude/skills"
+		var err error
+		location, err = defaultSkillsLocation()
+		if err != nil {
+			fmt.Fprintf(stderr, "Error: %v\n", err)
+			return 1
+		}
 	}
 
 	// Dry-run mode
 	if options.DryRun {
 		fmt.Fprintf(stdout, "Would install bar skills to: %s\n", location)
 		fmt.Fprintln(stdout, "\nSkills to be installed:")
-		fmt.Fprintln(stdout, "  - bar-autopilot")
-		fmt.Fprintln(stdout, "  - bar-workflow")
-		fmt.Fprintln(stdout, "  - bar-suggest")
-		fmt.Fprintln(stdout, "  - bar-manual")
-		fmt.Fprintln(stdout, "  - bar-dictionary")
+		fmt.Fprintln(stdout, "  - bar")
 		return 0
 	}
 
 	// Perform installation
+	removeDeprecatedSkills(location, stdout)
+
 	if err := installSkills(location, options.Force, stdout, stderr); err != nil {
 		fmt.Fprintf(stderr, "Error: %v\n", err)
 		return 1
@@ -81,6 +77,31 @@ EXAMPLES
 	fmt.Fprintf(stdout, "Successfully installed bar skills to: %s\n", location)
 	return 0
 }
+
+var deprecatedSkillNames = []string{
+	"bar-autopilot",
+	"bar-workflow",
+	"bar-suggest",
+	"bar-manual",
+	"bar-dictionary",
+}
+
+// removeDeprecatedSkills removes old per-skill directories superseded by the single bar stub.
+func removeDeprecatedSkills(targetDir string, stdout io.Writer) {
+	for _, name := range deprecatedSkillNames {
+		path := filepath.Join(targetDir, name)
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			continue
+		}
+		if err := os.RemoveAll(path); err == nil {
+			fmt.Fprintf(stdout, "Removed deprecated skill: %s\n", name)
+		}
+	}
+}
+
+// installableSkills lists the skill directories that bar install-skills writes to disk.
+// All embedded skills are served via `bar skills get`, but only these are installed as stubs.
+var installableSkills = []string{"bar"}
 
 // installSkills performs the actual installation
 func installSkills(targetDir string, force bool, stdout, stderr io.Writer) error {
@@ -95,8 +116,17 @@ func installSkills(targetDir string, force bool, stdout, stderr io.Writer) error
 			return nil
 		}
 
-		// Calculate relative path from "skills"
+		// Only install stub skills, not all embedded skills
 		relPath := strings.TrimPrefix(path, "skills/")
+		topDir := strings.SplitN(relPath, "/", 2)[0]
+		if !sliceContains(installableSkills, topDir) {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+
+		// Target path in the installation directory (relPath already computed above)
 
 		// Target path in the installation directory
 		targetPath := filepath.Join(targetDir, relPath)

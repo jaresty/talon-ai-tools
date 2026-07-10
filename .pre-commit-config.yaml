@@ -39,9 +39,3 @@ repos:
         entry: python3 scripts/check_embeddings.py
         pass_filenames: false
         files: ^(build|web/static|internal/barcli/embed|cmd/bar/testdata)/prompt-grammar\.json$
-      - id: skills-sync
-        name: Embedded skills in sync with .claude/skills/
-        language: system
-        entry: python3 scripts/check_skills_sync.py
-        pass_filenames: false
-        files: ^(\.claude/skills|internal/barcli/skills)/.*SKILL\.md$

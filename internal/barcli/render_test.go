@@ -462,8 +462,8 @@ func TestRenderPlainText_LoadedArtifactInstruction(t *testing.T) {
 	if !strings.Contains(output, "shown after →") {
 		t.Fatalf("TOKENS instruction must resolve slug via '→' hint, got:\n%s", output)
 	}
-	if !strings.Contains(output, "write the Token derivations block immediately") {
-		t.Fatalf("TOKENS instruction must gate Token derivations: on Loaded: lines, got:\n%s", output)
+	if !strings.Contains(output, "Token loads complete.") {
+		t.Fatalf("TOKENS instruction must gate Token derivations: on sentinel 'Token loads complete.', got:\n%s", output)
 	}
 }
 
@@ -483,8 +483,8 @@ func TestRenderPlainText_UnconditionalFetchInstruction(t *testing.T) {
 	if !strings.Contains(output, "Loaded:") {
 		t.Fatalf("fetch instruction must require Loaded: artifact lines, got:\n%s", output)
 	}
-	if !strings.Contains(output, "write the Token derivations block immediately") {
-		t.Fatalf("fetch instruction must gate Token derivations: on Loaded: lines, got:\n%s", output)
+	if !strings.Contains(output, "Token loads complete.") {
+		t.Fatalf("fetch instruction must gate Token derivations: on sentinel 'Token loads complete.', got:\n%s", output)
 	}
 }
 
@@ -954,13 +954,13 @@ func TestTokensImmediateDerivationTrigger(t *testing.T) {
 		formatIdx := strings.Index(rendered, sectionFormat)
 		tokensBlock = rendered[tokensIdx:formatIdx]
 	}
-	if !strings.Contains(tokensBlock, "write the Token derivations block immediately") {
-		t.Errorf("TOKENS instruction must contain affirmative trigger, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "Token loads complete.") {
+		t.Errorf("TOKENS instruction must contain sentinel 'Token loads complete.' as affirmative trigger, got:\n%s", tokensBlock)
 	}
 }
 
 // TestCompositionRulesImmediateDerivationTrigger verifies the COMPOSITION RULES fetch instruction
-// tells the LLM to write Token derivations immediately once all Loaded: lines are present.
+// tells the LLM to write Token derivations only after sentinel "Token loads complete." appears.
 func TestCompositionRulesImmediateDerivationTrigger(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
@@ -974,8 +974,8 @@ func TestCompositionRulesImmediateDerivationTrigger(t *testing.T) {
 	}
 	formatIdx := strings.Index(rendered, sectionFormat)
 	compBlock := rendered[compIdx:formatIdx]
-	if !strings.Contains(compBlock, "write the Token derivations block immediately") {
-		t.Errorf("COMPOSITION RULES instruction must contain affirmative trigger, got:\n%s", compBlock)
+	if !strings.Contains(compBlock, "Token loads complete.") {
+		t.Errorf("COMPOSITION RULES instruction must contain sentinel 'Token loads complete.' as affirmative trigger, got:\n%s", compBlock)
 	}
 }
 
@@ -1077,5 +1077,57 @@ func TestTokensAdjacencyRequiresFirstAssistantText(t *testing.T) {
 	tokensBlock := output[tokensIdx:formatIdx]
 	if !strings.Contains(tokensBlock, "first assistant text after that tool-result block") {
 		t.Errorf("TOKENS instruction must require 'first assistant text after that tool-result block', got:\n%s", tokensBlock)
+	}
+}
+
+// TestCompositionRulesSentinelPresent verifies that the COMPOSITION RULES instruction
+// requires the literal sentinel "Token loads complete." before the Token derivations block.
+// Same gap as TOKENS section: without the sentinel a model can skip composition loads.
+func TestCompositionRulesSentinelPresent(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+		ActiveCompositions: []Composition{
+			{Name: "gate+falsify"},
+		},
+	}
+	output := RenderPlainText(result)
+	compIdx := strings.Index(output, sectionCompositionRules)
+	formatIdx := strings.Index(output, sectionFormat)
+	if compIdx == -1 {
+		t.Fatal("COMPOSITION RULES section not present in output")
+	}
+	compBlock := output[compIdx:formatIdx]
+	if !strings.Contains(compBlock, "Token loads complete.") {
+		t.Errorf("COMPOSITION RULES instruction must require the sentinel 'Token loads complete.' before the Token derivations block, got:\n%s", compBlock)
+	}
+	if strings.Contains(compBlock, "write the Token derivations block immediately") {
+		t.Errorf("COMPOSITION RULES instruction must not contain 'write the Token derivations block immediately' — sentinel gate replaces this, got:\n%s", compBlock)
+	}
+}
+
+// TestTokensSectionSentinelPresent verifies that the TOKENS instruction requires the
+// literal sentinel "Token loads complete." before the Token derivations block.
+// Gap: without this sentinel a model can skip all bar help token calls and write the
+// derivation block directly — the old "write the Token derivations block immediately"
+// clause has no structural gate.
+func TestTokensSectionSentinelPresent(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "Token loads complete.") {
+		t.Errorf("TOKENS instruction must require the sentinel 'Token loads complete.' before the Token derivations block, got:\n%s", tokensBlock)
+	}
+	if strings.Contains(tokensBlock, "write the Token derivations block immediately") {
+		t.Errorf("TOKENS instruction must not contain 'write the Token derivations block immediately' — sentinel gate replaces this, got:\n%s", tokensBlock)
 	}
 }

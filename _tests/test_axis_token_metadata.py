@@ -1025,9 +1025,9 @@ class MethodAxisMetadataTests(unittest.TestCase):
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "pass/fail state is determined solely by the symbols named in the symbol commitment",
+            "pass/fail state is determined solely by the named symbol",
             definition,
-            "atomic must name the governing-test constraint: the quoted failing line must be from a test whose outcome depends on the symbols being modified",
+            "atomic must name the governing-test constraint: the quoted failing line must be from a test whose outcome depends on the symbol being modified",
         )
 
     def test_falsify_empty_transcript_gap_closed(self):

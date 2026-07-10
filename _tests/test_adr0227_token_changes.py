@@ -56,17 +56,21 @@ def test_ground_states_completion_check_trigger_condition():
     """ground must name when the response is not permitted to end (completion check trigger).
 
     ADR-0227 Decision 4 (updated for derivation-based definition): ground states that
-    the response cannot end until the completion-check heading appears and at least one
+    the response cannot end until the '## Completion check' heading appears and at least one
     dimension is covered by a verbatim tool-executed result.
+
+    The phrase 'completion-check heading' was removed in e558ddb9 when the definition was
+    rewritten to use the literal heading string '## Completion check' as the gate.
     """
     text = _ground()
     assert (
-        "completion-check heading" in text and
+        "'## Completion check'" in text and
         "dimension" in text and
         "verbatim" in text
     ), (
-        "ground must state the completion-check trigger: heading must appear and "
-        "at least one dimension covered by verbatim tool-executed result (ADR-0227 Decision 4)"
+        "ground must state the completion-check trigger using the literal heading "
+        "'## Completion check' — and at least one dimension covered by verbatim "
+        "tool-executed result (ADR-0227 Decision 4, updated e558ddb9)"
     )
 
 
@@ -198,10 +202,10 @@ def test_ground_unnamed_paths_require_structural_elimination():
     This invariant moved from atomic to ground during the atomic rewrite (ADR-0227).
     """
     text = _ground()
-    assert "cannot be closed by naming a string must be eliminated" in text, (
-        "ground must require that paths which cannot be closed by naming a string "
-        "be eliminated by ensuring the required structural property is present before the heading "
-        "(D4 invariant, now in ground after atomic rewrite)"
+    assert "'§5 enumeration complete'" in text, (
+        "ground must require path enumeration to close with '§5 enumeration complete' — "
+        "the 'cannot be closed by naming a string must be eliminated' phrasing was replaced "
+        "in e558ddb9 with the literal sentinel '§5 enumeration complete'"
     )
 
 
@@ -287,6 +291,50 @@ def test_atomic_symbol_commitment_bounded_by_scope_text():
         "atomic must bound symbol commitment to symbols appearing in the quoted scope text "
         "or failing-item line — an unbounded symbol list does not satisfy the requirement "
         "(hollow audit fix: enabler 2 symbol scope gate)"
+    )
+
+
+def test_atomic_symbol_commitment_requires_exactly_one_symbol():
+    """atomic symbol commitment must require exactly one symbol per file-modifying call.
+
+    Gap D1/G2: the old definition said 'every symbol...must be named' — a completeness
+    requirement, not a cardinality requirement. A model could name two symbols
+    (createRadarAccountPortfolioRoutes, parseWholeCount) and implement both in one call.
+    Fix: 'exactly one symbol' enforces cardinality=1.
+    """
+    text = _atomic()
+    assert "exactly one symbol" in text, (
+        "atomic must require exactly one symbol per file-modifying call — "
+        "'every symbol' is a completeness requirement, not a cardinality requirement"
+    )
+
+
+def test_atomic_deny_list_sentence_present():
+    """atomic must include a deny-list sentence making multi-symbol commitments non-compliant.
+
+    The deny-list sentence closes the escape route where a model names two symbols
+    and claims both are 'exactly one' by redefining 'symbol'. The sentence
+    'a symbol commitment naming more than one symbol does not satisfy this requirement'
+    makes multi-symbol commitments explicitly non-compliant.
+    """
+    text = _atomic()
+    assert "a symbol commitment naming more than one symbol does not satisfy this requirement" in text, (
+        "atomic must include deny-list sentence: "
+        "'a symbol commitment naming more than one symbol does not satisfy this requirement'"
+    )
+
+
+def test_atomic_escape_category_iii_is_symbol_cardinality():
+    """atomic escape category (iii) must be renamed from 'symbol under-declaration' to 'symbol cardinality'.
+
+    The old label 'symbol under-declaration' targeted completeness (no undeclared symbols).
+    After the cardinality fix, category (iii) now enforces count=1, not just completeness.
+    The new label 'symbol cardinality' reflects this.
+    """
+    text = _atomic()
+    assert "symbol cardinality" in text, (
+        "atomic escape category (iii) must be labeled 'symbol cardinality' — "
+        "'symbol under-declaration' only enforced completeness, not count=1"
     )
 
 

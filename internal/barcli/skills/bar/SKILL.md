@@ -26,6 +26,23 @@ bar skills get bar-manual      # guide users on how to manually build bar comman
 bar skills get bar-dictionary  # look up bar tokens by intent (used by other skills)
 ```
 
+## Skill dispatch
+
+If the user invokes `/bar suggest`, `/bar workflow`, `/bar autopilot`, etc., treat the
+suffix as a skill name — run `bar skills get bar-<suffix>` rather than looking for a
+matching CLI subcommand. These are skills, not native subcommands.
+
+```bash
+# /bar suggest  →
+bar skills get bar-suggest
+
+# /bar workflow  →
+bar skills get bar-workflow
+```
+
+Do not reject a `/bar X` invocation because `bar X` fails as a shell command — check
+the skill layer first.
+
 ## Quick reference
 
 ```bash

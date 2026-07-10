@@ -40,6 +40,9 @@ func runSkills(opts *cli.Config, stdout, stderr io.Writer) int {
 	}
 }
 
+// stubSkills are entry-point stubs installed to ~/.claude/skills — not listed as usable skills.
+var stubSkills = []string{"bar"}
+
 func runSkillsList(stdout, stderr io.Writer) int {
 	entries, err := embeddedSkills.ReadDir("skills")
 	if err != nil {
@@ -51,6 +54,9 @@ func runSkillsList(stdout, stderr io.Writer) int {
 			continue
 		}
 		name := entry.Name()
+		if sliceContains(stubSkills, name) {
+			continue
+		}
 		desc := skillDescription(name)
 		fmt.Fprintf(stdout, "  %-20s %s\n", name, desc)
 	}
@@ -83,16 +89,37 @@ func skillDescription(name string) string {
 	if err != nil {
 		return ""
 	}
-	for _, line := range strings.Split(string(content), "\n") {
-		if strings.HasPrefix(line, "description:") {
-			desc := strings.TrimPrefix(line, "description:")
-			desc = strings.TrimSpace(desc)
-			// Truncate long descriptions
-			if len(desc) > 80 {
-				desc = desc[:77] + "..."
-			}
-			return desc
+	desc := extractDescription(string(content))
+	if len(desc) > 80 {
+		desc = desc[:77] + "..."
+	}
+	return desc
+}
+
+// extractDescription parses the description field from SKILL.md YAML frontmatter.
+// Handles plain, quoted, and folded (>) scalar styles.
+func extractDescription(content string) string {
+	lines := strings.Split(content, "\n")
+	for i, line := range lines {
+		if !strings.HasPrefix(line, "description:") {
+			continue
 		}
+		val := strings.TrimSpace(strings.TrimPrefix(line, "description:"))
+		if val == ">" || val == "|" {
+			// Folded or literal block: value is on the next non-empty indented line
+			for _, next := range lines[i+1:] {
+				trimmed := strings.TrimSpace(next)
+				if trimmed != "" {
+					return trimmed
+				}
+			}
+			return ""
+		}
+		// Strip surrounding quotes
+		if len(val) >= 2 && ((val[0] == '"' && val[len(val)-1] == '"') || (val[0] == '\'' && val[len(val)-1] == '\'')) {
+			val = val[1 : len(val)-1]
+		}
+		return val
 	}
 	return ""
 }

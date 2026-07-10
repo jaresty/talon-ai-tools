@@ -33,6 +33,20 @@ func TestInstallSkillsDefaultLocation(t *testing.T) {
 	}
 }
 
+func TestBarSkillsListExcludesStub(t *testing.T) {
+	opts := &cli.Config{Tokens: []string{"list"}}
+	var stdout, stderr bytes.Buffer
+	code := runSkills(opts, &stdout, &stderr)
+	if code != 0 {
+		t.Fatalf("bar skills list exited %d: %s", code, stderr.String())
+	}
+	for _, line := range strings.Split(stdout.String(), "\n") {
+		if strings.HasPrefix(strings.TrimSpace(line), "bar ") && !strings.HasPrefix(strings.TrimSpace(line), "bar-") {
+			t.Errorf("bar skills list must not list the stub skill 'bar', got line: %s", line)
+		}
+	}
+}
+
 func TestBarSkillsList(t *testing.T) {
 	opts := &cli.Config{
 		Tokens: []string{"list"},
@@ -62,6 +76,38 @@ func TestBarSkillsGet(t *testing.T) {
 	// Must return non-empty skill content
 	if len(strings.TrimSpace(out)) == 0 {
 		t.Errorf("expected skill content, got empty output")
+	}
+}
+
+func TestSkillDescriptionFormats(t *testing.T) {
+	cases := []struct {
+		name    string
+		content string
+		want    string
+	}{
+		{
+			name: "plain",
+			content: "---\nname: foo\ndescription: A plain description.\n---\n",
+			want: "A plain description.",
+		},
+		{
+			name: "quoted",
+			content: "---\nname: foo\ndescription: \"A quoted description.\"\n---\n",
+			want: "A quoted description.",
+		},
+		{
+			name: "folded",
+			content: "---\nname: foo\ndescription: >\n  A folded description that continues here.\n---\n",
+			want: "A folded description that continues here.",
+		},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			got := extractDescription(tc.content)
+			if got != tc.want {
+				t.Errorf("extractDescription(%q) = %q, want %q", tc.name, got, tc.want)
+			}
+		})
 	}
 }
 

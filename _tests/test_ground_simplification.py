@@ -14,10 +14,10 @@ from lib.groundPrompt import GROUND_PARTS_MINIMAL, build_ground_prompt
 
 
 def test_generalized_protocol_preserves_intent_primacy():
-    """P1 intent primacy must be preserved."""
+    """P1 governing goal derivation must be preserved."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "intent" in core.lower() and "derive" in core.lower(), (
-        "Generalized protocol must preserve intent derivation"
+    assert "governing goal" in core.lower() and "derive" in core.lower(), (
+        "Generalized protocol must preserve governing goal derivation"
     )
 
 
@@ -62,8 +62,35 @@ def test_generalized_protocol_is_domain_independent():
 
 
 def test_generalized_protocol_has_seven_rungs():
-    """Slimmed protocol (ADR-0224/crystal) — completion-check heading gate + binding commitment present."""
+    """Slimmed protocol (ADR-0224/crystal) — completion check heading gate + done declaration gate present."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "completion-check heading" in core.lower() and "binding" in core.lower(), (
-        "Derivation-based protocol must contain completion-check heading gate and binding commitment sentence"
+    assert "## Completion check" in core and "done declaration" in core, (
+        "Derivation-based protocol must gate done declarations on a ## Completion check block"
+    )
+
+
+def test_ground_gate_D2_dimension_kind_constraint():
+    """D2: §2 dimensions must name a property of the response, not an artifact, state, or fix description."""
+    core = GROUND_PARTS_MINIMAL["core"]
+    assert "property of the response" in core, (
+        "§2 must require each dimension to name a property of the response"
+    )
+    assert "not an artifact" in core or "not an artifact, state" in core, (
+        "§2 must explicitly exclude artifact/state/fix-description as valid dimensions"
+    )
+
+
+def test_ground_gate_D2_dimension_count_constraint():
+    """D2: §2 must require at least two dimensions."""
+    core = GROUND_PARTS_MINIMAL["core"]
+    assert "at least two" in core, (
+        "§2 must require at least two dimensions to be listed"
+    )
+
+
+def test_ground_gate_D2_dimension_independence_constraint():
+    """D2: §2 dimensions must be independently violatable."""
+    core = GROUND_PARTS_MINIMAL["core"]
+    assert "satisfy it while failing" in core or "satisfy" in core and "failing at least one other" in core, (
+        "§2 must require each dimension to be independently satisfiable (satisfiable while others fail)"
     )

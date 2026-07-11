@@ -186,7 +186,7 @@ def test_atomic_multiple_scope_lines_quote_distinct_signals():
     without the call having changed exactly one independently observable behavior.
     """
     text = _atomic()
-    assert "independently testable" in text or "one independently observable" in text or "independently observable behavior" in text, (
+    assert "independently testable" in text or "one independently observable" in text or "independently observable behavior" in text or "passes or fails independently" in text, (
         "atomic must require exactly one independently testable change per call "
         "(derivation-based form of hollow audit fix D3)"
     )

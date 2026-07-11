@@ -61,3 +61,9 @@ def test_atomic_per_call_independence():
     """Dim 8: scope line requirement must apply independently per call — closes D3+G2."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "independently" in defn
+
+
+def test_atomic_escape_categories_per_call_positional():
+    """Dim 9: escape categories must appear as last four lines immediately before each call — closes once-discharge gap."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "last four content lines begin with" in defn

@@ -333,12 +333,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "name that appeared in that pre-edit run result — the pre-edit run result for a given call is the run result that produced that call's scope commitment; a failing-item line "
         "from the pre-edit run result may be absent from the post-call run result only if its literal text appeared as a quoted scope string above this call and no other failing-item "
         "line from the same pre-edit run result also appeared as a quoted scope string above this call. Each file-modifying tool call's scope line must satisfy these requirements "
-        "independently — a scope line from a prior call does not carry forward. Then enumerate the following four escape categories — each must have a named closure string in the "
-        "transcript before any file-modifying tool call: (i) scope inflation: name the string that prevents the quoted scope text from covering more than one independently testable "
-        "symbol; (ii) stale quote: name the string that confirms no tool-executed run result intervenes between the source of the quoted scope text and this call; (iii) symbol "
-        "cardinality: name the string that confirms exactly one symbol is named in the symbol commitment and no other symbol is modified by this call; (iv) post-call line mismatch: "
-        "name the string whose absence from the post-call result confirms the scope text was resolved and no other line was inadvertently removed. Proceed to file-modifying tool calls "
-        "only when the derivation and all four enumeration categories are present as text above this point in the transcript.",
+        "independently — a scope line from a prior call does not carry forward. Then, immediately before each file-modifying tool call — as the last assistant text block before that "
+        "call — write a block containing exactly these four lines in order: `(i) scope inflation: <string>`, `(ii) stale quote: <string>`, `(iii) symbol cardinality: <string>`, `(iv) "
+        "post-call line mismatch: <string>`. A file-modifying tool call not immediately preceded by a block whose last four content lines begin with `(i)`, `(ii)`, `(iii)`, `(iv)` in "
+        "that order does not satisfy this requirement. Proceed to file-modifying tool calls only when the derivation and all four enumeration categories are present as the last four "
+        "content lines above this point in the transcript.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "

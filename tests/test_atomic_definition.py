@@ -46,9 +46,9 @@ def test_atomic_hollow_enumeration_absent():
 
 
 def test_atomic_last_line_immediately_before():
-    """Dim 6: scope line must be the last assistant text line immediately before each call — closes D1+G1."""
+    """Dim 6: scope line must appear immediately above (i) escape category line — closes D1+G1."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "The last assistant text line immediately before each file-modifying tool call" in defn
+    assert "line immediately above the `(i)` escape category line must be the quoted scope commitment" in defn
 
 
 def test_atomic_run_result_definition():
@@ -67,3 +67,9 @@ def test_atomic_escape_categories_per_call_positional():
     """Dim 9: escape categories must appear as last four lines immediately before each call — closes once-discharge gap."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "last four content lines begin with" in defn
+
+
+def test_atomic_scope_line_above_escape_categories():
+    """Dim 10: quoted scope line must appear immediately above (i) — closes mutual-exclusion conflict with escape categories."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "line immediately above the `(i)` escape category line must be the quoted scope commitment" in defn

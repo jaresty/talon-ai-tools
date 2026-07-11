@@ -192,6 +192,21 @@ def test_atomic_multiple_scope_lines_quote_distinct_signals():
     )
 
 
+def test_atomic_symbol_is_member_not_container():
+    """atomic symbol commitment must reject a container reference as a valid symbol.
+
+    kind constraint gap: a file name, module path, or import path satisfies the current
+    provenance clause ('must appear as a literal substring of the quoted scope text') because
+    import-error lines contain the file/module name verbatim. The fix adds a kind constraint:
+    a symbol is a named member within a container, not the container itself.
+    """
+    text = _atomic()
+    assert "named member within a container" in text or "names an entity whose existence is established within" in text, (
+        "atomic symbol commitment must reject container references (file names, module paths) — "
+        "a symbol is a named member within a container, not the container itself"
+    )
+
+
 def test_ground_unnamed_paths_require_structural_elimination():
     """ground must require that paths which cannot be closed by naming a string be eliminated structurally.
 

@@ -43,3 +43,21 @@ def test_atomic_hollow_enumeration_absent():
     """Dim 5: old hollow enumeration-completeness clause must be gone."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "The enumeration is complete when no remaining open path exists" not in defn
+
+
+def test_atomic_last_line_immediately_before():
+    """Dim 6: scope line must be the last assistant text line immediately before each call — closes D1+G1."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "The last assistant text line immediately before each file-modifying tool call" in defn
+
+
+def test_atomic_run_result_definition():
+    """Dim 7: definition must specify what counts as a tool-executed run result — closes G3."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "a result block from a test runner, build command, or linter" in defn
+
+
+def test_atomic_per_call_independence():
+    """Dim 8: scope line requirement must apply independently per call — closes D3+G2."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "independently" in defn

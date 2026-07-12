@@ -1108,6 +1108,72 @@ func TestCompositionRulesSentinelPresent(t *testing.T) {
 	}
 }
 
+// TestTokensLoadedRequiresHeuristicPhrase verifies that the TOKENS instruction requires
+// the Loaded: line to include a verbatim heuristic trigger phrase from the tool result,
+// using the (when: "...") form. Without this, models can write Loaded: <slug> from
+// pattern memory without having read the tool result content.
+func TestTokensLoadedRequiresHeuristicPhrase(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, `(when: "`) {
+		t.Errorf("TOKENS instruction must require Loaded: <slug> (when: \"<heuristic phrase>\") form, got:\n%s", tokensBlock)
+	}
+	if !strings.Contains(tokensBlock, "does not appear verbatim in that tool-result block") {
+		t.Errorf("TOKENS instruction must state that the quoted phrase must appear verbatim in the tool-result block, got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensSkipConfirmedForm verifies that the TOKENS instruction uses "(skip confirmed)"
+// for skip acknowledgment rather than writing Loaded: <slug> again. This resolves the
+// clash between the skip clause and the proximity requirement: a (skip confirmed) line
+// is structurally distinct from a first-time Loaded: (when: "...") line.
+func TestTokensSkipConfirmedForm(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "(skip confirmed)") {
+		t.Errorf("TOKENS skip clause must use '(skip confirmed)' form, got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensDerivationsCitesLoadedPhrase verifies that the TOKENS instruction requires
+// each Token derivations line to quote the trigger phrase from the corresponding Loaded: line.
+// This closes the context-decay gap: the derivations block must structurally re-anchor the
+// token content loaded earlier in the session.
+func TestTokensDerivationsCitesLoadedPhrase(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "quoted trigger phrase from the Loaded: line") {
+		t.Errorf("TOKENS instruction must require derivations lines to quote trigger phrase from Loaded: line, got:\n%s", tokensBlock)
+	}
+	if !strings.Contains(tokensBlock, "whose quoted phrase does not match the phrase in the corresponding") {
+		t.Errorf("TOKENS instruction must state non-compliance when derivations phrase doesn't match Loaded: phrase, got:\n%s", tokensBlock)
+	}
+}
+
 // TestTokensSectionSentinelPresent verifies that the TOKENS instruction requires the
 // literal sentinel "Token loads complete." before the Token derivations block.
 // Gap: without this sentinel a model can skip all bar help token calls and write the

@@ -60,6 +60,7 @@ func runSkillsList(stdout, stderr io.Writer) int {
 		desc := skillDescription(name)
 		fmt.Fprintf(stdout, "  %-20s %s\n", name, desc)
 	}
+	fmt.Fprintf(stdout, "  For named sequences (e.g. token-rewrite): load bar-workflow, then run bar sequence show <name>\n")
 	return 0
 }
 

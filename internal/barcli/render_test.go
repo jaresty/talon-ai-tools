@@ -1169,8 +1169,64 @@ func TestTokensDerivationsCitesLoadedPhrase(t *testing.T) {
 	if !strings.Contains(tokensBlock, "quoted trigger phrase from the Loaded: line") {
 		t.Errorf("TOKENS instruction must require derivations lines to quote trigger phrase from Loaded: line, got:\n%s", tokensBlock)
 	}
-	if !strings.Contains(tokensBlock, "whose quoted phrase does not match the phrase in the corresponding") {
-		t.Errorf("TOKENS instruction must state non-compliance when derivations phrase doesn't match Loaded: phrase, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "does not appear verbatim in the") {
+		t.Errorf("TOKENS instruction must state non-compliance when derivations → clause doesn't appear verbatim in tool-result block, got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensDerivationsRequireDescriptionClause verifies that the TOKENS derivations
+// instruction requires the → effect to quote verbatim text from the Description field,
+// using the "as applied here:" suffix to separate the quoted clause from the application.
+func TestTokensDerivationsRequireDescriptionClause(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "as applied here:") {
+		t.Errorf("TOKENS derivations instruction must require 'as applied here:' suffix for response-specific application, got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensDerivationsBoundaryRule verifies that the TOKENS derivations instruction
+// specifies the Description field clause boundary as "up to the first ' —' or first period".
+func TestTokensDerivationsBoundaryRule(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "up to the first") {
+		t.Errorf("TOKENS derivations instruction must specify clause boundary with 'up to the first', got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensDerivationsGateText verifies that the TOKENS derivations instruction
+// includes a non-compliance gate requiring the → quoted clause to appear verbatim
+// in the bar help token tool-result block.
+func TestTokensDerivationsGateText(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "does not appear verbatim in the") {
+		t.Errorf("TOKENS derivations instruction must include non-compliance gate 'does not appear verbatim in the', got:\n%s", tokensBlock)
 	}
 }
 

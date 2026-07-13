@@ -85,3 +85,15 @@ def test_atomic_five_escape_categories():
     """Dim 12: five named escape categories must be present including (v) implementation depth."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "(v) implementation depth" in defn
+
+
+def test_atomic_stub_kind_dispatch():
+    """Dim 13: stub requirement dispatches on symbol kind — closes non-callable stub gap."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "stub requirement for its kind" in defn
+
+
+def test_atomic_stub_noncallable_path():
+    """Dim 14: non-callable path explicitly named — variables/constants/exported values covered."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "non-callable (variable, constant, exported value, or class field)" in defn

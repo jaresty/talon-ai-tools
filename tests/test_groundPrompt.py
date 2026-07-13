@@ -5,7 +5,7 @@ from lib.groundPrompt import build_ground_prompt
 def test_opening_bookend_inside_criteria():
     """Opening bookend is criterion (0) inside the derivation sequence, not an external pre-condition."""
     text = build_ground_prompt()
-    assert "invoke the subject as a tool call" in text, (
+    assert "invoke the named artifact as a tool call" in text, (
         "opening bookend must appear as first criterion inside derivation sequence"
     )
     assert "Before writing the governing goal heading, run the system under test" not in text, (

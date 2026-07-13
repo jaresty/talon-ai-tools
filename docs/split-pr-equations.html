@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Split-PR Strategy — Stock &amp; Flow Model</title>
+<script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  background: #0d1117;
+  color: #c9d1d9;
+  display: grid;
+  grid-template-columns: 280px 1fr 220px;
+  grid-template-rows: 100vh;
+  overflow: hidden;
+}
+
+/* LEFT */
+#panel-left {
+  padding: 20px 16px;
+  border-right: 1px solid #21262d;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  overflow-y: auto;
+}
+.panel-title {
+  font-size: 11px;
+  font-weight: 600;
+  color: #6e7681;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.slider-group { display: flex; flex-direction: column; gap: 14px; }
+.slider-item { display: flex; flex-direction: column; gap: 5px; }
+.slider-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.slider-name { font-size: 12px; font-weight: 600; color: #c9d1d9; }
+.slider-val {
+  font-size: 13px;
+  font-family: 'SF Mono', monospace;
+  font-weight: 700;
+  color: #58a6ff;
+}
+.slider-desc { font-size: 10px; color: #6e7681; line-height: 1.4; }
+input[type=range] {
+  width: 100%;
+  accent-color: #58a6ff;
+  cursor: pointer;
+}
+
+/* equations */
+.eq-block {
+  background: #161b22;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.eq-title { font-size: 10px; color: #8b949e; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2px; }
+.eq { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 10px; color: #e3b341; line-height: 1.6; white-space: pre-wrap; }
+
+#prompt-box {
+  font-size: 12px;
+  color: #3fb950;
+  padding: 10px;
+  background: #0d2513;
+  border: 1px solid #1a4426;
+  border-radius: 6px;
+  line-height: 1.6;
+}
+
+/* CENTER */
+#panel-center {
+  display: flex;
+  flex-direction: column;
+  padding: 16px 20px;
+  gap: 10px;
+  overflow: hidden;
+}
+#chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-shrink: 0;
+}
+#chart-title { font-size: 13px; font-weight: 600; color: #c9d1d9; }
+#sprint-label { font-size: 11px; color: #6e7681; }
+#chart-wrap { flex: 1; min-height: 0; }
+svg { width: 100%; height: 100%; }
+
+/* legend */
+#legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11px;
+  color: #8b949e;
+}
+.legend-swatch {
+  width: 20px;
+  height: 3px;
+  border-radius: 2px;
+}
+
+/* divider lines on chart */
+.group-label-text {
+  font-size: 10px;
+  fill: #6e7681;
+}
+
+/* RIGHT */
+#panel-right {
+  padding: 16px 14px;
+  background: #161b22;
+  border-left: 1px solid #21262d;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+}
+.readout-group { display: flex; flex-direction: column; gap: 6px; }
+.readout-group-label {
+  font-size: 10px;
+  color: #6e7681;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding-bottom: 3px;
+  border-bottom: 1px solid #21262d;
+}
+.readout-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+}
+.readout-name { color: #8b949e; }
+.readout-val {
+  font-family: 'SF Mono', monospace;
+  font-size: 12px;
+  font-weight: 700;
+}
+.rv-good { color: #3fb950; }
+.rv-bad  { color: #f85149; }
+.rv-warn { color: #e3b341; }
+.rv-neutral { color: #8b949e; }
+
+.divergence-box {
+  background: #0d1117;
+  border: 1px solid #30363d;
+  border-radius: 6px;
+  padding: 10px;
+}
+.divergence-box h3 {
+  font-size: 10px;
+  color: #6e7681;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.div-row { display: flex; align-items: center; gap: 6px; margin-bottom: 5px; }
+.div-label { font-size: 10px; color: #8b949e; width: 42px; flex-shrink: 0; }
+.div-bar-bg { flex: 1; height: 7px; background: #21262d; border-radius: 4px; overflow: hidden; }
+.div-bar { height: 100%; border-radius: 4px; width: 0%; transition: width 0.3s; }
+#pr-bar  { background: #3fb950; }
+#fl-bar  { background: #f85149; }
+#tr-bar  { background: #e3b341; }
+.divergence-note { font-size: 10px; color: #6e7681; line-height: 1.5; margin-top: 6px; }
+
+.feedback-box {
+  background: #0d1117;
+  border: 1px solid #21262d;
+  border-radius: 6px;
+  padding: 10px;
+}
+.feedback-box h3 {
+  font-size: 10px;
+  color: #6e7681;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+.fb-row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 4px; }
+.fb-name { color: #8b949e; }
+.fb-val { font-family: monospace; font-size: 11px; }
+.active-loop { color: #f85149; }
+.inactive-loop { color: #3fb950; }
+</style>
+</head>
+<body>
+
+<!-- LEFT: sliders + equations -->
+<div id="panel-left">
+  <div class="panel-title">Parameters</div>
+
+  <div class="slider-group">
+    <div class="slider-item">
+      <div class="slider-header">
+        <span class="slider-name">Split ratio</span>
+        <span class="slider-val" id="v-split">2.0</span>
+      </div>
+      <input type="range" id="s-split" min="1" max="8" step="0.1" value="2">
+      <div class="slider-desc">How many PRs one logical change is divided into. 1 = no splitting.</div>
+    </div>
+    <div class="slider-item">
+      <div class="slider-header">
+        <span class="slider-name">Attribution prob.</span>
+        <span class="slider-val" id="v-attr">0.30</span>
+      </div>
+      <input type="range" id="s-attr" min="0" max="1" step="0.01" value="0.3">
+      <div class="slider-desc">Fraction of incidents traced back to the split strategy.</div>
+    </div>
+    <div class="slider-item">
+      <div class="slider-header">
+        <span class="slider-name">Policy strength</span>
+        <span class="slider-val" id="v-policy">0.20</span>
+      </div>
+      <input type="range" id="s-policy" min="0" max="1" step="0.01" value="0.2">
+      <div class="slider-desc">How aggressively the team responds when the pattern is detected.</div>
+    </div>
+    <div class="slider-item">
+      <div class="slider-header">
+        <span class="slider-name">Trust erosion rate</span>
+        <span class="slider-val" id="v-trust">0.10</span>
+      </div>
+      <input type="range" id="s-trust" min="0" max="0.5" step="0.01" value="0.1">
+      <div class="slider-desc">How fast trust in metrics collapses per attributed incident.</div>
+    </div>
+    <div class="slider-item">
+      <div class="slider-header">
+        <span class="slider-name">Norm. amplifier</span>
+        <span class="slider-val" id="v-norm">1.50</span>
+      </div>
+      <input type="range" id="s-norm" min="1" max="4" step="0.05" value="1.5">
+      <div class="slider-desc">How much normalization multiplies the effective split rate.</div>
+    </div>
+  </div>
+
+  <div class="eq-block">
+    <div class="eq-title">Stock equations (Euler, dt=0.1)</div>
+    <div class="eq">dD/dt = ESR·(1−0.3C) − D·0.02·0.3
+dT/dt = (1−N)·0.01 − D·0.02·α·τ
+dN/dt = ESR·0.05·(1−D·0.02·α·ρ)
+       − N·D·0.02·α·ρ
+dC/dt = D·0.02·α·ρ·0.5 − N·0.05
+
+ESR = splitRatio·(1+N·normAmp)</div>
+    <div class="eq" style="color:#8b949e">α = attributionProb
+τ = trustErosionRate
+ρ = policyStrength</div>
+  </div>
+
+  <div id="prompt-box">
+    The simulation shows all stocks at t = 0. Move the <strong>splitRatio</strong> slider to start — watch PR-level and feature-level metrics diverge.
+  </div>
+</div>
+
+<!-- CENTER: chart -->
+<div id="panel-center">
+  <div id="chart-header">
+    <div id="chart-title">Metric trajectories over 50 sprints</div>
+    <div id="sprint-label">50 sprints · dt = 0.1</div>
+  </div>
+  <div id="chart-wrap"></div>
+  <div id="legend"></div>
+</div>
+
+<!-- RIGHT: readouts -->
+<div id="panel-right">
+  <div class="panel-title">Final values (t=50)</div>
+
+  <div class="readout-group">
+    <div class="readout-group-label">PR-Level (looks good)</div>
+    <div class="readout-row"><span class="readout-name">Cycle time</span><span class="readout-val rv-neutral" id="r-cycle">—</span></div>
+    <div class="readout-row"><span class="readout-name">Approval rate</span><span class="readout-val rv-neutral" id="r-approval">—</span></div>
+  </div>
+
+  <div class="readout-group">
+    <div class="readout-group-label">Feature-Level (real cost)</div>
+    <div class="readout-row"><span class="readout-name">Defect rate</span><span class="readout-val rv-neutral" id="r-defect">—</span></div>
+    <div class="readout-row"><span class="readout-name">Incident rate</span><span class="readout-val rv-neutral" id="r-incident">—</span></div>
+    <div class="readout-row"><span class="readout-name">Int. debt D</span><span class="readout-val rv-neutral" id="r-debt">—</span></div>
+  </div>
+
+  <div class="readout-group">
+    <div class="readout-group-label">Team Health</div>
+    <div class="readout-row"><span class="readout-name">Trust T</span><span class="readout-val rv-neutral" id="r-trust">—</span></div>
+    <div class="readout-row"><span class="readout-name">Culture C</span><span class="readout-val rv-neutral" id="r-culture">—</span></div>
+    <div class="readout-row"><span class="readout-name">Normalization N</span><span class="readout-val rv-neutral" id="r-norm">—</span></div>
+  </div>
+
+  <div class="divergence-box">
+    <h3>Divergence at t=50</h3>
+    <div class="div-row"><span class="div-label">PR gain</span><div class="div-bar-bg"><div class="div-bar" id="pr-bar"></div></div></div>
+    <div class="div-row"><span class="div-label">Feat. cost</span><div class="div-bar-bg"><div class="div-bar" id="fl-bar"></div></div></div>
+    <div class="div-row"><span class="div-label">Trust loss</span><div class="div-bar-bg"><div class="div-bar" id="tr-bar"></div></div></div>
+    <div class="divergence-note">PR gain = improvement in cycle time. Feature cost = defect rate increase. The gap between them is the hidden cost.</div>
+  </div>
+
+  <div class="feedback-box">
+    <h3>Feedback loops</h3>
+    <div class="fb-row"><span class="fb-name">Norm. amplification</span><span class="fb-val" id="fb-norm">—</span></div>
+    <div class="fb-row"><span class="fb-name">Detection-correction</span><span class="fb-val" id="fb-detect">—</span></div>
+    <div style="font-size:10px;color:#6e7681;margin-top:4px;">Loop 1 reinforces splitting. Loop 2 corrects it. Their balance determines whether the system self-corrects.</div>
+  </div>
+</div>
+
+<script>
+// ── Model constants ────────────────────────────────────────────────────────
+const DT = 0.1;
+const T_MAX = 50;
+const STEPS = Math.round(T_MAX / DT);
+const IC = 0.02;   // incidentCoeff
+const RE = 0.3;    // resolutionEff
+const TR = 0.01;   // trustRecoveryRate
+
+// ── Simulation ─────────────────────────────────────────────────────────────
+function simulate(params) {
+  const { splitRatio, attrProb, policy, trustErosion, normAmp } = params;
+  const series = {
+    t: [], D: [], T: [], N: [], C: [],
+    prCycle: [], prApproval: [], featDefect: [], incidentRate: []
+  };
+
+  let D = 0, T = 1, N = 0, C = 1;
+
+  for (let i = 0; i <= STEPS; i++) {
+    const esr = splitRatio * (1 + N * normAmp);
+    const detPress = D * IC * attrProb * policy;
+    const incRate = D * IC;
+
+    // observables
+    const prCycle = 1 / esr;
+    const prApproval = 1 - 1 / (1 + esr);
+    const featDefect = 0.05 * (1 + D * 0.3);
+
+    series.t.push(i * DT);
+    series.D.push(D);
+    series.T.push(T);
+    series.N.push(N);
+    series.C.push(C);
+    series.prCycle.push(prCycle);
+    series.prApproval.push(prApproval);
+    series.featDefect.push(featDefect);
+    series.incidentRate.push(incRate);
+
+    if (i === STEPS) break;
+
+    // derivatives
+    const dD = esr * (1 - 0.3 * C) - D * IC * RE;
+    const dT = (1 - N) * TR - D * IC * attrProb * trustErosion;
+    const dN = esr * 0.05 * (1 - detPress) - N * detPress;
+    const dC = detPress * 0.5 - N * 0.05;
+
+    D = Math.max(0, D + dD * DT);
+    T = Math.max(0, Math.min(1, T + dT * DT));
+    N = Math.max(0, Math.min(1, N + dN * DT));
+    C = Math.max(0, Math.min(1, C + dC * DT));
+  }
+  return series;
+}
+
+// ── Chart setup ─────────────────────────────────────────────────────────────
+const LINES = [
+  { key: 'prCycle',      label: 'PR cycle time',    color: '#3fb950', group: 'PR-level',     fmt: v => v.toFixed(3) },
+  { key: 'prApproval',   label: 'PR approval rate', color: '#56d364', group: 'PR-level',     fmt: v => (v*100).toFixed(1)+'%' },
+  { key: 'featDefect',   label: 'Feature defect rate', color: '#f85149', group: 'Feature-level', fmt: v => (v*100).toFixed(2)+'%' },
+  { key: 'incidentRate', label: 'Incident rate',    color: '#ff7b72', group: 'Feature-level', fmt: v => v.toFixed(4) },
+  { key: 'T',            label: 'Trust (T)',         color: '#e3b341', group: 'Team health',  fmt: v => v.toFixed(3) },
+  { key: 'C',            label: 'Culture (C)',       color: '#d29922', group: 'Team health',  fmt: v => v.toFixed(3) },
+  { key: 'N',            label: 'Normalization (N)', color: '#a371f7', group: 'Team health',  fmt: v => v.toFixed(3) },
+];
+
+const margin = { top: 20, right: 20, bottom: 40, left: 52 };
+let chartW = 0, chartH = 0;
+
+const chartWrap = document.getElementById('chart-wrap');
+const svg = d3.select('#chart-wrap').append('svg');
+const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
+
+const xScale = d3.scaleLinear().domain([0, T_MAX]);
+const yScale = d3.scaleLinear().domain([0, 1.2]);
+
+const xAxis = g.append('g').attr('class', 'x-axis');
+const yAxis = g.append('g').attr('class', 'y-axis');
+
+// grid
+const xGrid = g.append('g').attr('class', 'x-grid');
+const yGrid = g.append('g').attr('class', 'y-grid');
+
+g.append('text').attr('class', 'axis-label')
+  .attr('text-anchor', 'middle')
+  .attr('fill', '#6e7681').attr('font-size', 10)
+  .attr('dy', 35)
+  .text('Sprints');
+
+g.append('text').attr('class', 'axis-label-y')
+  .attr('text-anchor', 'middle')
+  .attr('fill', '#6e7681').attr('font-size', 10)
+  .attr('transform', 'rotate(-90)')
+  .attr('dy', -40).attr('dx', 0)
+  .text('Value');
+
+// line paths
+const linePaths = {};
+LINES.forEach(l => {
+  linePaths[l.key] = g.append('path')
+    .attr('fill', 'none')
+    .attr('stroke', l.color)
+    .attr('stroke-width', 1.8)
+    .attr('opacity', 0.85);
+});
+
+// legend
+const legendEl = document.getElementById('legend');
+LINES.forEach(l => {
+  const item = document.createElement('div');
+  item.className = 'legend-item';
+  item.innerHTML = `<div class="legend-swatch" style="background:${l.color}"></div>${l.label}`;
+  legendEl.appendChild(item);
+});
+
+function styleAxis(sel) {
+  sel.selectAll('line,path').attr('stroke', '#30363d');
+  sel.selectAll('text').attr('fill', '#6e7681').attr('font-size', 10);
+}
+
+function resize() {
+  const rect = chartWrap.getBoundingClientRect();
+  chartW = rect.width - margin.left - margin.right;
+  chartH = rect.height - margin.top - margin.bottom;
+  svg.attr('viewBox', `0 0 ${rect.width} ${rect.height}`);
+  xScale.range([0, chartW]);
+  yScale.range([chartH, 0]);
+  xAxis.attr('transform', `translate(0,${chartH})`).call(d3.axisBottom(xScale).ticks(10)).call(styleAxis);
+  yAxis.call(d3.axisLeft(yScale).ticks(6)).call(styleAxis);
+  xGrid.attr('transform', `translate(0,${chartH})`)
+    .call(d3.axisBottom(xScale).ticks(10).tickSize(-chartH).tickFormat(''))
+    .call(s => s.selectAll('line').attr('stroke','#1c2128').attr('stroke-dasharray','2,3'))
+    .call(s => s.select('.domain').remove());
+  yGrid.call(d3.axisLeft(yScale).ticks(6).tickSize(-chartW).tickFormat(''))
+    .call(s => s.selectAll('line').attr('stroke','#1c2128').attr('stroke-dasharray','2,3'))
+    .call(s => s.select('.domain').remove());
+  g.select('.axis-label').attr('x', chartW / 2).attr('y', chartH);
+  g.select('.axis-label-y').attr('x', -chartH / 2).attr('y', -margin.left + 10);
+}
+
+function getParams() {
+  return {
+    splitRatio:  +document.getElementById('s-split').value,
+    attrProb:    +document.getElementById('s-attr').value,
+    policy:      +document.getElementById('s-policy').value,
+    trustErosion:+document.getElementById('s-trust').value,
+    normAmp:     +document.getElementById('s-norm').value,
+  };
+}
+
+function updateLabels(p) {
+  document.getElementById('v-split').textContent  = p.splitRatio.toFixed(1);
+  document.getElementById('v-attr').textContent   = p.attrProb.toFixed(2);
+  document.getElementById('v-policy').textContent = p.policy.toFixed(2);
+  document.getElementById('v-trust').textContent  = p.trustErosion.toFixed(2);
+  document.getElementById('v-norm').textContent   = p.normAmp.toFixed(2);
+}
+
+function classifyVal(val, key) {
+  if (key === 'prCycle' || key === 'prApproval') {
+    // lower cycle = good, higher approval = good
+    if (key === 'prCycle') return val < 0.4 ? 'rv-good' : val < 0.6 ? 'rv-warn' : 'rv-neutral';
+    return val > 0.7 ? 'rv-good' : val > 0.5 ? 'rv-warn' : 'rv-neutral';
+  }
+  if (key === 'featDefect' || key === 'incidentRate' || key === 'D' || key === 'N') {
+    if (key === 'D') return val > 50 ? 'rv-bad' : val > 20 ? 'rv-warn' : 'rv-neutral';
+    if (key === 'N') return val > 0.5 ? 'rv-bad' : val > 0.2 ? 'rv-warn' : 'rv-neutral';
+    return val > 0.1 ? 'rv-bad' : val > 0.07 ? 'rv-warn' : 'rv-neutral';
+  }
+  if (key === 'T' || key === 'C') return val > 0.7 ? 'rv-good' : val > 0.4 ? 'rv-warn' : 'rv-bad';
+  return 'rv-neutral';
+}
+
+function run() {
+  const p = getParams();
+  updateLabels(p);
+  const s = simulate(p);
+
+  // compute y domain
+  const allVals = LINES.flatMap(l => s[l.key]);
+  const yMax = Math.min(Math.max(d3.max(allVals) * 1.05, 1.2), 30);
+  yScale.domain([0, yMax]);
+  yAxis.call(d3.axisLeft(yScale).ticks(6)).call(styleAxis);
+  yGrid.call(d3.axisLeft(yScale).ticks(6).tickSize(-chartW).tickFormat(''))
+    .call(sel => sel.selectAll('line').attr('stroke','#1c2128').attr('stroke-dasharray','2,3'))
+    .call(sel => sel.select('.domain').remove());
+
+  const lineGen = d3.line().x((d,i) => xScale(s.t[i])).y(d => yScale(d)).curve(d3.curveBasis);
+  LINES.forEach(l => {
+    linePaths[l.key].datum(s[l.key]).attr('d', lineGen);
+  });
+
+  // readouts at final step
+  const last = s.t.length - 1;
+  const finalD    = s.D[last];
+  const finalT    = s.T[last];
+  const finalN    = s.N[last];
+  const finalC    = s.C[last];
+  const finalCycle    = s.prCycle[last];
+  const finalApproval = s.prApproval[last];
+  const finalDefect   = s.featDefect[last];
+  const finalIncident = s.incidentRate[last];
+
+  function set(id, val, cls, fmt) {
+    const el = document.getElementById(id);
+    el.textContent = fmt(val);
+    el.className = 'readout-val ' + cls;
+  }
+  set('r-cycle',    finalCycle,    classifyVal(finalCycle, 'prCycle'),       v => v.toFixed(3));
+  set('r-approval', finalApproval, classifyVal(finalApproval, 'prApproval'), v => (v*100).toFixed(1)+'%');
+  set('r-defect',   finalDefect,   classifyVal(finalDefect, 'featDefect'),   v => (v*100).toFixed(2)+'%');
+  set('r-incident', finalIncident, classifyVal(finalIncident,'incidentRate'),v => v.toFixed(4));
+  set('r-debt',     finalD,        classifyVal(finalD, 'D'),                 v => v.toFixed(1));
+  set('r-trust',    finalT,        classifyVal(finalT, 'T'),                 v => v.toFixed(3));
+  set('r-culture',  finalC,        classifyVal(finalC, 'C'),                 v => v.toFixed(3));
+  set('r-norm',     finalN,        classifyVal(finalN, 'N'),                 v => v.toFixed(3));
+
+  // divergence bars
+  const baseCycle = 1 / 1; // splitRatio=1 baseline
+  const prGain = Math.min(100, ((baseCycle - finalCycle) / baseCycle) * 100);
+  const flCost = Math.min(100, ((finalDefect - 0.05) / 0.05) * 100 * 0.5);
+  const trLoss = Math.min(100, (1 - finalT) * 100);
+  document.getElementById('pr-bar').style.width = Math.max(0, prGain) + '%';
+  document.getElementById('fl-bar').style.width = Math.max(0, flCost) + '%';
+  document.getElementById('tr-bar').style.width = Math.max(0, trLoss) + '%';
+
+  // feedback loop status
+  const esr = p.splitRatio * (1 + finalN * p.normAmp);
+  const loop1 = esr * 0.05; // normalization inflow rate
+  const loop2 = finalN * finalD * IC * p.attrProb * p.policy; // correction outflow
+  const fbNorm = document.getElementById('fb-norm');
+  const fbDetect = document.getElementById('fb-detect');
+  fbNorm.textContent = loop1 > 0.1 ? 'DOMINANT' : loop1 > 0.02 ? 'active' : 'weak';
+  fbNorm.className = 'fb-val ' + (loop1 > 0.1 ? 'active-loop' : loop1 > 0.02 ? 'rv-warn' : 'inactive-loop');
+  fbDetect.textContent = loop2 > loop1 ? 'correcting' : loop2 > 0.01 ? 'partial' : 'inactive';
+  fbDetect.className = 'fb-val ' + (loop2 > loop1 ? 'inactive-loop' : loop2 > 0.01 ? 'rv-warn' : 'active-loop');
+}
+
+// wire sliders
+['s-split','s-attr','s-policy','s-trust','s-norm'].forEach(id => {
+  document.getElementById(id).addEventListener('input', run);
+});
+
+// init
+window.addEventListener('resize', () => { resize(); run(); });
+resize();
+run();
+</script>
+</body>
+</html>

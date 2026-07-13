@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PR Splitting Cost Simulator</title>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #0f1117;
+    color: #e1e4e8;
+    min-height: 100vh;
+    padding: 32px 24px;
+  }
+  h1 {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: #f0f6fc;
+    margin-bottom: 4px;
+  }
+  .subtitle {
+    font-size: 0.85rem;
+    color: #8b949e;
+    margin-bottom: 32px;
+  }
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 32px;
+    max-width: 1100px;
+  }
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+  }
+  .control-group label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #8b949e;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 6px;
+  }
+  .control-group .value-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 8px;
+  }
+  .control-group .param-name {
+    font-size: 0.95rem;
+    color: #f0f6fc;
+    font-weight: 500;
+  }
+  .control-group .param-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #58a6ff;
+    font-variant-numeric: tabular-nums;
+    min-width: 3rem;
+    text-align: right;
+  }
+  input[type=range] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: #30363d;
+    outline: none;
+    cursor: pointer;
+  }
+  input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #58a6ff;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  input[type=range]::-webkit-slider-thumb:hover {
+    background: #79c0ff;
+  }
+  .range-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #484f58;
+    margin-top: 4px;
+  }
+  .metrics {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+  .metric-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .metric-label {
+    font-size: 0.8rem;
+    color: #8b949e;
+    width: 200px;
+    flex-shrink: 0;
+  }
+  .metric-bar-wrap {
+    flex: 1;
+    height: 28px;
+    position: relative;
+  }
+  .chart-area {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  .chart-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    color: #8b949e;
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+  }
+  #chart svg {
+    overflow: visible;
+  }
+  .multiplier {
+    font-size: 0.78rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+  }
+  .multiplier.high { color: #f85149; }
+  .multiplier.med  { color: #e3b341; }
+  .multiplier.ok   { color: #3fb950; }
+  .insight-box {
+    margin-top: 28px;
+    padding: 16px;
+    background: #161b22;
+    border: 1px solid #30363d;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    color: #8b949e;
+    line-height: 1.6;
+    max-width: 1100px;
+  }
+  .insight-box strong { color: #f0f6fc; }
+  .runaway-warning {
+    display: none;
+    margin-top: 12px;
+    padding: 10px 14px;
+    background: #3d1e1e;
+    border: 1px solid #f85149;
+    border-radius: 6px;
+    font-size: 0.82rem;
+    color: #f85149;
+    font-weight: 500;
+  }
+  .section-divider {
+    height: 1px;
+    background: #21262d;
+    margin: 8px 0 16px;
+  }
+  .glossary {
+    margin-top: 24px;
+    max-width: 1100px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 12px;
+  }
+  .glossary-item {
+    padding: 14px 16px;
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+  }
+  .glossary-item .term {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #f0f6fc;
+    margin-bottom: 2px;
+  }
+  .glossary-item .term-type {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #484f58;
+    margin-bottom: 6px;
+  }
+  .glossary-item .term-body {
+    font-size: 0.8rem;
+    color: #8b949e;
+    line-height: 1.5;
+  }
+  .glossary-item .term-body strong {
+    color: #c9d1d9;
+    font-weight: 500;
+  }
+  .glossary-heading {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #484f58;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-top: 32px;
+    margin-bottom: 12px;
+    max-width: 1100px;
+  }
+  .assumptions-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-top: 32px;
+    margin-bottom: 0;
+    max-width: 1100px;
+    user-select: none;
+  }
+  .assumptions-toggle span {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #484f58;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  .assumptions-toggle .toggle-arrow {
+    font-size: 0.65rem;
+    color: #484f58;
+    transition: transform 0.2s;
+  }
+  .assumptions-toggle:hover span,
+  .assumptions-toggle:hover .toggle-arrow { color: #8b949e; }
+  .assumptions-panel {
+    display: none;
+    margin-top: 16px;
+    max-width: 1100px;
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    padding: 20px 24px;
+  }
+  .assumptions-panel.open { display: block; }
+  .assumptions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+  }
+  .assumption-item .a-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #c9d1d9;
+    margin-bottom: 2px;
+  }
+  .assumption-item .a-citation {
+    font-size: 0.7rem;
+    color: #484f58;
+    margin-bottom: 8px;
+    line-height: 1.4;
+  }
+  .assumption-item .a-citation a {
+    color: #388bfd;
+    text-decoration: none;
+  }
+  .assumption-item .a-citation a:hover { text-decoration: underline; }
+  .assumption-item .a-value-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 4px;
+  }
+  .assumption-item .a-val {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #58a6ff;
+    font-variant-numeric: tabular-nums;
+  }
+  .assumption-item .a-reset {
+    font-size: 0.7rem;
+    color: #484f58;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    border: none;
+  }
+  .assumption-item .a-reset:hover { color: #8b949e; }
+  .assumptions-note {
+    margin-top: 16px;
+    font-size: 0.75rem;
+    color: #484f58;
+    line-height: 1.5;
+  }
+</style>
+</head>
+<body>
+
+<h1>PR Splitting Cost Simulator</h1>
+<p class="subtitle">Adjust parameters to see how mandatory PR splitting affects your team's review pipeline.</p>
+
+<div class="layout">
+  <div class="controls">
+    <div class="control-group">
+      <label>Parameters</label>
+
+      <div class="value-row">
+        <span class="param-name">Split ratio</span>
+        <span class="param-value" id="val-split">1×</span>
+      </div>
+      <input type="range" id="slider-split" min="1" max="5" step="0.1" value="1">
+      <div class="range-labels"><span>1 (natural)</span><span>5×</span></div>
+    </div>
+
+    <div class="control-group">
+      <div class="value-row">
+        <span class="param-name">Dependency fraction</span>
+        <span class="param-value" id="val-dep">40%</span>
+      </div>
+      <input type="range" id="slider-dep" min="0" max="100" step="1" value="40">
+      <div class="range-labels"><span>0%</span><span>100%</span></div>
+    </div>
+
+    <div class="control-group">
+      <div class="value-row">
+        <span class="param-name">Reviewer pool</span>
+        <span class="param-value" id="val-rev">3</span>
+      </div>
+      <input type="range" id="slider-rev" min="1" max="10" step="1" value="3">
+      <div class="range-labels"><span>1</span><span>10</span></div>
+    </div>
+
+    <div class="section-divider"></div>
+
+    <div>
+      <div style="font-size:0.75rem;font-weight:600;color:#8b949e;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:12px;">Outputs vs baseline</div>
+      <div id="metric-values" style="display:flex;flex-direction:column;gap:10px;"></div>
+    </div>
+  </div>
+
+  <div class="chart-area">
+    <div class="chart-header">
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#30363d;"></div>
+        Baseline (split ratio = 1)
+      </div>
+      <div class="legend-item">
+        <div class="legend-dot" style="background:#58a6ff;"></div>
+        Current settings
+      </div>
+    </div>
+    <div id="chart"></div>
+    <div class="runaway-warning" id="runaway-warning">
+      ⚠ Queue runaway: PR arrival rate exceeds reviewer capacity. The review queue will grow without bound at these settings.
+    </div>
+  </div>
+</div>
+
+<div class="insight-box" id="insight-box"></div>
+
+<div class="assumptions-toggle" onclick="toggleAssumptions()">
+  <span>Model assumptions</span>
+  <span class="toggle-arrow" id="toggle-arrow">▶</span>
+</div>
+<div class="assumptions-panel" id="assumptions-panel">
+  <div class="assumptions-grid" id="assumptions-grid"></div>
+  <div class="assumptions-note">
+    Defaults are conservative estimates. The qualitative result — that splitting increases all six costs — holds across the full range of each assumption. Drag any slider to test your own numbers.
+  </div>
+</div>
+
+<div class="glossary-heading">Glossary</div>
+<div class="glossary">
+
+  <div class="glossary-item">
+    <div class="term">Split ratio</div>
+    <div class="term-type">Parameter</div>
+    <div class="term-body">How many sub-PRs a natural unit of work is divided into. <strong>1 = no splitting</strong> — the PR is sized by the work. At 3×, a single feature becomes three PRs. This is the variable under the split-PR policy's control.</div>
+  </div>
+
+  <div class="glossary-item">
+    <div class="term">Dependency fraction</div>
+    <div class="term-type">Parameter</div>
+    <div class="term-body">Percentage of sub-PRs that are <strong>blocked on a prior sub-PR</strong> in the same split set. If you split a feature into A → B → C, B and C are dependent. Higher values mean more of your splits create sequencing constraints.</div>
+  </div>
+
+  <div class="glossary-item">
+    <div class="term">Review speed exponent (β)</div>
+    <div class="term-type">Assumption</div>
+    <div class="term-body">Controls how much faster reviewers process smaller sub-PRs. <strong>β=0</strong>: no speedup — each sub-PR takes the same time regardless of size (pessimistic). <strong>β=1</strong>: perfect linear scaling — splitting in half halves review time (optimistic). Default β=0.5 reflects partial benefit: sub-PRs are faster but fixed overhead doesn't shrink proportionally.</div>
+  </div>
+
+  <div class="glossary-item">
+    <div class="term">Reviewer pool</div>
+    <div class="term-type">Parameter</div>
+    <div class="term-body">Number of engineers available to review PRs. <strong>Adding reviewers is the only lever that increases throughput capacity.</strong> A small pool amplifies every queue-depth effect of splitting.</div>
+  </div>
+
+  <div class="glossary-item">
+    <div class="term">PRs in review</div>
+    <div class="term-type">Output — queue stock</div>
+    <div class="term-body">Steady-state count of PRs waiting for or undergoing review. Splitting multiplies PR arrival rate directly. <strong>More PRs in flight = longer average wait, more context-switching for reviewers.</strong></div>
+  </div>
+
+  <div class="glossary-item">
+    <div class="term">Open dependency chains</div>
+    <div class="term-type">Output — blocked work stock</div>
+    <div class="term-body">Count of PR sequences where a later PR is blocked waiting for an earlier one to merge. Each chain represents an engineer who <strong>cannot proceed</strong> until the reviewer clears the blocker. Grows linearly with split ratio × dependency fraction.</div>
+  </div>
+
+  <div class="glossary-item">
+    <div class="term">Reviewer time</div>
+    <div class="term-type">Output — reviewer cost</div>
+    <div class="term-body">Total reviewer capacity consumed per day (reviewer-days/day). Splitting multiplies PR count but also speeds up individual reviews (controlled by β). The net effect depends on whether the speed gain (μ × s^β) outpaces the arrival rate increase (λ × s) plus rework. At β=1, splitting is neutral on reviewer load; at β&lt;1, it increases load.</div>
+  </div>
+
+  <div class="glossary-item">
+    <div class="term">Engineer wait</div>
+    <div class="term-type">Output — engineer cost</div>
+    <div class="term-body">Engineer-days lost per day to blocked dependency chains. An engineer whose PR B is waiting on PR A's merge <strong>cannot ship, cannot rebase safely, and context-switches to other work</strong> — fragmenting their own output.</div>
+  </div>
+
+  <div class="glossary-item">
+    <div class="term">Integration conflicts</div>
+    <div class="term-type">Output — coordination cost</div>
+    <div class="term-body">Conflicts requiring manual resolution per PR. This grows <strong>superlinearly</strong> with split ratio (exponent 1.5) — each additional sub-PR touches shared interfaces and files, multiplying coordination surface faster than the number of PRs.</div>
+  </div>
+
+  <div class="glossary-item">
+    <div class="term">Production incidents</div>
+    <div class="term-type">Output — coupling risk proxy</div>
+    <div class="term-body">Incidents per week caused by integration conflicts that escape review. Used as a <strong>concrete proxy for coupling failure</strong> — when reviewers assess sub-PRs in isolation, cross-cutting bugs that only appear at merge are more likely to reach production.</div>
+  </div>
+
+</div>
+
+<script>
+// ── Model assumptions (defaults + metadata) ──────────────────────────────────
+const ASSUMPTIONS = [
+  {
+    key: "r_base", label: "Baseline rework rate", default: 0.10,
+    min: 0.01, max: 0.40, step: 0.01, fmt: v => (v*100).toFixed(0) + "%",
+    citation: `Model default. Typical range is 5–25% depending on team maturity and PR size. Set this to match your team's actual re-review rate if you have data from your PR history.`,
+    equation: "r(s) = r_base + r_split × (s − 1)",
+    equationNote: "Fraction of merged PRs that re-enter the queue for re-review."
+  },
+  {
+    key: "r_split", label: "Rework increase per split", default: 0.05,
+    min: 0.00, max: 0.20, step: 0.01, fmt: v => "+" + (v*100).toFixed(0) + "%/split",
+    citation: `Model default. When a reviewer sees sub-PR B without having reviewed sub-PR A, they lack the context to spot cross-cutting issues. Set to 0 to model a team with perfect handoff documentation between split PRs.`,
+    equation: "r(s) = r_base + r_split × (s − 1)",
+    equationNote: "Each additional split increment adds r_split to rework probability."
+  },
+  {
+    key: "alpha", label: "Conflict growth exponent", default: 1.5,
+    min: 1.0, max: 2.5, step: 0.1, fmt: v => "s^" + v.toFixed(1),
+    citation: `Combinatorial derivation: <em>n</em> sub-PRs each touching <em>k</em> shared files produces <em>n(n−1)/2</em> conflict pairs → O(n²) upper bound (α=2). α=1 if sub-PRs never share files (lower bound). α=1.5 is the midpoint. Set to 1.0 to test the most conservative case.`,
+    equation: "C(s) = c_base × s^α",
+    equationNote: "Integration conflicts grow superlinearly because each sub-PR multiplies coordination surface."
+  },
+  {
+    key: "escape", label: "Conflict escape rate", default: 0.10,
+    min: 0.01, max: 0.50, step: 0.01, fmt: v => (v*100).toFixed(0) + "%",
+    citation: `Modeled assumption — no external source. 10% is conservative for teams with CI/CD and integration tests. Set higher (20–40%) for teams with weaker pre-merge coverage. The qualitative result holds at any positive value.`,
+    equation: "I = C(s) × escape × 7",
+    equationNote: "Production incidents per week = weekly conflicts × fraction that escape review."
+  },
+  {
+    key: "mu", label: "Reviews per reviewer/day (s=1)", default: 4,
+    min: 1, max: 10, step: 0.5, fmt: v => v.toFixed(1) + " PRs/day",
+    citation: `Model default. Assumes reviewers spend ~4hrs/day on reviews, each taking ~1hr at baseline (split ratio = 1). Adjust down for larger, more thorough reviews or up for lightweight approval-style reviews.`,
+    equation: "μ(s) = μ_base × s^β",
+    equationNote: "Effective review throughput per reviewer scales with split ratio if sub-PRs are smaller."
+  },
+  {
+    key: "beta", label: "Review speed exponent (β)", default: 0.5,
+    min: 0.0, max: 1.0, step: 0.05, fmt: v => "s^" + v.toFixed(2),
+    citation: `Controls how much faster reviewers process smaller sub-PRs. β=0: no speedup (each sub-PR takes the same time regardless of size). β=1: perfect linear scaling (splitting in half halves review time). β=0.5 (default) reflects partial benefit — sub-PRs are faster but fixed overhead (CI, context-setting, setup) doesn't shrink proportionally. Set to 0 to reproduce the original model.`,
+    equation: "μ(s) = μ_base × s^β",
+    equationNote: "At β=1 review speed fully offsets PR count; at β=0 there is no size benefit."
+  },
+  {
+    key: "c_base", label: "Baseline conflicts (s=1)", default: 2,
+    min: 0.5, max: 10, step: 0.5, fmt: v => v.toFixed(1) + " conflicts",
+    citation: `Modeled assumption — set this to match your team's actual baseline. Set higher for monorepos or services with heavy shared state; lower for well-isolated services. Only the <em>ratio</em> C(s)/C(1) = s^α matters for the chart.`,
+    equation: "C(s) = c_base × s^α",
+    equationNote: "Starting point for conflict count before any splitting."
+  },
+];
+
+const DEFAULTS = Object.fromEntries(ASSUMPTIONS.map(a => [a.key, a.default]));
+let BASE = { ...DEFAULTS, lambda: 5 };
+
+function getBase() {
+  const b = { lambda: 5 };
+  ASSUMPTIONS.forEach(a => {
+    b[a.key] = parseFloat(document.getElementById("a-slider-" + a.key)?.value ?? a.default);
+  });
+  return b;
+}
+
+// Baseline always uses split_ratio=1, dep=40%, R=3 with DEFAULT assumption values (not live sliders)
+const BASELINE_ASSUMPTIONS = Object.fromEntries(ASSUMPTIONS.map(a => [a.key, a.default]));
+BASELINE_ASSUMPTIONS.lambda = 5;
+
+function computeWith(assumptions, s, d_pct, R) {
+  const d = d_pct / 100;
+  const { lambda, mu, r_base, r_split, c_base, alpha, escape, beta } = assumptions;
+  const r = r_base + r_split * (s - 1);
+  const mu_eff = mu * Math.pow(s, beta ?? 0);
+  const capacity = R * mu_eff;
+  const arrival = lambda * s;
+  const runaway = arrival >= capacity * (1 - r);
+  const Q = runaway ? Infinity : arrival / (1 - r);
+  const D = 2 * lambda * d * (s - 1) / (R * mu);
+  const C = c_base * Math.pow(s, alpha);
+  const I = C * escape * 7;
+  const T_r = runaway ? Infinity : Q * (1 + r);
+  const T_e = D / (R * mu_eff / 2);
+  return { Q, D, C, I, T_r, T_e, runaway, r };
+}
+
+function compute(s, d_pct, R) {
+  return computeWith(getBase(), s, d_pct, R);
+}
+
+
+const METRICS = [
+  { key: "Q",   label: "PRs in review",             fmt: v => v === Infinity ? "∞" : v.toFixed(1), unit: "" },
+  { key: "D",   label: "Open dependency chains",    fmt: v => v.toFixed(2), unit: "" },
+  { key: "T_r", label: "Reviewer time",              fmt: v => v === Infinity ? "∞" : v.toFixed(1), unit: " rev-days/day" },
+  { key: "T_e", label: "Engineer wait",              fmt: v => v.toFixed(2), unit: " eng-days/day" },
+  { key: "C",   label: "Integration conflicts",     fmt: v => v.toFixed(1), unit: "/PR" },
+  { key: "I",   label: "Production incidents",      fmt: v => v.toFixed(2), unit: "/week" },
+];
+
+function baseline() { return computeWith(BASELINE_ASSUMPTIONS, 1, 40, 3); }
+
+// ── D3 chart setup ───────────────────────────────────────────────────────────
+const margin = { top: 10, right: 120, bottom: 40, left: 190 };
+const width = 580 - margin.left - margin.right;
+const barHeight = 26;
+const barPad = 10;
+const groupPad = 20;
+const totalH = METRICS.length * (2 * barHeight + barPad + groupPad) - groupPad + margin.top + margin.bottom;
+
+const svg = d3.select("#chart").append("svg")
+  .attr("width", width + margin.left + margin.right)
+  .attr("height", totalH);
+
+const g = svg.append("g").attr("transform", `translate(${margin.left},${margin.top})`);
+
+const x = d3.scaleLinear().range([0, width]);
+
+// Y positions
+function groupY(i) { return i * (2 * barHeight + barPad + groupPad); }
+
+// Axis
+const xAxisG = g.append("g").attr("class", "x-axis").attr("transform", `translate(0,${totalH - margin.top - margin.bottom})`);
+
+// Bars
+const groups = g.selectAll(".metric-group")
+  .data(METRICS)
+  .enter().append("g")
+  .attr("class", "metric-group")
+  .attr("transform", (d, i) => `translate(0,${groupY(i)})`);
+
+// Metric labels
+groups.append("text")
+  .attr("x", -8)
+  .attr("y", barHeight + barPad / 2 + barHeight / 2)
+  .attr("text-anchor", "end")
+  .attr("dominant-baseline", "middle")
+  .attr("fill", "#8b949e")
+  .attr("font-size", "12px")
+  .text(d => d.label);
+
+// Baseline bars
+groups.append("rect")
+  .attr("class", "bar-baseline")
+  .attr("y", 0)
+  .attr("height", barHeight)
+  .attr("fill", "#30363d")
+  .attr("rx", 3);
+
+// Current bars
+groups.append("rect")
+  .attr("class", "bar-current")
+  .attr("y", barHeight + barPad)
+  .attr("height", barHeight)
+  .attr("fill", "#58a6ff")
+  .attr("rx", 3);
+
+// Value labels (baseline)
+groups.append("text")
+  .attr("class", "label-baseline")
+  .attr("y", barHeight / 2)
+  .attr("dominant-baseline", "middle")
+  .attr("fill", "#8b949e")
+  .attr("font-size", "11px");
+
+// Value labels (current)
+groups.append("text")
+  .attr("class", "label-current")
+  .attr("y", barHeight + barPad + barHeight / 2)
+  .attr("dominant-baseline", "middle")
+  .attr("fill", "#c9d1d9")
+  .attr("font-size", "11px");
+
+// Multiplier labels — fixed column at width+72, right-aligned
+groups.append("text")
+  .attr("class", "label-mult")
+  .attr("x", width + 72)
+  .attr("y", barHeight + barPad + barHeight / 2)
+  .attr("text-anchor", "end")
+  .attr("dominant-baseline", "middle")
+  .attr("font-size", "12px")
+  .attr("font-weight", "700");
+
+// Metric value readout panel (left sidebar)
+const metricValDiv = document.getElementById("metric-values");
+METRICS.forEach(m => {
+  const row = document.createElement("div");
+  row.style.cssText = "display:flex;justify-content:space-between;align-items:baseline;gap:8px;";
+  row.innerHTML = `<span style="font-size:0.78rem;color:#8b949e;">${m.label}</span><span id="mv-${m.key}" style="font-size:0.88rem;font-weight:600;color:#f0f6fc;font-variant-numeric:tabular-nums;"></span>`;
+  metricValDiv.appendChild(row);
+});
+
+// Fixed x scale: anchored to worst case (split_ratio=5, dep=100%, R=1)
+// so bars never rescale as sliders move — baseline stays visually fixed
+const worstCase = computeWith(BASELINE_ASSUMPTIONS, 5, 100, 1);
+const xMax = Math.max(...METRICS.map(m => isFinite(worstCase[m.key]) ? worstCase[m.key] : 0)) * 1.15;
+x.domain([0, xMax]);
+
+function render(s, d_pct, R) {
+  const cur = compute(s, d_pct, R);
+  const bl = baseline();
+
+  groups.select(".bar-baseline")
+    .attr("width", d => Math.max(2, x(isFinite(bl[d.key]) ? bl[d.key] : xMax)));
+
+  groups.select(".label-baseline")
+    .attr("x", d => Math.max(2, x(isFinite(bl[d.key]) ? bl[d.key] : xMax)) + 5)
+    .text(d => {
+      const v = bl[d.key];
+      return d.fmt(isFinite(v) ? v : 0) + d.unit;
+    });
+
+  groups.select(".bar-current")
+    .attr("width", d => {
+      const v = cur[d.key];
+      return isFinite(v) ? Math.max(2, x(v)) : Math.max(2, x(xMax));
+    })
+    .attr("fill", d => {
+      if (!isFinite(cur[d.key])) return "#f85149";
+      const mult = cur[d.key] / (bl[d.key] || 1);
+      return mult > 3 ? "#f85149" : mult > 1.5 ? "#e3b341" : "#3fb950";
+    });
+
+  groups.select(".label-current")
+    .attr("x", d => {
+      const v = cur[d.key];
+      return (isFinite(v) ? Math.max(2, x(v)) : Math.max(2, x(xMax))) + 5;
+    })
+    .text(d => {
+      const v = cur[d.key];
+      return (isFinite(v) ? d.fmt(v) : "∞") + d.unit;
+    });
+
+  groups.select(".label-mult")
+    .text(d => {
+      if (!isFinite(cur[d.key])) return "∞×";
+      const bv = bl[d.key];
+      if (!bv) return "";
+      const mult = cur[d.key] / bv;
+      if (Math.abs(mult - 1.0) < 0.05) return "";
+      return mult.toFixed(1) + "×";
+    })
+    .attr("fill", d => {
+      if (!isFinite(cur[d.key])) return "#f85149";
+      const mult = cur[d.key] / (bl[d.key] || 1);
+      return mult > 3 ? "#f85149" : mult > 1.5 ? "#e3b341" : "#3fb950";
+    });
+
+  METRICS.forEach(m => {
+    const v = cur[m.key];
+    document.getElementById(`mv-${m.key}`).textContent =
+      (isFinite(v) ? m.fmt(v) : "∞") + m.unit;
+  });
+
+  document.getElementById("runaway-warning").style.display = cur.runaway ? "block" : "none";
+
+  const qMult = isFinite(cur.Q) ? (cur.Q / bl.Q).toFixed(1) : "∞";
+  const cMult = (cur.C / bl.C).toFixed(1);
+  const dWait = cur.T_e > 0 ? `Engineers lose <strong>${cur.T_e.toFixed(2)} days/day</strong> waiting on blocked dependency chains. ` : "";
+
+  document.getElementById("insight-box").innerHTML =
+    `At split ratio <strong>${s.toFixed(1)}×</strong> with <strong>${d_pct}%</strong> dependent sub-PRs and <strong>${R}</strong> reviewer${R>1?"s":""}: ` +
+    `the review queue is <strong>${qMult}×</strong> the baseline (${isFinite(cur.Q) ? cur.Q.toFixed(1) : "∞"} vs ${bl.Q.toFixed(1)} PRs). ` +
+    `Integration conflicts are <strong>${cMult}×</strong> higher (superlinear — each split multiplies coordination surface). ` +
+    `Production incidents scale with conflicts: <strong>${cur.I.toFixed(2)}/week</strong> vs baseline ${bl.I.toFixed(2)}/week. ` +
+    dWait +
+    (cur.runaway ? `<strong style="color:#f85149">Queue is in runaway: arrival rate exceeds capacity.</strong>` :
+      `Reviewer load is <strong>${isFinite(cur.T_r) ? cur.T_r.toFixed(1) : "∞"} reviewer-days/day</strong> vs baseline ${bl.T_r.toFixed(1)}.`);
+}
+
+// ── Slider wiring ────────────────────────────────────────────────────────────
+function getVals() {
+  return {
+    s: parseFloat(document.getElementById("slider-split").value),
+    d: parseFloat(document.getElementById("slider-dep").value),
+    R: parseInt(document.getElementById("slider-rev").value),
+  };
+}
+
+function updateLabels(s, d, R) {
+  document.getElementById("val-split").textContent = s.toFixed(1) + "×";
+  document.getElementById("val-dep").textContent = d + "%";
+  document.getElementById("val-rev").textContent = R;
+}
+
+["slider-split","slider-dep","slider-rev"].forEach(id => {
+  document.getElementById(id).addEventListener("input", () => {
+    const { s, d, R } = getVals();
+    updateLabels(s, d, R);
+    render(s, d, R);
+  });
+});
+
+// ── Assumption panel builder ─────────────────────────────────────────────────
+function buildAssumptions() {
+  const grid = document.getElementById("assumptions-grid");
+  ASSUMPTIONS.forEach(a => {
+    const item = document.createElement("div");
+    item.className = "assumption-item";
+    item.innerHTML = `
+      <div class="a-label">${a.label}</div>
+      <div class="a-citation">${a.citation}</div>
+      <div style="font-size:0.72rem;color:#388bfd;font-family:monospace;margin-bottom:6px;line-height:1.4;">
+        <span style="color:#484f58;">equation: </span>${a.equation}<br>
+        <span style="color:#484f58;">role: </span>${a.equationNote}
+      </div>
+      <div class="a-value-row">
+        <span style="font-size:0.72rem;color:#484f58;">value</span>
+        <span style="display:flex;align-items:center;gap:8px;">
+          <span class="a-val" id="a-val-${a.key}">${a.fmt(a.default)}</span>
+          <button class="a-reset" onclick="resetAssumption('${a.key}')">reset</button>
+        </span>
+      </div>
+      <input type="range" id="a-slider-${a.key}" min="${a.min}" max="${a.max}" step="${a.step}" value="${a.default}"
+        style="-webkit-appearance:none;width:100%;height:4px;border-radius:2px;background:#30363d;outline:none;cursor:pointer;margin-top:4px;">
+    `;
+    grid.appendChild(item);
+
+    const slider = item.querySelector(`#a-slider-${a.key}`);
+    slider.addEventListener("input", () => {
+      document.getElementById(`a-val-${a.key}`).textContent = a.fmt(parseFloat(slider.value));
+      const { s, d, R } = getVals();
+      render(s, d, R);
+    });
+
+    // thumb styling
+    const style = document.createElement("style");
+    style.textContent = `#a-slider-${a.key}::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:#58a6ff;cursor:pointer;}`;
+    document.head.appendChild(style);
+  });
+}
+
+function resetAssumption(key) {
+  const a = ASSUMPTIONS.find(x => x.key === key);
+  const slider = document.getElementById(`a-slider-${key}`);
+  slider.value = a.default;
+  document.getElementById(`a-val-${key}`).textContent = a.fmt(a.default);
+  const { s, d, R } = getVals();
+  render(s, d, R);
+}
+
+function toggleAssumptions() {
+  const panel = document.getElementById("assumptions-panel");
+  const arrow = document.getElementById("toggle-arrow");
+  const open = panel.classList.toggle("open");
+  arrow.textContent = open ? "▼" : "▶";
+}
+
+buildAssumptions();
+
+// Initial render
+render(1, 40, 3);
+</script>
+</body>
+</html>

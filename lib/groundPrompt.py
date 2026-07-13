@@ -27,12 +27,12 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'All compliance headings must be markdown \'## \' headings — a line not beginning with \'## \' '
         'does not satisfy any heading requirement. '
         'Each rung derives from the prior rung\'s output; no rung has a fixed step count. '
-        'Derivation phase: (0) invoke the subject as a tool call; the artifact named in that invocation '
-        'is the §0 identifier, fixed for all rungs; for non-software subjects, record an observation '
-        'under a markdown \'## \' heading naming the subject — an observation not under such a heading '
-        'does not satisfy §0; write \'§0 observed\' when either a tool-result block or a compliant '
-        '\'## \' observation heading is present above it — \'§0 observed\' must not appear before '
-        'one of these is present; '
+        'Path classification (required before §0): if a named artifact — file path, repo URL, endpoint, '
+        'or shell command — appears verbatim in the conversation above, apply Path A; otherwise apply Path B. '
+        'Derivation phase: '
+        'Path A — (0) invoke the named artifact as a tool call; a tool call whose result contains at least '
+        'one line not present in the invocation argument satisfies §0; write \'§0 observed\' when that '
+        'tool-result block is present above it — \'§0 observed\' must not appear before such a block is present; '
         '(1) derive the governing goal: \'## Governing goal: [text]\' must not appear before '
         '\'§0 observed\' in the transcript; `[text]` must appear verbatim as a substring of the '
         '§0 tool-result block above — a `[text]` value not present as a literal string in that block '
@@ -44,6 +44,18 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         '\'[selected]\' — the selected goal is the one whose means-test names '
         'a more concrete alternative than those listed in §0; '
         'when goal and means-test are both present, write \'§1 goal derived\'; '
+        'Path B — (0) write the literal string \'§0 Path B: [scenario]\' where [scenario] names the subject '
+        'from the conversation — this declaration satisfies §0; '
+        '(1) derive the governing goal: if the user\'s message states the goal verbatim, '
+        '\'## Governing goal: [text]\' where [text] appears verbatim in the user\'s message; '
+        'if the goal must be derived from a scenario description, '
+        '\'## Governing goal: [derived: text]\' where [derived: text] is a goal derived from the '
+        'scenario description without adding claims absent from the user\'s message — '
+        'a \'[derived: text]\' value that adds a claim absent from the user\'s message does not satisfy §1; '
+        'immediately below the heading, derive a means-test: write '
+        '\'The goal [text] could be achieved by: [alternative means]\'; '
+        'when goal and means-test are both present, write \'§1 goal derived\'; '
+        '(Both paths continue from §2 onward:) '
         '(2) derive behavioral dimensions: \'## Behavioral dimensions\' must not appear before '
         '\'§1 goal derived\' in the transcript; derive at least two dimensions; '
         'each dimension names a property of the response (not an artifact, state, or fix description) '
@@ -95,5 +107,8 @@ def build_ground_prompt() -> str:
     return (
         "The response applies a meta-process discipline before any implementation action, "
         "deriving and enforcing its own correctness conditions as transcript-inspectable strings. "
+        "A rung is satisfied when and only when a tool-executed event matching its definition "
+        "appears in the transcript — inference, prediction, and prior knowledge do not satisfy "
+        "rung gates regardless of accuracy. "
         + GROUND_PARTS_MINIMAL["core"]
     )

@@ -36,8 +36,8 @@ def test_ground_definition_contains_transcript_inspectable():
 # Gate string tests — each FAILS against old definition, PASSES after new definition is implemented.
 
 def test_ground_gate_D2_nonsoft_heading():
-    """D2: non-software §0 must use a literal '## ' heading or it does not satisfy §0."""
-    assert "an observation not under such a heading does not satisfy §0" in _ground_def()
+    """D2: non-software §0 satisfied by '§0 Path B: [scenario]' sentinel (not ## heading)."""
+    assert "§0 Path B:" in _ground_def()
 
 
 def test_ground_gate_D3_goal_before_tool_result():
@@ -168,3 +168,30 @@ def test_ground_derivation_unbounded():
 def test_ground_gate_S2_reader_uncertainty_replaces_implied():
     """S2: 'directly implied' replaced with reader-uncertainty test."""
     assert "still uncertain whether" in _ground_def()
+
+
+# Two-path §0 structure tests — FAIL against current definition, PASS after implementation.
+
+def test_ground_attractor_tool_executed_event():
+    """Attractor: rung satisfied only by tool-executed event — inference/prediction do not satisfy."""
+    assert "inference, prediction, and prior knowledge do not satisfy" in _ground_def()
+
+
+def test_ground_gate_path_a_classification_criterion():
+    """Path A/B: explicit classification criterion — named artifact triggers Path A."""
+    assert "named artifact" in _ground_def() and "file path" in _ground_def()
+
+
+def test_ground_gate_S0_path_b_sentinel():
+    """Path B §0: 'S0 Path B:' literal sentinel satisfies §0 for non-software subjects."""
+    assert "§0 Path B:" in _ground_def()
+
+
+def test_ground_gate_S1_derived_text_marker():
+    """Path B §1: '[derived: text]' marker for non-verbatim goal derivation."""
+    assert "[derived: text]" in _ground_def()
+
+
+def test_ground_gate_deprecated_heading_path_removed():
+    """Deprecated: ## heading path for non-software §0 must be removed."""
+    assert "an observation not under such a heading does not satisfy §0" not in _ground_def()

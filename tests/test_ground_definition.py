@@ -68,3 +68,25 @@ def test_ground_gate_C2_done_without_completion():
 def test_ground_gate_CL2_completion_check_tool_result():
     """CL2: dimension declared covered without tool-result substring does not satisfy §4."""
     assert "a dimension declared covered without such a substring does not satisfy §4" in _ground_def()
+
+
+# §1 means-test clause tests — each FAILS against old definition, PASSES after new §1 is implemented.
+
+def test_ground_gate_S1_means_test_sentence_form():
+    """S1: §1 requires means-test sentence form immediately below heading."""
+    assert "The goal [text] could be achieved by:" in _ground_def()
+
+
+def test_ground_gate_S1_hypothetical_fallback():
+    """S1: §1 requires [hypothetical] fallback when no concrete alternative can be named."""
+    assert "[hypothetical]" in _ground_def()
+
+
+def test_ground_gate_S1_behavioral_dimensions_gate():
+    """S1: ## Behavioral dimensions heading appearing without means-test sentence above it does not satisfy §1."""
+    assert "a '## Behavioral dimensions' heading appearing without this sentence above it does not satisfy §1" in _ground_def()
+
+
+def test_ground_gate_S1_selection_criterion_revised():
+    """S1: tie-breaking criterion replaced — now selects goal whose means-test names more concrete alternative."""
+    assert "more concrete alternative than those listed in §0" in _ground_def()

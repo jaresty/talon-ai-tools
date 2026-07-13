@@ -178,8 +178,8 @@ def test_ground_attractor_tool_executed_event():
 
 
 def test_ground_gate_path_a_classification_criterion():
-    """Path A/B: explicit classification criterion — named artifact triggers Path A."""
-    assert "named artifact" in _ground_def() and "file path" in _ground_def()
+    """Path A/B: explicit classification criterion — behavioral artifact triggers Path A."""
+    assert "executes the subject system and returns its live output" in _ground_def()
 
 
 def test_ground_gate_S0_path_b_sentinel():

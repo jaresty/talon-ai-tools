@@ -70,3 +70,30 @@ def test_attractor5_enforcement_wrapper_removed():
     assert "it is invalid \u2014 split it before continuing" not in text, (
         "attractor 5 enforcement wrapper must be removed — only definitional content is kept"
     )
+
+
+def test_path_a_behavioral_criterion():
+    """Path A artifact criterion requires live system execution, not syntactic form."""
+    text = build_ground_prompt()
+    assert "executes the subject system and returns its live output" in text, (
+        "Path A must require artifact to execute subject system and return live output"
+    )
+    assert "file path, repo URL, endpoint, or shell command" not in text, (
+        "old syntactic artifact-type list must be removed from Path A classification"
+    )
+
+
+def test_path_a_disqualifying_forms():
+    """Path A §0 satisfaction condition must name specific disqualifying content types."""
+    text = build_ground_prompt()
+    assert "a tool result consisting of a GitHub issue body" in text, (
+        "§0 satisfaction condition must name GitHub issue body as disqualifying form"
+    )
+
+
+def test_path_a_invocation_form_escape():
+    """Path A must close the 'regardless of invocation form' escape."""
+    text = build_ground_prompt()
+    assert "regardless of invocation form" in text, (
+        "§0 must state disqualification applies regardless of invocation form"
+    )

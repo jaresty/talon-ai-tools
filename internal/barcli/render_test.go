@@ -1230,6 +1230,26 @@ func TestTokensDerivationsGateText(t *testing.T) {
 	}
 }
 
+// TestTokensSkipRequiresToolResultBlockAdjacency verifies that the skip-confirmed
+// non-compliance gate requires the prior Loaded: line to have appeared immediately
+// following a tool-result block — not merely verbatim anywhere in the transcript.
+// This closes the compaction escape: a summarized load line cannot authorize a skip.
+func TestTokensSkipRequiresToolResultBlockAdjacency(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, `immediately following a tool-result block containing "# Token: <slug>" in the transcript above does not satisfy this requirement`) {
+		t.Errorf("TOKENS skip-confirmed gate must require 'immediately following a tool-result block' adjacency, got:\n%s", tokensBlock)
+	}
+}
+
 // TestTokensSectionSentinelPresent verifies that the TOKENS instruction requires the
 // literal sentinel "Token loads complete." before the Token derivations block.
 // Gap: without this sentinel a model can skip all bar help token calls and write the

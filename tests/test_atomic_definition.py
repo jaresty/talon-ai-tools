@@ -66,10 +66,22 @@ def test_atomic_per_call_independence():
 def test_atomic_escape_categories_per_call_positional():
     """Dim 9: escape categories must appear as last four lines immediately before each call — closes once-discharge gap."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "last four content lines begin with" in defn
+    assert "last five content lines begin with" in defn
 
 
 def test_atomic_scope_line_above_escape_categories():
     """Dim 10: quoted scope line must appear immediately above (i) — closes mutual-exclusion conflict with escape categories."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "line immediately above the `(i)` escape category line must be the quoted scope commitment" in defn
+
+
+def test_atomic_stub_new_symbol():
+    """Dim 11: new-symbol calls must introduce only a stub (one-statement body) — closes implementation-depth gap."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "does not appear as a substring of any tool-executed result block above this call" in defn
+
+
+def test_atomic_five_escape_categories():
+    """Dim 12: five named escape categories must be present including (v) implementation depth."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "(v) implementation depth" in defn

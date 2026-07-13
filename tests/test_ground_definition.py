@@ -90,3 +90,25 @@ def test_ground_gate_S1_behavioral_dimensions_gate():
 def test_ground_gate_S1_selection_criterion_revised():
     """S1: tie-breaking criterion replaced — now selects goal whose means-test names more concrete alternative."""
     assert "more concrete alternative than those listed in §0" in _ground_def()
+
+
+# §2 observable-field clause tests — each FAILS against old definition, PASSES after new §2 is implemented.
+
+def test_ground_gate_S2_observable_field_tag():
+    """S2: each dimension must end with [observable: <string>] tag."""
+    assert "[observable:" in _ground_def()
+
+
+def test_ground_gate_S2_observable_prose_path():
+    """S2: [observable: prose] is the correct tag when no tool-result blocks appear above §2."""
+    assert "[observable: prose]" in _ground_def()
+
+
+def test_ground_gate_S2_enforcement_sequence_gate():
+    """S2: ## Enforcement sequence heading must not appear before every dimension has [observable:] tag."""
+    assert "a '## Enforcement sequence' heading appearing before every dimension carries an '[observable:]' tag does not satisfy §2" in _ground_def()
+
+
+def test_ground_gate_S2_reader_uncertainty_replaces_implied():
+    """S2: 'directly implied' replaced with reader-uncertainty test."""
+    assert "still uncertain whether" in _ground_def()

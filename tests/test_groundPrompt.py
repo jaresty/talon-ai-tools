@@ -5,7 +5,7 @@ from lib.groundPrompt import build_ground_prompt
 def test_opening_bookend_inside_criteria():
     """Opening bookend is criterion (0) inside the derivation sequence, not an external pre-condition."""
     text = build_ground_prompt()
-    assert "invoke the subject under observation as a tool call and record its output" in text, (
+    assert "invoke the subject as a tool call" in text, (
         "opening bookend must appear as first criterion inside derivation sequence"
     )
     assert "Before writing the governing goal heading, run the system under test" not in text, (
@@ -14,10 +14,10 @@ def test_opening_bookend_inside_criteria():
 
 
 def test_closing_bookend_names_subject_directly():
-    """Closing bookend requires tool-result substring, not just §0-named invocation (CL2 gate)."""
+    """Closing bookend requires tool-result substring via §4 coverage verified sentinel (CL2 gate)."""
     text = build_ground_prompt()
-    assert "a dimension declared covered without such a substring does not satisfy §4" in text, (
-        "closing bookend must require tool-result substring — CL2 gate string must be present"
+    assert "when every covered dimension cites such a substring, write '§4 coverage verified'" in text, (
+        "closing bookend must require tool-result substring — §4 coverage verified sentinel must be present"
     )
     assert "every covered dimension must cite a verbatim string from a tool-executed result that contains output the system produced directly" not in text, (
         "old semantic-source form must be removed"

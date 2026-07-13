@@ -1131,10 +1131,10 @@ func TestTokensLoadedRequiresHeuristicPhrase(t *testing.T) {
 	}
 }
 
-// TestTokensSkipConfirmedForm verifies that the TOKENS instruction uses "(skip confirmed)"
-// for skip acknowledgment rather than writing Loaded: <slug> again. This resolves the
-// clash between the skip clause and the proximity requirement: a (skip confirmed) line
-// is structurally distinct from a first-time Loaded: (when: "...") line.
+// TestTokensSkipConfirmedForm verifies that the TOKENS instruction uses "(skip confirmed — when: "<phrase>")"
+// for skip acknowledgment, carrying the provenance phrase forward from the prior Loaded: line.
+// This resolves the clash between the skip clause and the proximity requirement: a (skip confirmed — when: ...)
+// line is structurally distinct from a first-time Loaded: (when: "...") line.
 func TestTokensSkipConfirmedForm(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",
@@ -1146,8 +1146,8 @@ func TestTokensSkipConfirmedForm(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "(skip confirmed)") {
-		t.Errorf("TOKENS skip clause must use '(skip confirmed)' form, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, `(skip confirmed — when: "<phrase>")`) {
+		t.Errorf("TOKENS skip clause must use '(skip confirmed — when: \"<phrase>\")' form, got:\n%s", tokensBlock)
 	}
 }
 
@@ -1245,8 +1245,8 @@ func TestTokensSkipRequiresToolResultBlockAdjacency(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, `immediately following a tool-result block containing "# Token: <slug>" in the transcript above does not satisfy this requirement`) {
-		t.Errorf("TOKENS skip-confirmed gate must require 'immediately following a tool-result block' adjacency, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, `a skip-confirmed line whose quoted phrase does not match the quoted phrase in the prior`) {
+		t.Errorf("TOKENS skip-confirmed gate must require phrase-match non-compliance condition, got:\n%s", tokensBlock)
 	}
 }
 

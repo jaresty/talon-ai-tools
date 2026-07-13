@@ -41,23 +41,23 @@ def test_ground_gate_D2_nonsoft_heading():
 
 
 def test_ground_gate_D3_goal_before_tool_result():
-    """D3: governing goal line before any tool-result block above it does not satisfy §1."""
-    assert "a '## Governing goal:' line appearing before any tool-result block above it does not satisfy §1" in _ground_def()
+    """D3: governing goal must not appear before §0 observed — stronger than old tool-result check."""
+    assert "must not appear before '§0 observed'" in _ground_def()
 
 
 def test_ground_gate_D4_dimensions_ordering():
-    """D4: behavioral dimensions heading must not appear before governing goal appears in transcript."""
-    assert "this heading must not appear before '## Governing goal:' appears in the transcript" in _ground_def()
+    """D4: behavioral dimensions heading must not appear before §1 goal derived in transcript."""
+    assert "must not appear before '§1 goal derived'" in _ground_def()
 
 
 def test_ground_gate_G1_enforcement_before_edit():
     """G1: enforcement sequence heading must appear before first file-modifying tool call regardless of § implementation permitted."""
-    assert "this heading must appear in the transcript before the first file-modifying tool call regardless of whether" in _ground_def()
+    assert "must appear before the first file-modifying tool call regardless of whether" in _ground_def()
 
 
 def test_ground_gate_G2_completion_ordering():
     """G2: completion check heading must not appear before enforcement sequence in transcript."""
-    assert "this heading must not appear before '## Enforcement sequence' in the transcript" in _ground_def()
+    assert "'## Completion check' must not appear before '## Enforcement sequence'" in _ground_def()
 
 
 def test_ground_gate_C2_done_without_completion():
@@ -66,8 +66,9 @@ def test_ground_gate_C2_done_without_completion():
 
 
 def test_ground_gate_CL2_completion_check_tool_result():
-    """CL2: dimension declared covered without tool-result substring does not satisfy §4."""
-    assert "a dimension declared covered without such a substring does not satisfy §4" in _ground_def()
+    """CL2: §4 coverage verified sentinel — write when every covered dimension cites a substring."""
+    assert "§4 coverage verified" in _ground_def()
+    assert "when every covered dimension cites such a substring, write '§4 coverage verified'" in _ground_def()
 
 
 # §1 means-test clause tests — each FAILS against old definition, PASSES after new §1 is implemented.
@@ -82,9 +83,14 @@ def test_ground_gate_S1_hypothetical_fallback():
     assert "[hypothetical]" in _ground_def()
 
 
+def test_ground_gate_S1_sentinel():
+    """S1: sentinel string '§1 goal derived' must appear in definition."""
+    assert "§1 goal derived" in _ground_def()
+
+
 def test_ground_gate_S1_behavioral_dimensions_gate():
-    """S1: ## Behavioral dimensions heading appearing without means-test sentence above it does not satisfy §1."""
-    assert "a '## Behavioral dimensions' heading appearing without this sentence above it does not satisfy §1" in _ground_def()
+    """S1: ## Behavioral dimensions must not appear before §1 goal derived in transcript."""
+    assert "must not appear before '§1 goal derived'" in _ground_def()
 
 
 def test_ground_gate_S1_selection_criterion_revised():
@@ -104,9 +110,59 @@ def test_ground_gate_S2_observable_prose_path():
     assert "[observable: prose]" in _ground_def()
 
 
+def test_ground_gate_S2_sentinel():
+    """S2: sentinel string '§2 dimensions closed' must appear in definition."""
+    assert "§2 dimensions closed" in _ground_def()
+
+
 def test_ground_gate_S2_enforcement_sequence_gate():
-    """S2: ## Enforcement sequence heading must not appear before every dimension has [observable:] tag."""
-    assert "a '## Enforcement sequence' heading appearing before every dimension carries an '[observable:]' tag does not satisfy §2" in _ground_def()
+    """S2: ## Enforcement sequence must not appear before §2 dimensions closed in transcript."""
+    assert "must not appear before '§2 dimensions closed'" in _ground_def()
+
+
+def test_ground_gate_S4_sentinel():
+    """S4: sentinel string '§4 coverage verified' must appear in definition."""
+    assert "§4 coverage verified" in _ground_def()
+
+
+def test_ground_gate_S4_path_enumeration_gate():
+    """S4: ## Path enumeration must not appear before §4 coverage verified in transcript."""
+    assert "must not appear before '§4 coverage verified'" in _ground_def()
+
+
+# §0 observed sentinel tests — FAIL against current definition, PASS after implementation.
+
+def test_ground_gate_S0_observed_sentinel():
+    """S0: sentinel string '§0 observed' must appear in definition."""
+    assert "§0 observed" in _ground_def()
+
+
+def test_ground_gate_S0_observed_conditioned_on_artifact():
+    """S0: §0 observed must not appear before tool-result block or ## heading above it."""
+    assert "must not appear before" in _ground_def() and "§0 observed" in _ground_def()
+    assert "§0 observed" in _ground_def()
+
+
+def test_ground_gate_S1_governing_goal_requires_S0():
+    """S1: ## Governing goal must not appear before §0 observed in transcript."""
+    assert "must not appear before '§0 observed'" in _ground_def()
+
+
+def test_ground_gate_S1_text_verbatim_in_tool_result():
+    """S1: [text] must appear verbatim as substring of §0 tool-result block."""
+    assert "[text]` must appear verbatim as a substring of the §0 tool-result block" in _ground_def()
+
+
+# Derivation framing tests — FAIL against current definition, PASS after implementation.
+
+def test_ground_derivation_no_fixed_step_count():
+    """Derivation framing: no rung has a fixed step count."""
+    assert "no rung has a fixed step count" in _ground_def()
+
+
+def test_ground_derivation_unbounded():
+    """Derivation framing: §2 derivation is explicitly unbounded."""
+    assert "unbounded" in _ground_def()
 
 
 def test_ground_gate_S2_reader_uncertainty_replaces_implied():

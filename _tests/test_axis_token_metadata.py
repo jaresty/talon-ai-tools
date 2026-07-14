@@ -1061,13 +1061,13 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_direct_invocation_observable(self):
-        """falsify must name the observable distinguishing direct invocation from a displayed or predicted result — tool call text naming (d) directly is the structural criterion (hollow audit finding)."""
+        """falsify must name the observable distinguishing direct invocation — named governing artifact identifier must appear as literal string in executor invocation (domain-agnostic form)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "the governed symbol name must appear in the executor invocation for (g)",
+            "whose identifier appears as a literal string in the named executor invocation",
             definition,
-            "falsify must name the observable that distinguishes direct invocation: governed symbol name must appear in executor invocation for (g)",
+            "falsify must name the observable that distinguishes direct invocation: named governing artifact identifier must appear as literal string in executor invocation",
         )
 
     def test_falsify_creation_step_boundary_required(self):
@@ -1111,35 +1111,35 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_governing_artifact_not_disposable(self):
-        """falsify must require the tool call to name the governed subject directly — closes the disposable-artifact gap in a domain-agnostic way (2026-06-17 rewrite)."""
+        """falsify must require the named executor invocation — closes the disposable-artifact gap in a domain-agnostic way."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "executor invocation for (g)",
+            "named executor invocation",
             definition,
-            "falsify must require the executor invocation to name the governed subject — encoded via layer gate: 'executor invocation for (g)'",
+            "falsify must require named executor invocation — domain-agnostic form of executor constraint",
         )
 
     def test_falsify_disposable_artifact_constraint_in_primary_condition(self):
-        """falsify's PRIMARY condition must name the governed-subject requirement before 'Exception:' — so disposable artifacts are excluded (hollow audit fix)."""
+        """falsify's PRIMARY condition must name the named executor invocation requirement before 'Exception:' — so disposable artifacts are excluded (hollow audit fix)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         exception_start = definition.find("Exception:")
         primary_condition = definition[:exception_start] if exception_start != -1 else definition
         self.assertIn(
-            "executor invocation for (g)",
+            "named executor invocation",
             primary_condition,
-            "falsify primary condition must require executor invocation to name governed subject — allow-list clause must appear before 'Exception:'",
+            "falsify primary condition must require named executor invocation — allow-list clause must appear before 'Exception:'",
         )
 
     def test_falsify_governed_action_boundary_named(self):
-        """falsify's derivation phase must name 'governed action' as the domain-agnostic boundary — 'file-modifying tool call' couples the token to software contexts (hollow audit finding)."""
+        """falsify's derivation phase must name 'governed artifact-producing action' as the domain-agnostic boundary — 'file-modifying tool call' couples the token to software contexts (hollow audit finding)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "before any governed action",
+            "before any governed artifact-producing action",
             definition,
-            "falsify must name 'governed action' as the domain-agnostic boundary — not 'file-modifying tool call'",
+            "falsify must name 'governed artifact-producing action' as the domain-agnostic boundary — not 'file-modifying tool call'",
         )
         self.assertNotIn(
             "before any file-modifying tool call",
@@ -1158,23 +1158,23 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_zero_artifact_implementation_prohibition(self):
-        """falsify's zero-artifact entry branch must specify that writing the artifact means producing (c) in a test or specification file — implementation modification is not permitted before that."""
+        """falsify's zero-artifact entry branch must require assertion text and governed symbol to reside in separate artifacts."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "producing (c) in a test or specification file",
+            "the assertion text and the governed symbol must reside in separate artifacts",
             definition,
-            "falsify zero-artifact branch must name what 'writing the artifact' means: 'producing (c) in a test or specification file' — implementation modification before that is not permitted",
+            "falsify zero-artifact branch must require assertion text and governed symbol in separate artifacts",
         )
 
     def test_falsify_disposable_artifact_clause(self):
-        """falsify's (f) must name the disposable-artifact exclusion — a test that passes without the governed symbol in the implementation does not satisfy (f)."""
+        """falsify's (f) must name the disposable-artifact exclusion — removing the governed symbol from the governed artifact without changing the named governing artifact."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "removing the governed symbol from the implementation",
+            "removing the governed symbol from the governed artifact without changing the named governing artifact",
             definition,
-            "falsify (f) must name the disposable-artifact exclusion: 'removing the governed symbol from the implementation' must cause the artifact to FAIL",
+            "falsify (f) must name the disposable-artifact exclusion: 'removing the governed symbol from the governed artifact without changing the named governing artifact'",
         )
 
     def test_falsify_zero_artifact_entry_branch(self):

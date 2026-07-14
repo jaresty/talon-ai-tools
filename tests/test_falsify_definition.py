@@ -15,15 +15,15 @@ from lib.axisConfig import AXIS_KEY_TO_VALUE
 
 
 def test_falsify_allow_list_clause():
-    """Dimension A: executor invocation must name the governed subject (via layer gate)."""
+    """Dimension A: named governing artifact identifier must appear as literal string in executor invocation."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "the governed symbol name must appear in the executor invocation for (g)" in defn
+    assert "whose identifier appears as a literal string in the named executor invocation" in defn
 
 
 def test_falsify_retroactive_clause():
-    """Dimension B: universal (g) requirement covers the retroactive case — observed FAIL before every implementation action."""
+    """Dimension B: universal (g) requirement covers the retroactive case — observed FAIL before every governed artifact-producing action."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "(g) is required for every action that modifies the implementation" in defn
+    assert "(g) is required for every governed artifact-producing action in the current session" in defn
 
 
 def test_falsify_separation_rule():
@@ -39,9 +39,9 @@ def test_falsify_creation_step_string_absence():
 
 
 def test_falsify_symbol_substring():
-    """Dim 4: (d) must appear as a substring in the symbol name — closes Gap 2."""
+    """Dim 4: (d) governed symbol must appear as a substring of the failure line in (g)."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "which must appear as a substring in the name of the symbol added or modified" in defn
+    assert "which must appear as a substring of the failure line in (g)" in defn
 
 
 def test_falsify_old_file_nonexistence_clause_absent():
@@ -71,9 +71,9 @@ def test_falsify_executor_agnostic():
 
 
 def test_falsify_layer_gate():
-    """D4: layer gate clause must be explicit — derives from (e) unit/integration binary."""
+    """D4: layer classification derives from governed symbol presence in test body."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "Layer gate: if (e) is 'unit', the governed symbol name must appear in the executor invocation for (g)" in defn
+    assert "if the governed symbol name appears as a direct call in the test body, the layer is 'unit'" in defn
 
 
 def test_falsify_domain_agnostic_layer():
@@ -91,22 +91,23 @@ def test_falsify_domain_agnostic_executor():
 
 
 def test_falsify_domain_agnostic_subject():
-    """DA-D3: layer gate names governed symbol in executor invocation; no file-path clause."""
+    """DA-D3: named executor invocation required; no file-path clause."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "executor invocation for (g)" in defn
+    assert "named executor invocation" in defn
     assert "the tool call names a file whose path appears as the target of a prior Write, Edit, or tool-executed directory-listing result" not in defn
 
 
 def test_falsify_tool_call_result_block():
-    """Gap close: (g) must be a tool call result block, not authored prose."""
+    """Gap close: (g) must be an executor result block, not authored prose."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "the content of a tool call result block appearing in the transcript" in defn
+    assert "the content of an executor result block appearing in the transcript" in defn
 
 
 def test_falsify_assertion_body_substring():
-    """Gap close G2/D2: failure line must contain a string present in the assertion body."""
+    """Gap close G2/D2: failure line must contain (d) as substring AND include assertion body substring."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "the failure line contains a string present in the assertion body" in defn
+    assert "the failure line contains (d) as a substring" in defn
+    assert "failure line whose content includes a substring from the assert statement" in defn
 
 
 def test_falsify_separation_constraint_tightened():
@@ -128,12 +129,57 @@ def test_falsify_creation_step_confirmation_run_passes():
 
 
 def test_falsify_perturbation_layer_gate():
-    """Gap close C1: layer gate applies to perturbation executor invocation."""
+    """Gap close C1: perturbation result must appear before revert action."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "perturbation executor invocation" in defn
+    assert "the perturbation result must appear before the revert action" in defn
 
 
 def test_falsify_revert_verbatim_quote():
     """Gap close D3: pre-perturbation run result must be quoted verbatim before revert."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
     assert "quoted verbatim" in defn
+
+
+# Domain-agnostic rewrite tests — FAIL against old definition, PASS after new definition applied.
+
+def test_falsify_governed_artifact_producing_action_defined():
+    """Scope: 'governed artifact-producing action' must be defined in the definition."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "governed artifact-producing action" in defn
+
+
+def test_falsify_named_governing_artifact():
+    """G4: 'named governing artifact' replaces 'named-file artifact'."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "named governing artifact" in defn
+
+
+def test_falsify_named_executor():
+    """G2/CL2: 'named executor' replaces 'executor command' throughout."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "named executor" in defn
+
+
+def test_falsify_does_not_persist_beyond_session():
+    """Scope: session-persistence criterion makes scope boundary explicit."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "does not persist beyond the current session" in defn
+
+
+def test_falsify_no_named_executor_excludes_subject():
+    """Scope: absence of named executor is an explicit exclusion criterion."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "no named executor exists" in defn
+
+
+def test_falsify_artifact_identifier_must_differ():
+    """CL1: artifact identifier separation replaces file-path separation."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "Artifact identifier must differ" in defn
+
+
+def test_falsify_every_governed_artifact_producing_action():
+    """D1: 'every governed artifact-producing action' replaces 'every action that modifies the implementation'."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "every governed artifact-producing action" in defn
+    assert "every action that modifies the implementation" not in defn

@@ -206,3 +206,13 @@ def test_ground_gate_S1_derived_text_marker():
 def test_ground_gate_deprecated_heading_path_removed():
     """Deprecated: ## heading path for non-software §0 must be removed."""
     assert "an observation not under such a heading does not satisfy §0" not in _ground_def()
+
+
+def test_ground_completion_check_requires_implementation_permitted():
+    """§4: ## Completion check must not appear before § implementation permitted — closes early-exit escape."""
+    assert "must not appear before '§ implementation permitted'" in _ground_def()
+
+
+def test_ground_sentinels_scoped_to_current_invocation():
+    """Sentinels from prior ground invocations must not satisfy current invocation rungs."""
+    assert "most recent '=== TOKENS'" in _ground_def()

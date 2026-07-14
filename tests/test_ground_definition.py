@@ -47,7 +47,7 @@ def test_ground_gate_D3_goal_before_tool_result():
 
 def test_ground_gate_D4_dimensions_ordering():
     """D4: behavioral dimensions heading must not appear before §1 goal derived in transcript."""
-    assert "must not appear before '§1 goal derived'" in _ground_def()
+    assert "must not appear before '§1b candidates'" in _ground_def()
 
 
 def test_ground_gate_G1_enforcement_before_edit():
@@ -90,7 +90,7 @@ def test_ground_gate_S1_sentinel():
 
 def test_ground_gate_S1_behavioral_dimensions_gate():
     """S1: ## Behavioral dimensions must not appear before §1 goal derived in transcript."""
-    assert "must not appear before '§1 goal derived'" in _ground_def()
+    assert "must not appear before '§1b candidates'" in _ground_def()
 
 
 def test_ground_gate_S1_selection_criterion_revised():
@@ -166,8 +166,8 @@ def test_ground_derivation_unbounded():
 
 
 def test_ground_gate_S2_reader_uncertainty_replaces_implied():
-    """S2: 'directly implied' replaced with reader-uncertainty test."""
-    assert "still uncertain whether" in _ground_def()
+    """S2: dimensions must trace to §1a decomposition or §1b candidates items."""
+    assert "§1b candidates list" in _ground_def()
 
 
 # Two-path §0 structure tests — FAIL against current definition, PASS after implementation.

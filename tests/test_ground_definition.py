@@ -60,9 +60,20 @@ def test_ground_gate_G2_completion_ordering():
     assert "'## Completion check' must not appear before '## Enforcement sequence'" in _ground_def()
 
 
-def test_ground_gate_C2_done_without_completion():
-    """C2: done declaration before completion check does not satisfy ground."""
-    assert "a done declaration appearing before '## Completion check' does not satisfy ground" in _ground_def()
+def test_ground_gate_C2_yield_gate():
+    """C2: yield gate — any post-permitted turn yielding to user must contain completion check first."""
+    assert "after '§ implementation permitted' has appeared in the transcript" in _ground_def()
+    assert "must contain '## Completion check' before that question or closing text" in _ground_def()
+
+
+def test_ground_gate_C2b_citation_post_permitted():
+    """C2b: §4 citations must reference tool-result blocks produced after § implementation permitted."""
+    assert "produced after '§ implementation permitted'" in _ground_def()
+
+
+def test_ground_gate_C2c_prose_citation_fallback():
+    """C2c: when no tool results exist after § implementation permitted, cite response text directly."""
+    assert "substring of the response text produced in this turn" in _ground_def()
 
 
 def test_ground_gate_CL2_completion_check_tool_result():

@@ -491,14 +491,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "derive the enforcement sequence: '## Enforcement sequence' must not appear before '§2 dimensions closed' in the transcript, and must appear before the first file-modifying "
         "tool call regardless of whether '§ implementation permitted' appears; each sub-heading names as a literal substring what the prior sub-heading's passing state admits that this "
         "sub-heading rejects; (4) verify coverage: '## Completion check' must not appear before '## Enforcement sequence' in the transcript; each covered dimension cites a verbatim "
-        "string that appears as a substring of a tool-result block visible above '## Completion check'; when every covered dimension cites such a substring, write '§4 coverage "
-        "verified'; (5) enumerate escape paths: '## Path enumeration' must not appear before '§4 coverage verified' in the transcript; enumerate every path by which §1–§4 headings "
+        "string that appears either as a substring of a tool-result block produced after '§ implementation permitted' and visible above '## Completion check', or, when no tool-result "
+        "blocks are present after '§ implementation permitted', as a substring of the response text produced in this turn; when every covered dimension cites such a substring, write "
+        "'§4 coverage verified'; any assistant turn that contains a question directed at the user or no further planned tool calls, after '§ implementation permitted' has appeared in "
+        "the transcript, must contain '## Completion check' before that question or closing text — a turn whose question or closing text appears before '## Completion check' does not "
+        "satisfy ground; (5) enumerate escape paths: '## Path enumeration' must not appear before '§4 coverage verified' in the transcript; enumerate every path by which §1–§4 headings "
         "could be present without the governing goal identified, dimensions derived, or dimensions covered; for each path, name the literal string whose presence closes it; write '§5 "
         "enumeration complete' when no further open path remains; any referent named in the '[text]' from §1 not already present as a literal string in the transcript above §1 must be "
         "fetched before §1 is written; the string '§ implementation permitted' must appear in the transcript after '§5 enumeration complete'; the strings '§5 enumeration complete' and "
-        "'§ implementation permitted' each appear exactly once; no file-modifying tool call may appear before '§ implementation permitted'; a response turn that declares the task "
-        "complete or produces no further planned actions must be immediately preceded in the transcript by a '## Completion check' block — a done declaration appearing before '## "
-        "Completion check' does not satisfy ground.",
+        "'§ implementation permitted' each appear exactly once; no file-modifying tool call may appear before '§ implementation permitted'.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause in the subject instruction — this criterion applies in any domain where instructions govern model behavior: a clause is "

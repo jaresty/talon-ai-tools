@@ -56,7 +56,7 @@ def test_generalized_protocol_preserves_gap_driven_iteration():
 def test_generalized_protocol_is_domain_independent():
     """Protocol must be domain-independent — slimmed form uses task-agnostic language."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "task" in core.lower() or "intent" in core.lower(), (
+    assert "question or closing text" in core or "no further planned tool calls" in core, (
         "Slimmed protocol must be framed in task-agnostic terms"
     )
 
@@ -64,8 +64,8 @@ def test_generalized_protocol_is_domain_independent():
 def test_generalized_protocol_has_seven_rungs():
     """Slimmed protocol (ADR-0224/crystal) — completion check heading gate + done declaration gate present."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "## Completion check" in core and "done declaration" in core, (
-        "Derivation-based protocol must gate done declarations on a ## Completion check block"
+    assert "## Completion check" in core and "after '§ implementation permitted' has appeared in the transcript" in core, (
+        "Derivation-based protocol must gate post-permitted yields on a ## Completion check block"
     )
 
 

@@ -1126,8 +1126,8 @@ func TestTokensLoadedRequiresHeuristicPhrase(t *testing.T) {
 	if !strings.Contains(tokensBlock, `(when: "`) {
 		t.Errorf("TOKENS instruction must require Loaded: <slug> (when: \"<heuristic phrase>\") form, got:\n%s", tokensBlock)
 	}
-	if !strings.Contains(tokensBlock, "does not appear verbatim in that tool-result block") {
-		t.Errorf("TOKENS instruction must state that the quoted phrase must appear verbatim in the tool-result block, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "when: phrase must appear verbatim as a substring of the") {
+		t.Errorf("TOKENS instruction must state allow-list form: when: phrase must appear verbatim as a substring of the tool-result block, got:\n%s", tokensBlock)
 	}
 }
 
@@ -1245,8 +1245,8 @@ func TestTokensSkipRequiresToolResultBlockAdjacency(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, `a skip-confirmed line whose quoted phrase does not match the quoted phrase in the prior`) {
-		t.Errorf("TOKENS skip-confirmed gate must require phrase-match non-compliance condition, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "both phrase values must be verbatim copies of the corresponding phrases in the prior") {
+		t.Errorf("TOKENS skip-confirmed gate must state allow-list form: both phrase values must be verbatim copies, got:\n%s", tokensBlock)
 	}
 }
 

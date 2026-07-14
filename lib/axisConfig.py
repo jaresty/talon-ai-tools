@@ -446,10 +446,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "quadrant held. Use when binary framing may be suppressing valid stances or when premature commitment to one position risks excluding structural alternatives.",
         "gap": "The response enhances the task by identifying where assumptions, rules, roles, or relationships are treated as explicit but remain implicit, analyzing how that mismatch produces "
         "ambiguity, coordination failure, or error.",
-        "gate": "The response applies a hard-blocking checkpoint: the next action is blocked until a condition is satisfied by a prior-executed result already present in the transcript — not "
-        "asserted in prose. A gate condition block must appear at an earlier transcript position than the governed action, naming the specific string or structural property in that "
-        "prior-executed result whose presence constitutes satisfaction; a condition that cannot name that property has not been derived. A gate condition block that appears after the "
-        "result it references does not satisfy this requirement.",
+        "gate": "The response applies a hard-blocking checkpoint before the governed action. A gate condition block — a block whose first line is the literal string 'Gate condition:' — must "
+        "appear in the transcript immediately before the governed action, naming a literal string whose presence as a verbatim substring of a qualifying prior-executed result constitutes "
+        "satisfaction; a qualifying prior-executed result is a tool-call result produced by executing a command, running a test suite, or invoking an endpoint — a file read, file write, "
+        "edit, or search result does not qualify regardless of its content; the named literal string must appear verbatim in a qualifying result block at an earlier transcript position "
+        "than the gate condition block; a gate condition block whose named string does not appear verbatim in any qualifying result above it has not been satisfied and the governed "
+        "action must not proceed; each governed action requires its own gate condition block — a gate condition block from a prior action does not satisfy this requirement for a "
+        "subsequent action.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a representation naming the schema, invariants, and terminology an external actor needs to intervene, "
         "making implicit structure explicit, identifying the mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by naming the directions in which the system's existing structure already propagates — interfaces, dependencies, data flows — and naming "

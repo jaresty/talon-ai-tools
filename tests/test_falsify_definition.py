@@ -183,3 +183,9 @@ def test_falsify_every_governed_artifact_producing_action():
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
     assert "every governed artifact-producing action" in defn
     assert "every action that modifies the implementation" not in defn
+
+
+def test_falsify_unguarded_behaviors_require_separate_fail():
+    """D2: closing (g) for one behavior does not require covering unguarded behaviors — each requires its own governing FAIL."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "unguarded behaviors require separate governing" in defn

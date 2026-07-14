@@ -437,7 +437,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "governed artifact-producing action, produced by a named executor invocation occurring in the current session after the last governed artifact-producing action, against a "
         "state where the refactored form was modified to violate the invariant the governing assertion checks — the perturbation result must appear before the revert action. Revert is "
         "complete when the pre-perturbation executor run result is quoted verbatim in the transcript before the revert executor invocation, and a subsequent executor invocation "
-        "produces (b) at the position where (a) was absent.",
+        "produces (b) at the position where (a) was absent. Per-behavior scoping: a governed artifact-producing action is compliant when (g) is satisfied for the named behavior — the "
+        "action is not required to implement any behavior for which (g) has not yet been established; unguarded behaviors require separate governing FAILs in subsequent steps and must "
+        "not be treated as a blocking condition on the current action.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

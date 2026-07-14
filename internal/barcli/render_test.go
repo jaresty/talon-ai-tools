@@ -1131,8 +1131,8 @@ func TestTokensLoadedRequiresHeuristicPhrase(t *testing.T) {
 	}
 }
 
-// TestTokensSkipConfirmedForm verifies that the TOKENS instruction uses "(skip confirmed — when: "<phrase>")"
-// for skip acknowledgment, carrying the provenance phrase forward from the prior Loaded: line.
+// TestTokensSkipConfirmedForm verifies that the TOKENS instruction uses "(skip confirmed — when: "<phrase>" — not: "<phrase>" — because: <reason>)"
+// for skip acknowledgment, carrying both the selected and rejected provenance phrases forward from the prior Loaded: line.
 // This resolves the clash between the skip clause and the proximity requirement: a (skip confirmed — when: ...)
 // line is structurally distinct from a first-time Loaded: (when: "...") line.
 func TestTokensSkipConfirmedForm(t *testing.T) {
@@ -1146,8 +1146,8 @@ func TestTokensSkipConfirmedForm(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, `(skip confirmed — when: "<phrase>")`) {
-		t.Errorf("TOKENS skip clause must use '(skip confirmed — when: \"<phrase>\")' form, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, `(skip confirmed — when: "<phrase>" — not: "<phrase>" — because: <reason>)`) {
+		t.Errorf("TOKENS skip clause must use '(skip confirmed — when: \"<phrase>\" — not: \"<phrase>\" — because: <reason>)' form, got:\n%s", tokensBlock)
 	}
 }
 

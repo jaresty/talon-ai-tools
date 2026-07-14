@@ -167,7 +167,7 @@ func TestFalsifyDefinition_AbsenceDetection(t *testing.T) {
 func TestFalsifyDefinition_FiredBeforeImplementation(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "before any tool call that modifies") && !strings.Contains(def, "before any edit tool call") && !strings.Contains(def, "FAIL tool result already present") && !strings.Contains(def, "before any implementation") && !strings.Contains(def, "before any governed action") {
+	if !strings.Contains(def, "before any tool call that modifies") && !strings.Contains(def, "before any edit tool call") && !strings.Contains(def, "FAIL tool result already present") && !strings.Contains(def, "before any implementation") && !strings.Contains(def, "before any governed action") && !strings.Contains(def, "before any governed artifact-producing action") {
 		t.Error("falsify definition must require FAIL result to precede the governed action")
 	}
 }

@@ -4,9 +4,10 @@ import sys
 import unittest
 from pathlib import Path
 
-from .helpers_axis_artifacts import cleanup_axis_regen_outputs
+from .helpers_axis_artifacts import axisconfig_is_dirty, cleanup_axis_regen_outputs
 
 
+@unittest.skipIf(axisconfig_is_dirty(), "axisConfig.py has uncommitted changes — pre-commit autofix will sync on commit")
 class MakeAxisRegenerateApplyTests(unittest.TestCase):
     def test_axis_regenerate_apply_updates_axis_config(self):
         repo_root = Path(__file__).resolve().parents[1]

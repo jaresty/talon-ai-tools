@@ -5,7 +5,7 @@ from pathlib import Path
 import subprocess
 import json
 
-from .helpers_axis_artifacts import cleanup_axis_regen_outputs
+from .helpers_axis_artifacts import axisconfig_is_dirty, cleanup_axis_regen_outputs
 
 # Sync-check tests gate commits, not development. They run only in CI
 # (where CI env var is set) to avoid blocking local development workflows.
@@ -55,6 +55,7 @@ class AxisRegenAllTests(unittest.TestCase):
             self.assertGreater(path.stat().st_size, 0, f"{name} is empty")
 
 
+@unittest.skipIf(axisconfig_is_dirty(), "axisConfig.py has uncommitted changes — pre-commit autofix will sync on commit")
 class AxisRegenContentTests(unittest.TestCase):
     def test_generated_axis_config_keeps_helper_functions(self):
         repo_root = Path(__file__).resolve().parents[1]

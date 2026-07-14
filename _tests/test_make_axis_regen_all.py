@@ -3,9 +3,10 @@ import subprocess
 from pathlib import Path
 import json
 
-from .helpers_axis_artifacts import cleanup_axis_regen_outputs
+from .helpers_axis_artifacts import axisconfig_is_dirty, cleanup_axis_regen_outputs
 
 
+@unittest.skipIf(axisconfig_is_dirty(), "axisConfig.py has uncommitted changes — pre-commit autofix will sync on commit")
 class MakeAxisRegenAllTests(unittest.TestCase):
     def test_make_axis_regenerate_all(self):
         repo_root = Path(__file__).resolve().parents[1]

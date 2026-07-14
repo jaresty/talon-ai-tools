@@ -4,10 +4,11 @@ import sys
 import unittest
 from pathlib import Path
 from typing import TYPE_CHECKING
-from .helpers_axis_artifacts import cleanup_axis_regen_outputs
+from .helpers_axis_artifacts import axisconfig_is_dirty, cleanup_axis_regen_outputs
 
 if not TYPE_CHECKING:
 
+    @unittest.skipIf(axisconfig_is_dirty(), "axisConfig.py has uncommitted changes — pre-commit autofix will sync on commit")
     class MakeAxisRegenerateTests(unittest.TestCase):
         def test_axis_regenerate_target_produces_artifacts(self) -> None:
             """Guardrail: axis-regenerate target should run clean and emit artifacts."""

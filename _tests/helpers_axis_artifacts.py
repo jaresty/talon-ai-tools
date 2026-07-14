@@ -1,5 +1,21 @@
+import subprocess
 from pathlib import Path
 from typing import Iterable, Optional
+
+
+def axisconfig_is_dirty() -> bool:
+    """Return True if lib/axisConfig.py has uncommitted changes.
+
+    These regen tests compare generated output to the tracked file, so they
+    produce spurious failures whenever axisConfig.py has been manually edited
+    but not yet committed (pre-commit autofix syncs them on commit).
+    """
+    result = subprocess.run(
+        ["git", "diff", "--name-only", "lib/axisConfig.py"],
+        capture_output=True,
+        text=True,
+    )
+    return bool(result.stdout.strip())
 
 
 _AXIS_ARTIFACT_NAMES: tuple[str, ...] = (

@@ -78,7 +78,7 @@ def test_atomic_scope_line_above_escape_categories():
 def test_atomic_stub_new_symbol():
     """Dim 11: new-symbol calls must introduce only a stub (one-statement body) — closes implementation-depth gap."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "does not appear as a substring of any tool-executed result block above this call" in defn
+    assert "immediately preceding tool-executed run result, the symbol is new" in defn
 
 
 def test_atomic_five_escape_categories():
@@ -97,3 +97,15 @@ def test_atomic_stub_noncallable_path():
     """Dim 14: non-callable path explicitly named — variables/constants/exported values covered."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "non-callable (variable, constant, exported value, or class field)" in defn
+
+
+def test_atomic_new_symbol_scoped_to_preceding_run_result():
+    """Dim 15: new-symbol classification must use immediately preceding run result — closes session-history escape."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "immediately preceding tool-executed run result, the symbol is new" in defn
+
+
+def test_atomic_stub_callable_no_throw_panic():
+    """Dim 16: callable stub must not permit throw/panic — closes stub-to-full escape via throw-produced FAIL."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "panic" not in defn or "throw" not in defn

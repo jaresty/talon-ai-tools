@@ -192,8 +192,8 @@ func TestGateDefinition_HardBlockingCheckpoint(t *testing.T) {
 	if !strings.Contains(def, "prior-executed result") {
 		t.Error("gate definition must require a prior-executed result, not assertion")
 	}
-	if !strings.Contains(def, "not asserted in prose") {
-		t.Error("gate definition must explicitly exclude prose assertion as satisfaction")
+	if !strings.Contains(def, "does not qualify regardless of its content") {
+		t.Error("gate definition must explicitly exclude non-qualifying results (reads/searches) from satisfying the condition")
 	}
 }
 

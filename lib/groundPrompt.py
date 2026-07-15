@@ -121,7 +121,11 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'a literal string in the transcript above §1 must be fetched before §1 is written; the string '
         '\'§ implementation permitted\' must appear in the transcript after \'§5 enumeration complete\'; '
         'the strings \'§5 enumeration complete\' and \'§ implementation permitted\' each appear exactly '
-        'once; no file-modifying tool call may appear before \'§ implementation permitted\'.'
+        'once; no file-modifying tool call may appear before \'§ implementation permitted\'; '
+        'the literal string \'§ implementation permitted\' must appear as the final non-blank content '
+        'in the assistant text block immediately before each file-modifying tool call — '
+        'a file-modifying tool call not immediately preceded by assistant text whose final non-blank '
+        'content is the literal string \'§ implementation permitted\' does not satisfy this requirement.'
     ),
 }
 

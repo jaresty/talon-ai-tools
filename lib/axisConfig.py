@@ -506,7 +506,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "identified, dimensions derived, or dimensions covered; for each path, name the literal string whose presence closes it; write '§5 enumeration complete' when no further open "
         "path remains; any referent named in the '[text]' from §1 not already present as a literal string in the transcript above §1 must be fetched before §1 is written; the string '§ "
         "implementation permitted' must appear in the transcript after '§5 enumeration complete'; the strings '§5 enumeration complete' and '§ implementation permitted' each appear "
-        "exactly once; no file-modifying tool call may appear before '§ implementation permitted'.",
+        "exactly once; no file-modifying tool call may appear before '§ implementation permitted'; the literal string '§ implementation permitted' must appear as the final non-blank "
+        "content in the assistant text block immediately before each file-modifying tool call — a file-modifying tool call not immediately preceded by assistant text whose final "
+        "non-blank content is the literal string '§ implementation permitted' does not satisfy this requirement.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause in the subject instruction — this criterion applies in any domain where instructions govern model behavior: a clause is "

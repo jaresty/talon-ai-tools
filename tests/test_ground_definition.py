@@ -216,3 +216,9 @@ def test_ground_completion_check_requires_implementation_permitted():
 def test_ground_sentinels_scoped_to_current_invocation():
     """Sentinels from prior ground invocations must not satisfy current invocation rungs."""
     assert "most recent '=== TOKENS'" in _ground_def()
+
+
+def test_ground_implementation_permitted_immediacy():
+    """§ implementation permitted must be final non-blank content before each file-modifying tool call."""
+    assert "final non-blank content" in _ground_def()
+    assert "each file-modifying tool call" in _ground_def()

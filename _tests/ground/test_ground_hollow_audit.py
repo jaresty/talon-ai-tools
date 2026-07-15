@@ -131,14 +131,13 @@ def test_rank3_5_enumeration_complete_requires_closing_string_per_path():
 # structural property that makes a value invalid (e.g. "a value that is an
 # adjective or category name does not satisfy this requirement").
 
-def test_rank4_observable_slot_excludes_adjectives_and_category_names():
-    """Protocol must explicitly exclude adjectives and category names from [observable:] values."""
+def test_rank4_observable_slot_requires_structural_criterion():
+    """Protocol must require [observable:] value to contain at least one space (structural, not semantic)."""
     core = _core()
-    # The protocol must name the invalid form — adjective or category name —
-    # so an evaluator can check compliance without semantic inference.
-    # Fix: the protocol must name the invalid form explicitly.
-    # Canonical closing string: name "adjective or category name" as invalid.
-    assert "adjective or category name" in core
+    # Option C: require the value to contain at least one space (≥2 words).
+    # This is evaluator-checkable without semantic inference: ' ' in value.
+    # The deny-list ("adjective or category name") is itself semantic — rejected.
+    assert "must contain at least one space" in core
 
 
 def test_rank4_observable_prose_fallback_is_tool_result_conditioned():

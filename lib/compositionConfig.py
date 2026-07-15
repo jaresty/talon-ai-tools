@@ -89,7 +89,10 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "line does not satisfy this requirement — use the same command for both pre-edit and "
             "post-edit runs. If a tool-executed FAIL result shows the same failure with less than "
             "the named behavior removed, the named behavior is not the sole governed cause and "
-            "must be rederived."
+            "must be rederived. "
+            "When falsify and atomic are co-present, the scope commitment quotes the first line in "
+            "the run result identified by the FAIL signal prefix — field (a) of the Falsify "
+            "derivation: block names the literal string that is the FAIL signal prefix for that invocation."
         ),
     },
     {

@@ -12,22 +12,22 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib.axisConfig import AXIS_KEY_TO_VALUE
 
 
-def test_atomic_fail_signal_prefix():
-    """Dim 1: scope commitment must name first FAIL-signal-prefixed line — closes Gap 2."""
+def test_atomic_scope_commitment_from_run_result():
+    """Dim 1: scope commitment is a literal string quoted from the most recently produced run result."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "first line beginning with the FAIL signal prefix" in defn
+    assert "A scope commitment is a literal string quoted from the most recently produced run result" in defn
 
 
 def test_atomic_nonrun_recency():
-    """Dim 2: non-run tool calls must not break recency — closes Gap 3."""
+    """Dim 2: run result recency defined structurally — no other run result appears between."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "non-run tool calls do not break this recency" in defn
+    assert "no other run result appears between that result and the tool call" in defn
 
 
-def test_atomic_symbol_same_run_result():
-    """Dim 3: symbol commitment must derive from same run result as scope commitment — resolves Clash 1."""
+def test_atomic_symbol_commitment_line_format():
+    """Dim 3: symbol commitment must appear as 'symbol: <identifier>' line."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "derived from the same run result that produced the scope commitment" in defn
+    assert "symbol: <identifier>" in defn
 
 
 def test_atomic_four_escape_categories():
@@ -51,10 +51,12 @@ def test_atomic_last_line_immediately_before():
     assert "line immediately above the `(i)` escape category line must be the quoted scope commitment" in defn
 
 
-def test_atomic_run_result_definition():
-    """Dim 7: definition must specify what counts as a tool-executed run result — closes G3."""
+def test_atomic_run_result_no_falsify_coupling():
+    """Dim 7: atomic description must not reference FAIL signal, Bash tool call, or test runner — those belong in falsify."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "a result block from a test runner, build command, or linter" in defn
+    assert "FAIL signal" not in defn
+    assert "Bash tool call" not in defn
+    assert "test runner" not in defn
 
 
 def test_atomic_per_call_independence():
@@ -76,9 +78,9 @@ def test_atomic_scope_line_above_escape_categories():
 
 
 def test_atomic_stub_new_symbol():
-    """Dim 11: new-symbol calls must introduce only a stub (one-statement body) — closes implementation-depth gap."""
+    """Dim 11: new-symbol calls must introduce only a stub — closes implementation-depth gap."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "immediately preceding tool-executed run result, the symbol is new" in defn
+    assert "immediately preceding run result, the symbol is new" in defn
 
 
 def test_atomic_five_escape_categories():
@@ -102,10 +104,36 @@ def test_atomic_stub_noncallable_path():
 def test_atomic_new_symbol_scoped_to_preceding_run_result():
     """Dim 15: new-symbol classification must use immediately preceding run result — closes session-history escape."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "immediately preceding tool-executed run result, the symbol is new" in defn
+    assert "immediately preceding run result, the symbol is new" in defn
 
 
 def test_atomic_stub_callable_no_throw_panic():
     """Dim 16: callable stub must not permit throw/panic — closes stub-to-full escape via throw-produced FAIL."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "panic" not in defn or "throw" not in defn
+
+
+# Rank repair tests (assay-cycle 2026-07-15, redesigned after falsify/atomic separation)
+
+def test_atomic_rank4_symbol_identifier_line():
+    """Rank 4: symbol commitment must appear as 'symbol: <identifier>' line."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "symbol: <identifier>" in defn
+
+
+def test_atomic_rank5_stub_enumerated_values():
+    """Rank 5: stub requirement lists specific zero-values syntactically."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "body/initializer contains only one of nil, null, undefined, 0, 0.0, false" in defn
+
+
+def test_atomic_rank7_five_lines_contiguous():
+    """Rank 7: five escape-category lines must be consecutive with no intervening lines."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "The five lines must appear consecutively with no intervening lines" in defn
+
+
+def test_atomic_rank9_scope_commitment_substring():
+    """Rank 9 (C5): scope commitment text must be a literal substring of the preceding run result."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "literal substring of the immediately preceding run result" in defn

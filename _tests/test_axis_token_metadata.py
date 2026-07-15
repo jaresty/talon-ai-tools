@@ -991,13 +991,13 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_atomic_candidate_limited_to_first_failure(self):
-        """atomic must scope each tool call to the first failing-item line in the run result — the scope commitment must reference the first failing item only (hollow audit finding)."""
+        """atomic scopes each call to a literal string from the run result; the first-failure constraint is a falsify+atomic composition concern, not atomic-only."""
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
-        self.assertTrue(
-            "the first failing-item line in the most recent tool-executed run result" in definition or
-            "first line beginning with the FAIL signal prefix" in definition,
-            "atomic must name the observable that limits the candidate to the first failing item only",
+        self.assertIn(
+            "A scope commitment is a literal string quoted from the most recently produced run result",
+            definition,
+            "atomic must define scope commitment as a literal string from the run result",
         )
 
     def test_atomic_candidate_scoped_to_observed_failure(self):
@@ -1021,13 +1021,13 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_atomic_governing_test_clause_required(self):
-        """atomic must require that the quoted failing-item line comes from a test whose pass/fail state is determined solely by the symbols being modified — a test that passes or fails independently of those symbols does not satisfy the scope commitment (hollow audit finding)."""
+        """atomic requires symbol commitment names a symbol present in the run result or scope text — governing-test constraint moved to falsify+atomic composition config."""
         atomic = self.meta.get("atomic", {})
         definition = atomic.get("definition", "")
         self.assertIn(
-            "pass/fail state is determined solely by the named symbol",
+            "the named symbol must appear as a literal substring of the quoted scope text or of the immediately preceding run result",
             definition,
-            "atomic must name the governing-test constraint: the quoted failing line must be from a test whose outcome depends on the symbol being modified",
+            "atomic must require the named symbol to appear in the scope text or run result",
         )
 
     def test_falsify_empty_transcript_gap_closed(self):

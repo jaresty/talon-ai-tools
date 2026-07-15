@@ -1075,8 +1075,8 @@ func TestTokensAdjacencyRequiresFirstAssistantText(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "first assistant text after that tool-result block") {
-		t.Errorf("TOKENS instruction must require 'first assistant text after that tool-result block', got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "next non-empty line of assistant output after that tool-result block") {
+		t.Errorf("TOKENS instruction must require 'next non-empty line of assistant output after that tool-result block', got:\n%s", tokensBlock)
 	}
 }
 
@@ -1126,8 +1126,8 @@ func TestTokensLoadedRequiresHeuristicPhrase(t *testing.T) {
 	if !strings.Contains(tokensBlock, `(when: "`) {
 		t.Errorf("TOKENS instruction must require Loaded: <slug> (when: \"<heuristic phrase>\") form, got:\n%s", tokensBlock)
 	}
-	if !strings.Contains(tokensBlock, "when: phrase must appear verbatim as a substring of the") {
-		t.Errorf("TOKENS instruction must state allow-list form: when: phrase must appear verbatim as a substring of the tool-result block, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "when: phrase must appear verbatim as a complete semicolon-delimited phrase in the Heuristics line") {
+		t.Errorf("TOKENS instruction must state allow-list form: when: phrase must appear verbatim as a complete semicolon-delimited phrase in the Heuristics line, got:\n%s", tokensBlock)
 	}
 }
 
@@ -1166,8 +1166,8 @@ func TestTokensDerivationsCitesLoadedPhrase(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "quoted trigger phrase from the Loaded: line") {
-		t.Errorf("TOKENS instruction must require derivations lines to quote trigger phrase from Loaded: line, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "verbatim phrase from the Heuristics line in the") {
+		t.Errorf("TOKENS instruction must require derivations lines to quote verbatim phrase from the Heuristics line in the tool-result block, got:\n%s", tokensBlock)
 	}
 	if !strings.Contains(tokensBlock, "does not appear verbatim in the") {
 		t.Errorf("TOKENS instruction must state non-compliance when derivations → clause doesn't appear verbatim in tool-result block, got:\n%s", tokensBlock)
@@ -1227,6 +1227,105 @@ func TestTokensDerivationsGateText(t *testing.T) {
 	tokensBlock := output[tokensIdx:formatIdx]
 	if !strings.Contains(tokensBlock, "does not appear verbatim in the") {
 		t.Errorf("TOKENS derivations instruction must include non-compliance gate 'does not appear verbatim in the', got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensFirstAssistantTextIsLineDefined verifies that the TOKENS instruction
+// defines "first assistant text" as "next non-empty line", making compliance
+// line-unit checkable rather than prose-interpreted.
+func TestTokensFirstAssistantTextIsLineDefined(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "next non-empty line") {
+		t.Errorf("TOKENS instruction must define 'first assistant text' as 'next non-empty line', got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensHeuristicPhraseIsSemicolonDelimited verifies that the TOKENS instruction
+// requires the when: phrase to be a complete semicolon-delimited phrase, not any
+// substring — closing the semantic loophole where a fragment satisfies the rule.
+func TestTokensHeuristicPhraseIsSemicolonDelimited(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "complete semicolon-delimited phrase") {
+		t.Errorf("TOKENS instruction must require when: phrase to be a 'complete semicolon-delimited phrase', got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensSkipPathTruncationFallback verifies that the TOKENS instruction includes
+// an explicit fallback for context truncation: if the prior Loaded: line is not
+// visible verbatim in the current transcript window, re-run the tool call.
+func TestTokensSkipPathTruncationFallback(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "not visible verbatim in the current transcript window") {
+		t.Errorf("TOKENS instruction must include truncation fallback 'not visible verbatim in the current transcript window', got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensLoadsVerifiedEnumeration verifies that the TOKENS instruction requires
+// a "Loads verified: <slugs> (<N> of <N>)" line before the Token loads complete
+// sentinel, making the count claim externally checkable.
+func TestTokensLoadsVerifiedEnumeration(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "Loads verified:") {
+		t.Errorf("TOKENS instruction must require 'Loads verified:' enumeration line before the sentinel, got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensDerivationsDirectAnchorAndTruncationFallback verifies that the TOKENS
+// derivations instruction (a) uses the Heuristics line in the tool-result block as
+// the direct anchor (not the Loaded: line), and (b) includes a fallback for
+// Description fields containing neither ' —' nor '.'.
+func TestTokensDerivationsDirectAnchorAndTruncationFallback(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "Heuristics line in the") {
+		t.Errorf("TOKENS derivations instruction must cite 'Heuristics line in the' tool-result block as direct anchor, got:\n%s", tokensBlock)
+	}
+	if !strings.Contains(tokensBlock, "contains neither") {
+		t.Errorf("TOKENS derivations instruction must include truncation fallback for Description with 'contains neither', got:\n%s", tokensBlock)
 	}
 }
 

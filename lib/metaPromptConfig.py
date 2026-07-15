@@ -244,7 +244,8 @@ PLANNING_DIRECTIVE: str = (
     "For each method token, add a second line: 'What it requires here: [procedure specific to this task content]'. "
     "Then write a combined stance paragraph — the paragraph is non-hollow when it contains at least one clause "
     "of the form 'without [token-name], this response would [specific change in content, reasoning, or structure]'. "
-    "Write 'Derived stance complete.' to close the derivation span, then produce task content. "
+    "Write 'Derived stance complete.' to close the derivation span; task content must follow in the same response turn — "
+    "'Derived stance complete.' is not a turn-end signal and no user message may appear between it and the task content. "
     "No tool call result blocks appear between 'Token derivations:' and 'Derived stance complete.' — "
     "a tool call result block in that span renders the derivation non-compliant."
 )

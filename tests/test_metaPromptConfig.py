@@ -192,6 +192,12 @@ def test_planning_directive_transition_marker():
     )
 
 
+def test_planning_directive_derived_stance_same_turn():
+    """FORMAT_GUIDANCE must anchor task content to same response turn as 'Derived stance complete.'."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+    assert "is not a turn-end signal" in PLANNING_DIRECTIVE
+
+
 def test_planning_directive_no_section_headings():
     """Phase-3: PLANNING_DIRECTIVE does not contain SECTION 1-4 headings."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE

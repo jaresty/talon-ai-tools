@@ -137,3 +137,21 @@ def test_atomic_rank9_scope_commitment_substring():
     """Rank 9 (C5): scope commitment text must be a literal substring of the preceding run result."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "literal substring of the immediately preceding run result" in defn
+
+
+def test_atomic_same_turn_continuity():
+    """Same-turn anchor: the (i)-(v) block and the tool call must appear in the same response turn."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "same response turn" in defn
+
+
+def test_atomic_readiness_same_turn():
+    """Readiness sentence must require continuation in the same turn — not cross-turn."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "The tool call follows immediately in the same turn" in defn
+
+
+def test_atomic_derivation_same_turn():
+    """Derivation phase and first file-modifying tool call must appear in the same response turn."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "derivation phase and the first file-modifying tool call must appear in the same response turn" in defn

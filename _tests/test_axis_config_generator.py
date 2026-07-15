@@ -84,3 +84,15 @@ else:
             @unittest.skip("Test harness unavailable outside unittest runs")
             def test_placeholder(self) -> None:
                 pass
+
+
+def test_models_definition_discovery():
+    """Models token definition must encode discovery (not already operative), not transparency (applied)."""
+    from lib.axisConfig import AXIS_KEY_TO_VALUE
+    desc = AXIS_KEY_TO_VALUE["method"]["models"]
+    assert "not already operative" in desc, (
+        f"models definition must contain 'not already operative' (discovery criterion) but got: {desc!r}"
+    )
+    assert "applied" not in desc, (
+        f"models definition must not contain 'applied' (transparency criterion) but got: {desc!r}"
+    )

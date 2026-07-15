@@ -562,7 +562,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "assumption would break the derivation. A conclusion that can be stated without performing the derivation step has not been derived — it has been asserted.",
         "mod": "The response enhances the task by applying modulo-style reasoning—equivalence classes, cyclic patterns, quotient structures, or periodic behavior that repeats with a defined "
         "period or wraps around boundaries.",
-        "models": "The response enhances the task by explicitly identifying and naming the mental models applied, explaining why each applies (or fails), and comparing or combining them.",
+        "models": "The response enumerates named, established mental models applicable to the subject that are not already operative in the current approach, first naming which models are "
+        "already operative; for each absent model, names why it applies and what it would surface for this subject that the current approach does not.",
         "mu": "The response enacts the subject's central irresolution rather than describing or resolving it. The tension must arise from the subject's own internal structure — not imported from "
         "general discourse about the domain. The irresolution is not a tone or atmosphere — it is structural: the reader cannot resolve it by thinking harder. Do not name the tension or "
         "state that something cannot be resolved. The response succeeds if it presents at least two claims each of which names a proposition from the subject's stated text and names at "

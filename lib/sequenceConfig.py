@@ -672,6 +672,40 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "model-gap-hunt": {
+        "description": "Inventory blind spots in the current approach, surface established mental models not yet operative, then select the highest-leverage absent model to apply next.",
+        "example": "Reviewing an engineering team's slow shipping velocity — the current approach is tracking cycle time metrics, but the model-gap-hunt surfaces that incentive structures and second-order effects are entirely absent, then selects incentive analysis as the highest-leverage next lens.",
+        "heuristics": [
+            "what am I missing",
+            "what mental models haven't I tried",
+            "what frameworks apply here",
+            "what am I not thinking about",
+            "find the missing model",
+            "what lens haven't I used",
+            "gap in my thinking",
+            "what technique should I use here",
+            "what blind spots do I have",
+            "what haven't I considered",
+        ],
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "show method:unknowns",
+                "role": "blind spot inventory",
+                "prompt_hint": "Name the categories of what hasn't been considered in the current approach — each category must be nameable as a type (e.g. unstated dependency, unexamined assumption, external condition not accounted for). For each category, name at least one specific unknown found in the subject and at least one question that would need to be answered to resolve it.",
+            },
+            {
+                "token": "method:models",
+                "role": "absent model enumeration",
+                "prompt_hint": "Using the blind spot categories from the prior step: first name which mental models are already operative in the current approach; then for each blind spot category, enumerate named established mental models not already operative that apply, naming why each applies and what it would surface for this subject that the current approach does not.",
+            },
+            {
+                "token": "pick",
+                "role": "highest-leverage selection",
+                "prompt_hint": "Select the absent model with the highest leverage for the current situation — the one that would surface the most consequential insight the current approach cannot produce. Name why this model has higher leverage than the others, and name the first concrete step that applying it implies.",
+            },
+        ],
+    },
     "contradiction-scan": {
         "description": "Decompose a subject into structural parts, surface where those parts create irresolvable tensions, then recommend which tension to address first.",
         "example": "Reviewing a service architecture where the ownership model requires each team to own its data store but the reporting requirements demand cross-store joins — decompose the structural concerns, surface the irresolvable tension between ownership isolation and query access, then recommend the first tension to address.",

@@ -266,3 +266,15 @@ class TestSequenceConfigStructure(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+def test_model_gap_hunt_sequence_exists():
+    """model-gap-hunt sequence must exist in SEQUENCES with 3 steps."""
+    from lib.sequenceConfig import SEQUENCES
+    assert "model-gap-hunt" in SEQUENCES, (
+        "model-gap-hunt sequence must be present in SEQUENCES"
+    )
+    seq = SEQUENCES["model-gap-hunt"]
+    assert len(seq["steps"]) == 3, (
+        f"model-gap-hunt must have 3 steps, got {len(seq['steps'])}"
+    )

@@ -218,6 +218,11 @@ def test_ground_sentinels_scoped_to_current_invocation():
     assert "most recent '=== TOKENS'" in _ground_def()
 
 
+def test_ground_implementation_permitted_same_turn():
+    """§ implementation permitted must anchor tool call to same response turn — cross-turn escape closed."""
+    assert "user message appearing between" in _ground_def()
+
+
 def test_ground_implementation_permitted_immediacy():
     """§ implementation permitted must be final non-blank content before each file-modifying tool call."""
     assert "final non-blank content" in _ground_def()

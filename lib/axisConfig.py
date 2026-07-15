@@ -507,10 +507,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "fetched before §1 is written; the string '§5 enumeration complete' appears exactly once; the string '§ implementation permitted [N]' where N is the 1-based index of the "
         "file-modifying tool call this sentinel governs must appear in the transcript after '§5 enumeration complete'; no file-modifying tool call may appear before the first '§ "
         "implementation permitted [N]' sentinel; the literal string '§ implementation permitted [N]' with N matching the 1-based index of the governed tool call must appear as the "
-        "final non-blank content in the assistant text block immediately before each file-modifying tool call — a file-modifying tool call not immediately preceded by assistant text "
-        "whose final non-blank content is the literal string '§ implementation permitted [N]' does not satisfy this requirement. Quoted-span exclusion: an occurrence of any named "
-        "sentinel or heading string inside a markdown code fence (a span beginning with ``` or ~~~ on its own line) does not satisfy any rung or ordering requirement — only occurrences "
-        "outside code fences count toward compliance.",
+        "final non-blank content in the assistant text block immediately before each file-modifying tool call, in the same response turn as that tool call — a user message appearing "
+        "between '§ implementation permitted [N]' and the tool call does not satisfy this requirement; a file-modifying tool call not immediately preceded by assistant text whose final "
+        "non-blank content is the literal string '§ implementation permitted [N]' does not satisfy this requirement. Quoted-span exclusion: an occurrence of any named sentinel or "
+        "heading string inside a markdown code fence (a span beginning with ``` or ~~~ on its own line) does not satisfy any rung or ordering requirement — only occurrences outside "
+        "code fences count toward compliance.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause in the subject instruction — this criterion applies in any domain where instructions govern model behavior: a clause is "

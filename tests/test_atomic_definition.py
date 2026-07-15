@@ -68,7 +68,7 @@ def test_atomic_per_call_independence():
 def test_atomic_escape_categories_per_call_positional():
     """Dim 9: escape categories must appear as last four lines immediately before each call — closes once-discharge gap."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "last five content lines begin with" in defn
+    assert "last four content lines begin with" in defn
 
 
 def test_atomic_scope_line_above_escape_categories():
@@ -83,10 +83,11 @@ def test_atomic_stub_new_symbol():
     assert "immediately preceding run result, the symbol is new" in defn
 
 
-def test_atomic_five_escape_categories():
-    """Dim 12: five named escape categories must be present including (v) implementation depth."""
+def test_atomic_four_escape_categories_only():
+    """Dim 12: exactly four escape categories (i)-(iv); (v) implementation depth moved to falsify+atomic composition."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "(v) implementation depth" in defn
+    assert "(iv) post-call line mismatch" in defn
+    assert "(v) implementation depth" not in defn
 
 
 def test_atomic_stub_kind_dispatch():
@@ -127,10 +128,10 @@ def test_atomic_rank5_stub_enumerated_values():
     assert "body/initializer contains only one of nil, null, undefined, 0, 0.0, false" in defn
 
 
-def test_atomic_rank7_five_lines_contiguous():
-    """Rank 7: five escape-category lines must be consecutive with no intervening lines."""
+def test_atomic_rank7_four_lines_contiguous():
+    """Rank 7: four escape-category lines must be consecutive with no intervening lines."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "The five lines must appear consecutively with no intervening lines" in defn
+    assert "The four lines must appear consecutively with no intervening lines" in defn
 
 
 def test_atomic_rank9_scope_commitment_substring():
@@ -155,3 +156,9 @@ def test_atomic_derivation_same_turn():
     """Derivation phase and first file-modifying tool call must appear in the same response turn."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "derivation phase and the first file-modifying tool call must appear in the same response turn" in defn
+
+
+def test_atomic_no_implementation_depth_in_standalone():
+    """(v) implementation depth belongs in falsify+atomic composition config, not atomic standalone."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "(v) implementation depth" not in defn

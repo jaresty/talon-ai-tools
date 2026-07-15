@@ -92,7 +92,12 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "must be rederived. "
             "When falsify and atomic are co-present, the scope commitment quotes the first line in "
             "the run result identified by the FAIL signal prefix — field (a) of the Falsify "
-            "derivation: block names the literal string that is the FAIL signal prefix for that invocation."
+            "derivation: block names the literal string that is the FAIL signal prefix for that invocation. "
+            "When falsify and atomic are co-present, the pre-edit block must include a fifth line "
+            "`(v) implementation depth: <string>` immediately after `(iv) post-call line mismatch: <string>` — "
+            "this line confirms the edit introduces a stub (for new symbols) or targets only an existing "
+            "symbol without expanding its implementation; a new-symbol edit whose `(v)` line does not "
+            "confirm stub form does not satisfy this requirement."
         ),
     },
     {

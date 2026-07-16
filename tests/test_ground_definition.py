@@ -61,9 +61,9 @@ def test_ground_gate_G2_completion_ordering():
 
 
 def test_ground_gate_C2_yield_gate():
-    """C2: yield gate — any post-permitted turn yielding to user must contain completion check first."""
-    assert "after '§ implementation permitted' has appeared in the transcript" in _ground_def()
-    assert "must contain '## Completion check' before that question or closing text" in _ground_def()
+    """C2: yield gate — any post-permitted turn without a file-modifying tool call must contain completion check."""
+    assert "after '§ implementation permitted [N]' has appeared in the transcript" in _ground_def()
+    assert "does not contain a file-modifying tool call must contain '## Completion check'" in _ground_def()
 
 
 def test_ground_gate_C2b_citation_post_permitted():
@@ -268,4 +268,13 @@ def test_ground_completion_check_requires_s4_coverage_verified_axisconfig():
     ground = AXIS_KEY_TO_VALUE["method"]["ground"]
     assert "'§4 coverage verified' appears within it" in ground, (
         "axisConfig ground must require '§4 coverage verified' to appear within ## Completion check"
+    )
+
+
+def test_ground_yield_gate_fires_on_silent_yield():
+    """Yield gate must fire on silent yield — trigger must be structural (no tool call), not intent-based."""
+    ground = _ground_def()
+    assert "does not contain a file-modifying tool call must contain '## Completion check'" in ground, (
+        "yield gate must fire on any turn that does not contain a file-modifying tool call — "
+        "current trigger ('question or no further planned tool calls') misses silent yield"
     )

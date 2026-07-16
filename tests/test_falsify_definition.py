@@ -201,3 +201,21 @@ def test_falsify_rationale_opener_starts_with_the_response():
     """Rationale opener: definition must begin with 'The response' per token convention."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
     assert defn.startswith("The response")
+
+
+def test_falsify_gap_artifact_label_present():
+    """Artifact gap: Gap artifact: label must be named as the required block when (g) is unavailable."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "Gap artifact:" in defn
+
+
+def test_falsify_g_unavailable_is_incomplete():
+    """Artifact gap: (g) observed FAIL result: unavailable must be named as the incomplete-derivation trigger."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "(g) observed FAIL result: unavailable" in defn
+
+
+def test_falsify_gap_artifact_gates_file_modifying_calls():
+    """Artifact gap: no file-modifying tool call may appear before the tool call that produces the named artifact."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "no file-modifying tool call may appear before the tool call that produces the named artifact" in defn

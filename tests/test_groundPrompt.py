@@ -97,3 +97,27 @@ def test_path_a_invocation_form_escape():
     assert "regardless of invocation form" in text, (
         "§0 must state disqualification applies regardless of invocation form"
     )
+
+
+def test_goal_source_status_only_sentinel():
+    """Fix 1: §0 status-only sentinel must be named for execution-status-only §0 results."""
+    text = build_ground_prompt()
+    assert "§0 status-only" in text, (
+        "ground must name §0 status-only as the sentinel when §0 result contains no user-message substring"
+    )
+
+
+def test_goal_source_requires_external_fetch():
+    """Fix 1: ## Governing goal: must not appear before a qualifying tool-result block when §0 status-only."""
+    text = build_ground_prompt()
+    assert "§0 status-only" in text and "## Governing goal:" in text, (
+        "ground must gate ## Governing goal: on an external-fetch tool-result block when §0 status-only"
+    )
+
+
+def test_goal_source_substring_gate():
+    """Fix 1: qualifying tool-result must contain a line that appears as substring of a user message."""
+    text = build_ground_prompt()
+    assert "appears as a substring of a user message" in text, (
+        "ground must require fetched content to contain a line appearing as substring of a user message"
+    )

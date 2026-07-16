@@ -251,3 +251,21 @@ def test_ground_path_enumeration_gate_axisconfig():
     assert "'## Path enumeration' must not appear before '§4 coverage verified'" not in ground, (
         "old deadlock gate string must be absent from axisConfig ground description"
     )
+
+
+def test_ground_completion_check_requires_s4_coverage_verified_groundprompt():
+    """## Completion check must require §4 coverage verified as inner content — closes per-edit escape."""
+    ground = _ground_def()
+    assert "'§4 coverage verified' appears within it" in ground, (
+        "ground must require '§4 coverage verified' to appear within ## Completion check — "
+        "a model can stop after any passing edit without this inner-content requirement"
+    )
+
+
+def test_ground_completion_check_requires_s4_coverage_verified_axisconfig():
+    """axisConfig ground must also require §4 coverage verified as inner content of ## Completion check."""
+    from lib.axisConfig import AXIS_KEY_TO_VALUE
+    ground = AXIS_KEY_TO_VALUE["method"]["ground"]
+    assert "'§4 coverage verified' appears within it" in ground, (
+        "axisConfig ground must require '§4 coverage verified' to appear within ## Completion check"
+    )

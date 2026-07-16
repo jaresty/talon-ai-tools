@@ -1372,3 +1372,44 @@ func TestTokensSectionSentinelPresent(t *testing.T) {
 		t.Errorf("TOKENS instruction must not contain 'write the Token derivations block immediately' — sentinel gate replaces this, got:\n%s", tokensBlock)
 	}
 }
+
+// TestTokensContinuityAnchor1 verifies that the TOKENS instruction contains the
+// between-load continuity anchor in allow-list form: the next assistant text after
+// any bar help token tool-result block must be either a Loaded: line or another call.
+func TestTokensContinuityAnchor1(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "must be either a") {
+		t.Errorf("TOKENS instruction must contain between-load continuity anchor 'must be either a', got:\n%s", tokensBlock)
+	}
+	if !strings.Contains(tokensBlock, "simultaneous batch") {
+		t.Errorf("TOKENS instruction must contain parallel-calls permission 'simultaneous batch', got:\n%s", tokensBlock)
+	}
+}
+
+// TestTokensContinuityAnchor2 verifies that the TOKENS instruction contains the
+// post-completion continuity anchor: Token loads complete. is not a turn-end signal
+// and no user message may appear between it and the Token derivations block.
+func TestTokensContinuityAnchor2(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "is not a turn-end signal and no user message may appear between it and the Token derivations block") {
+		t.Errorf("TOKENS instruction must contain post-completion continuity anchor 'is not a turn-end signal and no user message may appear between it and the Token derivations block', got:\n%s", tokensBlock)
+	}
+}

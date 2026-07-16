@@ -318,9 +318,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals — for each premise, naming the specific "
         "claim it supports and at least one condition under which it would not support that claim.",
-        "atomic": "The response enforces one scope commitment per file-modifying tool call. A scope commitment is a literal string quoted from the most recently produced run result. A run result "
-        "is immediately preceding a tool call when no other run result appears between that result and the tool call. Derivation phase (required before the first file-modifying tool "
-        "call — the derivation phase and the first file-modifying tool call must appear in the same response turn): name the root criterion — the line immediately above the `(i)` "
+        "atomic": "The response treats any change whose effect has not appeared in a test-runner or command-execution tool-result block as a prediction, not an observation — each implementation "
+        "step must produce such a tool-result block before the next step begins, because the FAIL established only that the behavior is absent, not that any particular change produces "
+        "it. The response enforces one scope commitment per file-modifying tool call. A scope commitment is a literal string quoted from the most recently produced run result. A run "
+        "resultis immediately preceding a tool call when no other run result appears between that result and the tool call. Derivation phase (required before the first file-modifying "
+        "tool call — the derivation phase and the first file-modifying tool call must appear in the same response turn): name the root criterion — the line immediately above the `(i)` "
         "escape category line must be the quoted scope commitment — a literal substring of the immediately preceding run result; a file-modifying tool call whose `(i)` line is not "
         "immediately preceded by such a quoted string does not satisfy this requirement; the quoted scope text must be a literal substring of the immediately preceding run result; "
         "exactly one symbol the call will add or modify must be named above that call (symbol commitment) — a symbol commitment naming more than one symbol does not satisfy this "
@@ -407,15 +409,17 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "redirected outcome — the redirection is derived from a named premise of the incoming structure, not introduced externally.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
-        "falsify": "The response establishes, before any governed artifact-producing action, that the named governing artifact has been observed to detect the absence of each governed behavior. "
-        "A governed artifact-producing action is any action that produces or modifies a persistent artifact — including file writes, document edits, configuration changes, and policy "
-        "commits — whose absence of a governed behavior can be detected by a named executor invocation; an action whose output does not persist beyond the current session, or for "
-        "which no named executor exists, is not a governed artifact-producing action. A named governing artifact is one whose identifier appears as a literal string in the named "
-        "executor invocation that produces a result from it; an inline inspection (grep, curl, read, shell pipeline, verbal check) whose output is not produced by invoking a named "
-        "artifact does not satisfy this requirement regardless of whether it produces a failure result. If no governing artifact exists for a governed behavior, writing that artifact "
-        "is the first governed artifact-producing action; the assertion text and the governed symbol must reside in separate artifacts — a governed artifact-producing action that "
-        "produces both assertion text and the governed symbol in the same action does not satisfy the creation-step exception for either; (a) through (g) apply to the named executor "
-        "invocation immediately following that creation — the creation action itself satisfies the creation-step exception below. Derivation phase (required before any governed "
+        "falsify": "The response treats an artifact that has never failed in a tool-result block in this transcript against the absent behavior as indistinguishable from one that would pass "
+        "regardless of intent — a tool-result block in this transcript containing the FAIL is the only evidence that the artifact encodes the governed behavior. The response "
+        "establishes, before any governed artifact-producing action, that the named governing artifact has been observed to detect the absence of each governed behavior. A governed "
+        "artifact-producing action is any action that produces or modifies a persistent artifact — including file writes, document edits, configuration changes, and policy commits — "
+        "whose absence of a governed behavior can be detected by a named executor invocation; an action whose output does not persist beyond the current session, or for which no named "
+        "executor exists, is not a governed artifact-producing action. A named governing artifact is one whose identifier appears as a literal string in the named executor invocation "
+        "that produces a result from it; an inline inspection (grep, curl, read, shell pipeline, verbal check) whose output is not produced by invoking a named artifact does not "
+        "satisfy this requirement regardless of whether it produces a failure result. If no governing artifact exists for a governed behavior, writing that artifact is the first "
+        "governed artifact-producing action; the assertion text and the governed symbol must reside in separate artifacts — a governed artifact-producing action that produces both "
+        "assertion text and the governed symbol in the same action does not satisfy the creation-step exception for either; (a) through (g) apply to the named executor invocation "
+        "immediately following that creation — the creation action itself satisfies the creation-step exception below. Derivation phase (required before any governed "
         "artifact-producing action — complete only when a literal block labeled 'Falsify derivation:' containing entries for (a) through (g) appears in the transcript; prose does not "
         "satisfy this requirement): Name — (a) the assertion-failure marker: the literal string in an executed-artifact result signaling the artifact detected behavior absence; (b) "
         "the literal string signaling the governed behavior is present; (c) the literal string identifying each governed behavior in an executed-artifact result; (d) the governed "
@@ -2547,7 +2551,7 @@ USAGE_PATTERNS: list[dict] = [
         "title": "TDD Enforcement (ground + gate + falsify + atomic)",
         "command": 'bar build make ground gate falsify atomic --subject "..."',
         "example": 'bar build make ground gate falsify atomic --subject "Add token_version field through grammar export, Go struct, and SPA layers"',
-        "desc": "Use when correctness must be verified at each step before proceeding: spec-first implementation with one assertion per behavior, each governing assertion must have fired against the minimal wrong state before implementation begins, one observable change at a time. ground derives the enforcement process; gate blocks each step until its condition is met; falsify requires that every governing artifact has fired against the minimal wrong state before implementation; atomic enforces one change per step. chain is not needed — falsify's RE-ANCHORING requirement (verbatim FAIL output immediately before each tool call) already enforces derivation continuity. NOTE: gate + falsify were previously a single token called 'gate' — they are now split. gate alone = hard-blocking checkpoint (general); falsify alone = falsifiable artifact quality requirement; gate + falsify together = full TDD enforcement.",
+        "desc": "Prerequisite: '## Governing goal:' must appear in the transcript before any 'Falsify derivation:' block; 'Falsify derivation:' must appear before any file-modifying tool call. A model that satisfies falsify without ground may faithfully encode the wrong intent; a model that satisfies atomic without falsify may implement in small steps toward an unverified goal. Use when correctness must be verified at each step before proceeding: spec-first implementation with one assertion per behavior, each governing assertion must have fired against the minimal wrong state before implementation begins, one observable change at a time. ground derives the enforcement process; gate blocks each step until its condition is met; falsify requires that every governing artifact has fired against the minimal wrong state before implementation; atomic enforces one change per step. chain is not needed — falsify's RE-ANCHORING requirement (verbatim FAIL output immediately before each tool call) already enforces derivation continuity. NOTE: gate + falsify were previously a single token called 'gate' — they are now split. gate alone = hard-blocking checkpoint (general); falsify alone = falsifiable artifact quality requirement; gate + falsify together = full TDD enforcement.",
         "tokens": {"method": ["ground", "gate", "falsify", "atomic"], "task": ["make"]},
     },
     {

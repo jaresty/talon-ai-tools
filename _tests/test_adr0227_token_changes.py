@@ -77,29 +77,29 @@ def test_ground_states_completion_check_trigger_condition():
 # --- atomic: governing output vocabulary (Decision 5) ---
 
 def test_atomic_uses_governing_output_term():
-    """atomic must anchor each edit to the first failing-item line from the run result.
+    """atomic must anchor each edit to a literal string from the most recently produced run result.
 
-    ADR-0227 Decision 5 (updated for derivation-based definition): atomic uses the
-    'first failing-item line in the most recent tool-executed run result' as the
-    scope commitment anchor, replacing the old 'governing output' / 'failure message' vocabulary.
+    ADR-0227 Decision 5 (updated for derivation-based definition): atomic uses
+    'most recently produced run result' as the scope commitment anchor, replacing
+    the old 'governing output' / 'failure message' / 'failing-item line' vocabulary.
     """
     text = _atomic()
-    assert "first failing-item line" in text or "failing-item line" in text, (
-        "atomic must anchor scope commitment to the first failing-item line in the "
-        "most recent tool-executed run result (ADR-0227 Decision 5, derivation-based form)"
+    assert "most recently produced run result" in text, (
+        "atomic must anchor scope commitment to the most recently produced run result "
+        "(ADR-0227 Decision 5, derivation-based form)"
     )
 
 
 def test_atomic_defines_governing_output_on_first_use():
-    """atomic must define the scope anchor as a quoted string from the most recent run result.
+    """atomic must define the scope anchor as a literal string from the most recently produced run result.
 
-    ADR-0227 Decision 5 (updated): scope commitment is defined as quoting the first
-    failing-item line from the most recent tool-executed run result above each call.
+    ADR-0227 Decision 5 (updated): scope commitment is defined as a literal string quoted
+    from the most recently produced run result above each call.
     """
     text = _atomic()
-    assert "scope commitment" in text and "tool-executed run result" in text, (
-        "atomic must define scope commitment as quoting the first failing-item line from "
-        "the most recent tool-executed run result (ADR-0227 Decision 5, derivation-based form)"
+    assert "scope commitment" in text and "most recently produced run result" in text, (
+        "atomic must define scope commitment as a literal string from the most recently "
+        "produced run result (ADR-0227 Decision 5, derivation-based form)"
     )
 
 
@@ -186,9 +186,9 @@ def test_atomic_multiple_scope_lines_quote_distinct_signals():
     without the call having changed exactly one independently observable behavior.
     """
     text = _atomic()
-    assert "independently testable" in text or "one independently observable" in text or "independently observable behavior" in text or "passes or fails independently" in text, (
-        "atomic must require exactly one independently testable change per call "
-        "(derivation-based form of hollow audit fix D3)"
+    assert "symbol commitment" in text and "(i) scope inflation" in text, (
+        "atomic must require exactly one symbol commitment per call and enumerate escape "
+        "categories — derivation-based form of hollow audit fix D3 (symbol cardinality + scope inflation)"
     )
 
 

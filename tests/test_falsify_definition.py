@@ -189,3 +189,15 @@ def test_falsify_unguarded_behaviors_require_separate_fail():
     """D2: closing (g) for one behavior does not require covering unguarded behaviors — each requires its own governing FAIL."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
     assert "unguarded behaviors require separate governing" in defn
+
+
+def test_falsify_rationale_opener_tool_result_block_scoped():
+    """Rationale opener: FAIL history must be scoped to a tool-result block in this transcript, not assertion-satisfiable."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "tool-result block in this transcript" in defn
+
+
+def test_falsify_rationale_opener_starts_with_the_response():
+    """Rationale opener: definition must begin with 'The response' per token convention."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert defn.startswith("The response")

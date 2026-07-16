@@ -186,3 +186,21 @@ def test_atomic_string_value_five_word_floor():
     """Draft C: (i)-(iv) <string> values must be at least five words."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "must be at least five words" in defn
+
+
+def test_atomic_rationale_opener_prediction_not_observation():
+    """Rationale opener: change without executor result is a prediction, not an observation."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "prediction, not an observation" in defn
+
+
+def test_atomic_rationale_opener_test_runner_scoped():
+    """Rationale opener: observable result scoped to test-runner or command-execution tool-result block."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "test-runner or command-execution tool-result block" in defn
+
+
+def test_atomic_rationale_opener_starts_with_the_response():
+    """Rationale opener: definition must begin with 'The response' per token convention."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert defn.startswith("The response")

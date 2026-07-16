@@ -97,7 +97,15 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "`(v) implementation depth: <string>` immediately after `(iv) post-call line mismatch: <string>` — "
             "this line confirms the edit introduces a stub (for new symbols) or targets only an existing "
             "symbol without expanding its implementation; a new-symbol edit whose `(v)` line does not "
-            "confirm stub form does not satisfy this requirement."
+            "confirm stub form does not satisfy this requirement. "
+            "When the governed symbol contains a mechanism-level behavior, that behavior requires its "
+            "own governing FAIL before it is implemented; an outcome-contract FAIL does not automatically govern "
+            "mechanism-level behaviors beneath it. A governed FAIL satisfies this requirement for a "
+            "mechanism-level behavior only when: (1) the failure line names an identifier that does not "
+            "appear as a substring of the outcome-contract symbol's identifier, and (2) that identifier "
+            "appears as a substring of the assert statement of the governing artifact — a FAIL whose "
+            "failure line names only the outcome-contract symbol's identifier does not govern any "
+            "mechanism-level behavior beneath it."
         ),
     },
     {

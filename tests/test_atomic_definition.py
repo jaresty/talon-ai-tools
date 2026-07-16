@@ -174,3 +174,15 @@ def test_atomic_tool_call_same_turn_as_iv():
     """Tool call must follow in the same response turn as (iv) line."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "tool call must follow in the same response turn" in defn
+
+
+def test_atomic_label_name_excluded_from_string_value():
+    """Draft C: (i)-(iv) <string> values must not contain label names as substrings."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "must contain no substring matching any of the four label names" in defn
+
+
+def test_atomic_string_value_five_word_floor():
+    """Draft C: (i)-(iv) <string> values must be at least five words."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "must be at least five words" in defn

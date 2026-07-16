@@ -343,7 +343,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "content lines begin with `§ implementation permitted`, `(i)`, `(ii)`, `(iii)`, `(iv)` in that order does not satisfy this requirement. The five-line block and the "
         "file-modifying tool call must appear in the same response turn — a file-modifying tool call appearing in a different turn from its `(iv)` line does not satisfy this "
         "requirement. Proceed to file-modifying tool calls only when the derivation and all five lines are present as the last five content lines above this point in the transcript. "
-        "The tool call must follow in the same response turn — a tool call appearing in a different turn from its `(iv)` line does not satisfy this requirement.",
+        "The tool call must follow in the same response turn — a tool call appearing in a different turn from its `(iv)` line does not satisfy this requirement. The `<string>` value "
+        "for each of `(i)`-`(iv)` must contain no substring matching any of the four label names (`scope inflation`, `stale quote`, `symbol cardinality`, `post-call line mismatch`) and "
+        "must be at least five words — a value whose entire content is the label name restated, or a value of fewer than five words, does not satisfy this requirement.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "

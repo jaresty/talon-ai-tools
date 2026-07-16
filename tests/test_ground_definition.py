@@ -61,9 +61,9 @@ def test_ground_gate_G2_completion_ordering():
 
 
 def test_ground_gate_C2_yield_gate():
-    """C2: yield gate — any post-permitted turn without a file-modifying tool call must contain completion check."""
+    """C2: yield gate — any post-permitted turn without permit sentinel line must contain completion check."""
     assert "after '§ implementation permitted [N]' has appeared in the transcript" in _ground_def()
-    assert "does not contain a file-modifying tool call must contain '## Completion check'" in _ground_def()
+    assert "does not contain a line beginning with '§ implementation permitted [' must contain '## Completion check'" in _ground_def()
 
 
 def test_ground_gate_C2b_citation_post_permitted():
@@ -289,10 +289,19 @@ def test_ground_s4_resume_exemption_axisconfig():
     )
 
 
+def test_ground_yield_gate_uses_permit_sentinel_trigger():
+    """Yield-gate trigger must use permit-sentinel prefix — not 'file-modifying tool call' (requires type inference)."""
+    ground = _ground_def()
+    assert "does not contain a line beginning with '§ implementation permitted ['" in ground, (
+        "yield-gate trigger must be 'does not contain a line beginning with \\'§ implementation permitted [\\'' — "
+        "the old trigger 'does not contain a file-modifying tool call' requires semantic inference about tool type"
+    )
+
+
 def test_ground_yield_gate_fires_on_silent_yield():
     """Yield gate must fire on silent yield — trigger must be structural (no tool call), not intent-based."""
     ground = _ground_def()
-    assert "does not contain a file-modifying tool call must contain '## Completion check'" in ground, (
-        "yield gate must fire on any turn that does not contain a file-modifying tool call — "
-        "current trigger ('question or no further planned tool calls') misses silent yield"
+    assert "does not contain a line beginning with '§ implementation permitted [' must contain '## Completion check'" in ground, (
+        "yield gate must fire on any turn that does not contain a permit-sentinel line — "
+        "old trigger 'does not contain a file-modifying tool call' requires semantic type inference"
     )

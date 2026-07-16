@@ -274,6 +274,15 @@ def test_planning_directive_resume_phrase():
     )
 
 
+def test_planning_directive_resume_phrase_structural():
+    """PLANNING_DIRECTIVE resume phrase clause must use structural exemption predicate, not intent-based trigger."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+    assert "non-exempt turn's final non-blank content line" in PLANNING_DIRECTIVE, (
+        "PLANNING_DIRECTIVE must define exemptions structurally and name 'final non-blank content line' "
+        "as the terminal position — intent-based trigger ('no further planned tool calls') is not evaluator-observable"
+    )
+
+
 def test_execution_reminder_removed():
     """EXECUTION_REMINDER must not be exported from metaPromptConfig."""
     import lib.metaPromptConfig as m

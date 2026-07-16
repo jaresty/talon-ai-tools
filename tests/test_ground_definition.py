@@ -271,6 +271,24 @@ def test_ground_completion_check_requires_s4_coverage_verified_axisconfig():
     )
 
 
+def test_ground_resume_phrase_literal_in_ground_token():
+    """Ground token must contain exact resume phrase literal — model needs it co-present with the yield gate."""
+    ground = _ground_def()
+    assert 'Resume: say "Continue autonomously — gates still apply" to proceed under the same protocol.' in ground, (
+        "ground token must contain the exact resume phrase literal — "
+        "a model whose active context window excludes PLANNING_DIRECTIVE cannot produce the correct string"
+    )
+
+
+def test_ground_s4_absent_requires_next_action():
+    """When §4 coverage verified is absent from ## Completion check, the next line must name a specific executor invocation."""
+    ground = _ground_def()
+    assert "must be 'Gate condition:'" in ground, (
+        "ground must require that when §4 coverage verified is absent, the first non-blank line after ## Completion check "
+        "must be 'Gate condition:' — prose continuation and bare § lines are not valid substitutes"
+    )
+
+
 def test_ground_s4_resume_exemption_groundprompt():
     """groundPrompt.py must state that a turn containing §4 coverage verified is exempt from the resume phrase."""
     ground = _ground_def()

@@ -121,3 +121,27 @@ def test_goal_source_substring_gate():
     assert "appears as a substring of a user message" in text, (
         "ground must require fetched content to contain a line appearing as substring of a user message"
     )
+
+
+def test_continuation_invariant_blocked_sentinel():
+    """Continuation invariant: § blocked: must be named as a valid turn-end exit string."""
+    text = build_ground_prompt()
+    assert "§ blocked:" in text, (
+        "ground must name § blocked: as a valid exit string when a rung-completion string is the final content"
+    )
+
+
+def test_continuation_invariant_awaiting_sentinel():
+    """Continuation invariant: § awaiting: must be named as a valid turn-end exit string."""
+    text = build_ground_prompt()
+    assert "§ awaiting:" in text, (
+        "ground must name § awaiting: as a valid exit string when a rung-completion string is the final content"
+    )
+
+
+def test_continuation_invariant_no_next_action_sentinel():
+    """Continuation invariant: § no-next-action: must be named as a valid turn-end exit string."""
+    text = build_ground_prompt()
+    assert "§ no-next-action:" in text, (
+        "ground must name § no-next-action: as a valid exit string when a rung-completion string is the final content"
+    )

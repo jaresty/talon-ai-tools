@@ -19,25 +19,11 @@ def test_tdd_preset_exists():
     assert desc != ""
 
 
-def test_tdd_continuation_blocked_sentinel():
-    """Fix 3: § blocked: sentinel must be named as a valid turn-end string."""
+def test_tdd_desc_no_sentinel_strings():
+    """TDD preset desc must be plain prose — no enforcement sentinel strings."""
     desc = _tdd_desc()
-    assert "§ blocked:" in desc
-
-
-def test_tdd_continuation_awaiting_sentinel():
-    """Fix 3: § awaiting: sentinel must be named as a valid turn-end string."""
-    desc = _tdd_desc()
-    assert "§ awaiting:" in desc
-
-
-def test_tdd_continuation_no_next_action_sentinel():
-    """Fix 3: § no-next-action: sentinel must be named as a valid turn-end string."""
-    desc = _tdd_desc()
-    assert "§ no-next-action:" in desc
-
-
-def test_tdd_continuation_satisfied_gate_strings():
-    """Fix 3: at least one satisfied-gate string must be named as a continuation trigger."""
-    desc = _tdd_desc()
-    assert "Gate condition:" in desc or "§0 observed" in desc or "§1 goal derived" in desc
+    assert "§ blocked:" not in desc
+    assert "§ awaiting:" not in desc
+    assert "§ no-next-action:" not in desc
+    assert "§0 observed" not in desc
+    assert "Continuation invariant" not in desc

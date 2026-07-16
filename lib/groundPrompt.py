@@ -155,7 +155,13 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'content ends with the `(iv)` line of the five-line block does not satisfy this requirement. '
         'Quoted-span exclusion: an occurrence of any named sentinel or heading string inside a markdown '
         'code fence (a span beginning with ``` or ~~~ on its own line) does not satisfy any rung or '
-        'ordering requirement — only occurrences outside code fences count toward compliance.'
+        'ordering requirement — only occurrences outside code fences count toward compliance. '
+        'Continuation invariant: when the final non-blank content line of a turn contains or follows '
+        'one of the rung-completion strings \'§0 observed\', \'§1 goal derived\', \'§2 dimensions closed\', '
+        '\'§4 coverage verified\', or \'§5 enumeration complete\', that turn must end with one of: '
+        '\'§ blocked: <text>\', \'§ awaiting: <text>\', or \'§ no-next-action: <text>\', where \'<text>\' '
+        'is non-empty. A turn whose final non-blank content line contains or follows one of these strings '
+        'and does not end with one of the three exit strings does not satisfy ground.'
     ),
 }
 

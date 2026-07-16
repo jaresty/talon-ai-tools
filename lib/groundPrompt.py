@@ -118,7 +118,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'must contain \'## Completion check\' before that question or closing text — '
         'a turn whose question or closing text appears before \'## Completion check\' does not satisfy ground; '
         '(5) enumerate escape paths: \'## Path enumeration\' must not appear before '
-        '\'§4 coverage verified\' in the transcript; '
+        '\'## Enforcement sequence\' in the transcript; '
         'enumerate every path by which §1–§4 headings could be present '
         'without the governing goal identified, dimensions derived, or dimensions covered; for each path, '
         'name the literal string whose presence closes it; write \'§5 enumeration complete\' when no '

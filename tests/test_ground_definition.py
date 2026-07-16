@@ -137,8 +137,8 @@ def test_ground_gate_S4_sentinel():
 
 
 def test_ground_gate_S4_path_enumeration_gate():
-    """S4: ## Path enumeration must not appear before §4 coverage verified in transcript."""
-    assert "must not appear before '§4 coverage verified'" in _ground_def()
+    """S4: ## Path enumeration must not appear before ## Enforcement sequence in transcript."""
+    assert "must not appear before '## Enforcement sequence'" in _ground_def()
 
 
 # §0 observed sentinel tests — FAIL against current definition, PASS after implementation.
@@ -227,3 +227,27 @@ def test_ground_implementation_permitted_immediacy():
     """§ implementation permitted must appear immediately before the (i) line — five-line block composition."""
     assert "immediately before the `(i)` line" in _ground_def()
     assert "each file-modifying tool call" in _ground_def()
+
+
+def test_ground_path_enumeration_gate_enforcement_sequence():
+    """§5 must gate on ## Enforcement sequence, not §4 coverage verified — closes circular deadlock."""
+    ground = _ground_def()
+    assert "'## Path enumeration' must not appear before '## Enforcement sequence'" in ground, (
+        "§5 gate must reference '## Enforcement sequence', not '§4 coverage verified' — "
+        "the old gate created a circular deadlock"
+    )
+    assert "'## Path enumeration' must not appear before '§4 coverage verified'" not in ground, (
+        "old deadlock gate string must be absent from ground definition"
+    )
+
+
+def test_ground_path_enumeration_gate_axisconfig():
+    """axisConfig.py ground description must also gate §5 on ## Enforcement sequence."""
+    from lib.axisConfig import AXIS_KEY_TO_VALUE
+    ground = AXIS_KEY_TO_VALUE["method"]["ground"]
+    assert "'## Path enumeration' must not appear before '## Enforcement sequence'" in ground, (
+        "axisConfig ground must gate §5 on '## Enforcement sequence', not '§4 coverage verified'"
+    )
+    assert "'## Path enumeration' must not appear before '§4 coverage verified'" not in ground, (
+        "old deadlock gate string must be absent from axisConfig ground description"
+    )

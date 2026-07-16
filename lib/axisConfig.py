@@ -336,13 +336,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "present above it in the transcript — a statement whose truth value requires evaluating a result not yet present is not a commitment; after the call, a run result must appear "
         "in the transcript in which the quoted scope text is absent and every other line from the immediately preceding pre-edit run result is present — the pre-edit run result for a "
         "given call is the run result that produced that call's scope commitment. Each file-modifying tool call's scope line must satisfy these requirements independently — a scope "
-        "line from a prior call does not carry forward. Then, immediately before each file-modifying tool call — as the last assistant text block before that call — write a block "
-        "containing exactly these four lines in order: `(i) scope inflation: <string>`, `(ii) stale quote: <string>`, `(iii) symbol cardinality: <string>`, `(iv) post-call line "
-        "mismatch: <string>`. The four lines must appear consecutively with no intervening lines. A content line is any non-blank line. A file-modifying tool call not immediately "
-        "preceded by a block whose last four content lines begin with `(i)`, `(ii)`, `(iii)`, `(iv)` in that order does not satisfy this requirement. The four-line block and the "
+        "line from a prior call does not carry forward. Then, immediately before each file-modifying tool call — as the last assistant text block before that call — write `§ "
+        "implementation permitted [N]` (where N is the 1-based index of the governed tool call) immediately before the `(i)` line, forming a five-line block: `§ implementation "
+        "permitted [N]`, `(i) scope inflation: <string>`, `(ii) stale quote: <string>`, `(iii) symbol cardinality: <string>`, `(iv) post-call line mismatch: <string>`. The five lines "
+        "must appear consecutively with no intervening lines. A content line is any non-blank line. A file-modifying tool call not immediately preceded by a block whose last five "
+        "content lines begin with `§ implementation permitted`, `(i)`, `(ii)`, `(iii)`, `(iv)` in that order does not satisfy this requirement. The five-line block and the "
         "file-modifying tool call must appear in the same response turn — a file-modifying tool call appearing in a different turn from its `(iv)` line does not satisfy this "
-        "requirement. Proceed to file-modifying tool calls only when the derivation and all four enumeration categories are present as the last four content lines above this point in "
-        "the transcript. The tool call follows immediately in the same turn — a tool call appearing in a different turn from its `(iv)` line does not satisfy this requirement.",
+        "requirement. Proceed to file-modifying tool calls only when the derivation and all five lines are present as the last five content lines above this point in the transcript. "
+        "The tool call must follow in the same response turn — a tool call appearing in a different turn from its `(iv)` line does not satisfy this requirement.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "
@@ -506,12 +507,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "enumeration complete' when no further open path remains; any referent named in the '[text]' from §1 not already present as a literal string in the transcript above §1 must be "
         "fetched before §1 is written; the string '§5 enumeration complete' appears exactly once; the string '§ implementation permitted [N]' where N is the 1-based index of the "
         "file-modifying tool call this sentinel governs must appear in the transcript after '§5 enumeration complete'; no file-modifying tool call may appear before the first '§ "
-        "implementation permitted [N]' sentinel; the literal string '§ implementation permitted [N]' with N matching the 1-based index of the governed tool call must appear as the "
-        "final non-blank content in the assistant text block immediately before each file-modifying tool call, in the same response turn as that tool call — a user message appearing "
-        "between '§ implementation permitted [N]' and the tool call does not satisfy this requirement; a file-modifying tool call not immediately preceded by assistant text whose final "
-        "non-blank content is the literal string '§ implementation permitted [N]' does not satisfy this requirement. Quoted-span exclusion: an occurrence of any named sentinel or "
-        "heading string inside a markdown code fence (a span beginning with ``` or ~~~ on its own line) does not satisfy any rung or ordering requirement — only occurrences outside "
-        "code fences count toward compliance.",
+        "implementation permitted [N]' sentinel; the literal string '§ implementation permitted [N]' with N matching the 1-based index of the governed tool call must appear immediately "
+        "before the `(i)` line of the five-line block in the assistant text block immediately before each file-modifying tool call, in the same response turn as that tool call — a user "
+        "message appearing between '§ implementation permitted [N]' and the tool call does not satisfy this requirement; a file-modifying tool call not immediately preceded by "
+        "assistant text whose final non-blank content ends with the `(iv)` line of the five-line block does not satisfy this requirement. Quoted-span exclusion: an occurrence of any "
+        "named sentinel or heading string inside a markdown code fence (a span beginning with ``` or ~~~ on its own line) does not satisfy any rung or ordering requirement — only "
+        "occurrences outside code fences count toward compliance.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause in the subject instruction — this criterion applies in any domain where instructions govern model behavior: a clause is "

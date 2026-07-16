@@ -224,6 +224,6 @@ def test_ground_implementation_permitted_same_turn():
 
 
 def test_ground_implementation_permitted_immediacy():
-    """§ implementation permitted must be final non-blank content before each file-modifying tool call."""
-    assert "final non-blank content" in _ground_def()
+    """§ implementation permitted must appear immediately before the (i) line — five-line block composition."""
+    assert "immediately before the `(i)` line" in _ground_def()
     assert "each file-modifying tool call" in _ground_def()

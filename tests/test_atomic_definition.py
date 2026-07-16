@@ -66,9 +66,9 @@ def test_atomic_per_call_independence():
 
 
 def test_atomic_escape_categories_per_call_positional():
-    """Dim 9: escape categories must appear as last four lines immediately before each call — closes once-discharge gap."""
+    """Dim 9: five-line block (§ permitted + (i)-(iv)) must appear as last five lines immediately before each call — closes once-discharge gap."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "last four content lines begin with" in defn
+    assert "last five content lines begin with" in defn
 
 
 def test_atomic_scope_line_above_escape_categories():
@@ -129,9 +129,9 @@ def test_atomic_rank5_stub_enumerated_values():
 
 
 def test_atomic_rank7_four_lines_contiguous():
-    """Rank 7: four escape-category lines must be consecutive with no intervening lines."""
+    """Rank 7: five-line block must be consecutive with no intervening lines."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "The four lines must appear consecutively with no intervening lines" in defn
+    assert "The five lines must appear consecutively with no intervening lines" in defn
 
 
 def test_atomic_rank9_scope_commitment_substring():
@@ -149,7 +149,7 @@ def test_atomic_same_turn_continuity():
 def test_atomic_readiness_same_turn():
     """Readiness sentence must require continuation in the same turn — not cross-turn."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "The tool call follows immediately in the same turn" in defn
+    assert "The tool call must follow in the same response turn" in defn
 
 
 def test_atomic_derivation_same_turn():
@@ -162,3 +162,15 @@ def test_atomic_no_implementation_depth_in_standalone():
     """(v) implementation depth belongs in falsify+atomic composition config, not atomic standalone."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "(v) implementation depth" not in defn
+
+
+def test_atomic_impl_permitted_immediately_before_i():
+    """§ implementation permitted [N] must appear immediately before the (i) line."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "immediately before the `(i)` line" in defn
+
+
+def test_atomic_tool_call_same_turn_as_iv():
+    """Tool call must follow in the same response turn as (iv) line."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "tool call must follow in the same response turn" in defn

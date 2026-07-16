@@ -24,7 +24,6 @@ type BuildResult struct {
 	ReferenceKey               ReferenceKeyContracts `json:"reference_key,omitempty"`
 	Preamble                   string              `json:"preamble,omitempty"`
 	AxisInteraction            string              `json:"axis_interaction,omitempty"`
-	ExecutionReminder          string              `json:"execution_reminder,omitempty"`
 	PlanningDirective          string              `json:"planning_directive,omitempty"`
 	MetaInterpretationGuidance string              `json:"meta_interpretation_guidance,omitempty"`
 	SubjectFraming             string              `json:"subject_framing,omitempty"`
@@ -1125,7 +1124,6 @@ func (s *buildState) toResult() *BuildResult {
 		ReferenceKey:               s.grammar.ReferenceKey,
 		Preamble:                   s.grammar.Preamble,
 		AxisInteraction:            s.grammar.AxisInteraction,
-		ExecutionReminder:          s.grammar.ExecutionReminder,
 		PlanningDirective:          s.grammar.PlanningDirective,
 		MetaInterpretationGuidance: s.grammar.MetaInterpretationGuidance,
 		SubjectFraming:             s.grammar.SubjectFraming,

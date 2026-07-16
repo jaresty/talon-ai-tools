@@ -119,25 +119,6 @@ def test_meta_interpretation_context_position():
 
 
 
-def test_execution_reminder_no_deny_list_clause():
-    """token-rewrite BD4: EXECUTION_REMINDER must not contain deny-list clause implying real-time model checking."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "content produced before that string appears does not satisfy" not in EXECUTION_REMINDER, (
-        "deny-list clause 'content produced before that string appears does not satisfy' must be removed from EXECUTION_REMINDER; "
-        "it implies real-time model checking rather than post-hoc evaluator compliance"
-    )
-
-
-def test_execution_reminder_no_gate_phrasing():
-    """token-rewrite BD5: EXECUTION_REMINDER must not contain pre-execution gate phrasing that blocks model output."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "The response produces content only after" not in EXECUTION_REMINDER, (
-        "gate phrasing 'The response produces content only after' must be removed from EXECUTION_REMINDER; "
-        "it reads as a pre-execution wait condition rather than an evaluator compliance criterion"
-    )
-
 
 def test_planning_directive_no_truthfulness_gate():
     """token-rewrite BD1: PLANNING_DIRECTIVE must not contain 'cannot be written truthfully' (CL1 refuse-via-diagnosis trigger)."""
@@ -259,51 +240,6 @@ def test_model_types_uses_helper_not_raw_dict():
                 )
 
 
-def test_execution_reminder_names_token_derivations_open():
-    """BD1: EXECUTION_REMINDER names 'Token derivations:' as the block opening string."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "Token derivations:" in EXECUTION_REMINDER, (
-        "expected 'Token derivations:' in EXECUTION_REMINDER as derivation block opening string"
-    )
-
-
-def test_execution_reminder_names_derived_stance_close():
-    """BD2: EXECUTION_REMINDER names 'Derived stance complete.' as the block closing string."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "Derived stance complete." in EXECUTION_REMINDER, (
-        "expected 'Derived stance complete.' in EXECUTION_REMINDER as derivation block closing string"
-    )
-
-
-def test_execution_reminder_no_transcript_satisfies_phrasing():
-    """BD3: EXECUTION_REMINDER must not contain 'A transcript satisfies this requirement' (task-trigger-string compliance check)."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "A transcript satisfies this requirement" not in EXECUTION_REMINDER, (
-        "EXECUTION_REMINDER must not contain 'A transcript satisfies this requirement'; "
-        "this describes a task-trigger-string compliance check, not the derivation block requirement"
-    )
-
-
-def test_execution_reminder_references_format():
-    """BD4: EXECUTION_REMINDER references 'FORMAT' (renamed from PLANNING DIRECTIVE) to unify the two block descriptions."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "FORMAT" in EXECUTION_REMINDER, (
-        "expected 'FORMAT' in EXECUTION_REMINDER to unify derivation block definition"
-    )
-
-
-def test_execution_reminder_no_planning_directive_reference():
-    """BD4b: EXECUTION_REMINDER must not reference 'PLANNING DIRECTIVE' after section rename to FORMAT."""
-    from lib.metaPromptConfig import EXECUTION_REMINDER
-
-    assert "PLANNING DIRECTIVE" not in EXECUTION_REMINDER, (
-        "EXECUTION_REMINDER must not reference 'PLANNING DIRECTIVE' after rename to FORMAT"
-    )
-
 
 def test_method_axis_requires_literal_string_prompt_reference_key():
     """D-transcript/D-string: PROMPT_REFERENCE_KEY method description must require the governing artifact
@@ -326,4 +262,22 @@ def test_method_axis_requires_literal_string_axis_full_text():
     assert "literal" in method_desc, (
         "_AXIS_FULL_TEXT['method'] must contain 'literal' — the governing artifact "
         "must be required to appear as a literal string in the transcript"
+    )
+
+
+def test_planning_directive_resume_phrase():
+    """PLANNING_DIRECTIVE must contain the resume phrase in allow-list form."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+    assert "Resume: say" in PLANNING_DIRECTIVE, (
+        "PLANNING_DIRECTIVE must contain 'Resume: say' — the resume phrase signals "
+        "to the user how to continue under the same protocol without pausing"
+    )
+
+
+def test_execution_reminder_removed():
+    """EXECUTION_REMINDER must not be exported from metaPromptConfig."""
+    import lib.metaPromptConfig as m
+    assert not hasattr(m, "EXECUTION_REMINDER"), (
+        "EXECUTION_REMINDER must be removed from metaPromptConfig — "
+        "it was superseded by PLANNING_DIRECTIVE"
     )

@@ -11,7 +11,7 @@ from ..lib.modelHelpers import (
     messages_to_string,
     notify,
 )
-from ..lib.metaPromptConfig import EXECUTION_REMINDER, PLANNING_DIRECTIVE, SUBJECT_FRAMING
+from ..lib.metaPromptConfig import PLANNING_DIRECTIVE, SUBJECT_FRAMING
 
 
 GPTItem = Union[GPTImageItem, GPTTextItem]
@@ -55,7 +55,6 @@ def format_source_messages(
                 "Tried to use a prompt with an additional source message without providing an additional source"
             )
     current_request: List[GPTItem] = [
-        format_message(f"=== EXECUTION REMINDER ===\n{EXECUTION_REMINDER}\n\n"),
         format_message("=== ADDENDUM (CLARIFICATION) ===\n"),
         format_message(prompt_chunks[0]),
         format_message("\n\n=== REQUEST (CONTEXT) ===\n"),

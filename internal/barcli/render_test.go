@@ -220,7 +220,6 @@ func TestRenderPersonaPresetWithIntent(t *testing.T) {
 func TestPlanningDirectiveFollowsSubject(t *testing.T) {
 	result := &BuildResult{
 		Task:              "make something",
-		ExecutionReminder: "Execute the TASK. Satisfy CONSTRAINTS before producing content.",
 		Subject:           "some subject content",
 	}
 
@@ -798,8 +797,7 @@ func TestRenderPlainText_NoTaskSection(t *testing.T) {
 // section is absent from the redesigned output (replaced by preamble).
 func TestRenderPlainText_NoExecutionReminderSection(t *testing.T) {
 	result := &BuildResult{
-		Task:              "make something",
-		ExecutionReminder: "some reminder",
+		Task: "make something",
 	}
 	output := RenderPlainText(result)
 	if strings.Contains(output, "=== EXECUTION REMINDER ===") {

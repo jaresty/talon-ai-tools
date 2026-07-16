@@ -142,7 +142,6 @@ export interface Grammar {
 	};
 	preamble?: string;
 	axis_interaction?: string;
-	execution_reminder: string;
 	planning_directive: string;
 	meta_interpretation_guidance: string;
 	subject_framing: string;

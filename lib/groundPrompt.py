@@ -119,6 +119,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         '\'## Completion check\' is satisfied only when the literal string \'§4 coverage verified\' appears within it — '
         'a \'## Completion check\' block that does not contain \'§4 coverage verified\' does not satisfy this requirement '
         'and the governed turn must continue to the next derived step rather than ending; '
+        'a turn whose final non-blank content line is \'§4 coverage verified\' is exempt from the resume phrase requirement; '
         '(5) enumerate escape paths: \'## Path enumeration\' must not appear before '
         '\'## Enforcement sequence\' in the transcript; '
         'enumerate every path by which §1–§4 headings could be present '

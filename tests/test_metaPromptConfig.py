@@ -274,6 +274,15 @@ def test_planning_directive_resume_phrase():
     )
 
 
+def test_planning_directive_s4_exemption_absent():
+    """PLANNING_DIRECTIVE must not contain §4 coverage verified as a resume-phrase exemption — ground-specific."""
+    from lib.metaPromptConfig import PLANNING_DIRECTIVE
+    assert "§4 coverage verified" not in PLANNING_DIRECTIVE, (
+        "PLANNING_DIRECTIVE must not contain '§4 coverage verified' exemption — "
+        "that exemption is ground-specific and belongs in groundPrompt.py and axisConfig.py"
+    )
+
+
 def test_planning_directive_resume_phrase_structural():
     """PLANNING_DIRECTIVE resume phrase clause must use structural exemption predicate, not intent-based trigger."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE

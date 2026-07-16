@@ -271,6 +271,24 @@ def test_ground_completion_check_requires_s4_coverage_verified_axisconfig():
     )
 
 
+def test_ground_s4_resume_exemption_groundprompt():
+    """groundPrompt.py must state that a turn containing §4 coverage verified is exempt from the resume phrase."""
+    ground = _ground_def()
+    assert "exempt from the resume phrase" in ground, (
+        "groundPrompt.py must contain '§4 coverage verified' resume-phrase exemption — "
+        "this is ground-specific and was moved from PLANNING_DIRECTIVE"
+    )
+
+
+def test_ground_s4_resume_exemption_axisconfig():
+    """axisConfig.py ground must also state the §4 coverage verified resume-phrase exemption."""
+    from lib.axisConfig import AXIS_KEY_TO_VALUE
+    ground = AXIS_KEY_TO_VALUE["method"]["ground"]
+    assert "exempt from the resume phrase" in ground, (
+        "axisConfig.py ground must contain '§4 coverage verified' resume-phrase exemption"
+    )
+
+
 def test_ground_yield_gate_fires_on_silent_yield():
     """Yield gate must fire on silent yield — trigger must be structural (no tool call), not intent-based."""
     ground = _ground_def()

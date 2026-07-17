@@ -365,7 +365,7 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 			return nil
 		},
 		SetChannel: func(value string) error {
-			s.channel = []string{value}
+			s.channel = append(s.channel, value)
 			return nil
 		},
 		SetDirectional: func(value string) error {
@@ -421,9 +421,6 @@ func (s *buildState) applyShorthandAxis(axis, token string) *CLIError {
 		}
 		s.form = append(s.form, token)
 	case "channel":
-		if len(s.channel) > 0 {
-			return s.errorf(errorConflict, "channel accepts a single token")
-		}
 		s.channel = append(s.channel, token)
 	case "directional":
 		if s.directional != "" {

@@ -135,7 +135,7 @@ _AXIS_SOFT_CAPS: dict[str, int] = {
     "scope": 2,
     "method": 5,
     "form": 1,
-    "channel": 1,
+    "channel": 3,  # multi-channel: all active channel tokens are satisfied
     "directional": 1,
 }
 

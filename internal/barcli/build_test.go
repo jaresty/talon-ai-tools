@@ -307,3 +307,19 @@ func TestTopologyInPromptOutput(t *testing.T) {
 		t.Errorf("topology token 'solo' missing from prompt output:\n%s", out.String())
 	}
 }
+
+// TestMultiChannelTokens specifies that multiple channel= tokens are accepted
+// and all appear in the build output.
+func TestMultiChannelTokens(t *testing.T) {
+	var out, errBuf strings.Builder
+	code := Run([]string{"build", "make", "channel:hunk", "channel:github", "--subject", "test"}, nil, &out, &errBuf)
+	if code != 0 {
+		t.Fatalf("bar build with two channel tokens failed: %s", errBuf.String())
+	}
+	if !strings.Contains(out.String(), "channel = hunk") {
+		t.Errorf("channel=hunk missing from prompt output")
+	}
+	if !strings.Contains(out.String(), "channel = github") {
+		t.Errorf("channel=github missing from prompt output")
+	}
+}

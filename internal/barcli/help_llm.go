@@ -343,7 +343,6 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "<tone-token>     ::= \"tone=\" <tone-value> | <tone-value>\n")
 	fmt.Fprintf(w, "<intent-token>   ::= \"intent=\" <intent-value> | <intent-value>\n\n")
 
-	fmt.Fprintf(w, "<task-token>     ::= <task-token-value>\n\n")
 
 	fmt.Fprintf(w, "<constraint-tokens> ::= <topology-token>? <completeness-token>? <scope-token>? <scope-token>? <method-token>? <method-token>? <method-token>? <method-token>? <method-token>? <form-token>? <channel-token>? <directional-token>?\n\n")
 
@@ -395,7 +394,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 		staticTokens = append(staticTokens, fmt.Sprintf("\"%s\"", slug))
 	}
 	sort.Strings(staticTokens)
-	fmt.Fprintf(w, "<task-token-value>   ::= %s\n", strings.Join(staticTokens, " | "))
+	fmt.Fprintf(w, "<task-token>         ::= %s\n", strings.Join(staticTokens, " | "))
 
 	// Helper function to format axis tokens
 	formatAxisTokens := func(axisName string, limit int) string {

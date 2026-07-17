@@ -306,8 +306,8 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 		fmt.Fprintf(w, "### Formal Grammar (EBNF)\n\n")
 		fmt.Fprintf(w, "```ebnf\n")
 		fmt.Fprintf(w, "<command> ::= \"bar\" \"build\" <token-sequence> <flags>\n")
-		fmt.Fprintf(w, "<token-sequence> ::= <persona-tokens>? <static-token> <constraint-tokens> <override-tokens>*\n")
-		fmt.Fprintf(w, "<constraint-tokens> ::= <topology>? <completeness>? <scope>? <scope>? <method>? <method>? <method>? <method>? <method>? <form>? <channel>? <directional>?\n")
+		fmt.Fprintf(w, "<token-sequence> ::= <persona-tokens>? <task-token> <constraint-tokens> <override-tokens>*\n")
+		fmt.Fprintf(w, "<constraint-tokens> ::= <topology>? <completeness>? <scope>? <scope>? <method>? <method>? <method>? <method>? <method>? <form>? <channel>? <channel>? <channel>? <directional>?\n")
 		fmt.Fprintf(w, "```\n\n")
 		return
 	}
@@ -330,7 +330,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "```ebnf\n")
 	fmt.Fprintf(w, "<command>       ::= \"bar\" \"build\" <token-sequence> <flags>\n\n")
 
-	fmt.Fprintf(w, "<token-sequence> ::= <persona-tokens>? <static-token> <constraint-tokens> <override-tokens>*\n\n")
+	fmt.Fprintf(w, "<token-sequence> ::= <persona-tokens>? <task-token> <constraint-tokens> <override-tokens>*\n\n")
 
 	fmt.Fprintf(w, "<persona-tokens> ::= (<persona-preset> | <persona-axis>)+\n\n")
 
@@ -343,7 +343,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "<tone-token>     ::= \"tone=\" <tone-value> | <tone-value>\n")
 	fmt.Fprintf(w, "<intent-token>   ::= \"intent=\" <intent-value> | <intent-value>\n\n")
 
-	fmt.Fprintf(w, "<static-token>   ::= <static-value>\n\n")
+	fmt.Fprintf(w, "<task-token>     ::= <task-token-value>\n\n")
 
 	fmt.Fprintf(w, "<constraint-tokens> ::= <topology-token>? <completeness-token>? <scope-token>? <scope-token>? <method-token>? <method-token>? <method-token>? <method-token>? <method-token>? <form-token>? <channel-token>? <directional-token>?\n\n")
 
@@ -395,7 +395,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 		staticTokens = append(staticTokens, fmt.Sprintf("\"%s\"", slug))
 	}
 	sort.Strings(staticTokens)
-	fmt.Fprintf(w, "<static-value>       ::= %s\n", strings.Join(staticTokens, " | "))
+	fmt.Fprintf(w, "<task-token-value>   ::= %s\n", strings.Join(staticTokens, " | "))
 
 	// Helper function to format axis tokens
 	formatAxisTokens := func(axisName string, limit int) string {
@@ -993,9 +993,9 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "Certain token combinations are not allowed or produce low-quality results:\n\n")
 
 	fmt.Fprintf(w, "**Output-exclusive conflicts:**\n")
-	fmt.Fprintf(w, "All channel tokens are output-exclusive — they mandate the entire response format. ")
-	fmt.Fprintf(w, "At most one channel token may appear per prompt. ")
-	fmt.Fprintf(w, "Combining two output-exclusive tokens produces contradictory instructions the LLM cannot reconcile.\n\n")
+	fmt.Fprintf(w, "Channel tokens are delivery-mechanism tokens — each mandates a distinct delivery target. ")
+	fmt.Fprintf(w, "Up to three channel tokens may appear per prompt; each is satisfied independently. ")
+	fmt.Fprintf(w, "Format-shaping channels (svg, gherkin, shellscript, code, diagram) produce contradictory instructions when combined — use at most one format-shaping channel.\n\n")
 
 	fmt.Fprintf(w, "**Prose-form conflicts:**\n")
 	fmt.Fprintf(w, "Form tokens that produce structured prose layouts conflict with channels that mandate a fixed non-prose or DSL-only output format. ")

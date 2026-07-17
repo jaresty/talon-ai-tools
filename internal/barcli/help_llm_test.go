@@ -208,7 +208,7 @@ func TestLLMHelpIncompatibilitiesPopulated(t *testing.T) {
 		description string
 		contains    string
 	}{
-		{"output-exclusive channel conflict rule", "output-exclusive"},
+		{"format-shaping channel conflict rule", "format-shaping channel"},
 		{"codetour task-affinity restriction", "codetour"},
 		{"gherkin task-affinity restriction", "gherkin"},
 		// rewrite form was retired per ADR 0085-Cycle-2
@@ -549,8 +549,8 @@ func TestLLMHelpADR0108Decisions(t *testing.T) {
 	catalog := output[catalogStart:]
 
 	// D1: channel-adaptive language in form descriptions
-	if !strings.Contains(catalog, "output-exclusive channel") {
-		t.Error("D1: Token Catalog missing channel-adaptive language (expected 'output-exclusive channel') in quiz/cocreate/facilitate")
+	if !strings.Contains(catalog, "format-shaping channel") {
+		t.Error("D1: Token Catalog missing channel-adaptive language (expected 'format-shaping channel') in quiz/cocreate/facilitate")
 	}
 
 	// D2: interactive-form conflict section is gone from § Incompatibilities

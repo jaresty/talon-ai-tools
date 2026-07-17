@@ -398,6 +398,24 @@ func TestBuildPackNameExpandsToCommand(t *testing.T) {
 	}
 }
 
+func TestBuildPackNameWithAdditionalTokensExpands(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+
+	// "craft" is a starter pack; "aloud" is a valid axis token.
+	// When combined, craft should expand and aloud should be included.
+	result := runBuildCLI(t, []string{"build", "craft", "aloud"}, nil)
+
+	if result.Exit != 0 {
+		t.Fatalf("expected exit 0 when pack name given with additional tokens, got %d\nstderr: %s\nstdout: %s", result.Exit, result.Stderr, result.Stdout)
+	}
+	if !strings.Contains(result.Stderr, "Expanding pack: craft") {
+		t.Errorf("expected 'Expanding pack: craft' on stderr, got:\n%s", result.Stderr)
+	}
+	if !strings.Contains(result.Stdout, "=== REQUEST 依頼 ===") {
+		t.Errorf("expected prompt output after expansion, got:\n%s", result.Stdout)
+	}
+}
+
 func TestStarterPackNamesDoNotCollideWithTokenNames(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {

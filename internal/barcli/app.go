@@ -337,16 +337,15 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 0
 	}
 
-	// Pack expansion: single token matching a starter pack name → expand before build.
-	// Tokens take precedence: only expand if the token is not already recognized by Build.
-	if len(options.Tokens) == 1 {
-		name := options.Tokens[0]
-		if _, testErr := Build(grammar, options.Tokens); testErr != nil {
+	// Pack expansion: if any token matches a starter pack name and the overall build would fail,
+	// expand that pack token in-place. Tokens take precedence: only expand if Build fails.
+	if _, testErr := Build(grammar, options.Tokens); testErr != nil {
+		for i, name := range options.Tokens {
 			for _, p := range grammar.StarterPacks {
 				if p.Name == name {
 					expanded := strings.Fields(strings.TrimPrefix(p.Command, "bar build "))
 					fmt.Fprintf(stderr, "Expanding pack: %s → %s\n", name, p.Command)
-					options.Tokens = expanded
+					options.Tokens = append(options.Tokens[:i], append(expanded, options.Tokens[i+1:]...)...)
 					break
 				}
 			}

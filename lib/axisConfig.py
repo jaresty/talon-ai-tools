@@ -73,6 +73,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "channels when wrapped in markdown code blocks.",
         "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation. When tools are available, write the output to a file with a "
         "`.html` extension rather than displaying it inline.",
+        "hunk": "The response is delivered via a live Hunk diff review session rather than displayed inline. Before proceeding: (1) run `hunk skill path` to locate the embedded skill; (2) read "
+        "that file with the Read tool and follow its workflow exactly. If no session exists, ask the user to launch Hunk in their terminal first.",
         "image": "The response consists solely of an image as the complete output — described through subject, style, composition, lighting, and technical parameters — with no surrounding prose "
         "or explanation.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
@@ -769,6 +771,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "formal": "Formal notation with optional clarifying prose",
         "gherkin": "Gherkin scenario format",
         "html": "Semantic HTML only, no prose",
+        "hunk": "Deliver via live Hunk review session",
         "jira": "Jira markup formatting",
         "ledger": "Write to persistent categorized ledger file",
         "plain": "Plain prose, no structural decoration",
@@ -1017,6 +1020,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "formal": "式",
         "gherkin": "瓜",
         "html": "標",
+        "hunk": "差",
         "image": "像",
         "jira": "票",
         "ledger": "台",
@@ -1467,6 +1471,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "formal": "Formal notation specification",
         "gherkin": "Gherkin scenarios",
         "html": "HTML output",
+        "hunk": "Deliver via Hunk diff review session",
         "image": "Image output",
         "jira": "Jira formatting",
         "ledger": "Persistent categorized ledger",
@@ -3025,6 +3030,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "output as a webpage",
                 "HTML page",
                 "HTML only",
+            ],
+        },
+        "hunk": {
+            "distinctions": [
+                {
+                    "note": "hunk = deliver findings via live Hunk diff session comments; demo = emit a self-contained evidence artifact",
+                    "token": "demo",
+                },
+                {
+                    "note": "hunk = deliver via Hunk session CLI; store = write output to any durable storage medium",
+                    "token": "store",
+                },
+            ],
+            "heuristics": [
+                "review in hunk",
+                "leave hunk comments",
+                "add comments to hunk",
+                "deliver via hunk",
+                "hunk review",
+                "annotate in hunk",
+                "post to hunk",
             ],
         },
         "image": {

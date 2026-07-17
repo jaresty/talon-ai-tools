@@ -54,18 +54,18 @@ def test_generalized_protocol_preserves_gap_driven_iteration():
 
 
 def test_generalized_protocol_is_domain_independent():
-    """Protocol must be domain-independent — slimmed form uses task-agnostic language."""
+    """Protocol must be domain-independent — slimmed form uses task-agnostic exit strings."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "question or closing text" in core or "no further planned tool calls" in core, (
-        "Slimmed protocol must be framed in task-agnostic terms"
+    assert "§ blocked" in core or "§ awaiting" in core or "§ no-next-action" in core, (
+        "Slimmed protocol must be framed in task-agnostic terms (§ blocked / §aawaiting / § no-next-action exit strings)"
     )
 
 
 def test_generalized_protocol_has_seven_rungs():
-    """Slimmed protocol (ADR-0224/crystal) — completion check heading gate + done declaration gate present."""
+    """Slimmed protocol (ADR-0224/crystal) — completion check heading gate + permit-sentinel ordering gate present."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "## Completion check" in core and "after '§ implementation permitted' has appeared in the transcript" in core, (
-        "Derivation-based protocol must gate post-permitted yields on a ## Completion check block"
+    assert "## Completion check" in core and "must not appear before '§ implementation permitted'" in core, (
+        "Derivation-based protocol must gate ## Completion check after § implementation permitted sentinel"
     )
 
 

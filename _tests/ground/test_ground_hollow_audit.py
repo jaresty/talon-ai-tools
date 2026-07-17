@@ -201,10 +201,10 @@ def test_rank6_sentinel_quoted_span_exclusion_present():
 # without naming evaluator-checkable strings. Fix: name a structural signal.
 
 def test_rank8_completion_check_placement_rule_present():
-    """§4 must require ## Completion check before questions or closing text."""
+    """## Completion check must be gated after ## Enforcement sequence and § implementation permitted."""
     core = _core()
-    assert "any assistant turn that contains a question directed at the user or no further planned tool calls" in core
-    assert "must contain '## Completion check' before that question or closing text" in core
+    assert "'## Completion check' must not appear before '## Enforcement sequence'" in core
+    assert "must not appear before '§ implementation permitted'" in core
 
 
 # ── Rank 9: Means-test line has no named string anchor ────────────────────────
@@ -228,6 +228,6 @@ def test_rank9_means_test_line_has_named_prefix():
 # but this test checks the §5 gate is conditioned on that requirement).
 
 def test_rank10_path_enumeration_gate_conditioned_on_coverage_verified():
-    """## Path enumeration must not appear before §4 coverage verified."""
+    """## Path enumeration must not appear before ## Enforcement sequence."""
     core = _core()
-    assert "'## Path enumeration' must not appear before '§4 coverage verified'" in core
+    assert "'## Path enumeration' must not appear before '## Enforcement sequence'" in core

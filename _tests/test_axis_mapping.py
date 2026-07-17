@@ -97,8 +97,8 @@ if bootstrap is not None:
 
             canonical = _canonicalise_axis_tokens("channel", tokens)
 
-            # Channel cap is 1; only the last token should survive.
-            self.assertEqual(canonical, ["slack"])
+            # Channel allows multiple tokens; duplicates are removed, order preserved (last-wins dedup).
+            self.assertEqual(canonical, ["jira", "slack"])
 
         def test_canonicalise_axis_tokens_applies_soft_caps_with_last_wins(self) -> None:
             """Soft caps should keep the most recent tokens for an axis."""

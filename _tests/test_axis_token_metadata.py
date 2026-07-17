@@ -175,6 +175,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
     EXPECTED_TOKENS = {
         "adr",
         "agent",
+        "aloud",
         "code",
         "codetour",
         "demo",

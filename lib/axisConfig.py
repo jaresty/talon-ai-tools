@@ -54,6 +54,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "all required tools explicitly in the frontmatter tools field; (2) state a trigger condition specific enough to be invoked unambiguously — the trigger must answer yes/no at "
         "runtime with no interpretation required; (3) end with an explicit 'Write to disk' instruction naming the target path (e.g. ~/.claude/agents/<name>.md or "
         ".claude/agents/<name>.md for project-scoped agents).",
+        "aloud": "The response is delivered via the system text-to-speech command rather than displayed inline. Before speaking: condense the content to spoken-word density — strip code blocks, "
+        "raw URLs, and long enumerations; summarize rather than truncate if content would exceed a natural spoken length. Use an elevated speech rate (e.g. `say -r 250` on macOS, "
+        "`espeak --speed=250` on Linux). Detect the platform via `uname` if uncertain. If no TTS command is available, display the condensed text inline instead.",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or "
         "surrounding explanation. When tools are available, write the output to a file with a `.tour` extension rather than displaying it inline.",
@@ -765,6 +768,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "Architecture Decision Record format",
         "agent": "Agent definition",
+        "aloud": "Deliver via system TTS at elevated speed",
         "code": "Code or markup only, no prose",
         "codetour": "VS Code CodeTour JSON file",
         "demo": "Pull request evidence artifact",
@@ -1015,6 +1019,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     "channel": {
         "adr": "記",
         "agent": "使",
+        "aloud": "声",
         "code": "碼",
         "codetour": "観",
         "demo": "証",
@@ -1467,6 +1472,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     "channel": {
         "adr": "Architecture decision record",
         "agent": "Agent definition output",
+        "aloud": "Deliver via system TTS",
         "code": "Code output",
         "codetour": "VS Code tour",
         "demo": "Pull request evidence artifact",
@@ -2882,6 +2888,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what are the agent's failure conditions",
                 "what is the agent not allowed to do",
                 "what is the agent's termination condition",
+            ],
+        },
+        "aloud": {
+            "distinctions": [
+                {
+                    "note": "aloud = spoken via system TTS command; plain = plain text displayed inline",
+                    "token": "plain",
+                },
+                {
+                    "note": "aloud = auditory delivery via TTS; github = visual delivery to GitHub via gh CLI",
+                    "token": "github",
+                },
+                {
+                    "note": "aloud = auditory delivery via TTS; hunk = visual delivery via Hunk diff session",
+                    "token": "hunk",
+                },
+            ],
+            "heuristics": [
+                "say this out loud",
+                "read this to me",
+                "speak the result",
+                "narrate this",
+                "read aloud",
+                "tts this",
+                "speak it",
+                "read it out",
             ],
         },
         "code": {

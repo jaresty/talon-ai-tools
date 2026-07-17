@@ -89,9 +89,9 @@ if bootstrap is not None:
             # Scope/method capped and canonicalised.
             self.assertEqual(axes["scope"], ["fail", "struct"])
             self.assertEqual(axes["method"], ["flow", "prioritize", "rigor"])
-            # Form/channel singletons.
+            # Form/channel — channel allows multiple tokens.
             self.assertEqual(axes["form"], ["table"])
-            self.assertEqual(axes["channel"], ["jira"])
+            self.assertEqual(axes["channel"], ["jira", "slack"])
             # Directional last-wins single token.
             self.assertEqual(axes["directional"], "fog")
 

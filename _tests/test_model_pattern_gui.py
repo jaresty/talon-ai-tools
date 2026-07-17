@@ -515,7 +515,7 @@ if bootstrap is not None:
                 self.assertEqual(scope, "fail struct")
                 self.assertEqual(method, "flow prioritize rigor")
                 self.assertEqual(form, "taxonomy")
-                self.assertEqual(channel, "jira")
+                self.assertEqual(channel, "jira slack")
                 self.assertEqual(directional, "fog")
 
             def test_motif_scan_pattern_uses_motifs_method(self) -> None:

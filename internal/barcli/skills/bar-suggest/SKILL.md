@@ -51,8 +51,8 @@ If the request is **not** ambiguous — the user has given sufficient signal abo
 3. **Initial `bar lookup`** on the original request to surface seed token candidates
 4. **Run `bar build form:interactive`** with confirmed seed tokens but no task token
 5. **Refine across turns** — `bar lookup` after each user answer; accumulate token set across all axes (task, scope, method, form, completeness, voice, audience, tone, intent, channel, topology, directional)
-6. **Stop condition fires** — select task token from dialogue answers; `bar guide` near-neighbors
-7. **Generate final menu** — primary command + alternative framings + any sequences (named or ad-hoc)
+6. **Stop condition fires** — select task token from dialogue answers; `bar guide` near-neighbors; run `bar sequence list` to surface named sequence candidates
+7. **Generate final menu** — primary command + alternative framings + any sequences (run `bar sequence show <name>` for each named candidate before including it)
 8. **User picks** — execute single command directly or hand sequence to bar-workflow
 
 ## Skill Behavior Rules
@@ -121,7 +121,7 @@ bar lookup "<cognitive operation>" --axis method  # restrict if the answer names
 # e.g., user says "just give me the plan" → bar lookup "sequence ordered steps structured plan"
 ```
 
-Show the top 2-3 results (token name + short label + axis). Fold confirmed candidates into the accumulating token set. **Track any `kind=sequence` results separately** — these are candidates for the final menu. A refinement turn that does not run `bar lookup` does not satisfy this requirement.
+Show the top 2-3 results (token name + short label + axis). Fold confirmed candidates into the accumulating token set. **Note any `sequences` arrays on token results** (e.g., `result.sequences[].name`) — record the sequence names as candidates to verify after the stop condition fires. Do not treat a token-level sequence reference as sufficient to describe or include a sequence — verification via `bar sequence show` is required. A refinement turn that does not run `bar lookup` does not satisfy this requirement.
 
 ### Refinement Turn Structure
 
@@ -151,7 +151,7 @@ Each refinement turn must follow the `form:interactive` contract:
    ```
    For each alternative framing, assemble a full token set using judgment over the lookup results — select whichever tokens across method, scope, form, and completeness best serve that framing given the subject matter. Do not default to the top result; pick tokens that produce a meaningfully different response. An option that differs from the primary in exactly one axis token position does not satisfy this requirement — each option must differ from every other option in at least two axis token positions, evaluator-checkable by comparing the two `bar build` token lists.
 
-4. **Include sequences if applicable**: check the running list of `kind=sequence` results collected during dialogue lookups. If any named sequence fits, include it as a menu option. If the domain inherently benefits from staged output (e.g., explore→evaluate, diagnose→fix) and no named sequence matches, generate an ad-hoc 2-3 step sequence as an additional option.
+4. **Include sequences if applicable**: run `bar sequence list` — a `bar sequence list` Bash tool-result block must appear in the transcript before the final menu is presented; a menu presented without this block does not satisfy this requirement. For each candidate sequence name (from `result.sequences[]` references collected during dialogue, or by matching the task domain against the `bar sequence list` descriptions), run `bar sequence show <name>` for that sequence — a menu containing N named sequence options without N corresponding `bar sequence show` tool-result blocks appearing above the menu does not satisfy this requirement. A menu option for a named sequence must contain a string that appears verbatim in the immediately preceding `bar sequence show <name>` tool-result block for that sequence — a menu option whose description text shares no verbatim substring of 5 or more consecutive words with the `bar sequence show` output does not satisfy this requirement. If no named sequence fits the task's phases and the domain inherently benefits from staged output (e.g., explore→evaluate, diagnose→fix), generate an ad-hoc 2-3 step sequence as an additional option — an ad-hoc sequence menu option must list each step as a numbered literal `bar build` command; a prose description of steps without literal `bar build` strings does not satisfy this requirement.
 
 5. **Distinctness check**: before presenting, verify each option would produce noticeably different output from the others — different reasoning process, different output shape, or different angle of attack. If two options are too similar (same methods, same scope, same form — differing only in one minor token), replace one with a more divergent framing by running a new `bar lookup` with a more contrasting intent phrase.
 
@@ -197,8 +197,9 @@ bar lookup "technical depth"                     # → surfaces: full, narrow
 # Step 5: Generate final menu
 bar guide diff        # disambiguate diff vs check
 bar lookup "failure modes assumptions evaluation"   # alternative framing → adversarial, contrast
-# No kind=sequence results surfaced during dialogue; domain (evaluate architecture) benefits
-# from staged output → generate ad-hoc sequence as option 3
+bar sequence list     # check named sequences — none match evaluate-architecture phases
+# No named sequence fits; domain (evaluate architecture) benefits from staged output
+# → generate ad-hoc sequence as option 3 (numbered bar build commands)
 
 # Present menu:
 # 1. Structured evaluation — compare with dependencies mapped

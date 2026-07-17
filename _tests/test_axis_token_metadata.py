@@ -182,6 +182,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         "draw",
         "formal",
         "gherkin",
+        "github",
         "html",
         "hunk",
         "image",

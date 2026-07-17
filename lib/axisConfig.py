@@ -71,6 +71,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "statements. Most effective with tasks requiring precise behavioral specification (`probe`, `make`, `ground`).",
         "gherkin": "The response outputs only Gherkin format as the complete output, using Jira markup where appropriate and omitting surrounding explanation. Works with presenterm/diagram "
         "channels when wrapped in markdown code blocks.",
+        "github": "The response is delivered to GitHub via the `gh` CLI rather than displayed inline. Infer the appropriate `gh` subcommand and target from context; format output as GitHub "
+        "Flavored Markdown. If the target cannot be inferred, ask before posting.",
         "html": "The response consists solely of semantic HTML as the complete output, with no surrounding prose or explanation. When tools are available, write the output to a file with a "
         "`.html` extension rather than displaying it inline.",
         "hunk": "The response is delivered via a live Hunk diff review session rather than displayed inline. Before proceeding: (1) run `hunk skill path` to locate the embedded skill; (2) read "
@@ -770,6 +772,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "draw": "Spatial ASCII prose layout",
         "formal": "Formal notation with optional clarifying prose",
         "gherkin": "Gherkin scenario format",
+        "github": "Deliver via gh CLI to GitHub",
         "html": "Semantic HTML only, no prose",
         "hunk": "Deliver via live Hunk review session",
         "jira": "Jira markup formatting",
@@ -1019,6 +1022,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "draw": "枠",
         "formal": "式",
         "gherkin": "瓜",
+        "github": "猫",
         "html": "標",
         "hunk": "差",
         "image": "像",
@@ -1470,6 +1474,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "draw": "ASCII spatial layout",
         "formal": "Formal notation specification",
         "gherkin": "Gherkin scenarios",
+        "github": "Deliver via gh CLI to GitHub",
         "html": "HTML output",
         "hunk": "Deliver via Hunk diff review session",
         "image": "Image output",
@@ -3019,6 +3024,28 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "acceptance tests in Gherkin",
                 "feature file",
                 "BDD test cases",
+            ],
+        },
+        "github": {
+            "distinctions": [
+                {
+                    "note": "github = deliver output to GitHub via gh CLI; slack = deliver output to Slack",
+                    "token": "slack",
+                },
+                {
+                    "note": "github = post to GitHub; store = write to any durable storage medium",
+                    "token": "store",
+                },
+            ],
+            "heuristics": [
+                "post to GitHub",
+                "add a GitHub comment",
+                "create a GitHub issue",
+                "open an issue",
+                "comment on the PR",
+                "post this to GitHub",
+                "gh comment",
+                "deliver to GitHub",
             ],
         },
         "html": {

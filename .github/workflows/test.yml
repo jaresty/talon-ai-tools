@@ -65,6 +65,9 @@ jobs:
       - name: Run tests
         run: python3 -m pytest tests/ -v
 
+      - name: Run _tests suite
+        run: python3 -m pytest _tests/ -v
+
       - name: Install ast-grep
         run: npm install -g @ast-grep/cli
 

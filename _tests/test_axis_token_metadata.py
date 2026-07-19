@@ -1242,5 +1242,77 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
 
+    def test_hollow_copresence_clause(self):
+        """hollow must name the co-presence constraint: when two strings must co-occur in the same structural unit to jointly satisfy a requirement, the clause must name both strings and the co-occurrence condition."""
+        hollow = self.meta.get("hollow", {})
+        definition = hollow.get("definition", "")
+        self.assertIn(
+            "must name both strings and the co-occurrence condition",
+            definition,
+            "hollow must name the co-presence constraint so co-occurrence requirements are evaluable by transcript inspection",
+        )
+
+    def test_clash_circular_dependency_named(self):
+        """clash must name circular dependency between gate conditions as a specific instance of locally valid elements producing global inconsistency."""
+        clash = self.meta.get("clash", {})
+        definition = clash.get("definition", "")
+        self.assertIn(
+            "circular dependency between",
+            definition,
+            "clash must name circular dependency as a specific instance of locally valid elements producing global inconsistency",
+        )
+
+    def test_hollow_zone_c_family_scope_heuristic(self):
+        """hollow's heuristics must include an entry stating that when combined with another audit token, the general-principle requirement applies to the combined finding set."""
+        hollow = self.meta.get("hollow", {})
+        heuristics = hollow.get("heuristics", [])
+        self.assertIn(
+            "combined finding set",
+            " ".join(heuristics),
+            "hollow heuristics must name the combined-finding-set scope for Zone C when co-present with another audit token",
+        )
+
+
+    def test_hollow_permitted_type_list_exhaustive(self):
+        """hollow must declare the permitted-type list as exhaustive so 'not matching a permitted type' is evaluable."""
+        hollow = self.meta.get("hollow", {})
+        definition = hollow.get("definition", "")
+        self.assertIn(
+            "The permitted-type list above is exhaustive",
+            definition,
+            "hollow must declare the permitted-type list exhaustive so the invalidity condition is evaluable by transcript inspection",
+        )
+
+    def test_hollow_finding_set_observable(self):
+        """hollow must replace prescription verb 'characterize' with an observable output for the finding-set step."""
+        hollow = self.meta.get("hollow", {})
+        definition = hollow.get("definition", "")
+        self.assertIn(
+            "list each finding and its indistinguishability mechanism",
+            definition,
+            "hollow must name the observable output for the finding-set step so it is evaluable without semantic inference",
+        )
+
+    def test_hollow_gap_labeled_finding(self):
+        """hollow must anchor 'named gap' to a labeled finding in the same response."""
+        hollow = self.meta.get("hollow", {})
+        definition = hollow.get("definition", "")
+        self.assertIn(
+            "labeled finding in the same response",
+            definition,
+            "hollow must anchor the gap-naming requirement to a labeled finding so its positional scope is evaluable",
+        )
+
+    def test_hollow_structural_unit_defined(self):
+        """hollow must define 'structural unit' as response turn, numbered step, or delimited block."""
+        hollow = self.meta.get("hollow", {})
+        definition = hollow.get("definition", "")
+        self.assertIn(
+            "same response turn, numbered step, or delimited block",
+            definition,
+            "hollow must define structural unit so co-occurrence boundary is evaluable from transcript alone",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

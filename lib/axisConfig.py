@@ -382,7 +382,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "a consequence of this structure, not a separate standard to satisfy.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
-        "inconsistency or breakdown.",
+        "inconsistency or breakdown. A circular dependency between two conditions — where each condition can only be satisfied after the other is satisfied — is a specific instance of "
+        "this pattern: each condition is locally valid, but the pair produces a globally deadlocked structure.",
         "cluster": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning "
         "of the items.",
         "collapse": "The response enhances the task by identifying redundant or equivalent representations and unifying them into a canonical form where no assertion that passed before the "
@@ -555,16 +556,19 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "transcripts with different evaluator-agreement rates on count or attachment. Before auditing any clause, characterize its type — permitted types are: allow-list clause (names "
         "what must be present; where a clause names an action, the allow-list must name the conditions that permit that action), prescription clause (names a step without naming the "
         "criterion the step serves), or prescription cluster (a set of clauses none of which derives from a criterion stated within the instruction). Any clause not matching a "
-        "permitted type is invalid. A deny-list clause (names what must be absent without naming the present-state observable) is invalid and must be converted: name the allow-list "
-        "condition that permits the behavior before treating the clause as closed. For each invalid clause: name it and its type; name the specific string whose removal would leave the "
-        "indistinguishability intact — a clause is invalid only when removing that string leaves two transcripts that a compliant model and a non-compliant model would both produce; "
-        "where the clause constrains cardinality or attachment, name the specific sentence from the subject instruction that produces equal evaluator-observable transcripts with "
-        "different evaluator-agreement rates on count or attachment (the addressability gap); before producing any rewrite, characterize the full finding set — if two or more findings "
-        "share the same mechanism of indistinguishability, a single general principle is the required output and per-clause rewrites are not permitted until it is shown no general "
-        "principle closes the same gaps; for each rewrite or general principle, name the specific string distinguishing the two compliance states before claiming the gap is closed; a "
-        "rewrite is permitted only when it is no longer than the original, or when each added clause closes a named gap that the shorter form leaves open — the gap must be named before "
-        "the clause is added. All output — findings, general principles, and rewrites — must use only structural terms; a term is structural if its meaning does not change when the "
-        "instruction's subject matter changes.",
+        "permitted type is invalid. The permitted-type list above is exhaustive. A deny-list clause (names what must be absent without naming the present-state observable) is invalid "
+        "and must be converted: name the allow-list condition that permits the behavior before treating the clause as closed. For each invalid clause: name it and its type; name the "
+        "specific string whose removal would leave the indistinguishability intact — a clause is invalid only when removing that string leaves two transcripts that a compliant model "
+        "and a non-compliant model would both produce; where the clause constrains cardinality or attachment, name the specific sentence from the subject instruction that produces "
+        "equal evaluator-observable transcripts with different evaluator-agreement rates on count or attachment (the addressability gap); before producing any rewrite, list each "
+        "finding and its indistinguishability mechanism — two findings share a mechanism when the same string removal leaves both gaps open — if two or more findings share a mechanism, "
+        "a single general principle is the required output and per-clause rewrites are not permitted until it is shown no general principle closes the same gaps; for each rewrite or "
+        "general principle, name the specific string distinguishing the two compliance states before claiming the gap is closed; a rewrite is permitted only when it is no longer than "
+        "the original, or when each added clause closes a named gap that the shorter form leaves open — the gap must appear as a labeled finding in the same response before the clause "
+        "that closes it is added. All output — findings, general principles, and rewrites — must use only structural terms; a term is structural if its meaning does not change when the "
+        "instruction's subject matter changes. When two strings must co-occur in the same response turn, numbered step, or delimited block — where the block delimiters are named within "
+        "the governing instruction — to jointly satisfy a requirement, the clause must name both strings and the co-occurrence condition explicitly — a clause that names only one "
+        "string of a co-occurrence pair leaves the same-unit condition unevaluable by transcript inspection alone.",
         "induce": "The response enhances the task by applying inductive reasoning, generalizing patterns from specific observations and naming an observation set that would disconfirm the "
         "generalization, and naming at least one observation in that set that is absent from the observations the generalization cites as support.",
         "inversion": "The response enhances the task by beginning from at least one named outcome that constitutes a failure state — whether named in the subject or generated by the response — "
@@ -5996,6 +6000,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "audit this prompt for compliance theater",
                 "where does this definition tell you what to produce instead of what to derive",
                 "which parts of this instruction can be mimicked without understanding",
+                "when combined with another audit token, apply the general-principle requirement to the combined finding set",
             ],
         },
         "induce": {

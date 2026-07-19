@@ -1314,5 +1314,21 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
 
+    def test_clash_names_detection_observable(self):
+        """clash must name the detection observable: both the locally valid commitment of each structure and the condition under which one breaks the other."""
+        clash = self.meta.get("clash", {})
+        definition = clash.get("definition", "")
+        self.assertIn(
+            "locally valid commitment of each structure",
+            definition,
+            "clash must name the locally valid commitment observable so conflict identification is evaluable by transcript inspection",
+        )
+        self.assertIn(
+            "condition under which one breaks the other",
+            definition,
+            "clash must name the breaking condition observable so global inconsistency is evaluable by transcript inspection",
+        )
+
+
 if __name__ == "__main__":
     unittest.main()

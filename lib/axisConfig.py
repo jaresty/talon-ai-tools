@@ -381,9 +381,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "output. Chain does not authorize proceeding without a predecessor in context; it authorizes proceeding only after the predecessor exists as a real tool result. Auditability is "
         "a consequence of this structure, not a separate standard to satisfy.",
         "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
-        "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign, analyzing how locally valid elements produce global "
-        "inconsistency or breakdown. A circular dependency between two conditions — where each condition can only be satisfied after the other is satisfied — is a specific instance of "
-        "this pattern: each condition is locally valid, but the pair produces a globally deadlocked structure.",
+        "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign by naming both the locally valid commitment of each "
+        "structure and the condition under which one breaks the other, producing a global inconsistency or breakdown. A circular dependency between two conditions — where each condition "
+        "can only be satisfied after the other is satisfied — is a specific instance of this pattern: each condition is locally valid, but the pair produces a globally deadlocked "
+        "structure.",
         "cluster": "The response groups or organizes existing items into clusters based on shared characteristics, relationships, or criteria, without altering the underlying content or meaning "
         "of the items.",
         "collapse": "The response enhances the task by identifying redundant or equivalent representations and unifying them into a canonical form where no assertion that passed before the "

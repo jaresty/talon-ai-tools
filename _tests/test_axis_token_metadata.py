@@ -947,6 +947,31 @@ class MethodAxisMetadataTests(unittest.TestCase):
         # ADR-0217: ladder rungs are derived from P1-P6, not explicitly stated.
         # This echo check removed - trust derivation, not explicit strings.
 
+    def test_ground_no_undefined_cognitive_test(self):
+        """ground §2 clause must not reference an undefined cognitive test (hollow finding F3a: 'reader-uncertainty test' had no definition or observable output)."""
+        ground = self.meta.get("ground", {})
+        definition = ground.get("definition", "")
+        self.assertNotIn(
+            "reader-uncertainty test",
+            definition,
+            "ground must not reference an undefined cognitive test — replace with an observable criterion",
+        )
+
+    def test_ground_derivation_unbounded_clause_is_observable(self):
+        """ground §2 'derivation is unbounded' clause must name an observable exit criterion (clash finding: 'challenge' had no detection observable)."""
+        ground = self.meta.get("ground", {})
+        definition = ground.get("definition", "")
+        self.assertIn(
+            "derivation is unbounded",
+            definition,
+            "ground must still contain the derivation unbounded clause",
+        )
+        self.assertNotIn(
+            "challenge each against",
+            definition,
+            "ground must not prescribe a cognitive 'challenge' step with no observable output",
+        )
+
     def test_hollow_allowlist_clause_names_governed_action(self):
         """hollow's allow-list clause must name 'where a clause names an action' so the allow-list is verifiable as governing the correct action (hollow self-audit finding)."""
         hollow = self.meta.get("hollow", {})

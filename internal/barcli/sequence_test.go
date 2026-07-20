@@ -2015,6 +2015,50 @@ func TestSequenceListAutonomousNoRequiresUserInput(t *testing.T) {
 	}
 }
 
+// Behavior 105: autonomous mode description requires literal "Step N complete." step-completion marker.
+func TestAutonomousModeStepCompleteMarker(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "list"})
+	if code != 0 {
+		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, `"Step N complete."`) {
+		t.Errorf("autonomous mode description must contain literal \"Step N complete.\" marker:\n%s", out)
+	}
+}
+
+// Behavior 106: autonomous mode description requires token string exact-match clause.
+func TestAutonomousModeTokenStringMatch(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "list"})
+	if code != 0 {
+		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "exactly matches the token string shown for step N+1") {
+		t.Errorf("autonomous mode description must contain exact-match clause for next step token string:\n%s", out)
+	}
+}
+
+// Behavior 107: autonomous mode description requires "Agents complete: N of N." dispatch observable.
+func TestAutonomousModeAgentsComplete(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "list"})
+	if code != 0 {
+		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, `"Agents complete: N of N."`) {
+		t.Errorf("autonomous mode description must contain \"Agents complete: N of N.\" dispatch observable:\n%s", out)
+	}
+}
+
+// Behavior 108: autonomous mode description names agents-complete line as transcript-observable.
+func TestAutonomousModeAgentsTranscriptObservable(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "list"})
+	if code != 0 {
+		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
+	}
+	if !strings.Contains(out, "transcript-observable that marks all agents returned") {
+		t.Errorf("autonomous mode description must name agents-complete line as transcript-observable:\n%s", out)
+	}
+}
+
 // Behavior 91: frame-explore final step uses probe method:converge, not pick method:converge.
 func TestFrameExploreFinalStepUsesProbeConverge(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})

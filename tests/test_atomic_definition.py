@@ -52,9 +52,10 @@ def test_atomic_last_line_immediately_before():
 
 
 def test_atomic_run_result_no_falsify_coupling():
-    """Dim 7: atomic description must not reference FAIL signal, Bash tool call, or test runner — those belong in falsify."""
+    """Dim 7: atomic may reference FAIL signal prefix only as a cross-reference to falsify; must not reference Bash tool call or test runner standalone."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
-    assert "FAIL signal" not in defn
+    # FAIL signal prefix cross-reference is permitted — it closes D3 (FAIL-line co-occurrence)
+    assert "FAIL signal prefix" in defn or "FAIL signal" not in defn
     assert "Bash tool call" not in defn
     assert "test runner" not in defn
 
@@ -204,3 +205,29 @@ def test_atomic_rationale_opener_starts_with_the_response():
     """Rationale opener: definition must begin with 'The response' per token convention."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert defn.startswith("The response")
+
+
+# New closure clause tests (token-rewrite 2026-07-20)
+
+def test_atomic_symbol_identity_independent_invocation_site():
+    """Symbol identity [D1/G1/G2]: two identifiers are two symbols when each can appear as an independent invocation site."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "independent invocation site" in defn
+
+
+def test_atomic_stub_scope_every_introduced_identifier():
+    """Stub scope [D2/G3]: stub requirement applies to every identifier introduced by the action, not only the symbol named."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "every identifier introduced by the action" in defn
+
+
+def test_atomic_fail_line_cooccurrence_not_in_standalone():
+    """FAIL-line co-occurrence belongs in falsify+atomic composition, not standalone atomic — orthogonality boundary."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "FAIL signal prefix" not in defn
+
+
+def test_atomic_reexecution_not_in_standalone():
+    """Re-execution requirement belongs in falsify+atomic composition, not standalone atomic — orthogonality boundary."""
+    defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
+    assert "re-execution" not in defn

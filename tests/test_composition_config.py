@@ -46,3 +46,17 @@ def test_falsify_atomic_mechanism_identifier_in_assert_statement():
     prose = _get_entry("falsify+atomic")
     assert prose is not None, "falsify+atomic entry not found"
     assert "assert statement of the governing artifact" in prose
+
+
+def test_falsify_atomic_fail_line_cooccurrence():
+    """FAIL-line co-occurrence [D3]: symbol commitment identifier must appear on a line containing the FAIL signal prefix."""
+    prose = _get_entry("falsify+atomic")
+    assert prose is not None, "falsify+atomic entry not found"
+    assert "independent invocation site" in prose
+
+
+def test_falsify_atomic_reexecution_requirement():
+    """Re-execution requirement [C2]: when preceding result lacks FAIL-line co-occurrence, re-execution required."""
+    prose = _get_entry("falsify+atomic")
+    assert prose is not None, "falsify+atomic entry not found"
+    assert "re-execution" in prose

@@ -105,7 +105,16 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "appear as a substring of the outcome-contract symbol's identifier, and (2) that identifier "
             "appears as a substring of the assert statement of the governing artifact — a FAIL whose "
             "failure line names only the outcome-contract symbol's identifier does not govern any "
-            "mechanism-level behavior beneath it."
+            "mechanism-level behavior beneath it. "
+            "When falsify and atomic are co-present, two identifiers are two symbols when each can appear "
+            "as an independent invocation site — an identifier introduced inside another identifier's body "
+            "that can be invoked independently is a second symbol requiring its own governing FAIL before "
+            "it may be introduced. The symbol commitment identifier must appear as a substring of a line "
+            "in the immediately preceding run result that also contains the FAIL signal prefix (field (a) "
+            "from the Falsify derivation block); an identifier appearing only on a non-FAIL line does not "
+            "satisfy this requirement. When the immediately preceding run result does not contain a line "
+            "satisfying this co-occurrence requirement for the next governed symbol, a re-execution of the "
+            "executor is required before the next scope commitment may be written."
         ),
     },
     {

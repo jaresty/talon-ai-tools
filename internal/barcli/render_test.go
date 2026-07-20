@@ -1,9 +1,50 @@
 package barcli
 
 import (
+	"os"
 	"strings"
 	"testing"
 )
+
+func TestTokensInstructionRootCriterionPhrase(t *testing.T) {
+	b, err := os.ReadFile("render.go")
+	if err != nil {
+		t.Fatalf("could not read render.go: %v", err)
+	}
+	if !strings.Contains(string(b), "whose first line is") {
+		t.Error(`render.go missing root criterion phrase "whose first line is"`)
+	}
+}
+
+func TestTokensInstructionSkipPathBPhrase(t *testing.T) {
+	b, err := os.ReadFile("render.go")
+	if err != nil {
+		t.Fatalf("could not read render.go: %v", err)
+	}
+	if !strings.Contains(string(b), "without a prior valid") {
+		t.Error(`render.go missing skip path (b) phrase "without a prior valid"`)
+	}
+}
+
+func TestTokensInstructionConsecutiveInOrderPhrase(t *testing.T) {
+	b, err := os.ReadFile("render.go")
+	if err != nil {
+		t.Fatalf("could not read render.go: %v", err)
+	}
+	if !strings.Contains(string(b), "consecutive lines in the next assistant output block") {
+		t.Error(`render.go missing consecutive-in-order phrase`)
+	}
+}
+
+func TestTokensInstructionLoadsVerifiedCountDefinition(t *testing.T) {
+	b, err := os.ReadFile("render.go")
+	if err != nil {
+		t.Fatalf("could not read render.go: %v", err)
+	}
+	if !strings.Contains(string(b), "count of distinct valid") {
+		t.Error(`render.go missing Loads verified count definition "count of distinct valid"`)
+	}
+}
 
 func TestRenderPlainTextSections(t *testing.T) {
 	result := &BuildResult{

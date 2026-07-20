@@ -1673,7 +1673,7 @@ func TestSequenceShowAutonomousModeGate(t *testing.T) {
 	if code != 0 {
 		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
 	}
-	if !strings.Contains(out, "A response turn that completes a non-final step without a bar build call for the next step does not satisfy autonomous mode") {
+	if !strings.Contains(out, "A response turn satisfies autonomous mode for a non-final step only when it contains") {
 		t.Errorf("bar sequence show autonomous mode must gate inter-step continuation:\n%s", out)
 	}
 }
@@ -1686,7 +1686,7 @@ func TestSequenceShowModeGlossaryInShowOutput(t *testing.T) {
 	for _, want := range []string{
 		"autonomous",
 		"all steps run without stopping",
-		"proceed to the next step immediately",
+		"proceed to the next step in the same response turn immediately",
 	} {
 		if !strings.Contains(out, want) {
 			t.Errorf("bar sequence show: mode glossary must contain %q:\n%s", want, out)
@@ -1702,7 +1702,7 @@ func TestSequenceListModeGlossary(t *testing.T) {
 	for _, want := range []string{
 		"Execution modes:",
 		"autonomous",
-		"proceed to the next step immediately without waiting for user input",
+		"proceed to the next step in the same response turn immediately after completing",
 		"linear",
 		"cycle",
 	} {

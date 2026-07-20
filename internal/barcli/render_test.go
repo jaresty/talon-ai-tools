@@ -1036,7 +1036,7 @@ func TestTokensCacheSkipClause(t *testing.T) {
 		formatIdx := strings.Index(rendered, sectionFormat)
 		tokensBlock = rendered[tokensIdx:formatIdx]
 	}
-	if !strings.Contains(tokensBlock, "already appears verbatim in the transcript") {
+	if !strings.Contains(tokensBlock, "appears in this transcript above this TOKENS section") {
 		t.Errorf("TOKENS instruction must contain transcript-verifiable cache-skip clause, got:\n%s", tokensBlock)
 	}
 }
@@ -1095,7 +1095,7 @@ func TestTokensSkipConditionRequiresProvenanceCheck(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, `containing "# Token:`) {
+	if !strings.Contains(tokensBlock, "# Token: <slug>") {
 		t.Errorf("TOKENS skip condition must require tool-result block containing '# Token: <slug>' for provenance, got:\n%s", tokensBlock)
 	}
 }
@@ -1114,7 +1114,7 @@ func TestTokensAdjacencyRequiresFirstAssistantText(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "next non-empty line of assistant output after that tool-result block") {
+	if !strings.Contains(tokensBlock, "consecutive lines in the next assistant output block") {
 		t.Errorf("TOKENS instruction must require 'next non-empty line of assistant output after that tool-result block', got:\n%s", tokensBlock)
 	}
 }
@@ -1165,7 +1165,7 @@ func TestTokensLoadedRequiresHeuristicPhrase(t *testing.T) {
 	if !strings.Contains(tokensBlock, `(when: "`) {
 		t.Errorf("TOKENS instruction must require Loaded: <slug> (when: \"<heuristic phrase>\") form, got:\n%s", tokensBlock)
 	}
-	if !strings.Contains(tokensBlock, "when: phrase must appear verbatim as a complete semicolon-delimited phrase in the Heuristics line") {
+	if !strings.Contains(tokensBlock, "verbatim complete semicolon-delimited phrase from the `Heuristics` line") {
 		t.Errorf("TOKENS instruction must state allow-list form: when: phrase must appear verbatim as a complete semicolon-delimited phrase in the Heuristics line, got:\n%s", tokensBlock)
 	}
 }
@@ -1205,10 +1205,10 @@ func TestTokensDerivationsCitesLoadedPhrase(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "verbatim phrase from the Heuristics line in the") {
+	if !strings.Contains(tokensBlock, "verbatim Heuristics phrase from the tool-result block") {
 		t.Errorf("TOKENS instruction must require derivations lines to quote verbatim phrase from the Heuristics line in the tool-result block, got:\n%s", tokensBlock)
 	}
-	if !strings.Contains(tokensBlock, "does not appear verbatim in the") {
+	if !strings.Contains(tokensBlock, "does not appear verbatim in that tool-result block") {
 		t.Errorf("TOKENS instruction must state non-compliance when derivations → clause doesn't appear verbatim in tool-result block, got:\n%s", tokensBlock)
 	}
 }
@@ -1264,7 +1264,7 @@ func TestTokensDerivationsGateText(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "does not appear verbatim in the") {
+	if !strings.Contains(tokensBlock, "does not appear verbatim in that tool-result block") {
 		t.Errorf("TOKENS derivations instruction must include non-compliance gate 'does not appear verbatim in the', got:\n%s", tokensBlock)
 	}
 }
@@ -1283,7 +1283,7 @@ func TestTokensFirstAssistantTextIsLineDefined(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "next non-empty line") {
+	if !strings.Contains(tokensBlock, "beginning with the next line of assistant output that is not itself a tool-result block") {
 		t.Errorf("TOKENS instruction must define 'first assistant text' as 'next non-empty line', got:\n%s", tokensBlock)
 	}
 }
@@ -1321,7 +1321,7 @@ func TestTokensSkipPathTruncationFallback(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "not visible verbatim in the current transcript window") {
+	if !strings.Contains(tokensBlock, "Do not skip based on memory or inference") {
 		t.Errorf("TOKENS instruction must include truncation fallback 'not visible verbatim in the current transcript window', got:\n%s", tokensBlock)
 	}
 }
@@ -1360,10 +1360,10 @@ func TestTokensDerivationsDirectAnchorAndTruncationFallback(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "Heuristics line in the") {
+	if !strings.Contains(tokensBlock, "Heuristics phrase from the tool-result block") {
 		t.Errorf("TOKENS derivations instruction must cite 'Heuristics line in the' tool-result block as direct anchor, got:\n%s", tokensBlock)
 	}
-	if !strings.Contains(tokensBlock, "contains neither") {
+	if !strings.Contains(tokensBlock, "if neither appears") {
 		t.Errorf("TOKENS derivations instruction must include truncation fallback for Description with 'contains neither', got:\n%s", tokensBlock)
 	}
 }
@@ -1383,7 +1383,7 @@ func TestTokensSkipRequiresToolResultBlockAdjacency(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "both phrase values must be verbatim copies of the corresponding phrases in the prior") {
+	if !strings.Contains(tokensBlock, "copying `when:` and `not:` verbatim from that prior valid line") {
 		t.Errorf("TOKENS skip-confirmed gate must state allow-list form: both phrase values must be verbatim copies, got:\n%s", tokensBlock)
 	}
 }
@@ -1426,10 +1426,10 @@ func TestTokensContinuityAnchor1(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "must be either a") {
+	if !strings.Contains(tokensBlock, "consecutive lines in the next assistant output block") {
 		t.Errorf("TOKENS instruction must contain between-load continuity anchor 'must be either a', got:\n%s", tokensBlock)
 	}
-	if !strings.Contains(tokensBlock, "simultaneous batch") {
+	if !strings.Contains(tokensBlock, "parallel batch") {
 		t.Errorf("TOKENS instruction must contain parallel-calls permission 'simultaneous batch', got:\n%s", tokensBlock)
 	}
 }

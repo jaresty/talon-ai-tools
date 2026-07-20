@@ -499,7 +499,7 @@ func TestRenderPlainText_LoadedArtifactInstruction(t *testing.T) {
 	if !strings.Contains(output, "Loaded:") {
 		t.Fatalf("TOKENS instruction must require 'Loaded:' artifact lines, got:\n%s", output)
 	}
-	if !strings.Contains(output, "shown after →") {
+	if !strings.Contains(output, "→ bar help token") {
 		t.Fatalf("TOKENS instruction must resolve slug via '→' hint, got:\n%s", output)
 	}
 	if !strings.Contains(output, "Token loads complete.") {

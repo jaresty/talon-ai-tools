@@ -17,7 +17,7 @@ from lib.axisConfig import AXIS_KEY_TO_VALUE
 def test_falsify_allow_list_clause():
     """Dimension A: named governing artifact identifier must appear as literal string in executor invocation."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "whose identifier appears as a literal string in the named executor invocation" in defn
+    assert "whose file path — the path passed as an argument to the executor invocation, not a package name or directory — appears as a literal string in the named executor invocation" in defn
 
 
 def test_falsify_retroactive_clause():
@@ -73,7 +73,7 @@ def test_falsify_executor_agnostic():
 def test_falsify_layer_gate():
     """D4: layer classification derives from governed symbol presence in test body."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "if the governed symbol name appears as a direct call in the test body, the layer is 'unit'" in defn
+    assert "if the governed symbol name appears as a token in a call expression in the test body — where the call expression is not nested inside another call expression that names a different symbol — the layer is 'unit'" in defn
 
 
 def test_falsify_domain_agnostic_layer():
@@ -107,7 +107,7 @@ def test_falsify_assertion_body_substring():
     """Gap close G2/D2: failure line must contain (d) as substring AND include assertion body substring."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
     assert "the failure line contains (d) as a substring" in defn
-    assert "failure line whose content includes a substring from the assert statement" in defn
+    assert "failure line whose content includes a substring from the governed assertion call expression" in defn
 
 
 def test_falsify_separation_constraint_tightened():

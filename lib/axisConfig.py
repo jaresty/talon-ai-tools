@@ -57,6 +57,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "aloud": "The response is delivered via the system text-to-speech command rather than displayed inline. Before speaking: condense the content to spoken-word density — strip code blocks, "
         "raw URLs, and long enumerations; summarize rather than truncate if content would exceed a natural spoken length. Use an elevated speech rate (e.g. `say -r 250` on macOS, "
         "`espeak --speed=250` on Linux). Detect the platform via `uname` if uncertain. If no TTS command is available, display the condensed text inline instead.",
+        "canvas": "The response is structured as input to a canvas rendering agent. The subject is represented as named shapes and connections rather than prose alone — the agent invokes the "
+        "available canvas rendering skill to render the output.",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or "
         "surrounding explanation. When tools are available, write the output to a file with a `.tour` extension rather than displaying it inline.",
@@ -788,6 +790,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "adr": "Architecture Decision Record format",
         "agent": "Agent definition",
         "aloud": "Deliver via system TTS at elevated speed",
+        "canvas": "Canvas rendering skill output",
         "code": "Code or markup only, no prose",
         "codetour": "VS Code CodeTour JSON file",
         "demo": "Pull request evidence artifact",
@@ -1040,6 +1043,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "adr": "記",
         "agent": "使",
         "aloud": "声",
+        "canvas": "盤",
         "code": "碼",
         "codetour": "観",
         "demo": "証",
@@ -1494,6 +1498,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "adr": "Architecture decision record",
         "agent": "Agent definition output",
         "aloud": "Deliver via system TTS",
+        "canvas": "Canvas rendering skill output",
         "code": "Code output",
         "codetour": "VS Code tour",
         "demo": "Pull request evidence artifact",
@@ -2936,6 +2941,29 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "tts this",
                 "speak it",
                 "read it out",
+            ],
+        },
+        "canvas": {
+            "distinctions": [
+                {
+                    "note": "sketch = D2 diagram source, not for canvas rendering",
+                    "token": "sketch",
+                },
+                {
+                    "note": "diagram = Mermaid code for Mermaid renderer",
+                    "token": "diagram",
+                },
+                {
+                    "note": "draw = ASCII spatial arrangement, human-readable only",
+                    "token": "draw",
+                },
+            ],
+            "heuristics": [
+                "draw this",
+                "put this on a canvas",
+                "visualize as shapes",
+                "render as a diagram in tldraw",
+                "canvas view of this",
             ],
         },
         "code": {

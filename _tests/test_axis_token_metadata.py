@@ -176,6 +176,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         "adr",
         "agent",
         "aloud",
+        "canvas",
         "code",
         "codetour",
         "demo",

@@ -96,8 +96,8 @@ def test_falsify_import_error_exclusion():
     satisfy (g) regardless of whether (a) precedes (c).
     """
     text = _falsify()
-    assert "failure line whose content includes a substring from the assert statement" in text, (
-        "falsify must require failure line to contain a substring from the assert statement "
+    assert "failure line contains a substring from the governed assertion call expression" in text, (
+        "falsify must require failure line to contain a substring from the governed assertion call expression "
         "— closes import-error escape route (D1/C1/D2/G1)"
     )
 

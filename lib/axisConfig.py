@@ -274,9 +274,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "where first-principles exposition contradicts assumed expertise.",
         "scorecard": "The response structures the output as a scorecard: a set of quantitative metrics each with a baseline, target, current value, and RAG (red/amber/green) status — suitable for "
         "tracking and reporting progress to stakeholders over time.",
-        "slides": "The response is organized as a sequence of slide units. A slide unit is a heading line followed by a body of at most four lines. Before emitting any content, count the planned "
-        "slide units and confirm each has a heading line; a slide unit with no heading line or a body exceeding four lines does not satisfy this token. At least two slide units must be "
-        "present. Any rendering format is permitted; the token governs structure, not medium.",
+        "slides": "The response is organized as a sequence of discrete slide units. Each unit is a self-contained chunk of content — its internal structure and content type (text, heading, "
+        "diagram, image, or any combination) are left to the task. Any rendering format is permitted; the token governs the sequence structure, not the content type or medium.",
         "snap": "The response structures the output as a state snapshot: current progress, key decisions made, what remains, and enough context to resume, reconstruct, or hand off the work from "
         "this point. Forward-oriented — captures where things stand for later pickup, not what happened during the work.",
         "socratic": "The response interrogates the user's stated or implied position. Before producing any question, name the specific claim, belief, or reasoning step from the user's input that "

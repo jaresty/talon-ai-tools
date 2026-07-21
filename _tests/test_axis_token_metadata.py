@@ -432,6 +432,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "socratic",
         "spike",
         "story",
+        "storyboard",
         "table",
         "taxonomy",
         "test",

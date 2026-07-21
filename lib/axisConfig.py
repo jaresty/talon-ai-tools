@@ -287,6 +287,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "artifact naming its source and target state. At least two named state blocks and at least one transition connecting them must be present.",
         "story": 'The response formats the backlog item as a user story using "As a <persona>, I want <capability>, so that <value>." It may include a short description and high-level acceptance '
         "criteria in plain prose but avoids Gherkin or test-case syntax.",
+        "storyboard": "The response structures the subject as a sequence of numbered panels. Each panel contains: a Scene line (an observable state or artifact — what could appear in a screenshot "
+        "or document at this moment, not an inferred or cognitive state); a Narration line (the text that accompanies this panel); and an optional Bridge line (a single line naming "
+        "the transition or context shift from the preceding panel). No text appears outside the panel sequence except a single optional title line before panel 1. Panels are visually "
+        "delimited by a blank line, horizontal rule, or equivalent panel boundary marker appropriate to the output medium. No panel references an entity, event, or transition that "
+        "has not been introduced in that panel or an earlier panel.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
         "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes "
         "clearly. Output adapts to channel: code channel → type system (interfaces, enums, hierarchies); markup → hierarchical structure; no channel → prose sections.",
@@ -876,6 +881,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "spike": "Research spike backlog item",
         "stage": "Named-state sequence with explicit transition artifacts",
         "story": "User story format",
+        "storyboard": "Numbered panels with Scene and Narration",
         "table": "Markdown table presentation",
         "taxonomy": "Classification or type hierarchy",
         "template": "Fill-in-the-blank structured artifact",
@@ -1130,6 +1136,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "spike": "査",
         "stage": "幕",
         "story": "話",
+        "storyboard": "絵",
         "table": "表",
         "taxonomy": "別",
         "template": "型",
@@ -1583,6 +1590,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "spike": "Research spike",
         "stage": "Named-state sequence with explicit transition artifacts",
         "story": "User story",
+        "storyboard": "Numbered panels with Scene and Narration",
         "table": "Structured comparison",
         "taxonomy": "Classification system",
         "template": "Fill-in-the-blank artifact",
@@ -4684,6 +4692,31 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "user story for this feature",
                 "backlog user story",
                 "story card",
+            ],
+        },
+        "storyboard": {
+            "distinctions": [
+                {
+                    "note": "ghost = workflow execution trace of actions and results; storyboard = pre-structured narrative arc across observable scenes",
+                    "token": "ghost",
+                },
+                {
+                    "note": "dialogue = turns assigned to named speakers; storyboard = content assigned to observable visual moments",
+                    "token": "dialogue",
+                },
+                {
+                    "note": "log = chronological work record; storyboard = designed presentational sequence with Scene/Narration structure",
+                    "token": "log",
+                },
+            ],
+            "heuristics": [
+                "walk me through",
+                "panel by panel",
+                "scene by scene",
+                "show the sequence",
+                "frame by frame",
+                "storyboard this",
+                "visual walkthrough",
             ],
         },
         "table": {

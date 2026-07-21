@@ -366,3 +366,101 @@ def test_chain_uses_governing_output_for_implementation_step_predecessor():
         "chain must use 'governing output' for the implementation step predecessor "
         "artifact (ADR-0227 Decision 5)"
     )
+
+
+# --- falsify: hollow audit fixes (2026-07-21) ---
+
+def test_falsify_opening_clause_requires_assert_call_expression():
+    """falsify opening clause must constrain the tool-result block to contain assert call expression substring.
+
+    hollow audit finding 1: 'tool-result block containing the FAIL' does not forward-reference
+    (a) or (c); surface FAIL match suffices. Fix: the opening clause must require the failure
+    line to contain a substring from the governed assertion call expression.
+    """
+    text = _falsify()
+    assert (
+        "governed assertion" in text and
+        "call expression" in text
+    ), (
+        "falsify opening clause must require the failure line to contain a substring from "
+        "the governed assertion call expression — surface FAIL match is insufficient "
+        "(hollow audit fix 1, 2026-07-21)"
+    )
+
+
+def test_falsify_named_artifact_identifier_is_file_path():
+    """falsify must define named governing artifact identifier as file path, not any substring.
+
+    hollow audit finding 2: 'identifier' boundary undefined; any substring of the executor
+    invocation qualifies. Fix: must specify that the file path appears as an argument to
+    the executor invocation, not a package name or directory.
+    """
+    text = _falsify()
+    assert (
+        "file path" in text and
+        "argument" in text
+    ), (
+        "falsify must define named governing artifact as one whose file path appears as an "
+        "argument to the executor invocation — not any substring (hollow audit fix 2, 2026-07-21)"
+    )
+
+
+def test_falsify_clause_e_direct_call_defined_by_nesting():
+    """falsify clause (e) must define 'direct call' as structural nesting property.
+
+    hollow audit finding 3: 'direct call' requires semantic inference on call depth. Fix: must
+    state the call expression is not nested inside another call expression naming a different symbol.
+    """
+    text = _falsify()
+    assert (
+        "nested" in text and
+        "call expression" in text
+    ), (
+        "falsify clause (e) must define unit layer via structural call-expression nesting, "
+        "not semantic inference on call depth (hollow audit fix 3, 2026-07-21)"
+    )
+
+
+def test_falsify_clause_f_disposable_defined_by_c_absence():
+    """falsify clause (f) must define disposable artifact as one where (c) does not appear after removal.
+
+    hollow audit finding 4: 'executor result unchanged' baseline undefined. Fix: must state
+    'produces an executor result in which (c) does not appear'.
+    """
+    text = _falsify()
+    assert "(c) does not appear" in text, (
+        "falsify clause (f) must define disposable artifact as one where removing the governed "
+        "symbol produces an executor result in which (c) does not appear "
+        "(hollow audit fix 4, 2026-07-21)"
+    )
+
+
+def test_falsify_clause_g_assert_substring_names_callee():
+    """falsify clause (g) must define assert substring via callee name containing governed symbol.
+
+    hollow audit finding 5: 'assert statement' allows any test body line by semantic inference.
+    Fix: must name the callee of the governed assertion call expression as the structural marker.
+    """
+    text = _falsify()
+    assert (
+        "callee" in text and
+        "call expression" in text
+    ), (
+        "falsify clause (g) must define the assert substring as from the governed assertion "
+        "call expression whose callee contains the governed symbol name — not any test body line "
+        "(hollow audit fix 5, 2026-07-21)"
+    )
+
+
+def test_falsify_per_behavior_scoping_fixed_at_derivation_time():
+    """falsify per-behavior scoping must lock the behavior name at derivation time.
+
+    hollow audit finding 6: 'named behavior' grain unconstrained; model can reframe post-hoc.
+    Fix: behavior name must be fixed at derivation time via the (d) entry.
+    """
+    text = _falsify()
+    assert "derivation time" in text, (
+        "falsify per-behavior scoping must fix the behavior name at derivation time via the (d) "
+        "entry — post-hoc reframing to match an existing FAIL is not permitted "
+        "(hollow audit fix 6, 2026-07-21)"
+    )

@@ -1089,13 +1089,13 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_direct_invocation_observable(self):
-        """falsify must name the observable distinguishing direct invocation — named governing artifact identifier must appear as literal string in executor invocation (domain-agnostic form)."""
+        """falsify must name the observable distinguishing direct invocation — named governing artifact file path must appear as argument in executor invocation (domain-agnostic form)."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "whose identifier appears as a literal string in the named executor invocation",
+            "whose file path — the path passed as an argument to the executor invocation, not a package name or directory — appears as a literal string in the named executor invocation",
             definition,
-            "falsify must name the observable that distinguishes direct invocation: named governing artifact identifier must appear as literal string in executor invocation",
+            "falsify must name the observable that distinguishes direct invocation: named governing artifact file path must appear as argument to executor invocation",
         )
 
     def test_falsify_creation_step_boundary_required(self):
@@ -1196,13 +1196,13 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
     def test_falsify_disposable_artifact_clause(self):
-        """falsify's (f) must name the disposable-artifact exclusion — removing the governed symbol from the governed artifact without changing the named governing artifact."""
+        """falsify's (f) must name the disposable-artifact exclusion — removing the governed symbol produces an executor result in which (c) does not appear."""
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "removing the governed symbol from the governed artifact without changing the named governing artifact",
+            "removing the governed symbol from the governed artifact — without modifying the named governing artifact — produces an executor result in which (c) does not appear",
             definition,
-            "falsify (f) must name the disposable-artifact exclusion: 'removing the governed symbol from the governed artifact without changing the named governing artifact'",
+            "falsify (f) must name the disposable-artifact exclusion via (c)-absence criterion",
         )
 
     def test_falsify_zero_artifact_entry_branch(self):

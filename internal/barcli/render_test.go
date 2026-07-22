@@ -1434,6 +1434,45 @@ func TestTokensContinuityAnchor1(t *testing.T) {
 	}
 }
 
+// TestRenderTokensParallelBatchInstruction verifies that the TOKENS section instruction
+// tells LLMs to issue all bar help token calls in a single parallel batch.
+func TestRenderTokensParallelBatchInstruction(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	if !strings.Contains(tokensBlock, "single parallel batch before writing any") {
+		t.Errorf("TOKENS instruction must contain parallel-batch directive, got:\n%s", tokensBlock)
+	}
+}
+
+// TestRenderCompositionParallelBatchInstruction verifies that the COMPOSITION RULES section
+// instruction tells LLMs to issue all bar help composition calls in a single parallel batch.
+func TestRenderCompositionParallelBatchInstruction(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+		ActiveCompositions: []Composition{
+			{Name: "gate+falsify"},
+		},
+	}
+	output := RenderPlainText(result)
+	compositionIdx := strings.Index(output, sectionCompositionRules)
+	formatIdx := strings.Index(output, sectionFormat)
+	compositionBlock := output[compositionIdx:formatIdx]
+	if !strings.Contains(compositionBlock, "single parallel batch before writing any") {
+		t.Errorf("COMPOSITION RULES instruction must contain parallel-batch directive, got:\n%s", compositionBlock)
+	}
+}
+
 // TestTokensContinuityAnchor2 verifies that the TOKENS instruction contains the
 // post-completion continuity anchor: Token loads complete. is not a turn-end signal
 // and no user message may appear between it and the Token derivations block.

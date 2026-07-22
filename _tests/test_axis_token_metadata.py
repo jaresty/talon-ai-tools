@@ -1065,7 +1065,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "complete only when a literal block labeled 'Falsify derivation:' containing entries for (a) through (g) appears in the transcript",
+            "complete only when a literal block labeled 'Falsify derivation:' containing entries for (a) through (g) and (f2) appears in the transcript",
             definition,
             "falsify must explicitly block the governed action until derivation and satisfying result are present in the transcript",
         )

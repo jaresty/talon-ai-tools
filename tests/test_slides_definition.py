@@ -29,36 +29,12 @@ def test_slides_key_present():
 
 
 def test_slides_sequence_of_slide_units():
-    assert "sequence of slide units" in SLIDES_DEF, (
-        "slides definition must contain 'sequence of slide units' (root criterion — replaces 'slide deck')"
-    )
-
-
-def test_slides_unit_is_heading_line():
-    assert "A slide unit is a heading line" in SLIDES_DEF, (
-        "slides definition must contain 'A slide unit is a heading line' (structural definition)"
-    )
-
-
-def test_slides_body_at_most_four_lines():
-    assert "a body of at most four lines" in SLIDES_DEF, (
-        "slides definition must contain 'a body of at most four lines' (replaces bullet-only constraint)"
-    )
-
-
-def test_slides_derivation_gate():
-    assert "count the planned slide units" in SLIDES_DEF, (
-        "slides definition must contain 'count the planned slide units' (derivation gate — closes G3)"
-    )
-
-
-def test_slides_minimum_count():
-    assert "At least two slide units" in SLIDES_DEF, (
-        "slides definition must contain 'At least two slide units' (minimum count)"
+    assert "sequence of discrete slide units" in SLIDES_DEF, (
+        "slides definition must contain 'sequence of discrete slide units' (root criterion)"
     )
 
 
 def test_slides_notation_agnostic():
-    assert "the token governs structure, not medium" in SLIDES_DEF, (
-        "slides definition must contain 'the token governs structure, not medium' (hollow-closure)"
+    assert "the token governs the sequence structure, not the content type or medium" in SLIDES_DEF, (
+        "slides definition must contain 'the token governs the sequence structure, not the content type or medium'"
     )

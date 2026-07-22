@@ -219,3 +219,15 @@ def test_falsify_gap_artifact_gates_file_modifying_calls():
     """Artifact gap: no file-modifying tool call may appear before the tool call that produces the named artifact."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
     assert "no file-modifying tool call may appear before the tool call that produces the named artifact" in defn
+
+
+def test_falsify_serialization_gate():
+    """(f2) serialization gate clause must appear in the falsify definition."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "(f2) serialization gate" in defn
+
+
+def test_falsify_serialization_gate_structural_rule():
+    """Serialization gate uses structural rule, not deny-list — 'string/byte/text representation' must appear."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "string/byte/text representation" in defn

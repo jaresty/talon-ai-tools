@@ -222,6 +222,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "`Speaker: their words`, maintaining the register committed above. Where the subject has a scene boundary or tonal shift, add a narration line in [square brackets] before the "
         "relevant turn.",
         "direct": "The response structures ideas by leading with the main point or recommendation, followed only by the most relevant supporting context, evidence, and next steps.",
+        "elicit": "The response addresses the person administering it rather than the person answering — each section contains at least one instruction to the holder (what to ask, what to listen "
+        "for, or what to record); quoted question text directed at the respondent does not violate this requirement.",
         "facilitate": "The response structures itself as a facilitation plan — framing the goal, proposing session structure, managing participation and turn-taking rather than doing the work "
         "solo. Without an output-exclusive channel, acts as a live facilitator; with one, produces a static facilitation guide.",
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
@@ -871,6 +873,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "coupling": "Coupling map layout",
         "dialogue": "Dialogue between identified speakers",
         "direct": "Lead with main point first",
+        "elicit": "Elicitation instrument for administrator",
         "facilitate": "Facilitation plan and session structure",
         "faq": "Question-and-answer format",
         "formats": "Document types and writing formats",
@@ -1127,6 +1130,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "coupling": "繋",
         "dialogue": "談",
         "direct": "直",
+        "elicit": "引",
         "facilitate": "促",
         "faq": "質",
         "formats": "様",
@@ -1582,6 +1586,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "coupling": "Coupling map",
         "dialogue": "Dialogue between identified speakers",
         "direct": "Lead with conclusion",
+        "elicit": "Elicitation instrument",
         "facilitate": "Facilitation plan",
         "faq": "FAQ format",
         "formats": "Format comparison",
@@ -4268,6 +4273,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "direct response",
                 "state the recommendation first",
                 "don't bury the lede",
+            ],
+        },
+        "elicit": {
+            "distinctions": [
+                {
+                    "note": "elicit = addresses the administrator with instructions (ask, listen for, record); questions = bare list addressed to no one in particular",
+                    "token": "questions",
+                },
+                {
+                    "note": "elicit = information-gathering instrument with per-section holder instructions; facilitate = session management plan with agenda, timing, and "
+                    "participation cues",
+                    "token": "facilitate",
+                },
+                {
+                    "note": "elicit = static instrument the holder operates; socratic = LLM asks the user questions interactively to surface their thinking",
+                    "token": "socratic",
+                },
+            ],
+            "heuristics": [
+                "interview guide",
+                "facilitator document",
+                "discovery script",
+                "user research protocol",
+                "survey with context",
+                "what to ask and listen for",
+                "questions for someone else to administer",
             ],
         },
         "facilitate": {

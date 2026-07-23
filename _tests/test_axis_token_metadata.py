@@ -413,6 +413,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "contextualise",
         "coupling",
         "direct",
+        "elicit",
         "facilitate",
         "faq",
         "formats",

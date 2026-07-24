@@ -475,12 +475,18 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "invocation, and a subsequent executor invocation produces (b) at the position where (a) was absent. Per-behavior scoping: a governed artifact-producing action is compliant "
         "when (g) is satisfied for the behavior named in the Falsify derivation block's (d) entry — the behavior name is fixed at derivation time and may not be restated or narrowed "
         "after (g) is observed; the action is not required to implement any behavior for which (g) has not yet been established; unguarded behaviors require separate governing FAILs "
-        "in subsequent steps and must not be treated as a blocking condition on the current action. Artifact gap: when the Falsify derivation block contains the line '(g) observed "
-        "FAIL result: unavailable' and no tool-result block in this transcript produced by a named executor invocation contains (c) as a substring, the derivation is incomplete. A "
-        "derivation is complete only when a line beginning 'Gap artifact:' appears in the transcript immediately above the Falsify derivation block, naming the executor invocation "
-        "designated to produce a result containing (a) before (c). When 'Gap artifact:' is present, the tool call that produces that artifact satisfies the creation-step exception; no "
-        "file-modifying tool call may appear before the tool call that produces the named artifact. A governed symbol renamed by a refactor is a new governed symbol requiring a new "
-        "derivation block before the rename action. If no named executor exists for the governed artifact type, this token does not apply.",
+        "in subsequent steps and must not be treated as a blocking condition on the current action. Implementation scope constraint: a governed artifact-producing action may introduce "
+        "only constructs whose complete identifier — the full name as it appears in the governed artifact, not any component or prefix — appears as a verbatim substring of (c), (d), "
+        "or (g) in the Falsify derivation block active at the time of the action; a construct is introduced when its identifier appears in the governed artifact in any position — "
+        "defined, declared, imported, or referenced — that was absent before the action; the governing artifact's content is not a valid source for the allow-list; the allow-list is "
+        "derived exclusively from the executor-produced result entries (c), (d), and (g); during the creation-step exception, the allow-list is (d) only; a reference to an identifier "
+        "not on the allow-list within a stub or partial implementation is not exempt; a construct whose complete identifier does not appear as a verbatim substring of the active "
+        "allow-list entries must not be introduced in the same action and requires its own governing FAIL before it can be introduced. Artifact gap: when the Falsify derivation block "
+        "contains the line '(g) observed FAIL result: unavailable' and no tool-result block in this transcript produced by a named executor invocation contains (c) as a substring, the "
+        "derivation is incomplete. A derivation is complete only when a line beginning 'Gap artifact:' appears in the transcript immediately above the Falsify derivation block, naming "
+        "the executor invocation designated to produce a result containing (a) before (c). When 'Gap artifact:' is present, the tool call that produces that artifact satisfies the "
+        "creation-step exception; no file-modifying tool call may appear before the tool call that produces the named artifact. A governed symbol renamed by a refactor is a new "
+        "governed symbol requiring a new derivation block before the rename action. If no named executor exists for the governed artifact type, this token does not apply.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

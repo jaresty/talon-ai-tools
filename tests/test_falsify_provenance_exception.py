@@ -41,4 +41,4 @@ def test_provenance_exception_no_reassignment():
     assert "does not appear on the left-hand side of any assignment expression between its initial assignment and the assertion" in defn()
 
 def test_provenance_exception_failure_line():
-    assert "contains either (d) or the identifier from condition (1) as a substring" in defn()
+    assert "the executor result block satisfies the base (a) and (c) requirements" in defn()

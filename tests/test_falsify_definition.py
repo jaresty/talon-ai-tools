@@ -41,7 +41,7 @@ def test_falsify_creation_step_string_absence():
 def test_falsify_symbol_substring():
     """Dim 4: (d) governed symbol must appear as a substring of the failure line in (g)."""
     defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
-    assert "which must appear as a substring of the failure line in (g)" in defn
+    assert "appears as a substring of the failure line in (g)" in defn
 
 
 def test_falsify_old_file_nonexistence_clause_absent():

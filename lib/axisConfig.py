@@ -516,12 +516,19 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "exception, the allow-list is (d) only; a reference to an identifier not on the allow-list within a stub or partial implementation is not exempt; a construct whose complete "
         "identifier does not appear as a verbatim substring of the active allow-list entries must not be introduced in the same action and requires its own governing FAIL before it "
         "can be introduced. Scope-governing entries: only (c), (d), and allow-list identifiers from (g) are scope-governing entries — entries (a), (b), (e), (f), and (f2) are not "
-        "scope-governing entries and do not contribute to the allow-list. Artifact gap: when the Falsify derivation block contains the line '(g) observed FAIL result: unavailable' and "
-        "no tool-result block in this transcript produced by a named executor invocation contains (c) as a substring, the derivation is incomplete. A derivation is complete only when "
-        "a line beginning 'Gap artifact:' appears in the transcript immediately above the Falsify derivation block, naming the executor invocation designated to produce a result "
-        "containing (a) before (c). When 'Gap artifact:' is present, the tool call that produces that artifact satisfies the creation-step exception; no file-modifying tool call may "
-        "appear before the tool call that produces the named artifact. A governed symbol renamed by a refactor is a new governed symbol requiring a new derivation block before the "
-        "rename action. If no named executor exists for the governed artifact type, this token does not apply.",
+        "scope-governing entries and do not contribute to the allow-list. Only identifiers that appear on a line in (g) that also contains (a) are valid allow-list entries — an "
+        "identifier that appears in (g) only on lines that do not contain (a) is not a valid allow-list entry regardless of whether it appears in expected values, diff output, "
+        "assertion messages, test descriptions, or source excerpts. Each line in (g) that contains (a) authorizes at most one new allow-list entry — the identifier that appears as a "
+        "substring of that line and also satisfies (d)'s specificity constraint; if no such identifier appears on that line beyond (a) itself, that line authorizes no new allow-list "
+        "entry. Imported-contract reference exception: an identifier that appears as a declared member name in the content of a Read tool-result block appearing before the current "
+        "Pre-edit block in the transcript is an imported-contract identifier and is not subject to the allow-list source constraint for that action alone; this exception applies to "
+        "the allow-list constraint only and does not exempt a branch construct whose condition or guard contains only imported-contract identifiers from the branch constraint. "
+        "Artifact gap: when the Falsify derivation block contains the line '(g) observed FAIL result: unavailable' and no tool-result block in this transcript produced by a named "
+        "executor invocation contains (c) as a substring, the derivation is incomplete. A derivation is complete only when a line beginning 'Gap artifact:' appears in the transcript "
+        "immediately above the Falsify derivation block, naming the executor invocation designated to produce a result containing (a) before (c). When 'Gap artifact:' is present, the "
+        "tool call that produces that artifact satisfies the creation-step exception; no file-modifying tool call may appear before the tool call that produces the named artifact. A "
+        "governed symbol renamed by a refactor is a new governed symbol requiring a new derivation block before the rename action. If no named executor exists for the governed "
+        "artifact type, this token does not apply.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

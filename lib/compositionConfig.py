@@ -114,7 +114,11 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "from the Falsify derivation block); an identifier appearing only on a non-FAIL line does not "
             "satisfy this requirement. When the immediately preceding run result does not contain a line "
             "satisfying this co-occurrence requirement for the next governed symbol, a re-execution of the "
-            "executor is required before the next scope commitment may be written."
+            "executor is required before the next scope commitment may be written. "
+            "A Write or Edit tool call that introduces a syntactic branch construct — any source construct that directs execution to follow one of two or more paths depending on a "
+            "runtime value, including conditionals, guards, and early returns — requires that at least one identifier appearing in that construct's condition or guard expression also "
+            "appears on a failure line in the immediately preceding governing executor result block; a branch construct whose condition or guard contains no identifier from any failure "
+            "line in that block requires its own governing failure before it may be introduced."
         ),
     },
     {

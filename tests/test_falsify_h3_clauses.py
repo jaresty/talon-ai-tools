@@ -73,4 +73,4 @@ def test_c6_parametrize_not_valid():
     assert "parametrize label lines" in defn()
 
 def test_c6_only_fail_lines_valid_source():
-    assert "only lines on which (a) and (c) co-occur are valid" in defn()
+    assert "applies only to (c) derivation, not to allow-list sourcing" in defn()

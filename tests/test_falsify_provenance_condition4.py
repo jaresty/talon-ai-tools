@@ -24,6 +24,6 @@ def defn():
 def test_condition4_ac_sufficient():
     assert "the executor result block satisfies the base (a) and (c) requirements — no additional requirement that the failure line contain (d) or the chain identifier applies under this exception" in defn()
 
-def test_condition4_message_still_alternative():
-    # message-literal path is still valid as an alternative, not removed
-    assert "string literal that appears verbatim as the message argument to the assertion call expression in the governing artifact" in defn()
+def test_condition4_message_label_extension_removed():
+    # message-label extension was superseded by the prose-origin gate
+    assert "string literal that appears verbatim as the message argument to the assertion call expression in the governing artifact" not in defn()

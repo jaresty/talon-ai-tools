@@ -73,6 +73,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "announce": "Share news or updates with the audience.",
         "coach": "Support the audience's growth through guidance and feedback.",
         "teach": "Help the audience understand and learn material.",
+        "orient": "Frame why the subject exists and who it serves, written for someone encountering it for the first time — without assuming prior context, history, or familiarity with the subject.",
     },
 }
 
@@ -133,6 +134,7 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "announce": "Share news or updates",
         "coach": "Guide growth and development",
         "teach": "Help the audience learn",
+        "orient": "Frame purpose for newcomer",
     },
 }
 
@@ -193,6 +195,7 @@ PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "appreciate": "Express thanks",
         "coach":      "Develop capability",
         "inform":     "Transfer knowledge",
+        "orient":     "Frame purpose for newcomer",
         "persuade":   "Influence belief/action",
         "teach":      "Build understanding",
     },
@@ -264,6 +267,7 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "announce": "告",
         "coach": "導",
         "teach": "教",
+        "orient": "案",
     },
 }
 
@@ -503,6 +507,26 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 {
                     "token": "coach",
                     "note": "teach = build conceptual understanding; coach = develop capability and guide through challenges",
+                },
+            ],
+        },
+        "orient": {
+            "definition": "Frame why the subject exists and who it serves, written for someone encountering it for the first time — without assuming prior context, history, or familiarity with the subject.",
+            "heuristics": [
+                "explain why this exists",
+                "frame the purpose for newcomers",
+                "introducing the group",
+                "what is this for",
+                "why are we forming",
+            ],
+            "distinctions": [
+                {
+                    "token": "inform",
+                    "note": "orient = frame purpose and existence for a first-time audience; inform = transfer knowledge without the newcomer framing",
+                },
+                {
+                    "token": "announce",
+                    "note": "orient = explain why something exists; announce = share news or updates with an existing audience",
                 },
             ],
         },
@@ -1599,6 +1623,11 @@ INTENT_PRESETS: tuple[IntentPreset, ...] = (
         label="Announce",
         intent="announce",
     ),
+    IntentPreset(
+        key="orient",
+        label="Orient / introduce",
+        intent="orient",
+    ),
 )
 
 
@@ -1607,6 +1636,7 @@ INTENT_BUCKETS: dict[str, tuple[str, ...]] = {
         "inform",
         "announce",
         "teach",
+        "orient",
     ),
     "relational": ("appreciate", "persuade", "coach"),
 }

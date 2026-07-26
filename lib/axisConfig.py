@@ -1351,6 +1351,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
             "appreciate": "謝",
             "coach": "導",
             "inform": "知",
+            "orient": "案",
             "persuade": "説",
             "teach": "教",
         },

@@ -717,14 +717,14 @@ class FormAxisMetadataTests(unittest.TestCase):
             "Hook: clause must require quoting a specific phrase from the current answer to prevent inert concept announcements",
         )
 
-    def test_quiz_definition_encodes_path_audit_per_question_check(self):
-        """Path audit must require per-question check strings for paths (a) and (c), not global pre-closing intentions."""
+    def test_quiz_definition_encodes_path_audit_closure(self):
+        """Path audit must name the closure mechanism for paths (a) and (c) — upfront enumeration and root criterion."""
         from lib.axisConfig import AXIS_KEY_TO_VALUE
         definition = AXIS_KEY_TO_VALUE.get("form", {}).get("quiz", "")
         self.assertIn(
-            "before each question",
+            "paths (a) and (c) are closed by the upfront enumeration and the root criterion of genuine retrieval demand",
             definition,
-            "quiz path audit must require a per-question check before each question for paths (a) and (c)",
+            "quiz definition must name paths (a) and (c) closure mechanism: upfront enumeration + root criterion",
         )
 
     def test_quiz_definition_encodes_misconception_precommitment(self):

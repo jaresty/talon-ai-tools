@@ -58,3 +58,16 @@ def test_quiz_terminal_declaration_evaluator_criterion():
     assert "an evaluator determines completeness by comparing the terminal declaration against the opening list" in defn, (
         "quiz definition must name the evaluator criterion for terminal declaration completeness"
     )
+
+
+def test_quiz_no_per_question_path_checks():
+    """BD-REMOVE: per-question 'Path (a) check:' and 'Path (c) check:' ritual strings must be absent.
+    The upfront path enumeration and Predict: requirement already close those escape routes.
+    """
+    defn = get_quiz_def()
+    assert "Path (a) check:" not in defn, (
+        "quiz definition must not require per-question 'Path (a) check:' verification ritual"
+    )
+    assert "Path (c) check:" not in defn, (
+        "quiz definition must not require per-question 'Path (c) check:' verification ritual"
+    )

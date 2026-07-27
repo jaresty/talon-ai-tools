@@ -350,3 +350,12 @@ def test_ground_epistemic_opener_memory_is_not_evidence():
         "ground must state WHY transcript-visibility is required: memory carries the same "
         "confabulation risk as any other model output — P4 derivation chain"
     )
+
+
+def test_ground_epistemic_opener_unclosed_ambiguity_escape():
+    """Ladder length principle: collapsed steps leave ambiguity available as escape routes."""
+    ground = _ground_def()
+    assert "escape route" in ground, (
+        "ground must state WHY more derivation steps are epistemically better: "
+        "ambiguity not closed by a step remains available as an escape route"
+    )

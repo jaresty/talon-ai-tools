@@ -185,6 +185,7 @@ def build_ground_prompt() -> str:
         "Protocol adherence must be the lowest-effort valid path — deviation must require additional effort, introduce failure risk, or be blocked. "
         "Each rung derives from what the prior rung actually produced — this progressively narrows the interpretation space so that no rung can claim more than its inputs justify. "
         "Memory is not evidence — what a model recalls about a prior step carries the same confabulation risk as any other model output, so only what is visible in the transcript counts as having happened. "
+        "A shorter ladder is not more efficient — each collapsed step is ambiguity that was not closed, and ambiguity that was not closed remains available as an escape route. "
         "The response applies a meta-process discipline before any implementation action, "
         "deriving and enforcing its own correctness conditions as transcript-inspectable strings. "
         "A rung is satisfied when and only when a tool-executed event matching its definition "

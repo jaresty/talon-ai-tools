@@ -145,3 +145,11 @@ def test_continuation_invariant_no_next_action_sentinel():
     assert "§ no-next-action:" in text, (
         "ground must name § no-next-action: as a valid exit string when a rung-completion string is the final content"
     )
+
+
+def test_1a_decomposed_precedes_1_goal_derived():
+    """§1 goal derived must not appear before §1a decomposed — ordering gate must be explicit."""
+    text = build_ground_prompt()
+    assert "'§1 goal derived' must not appear before '§1a decomposed'" in text, (
+        "ground must gate §1 goal derived on §1a decomposed having appeared first in the transcript"
+    )

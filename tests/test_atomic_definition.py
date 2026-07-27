@@ -231,3 +231,13 @@ def test_atomic_reexecution_not_in_standalone():
     """Re-execution requirement belongs in falsify+atomic composition, not standalone atomic — orthogonality boundary."""
     defn = AXIS_KEY_TO_VALUE["method"]["atomic"]
     assert "re-execution" not in defn
+
+
+def test_falsify_definition_names_indistinguishable_epistemic_stance():
+    """BD-RESTORE: falsify definition must name the epistemic stance — artifact that never failed
+    is indistinguishable from one that would pass regardless of intent."""
+    defn = AXIS_KEY_TO_VALUE["method"]["falsify"]
+    assert "indistinguishable from one that would pass" in defn, (
+        "falsify opening must name the epistemic stance: artifact never observed to fail "
+        "is indistinguishable from one that would pass regardless of intent"
+    )

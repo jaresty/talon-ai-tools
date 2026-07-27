@@ -172,7 +172,7 @@ def build_ground_prompt() -> str:
     ground is a method token — it is not in STATIC_PROMPT_CONFIG.
     """
     return (
-        "This protocol exists because a description of completed work is indistinguishable from actually completing it "
+        "The response runs a meta-process protocol that exists because a description of completed work is indistinguishable from actually completing it "
         "— every gate enforces the distinction by requiring a piece of reality before any claim about reality. "
         "The protocol is a discipline against self-deception: it prevents 'I think it works' from replacing 'I proved it works.' "
         "Trust must come from enforced evidence, not narrative claims. "

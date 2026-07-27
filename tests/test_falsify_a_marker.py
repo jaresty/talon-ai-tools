@@ -21,3 +21,6 @@ def test_a_marker_no_artifact_created():
 
 def test_a_marker_requires_artifact_executed_invalid():
     assert "requires the governed artifact to have executed in order to appear" in defn()
+
+def test_a_marker_independence_from_test_body():
+    assert "a string appearing in the assertion message, description, or name written by the agent does not satisfy (a)" in defn()

@@ -90,3 +90,12 @@ def test_interactive_v6_socratic():
     notes = [d["note"] for d in AXIS_TOKEN_METADATA["form"]["interactive"]["distinctions"] if d["token"] == "socratic"]
     assert notes, "socratic distinction missing"
     assert "causal claims" in notes[0] or "withholds" in notes[0]
+
+
+# v7 tests — epistemic basis opener
+def test_interactive_v7_epistemic_opener():
+    defn = AXIS_KEY_TO_VALUE["form"]["interactive"]
+    assert "advance the shared epistemic state incrementally" in defn, (
+        "interactive must contain epistemic opener explaining WHY interaction exists — "
+        "one side cannot fully model the other from a single message; role is incremental epistemic advance"
+    )

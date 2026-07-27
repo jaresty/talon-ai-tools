@@ -60,3 +60,13 @@ def test_falsify_atomic_reexecution_requirement():
     prose = _get_entry("falsify+atomic")
     assert prose is not None, "falsify+atomic entry not found"
     assert "re-execution" in prose
+
+
+def test_ground_falsify_p9_epistemic_opener():
+    """P9 concept-description opener: evaluation artifacts must not change in same phase as the behaviors they evaluate."""
+    prose = _get_entry("ground+falsify")
+    assert prose is not None, "ground+falsify entry not found"
+    assert "silent goalpost movement" in prose, (
+        "ground+falsify must state WHY evaluation artifacts must precede edits — "
+        "P9 guard-task separation: co-evolution of solution and evaluation permits silent goalpost movement"
+    )

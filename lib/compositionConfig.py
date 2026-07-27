@@ -35,7 +35,10 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "ground+falsify",
         "tokens": ["ground", "falsify"],
         "prose": (
-            "ground + falsify: every behavior governed by ground's enforcement process must be "
+            "ground + falsify: evaluation artifacts and the behaviors they evaluate must not change "
+            "in the same phase — co-evolution of solution and evaluation weakens trust and permits "
+            "silent goalpost movement. "
+            "Every behavior governed by ground's enforcement process must be "
             "governed by a falsifiable artifact satisfying falsify's validity criteria — meaning "
             "the behavior cannot regress without the artifact detecting it. Producing passing "
             "artifacts that happen to exist alongside the implementation does not satisfy this "

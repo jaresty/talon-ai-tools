@@ -128111,7 +128111,7 @@
         "ground",
         "falsify"
       ],
-      "prose": "ground + falsify: every behavior governed by ground's enforcement process must be governed by a falsifiable artifact satisfying falsify's validity criteria — meaning the behavior cannot regress without the artifact detecting it. Producing passing artifacts that happen to exist alongside the implementation does not satisfy this requirement; each artifact must have fired against the absent behavior. During ground's completion check, each governed behavior must have a correlated tool-result block in the transcript showing the artifact fired against the absent behavior — self-assessed certainty does not substitute for a visible tool-result block. For each governed behavior, the completion check must locate a tool-result block in the transcript whose output contains the assertion text that fires on the absent behavior as a FAIL string; if none exists, that behavior is a gap and the completion check must not close until such a tool-result block appears."
+      "prose": "ground + falsify: evaluation artifacts and the behaviors they evaluate must not change in the same phase — co-evolution of solution and evaluation weakens trust and permits silent goalpost movement. Every behavior governed by ground's enforcement process must be governed by a falsifiable artifact satisfying falsify's validity criteria — meaning the behavior cannot regress without the artifact detecting it. Producing passing artifacts that happen to exist alongside the implementation does not satisfy this requirement; each artifact must have fired against the absent behavior. During ground's completion check, each governed behavior must have a correlated tool-result block in the transcript showing the artifact fired against the absent behavior — self-assessed certainty does not substitute for a visible tool-result block. For each governed behavior, the completion check must locate a tool-result block in the transcript whose output contains the assertion text that fires on the absent behavior as a FAIL string; if none exists, that behavior is a gap and the completion check must not close until such a tool-result block appears."
     },
     {
       "name": "gate+atomic",
@@ -128607,7 +128607,7 @@
     "patterns": "d92b9ebcf977149c480880b9f19f11035150377186da41ec26c46130950eeb78",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
     "sequences": "43069cb266d64a0003bfe830e40d95da5d2d14bf8482453f46d0228c5c820fc4",
-    "compositions": "a8c97a75225c117f9aa26871cc15b59dbbac27f9b9692f7f9a6e8d72ef0bf156",
+    "compositions": "1eed939f65bfb8cf6fb783b268fce1c8b226b078059d75242e1a4d5b1eaaf78f",
     "guidebook": "c978d0ce9e8e68a74aa3407d26aa7e272cad9bbad79bf30ba93ba916108fa8dc"
   }
 }

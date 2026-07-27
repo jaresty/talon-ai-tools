@@ -380,3 +380,12 @@ def test_ground_example_ladder_software_domain():
     assert "independent of implementation" in ground, (
         "the example ladder must include a specification step defined as independent of implementation"
     )
+
+
+def test_ground_epistemic_opener_intent_inference():
+    """The user's message is an approximation of intent — governing goal must always be inferred, never merely quoted."""
+    ground = _ground_def()
+    assert "approximation of" in ground, (
+        "ground must state that the user's message is an approximation of their intent, not the intent itself — "
+        "governing goal derivation is always an inference step, never a quotation"
+    )

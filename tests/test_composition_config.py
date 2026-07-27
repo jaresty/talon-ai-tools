@@ -20,6 +20,13 @@ def test_falsify_atomic_has_implementation_depth():
     assert "(v) implementation depth" in prose
 
 
+def test_gate_atomic_no_symbol_name_in_run_result_requirement():
+    """gate+atomic must not require the preceding tool-result block to contain the symbol name."""
+    prose = _get_entry("gate+atomic")
+    assert prose is not None, "gate+atomic entry not found"
+    assert "contains the name of the function or symbol that tool call adds or modifies" not in prose
+
+
 def test_falsify_atomic_mechanism_level_fail_required():
     """Draft A v3.1: mechanism-level behavior requires its own governing FAIL."""
     prose = _get_entry("falsify+atomic")

@@ -128119,7 +128119,7 @@
         "gate",
         "atomic"
       ],
-      "prose": "gate + atomic: gate's blocking condition applies to every file-modifying tool call, including stub additions. Each file-modifying tool call must be immediately preceded by a tool-result block whose output contains the name of the function or symbol that tool call adds or modifies; a tool-result block that does not name that symbol does not gate that tool call. Recency: non-run tool calls (Read, Write, Edit, or any tool call that does not produce a test-executor result) between the gating tool-result block and the file-modifying tool call do not break recency — the string confirming recency is the absence of any tool-executed run result between the gating block and the edit; a tool-executed run result appearing between them resets the gate and a new gating tool-result block is required. A Symbols list with more than one entry — where the Symbols list is the string appearing between 'Symbols:' and 'Lines:' in the pre-edit line — requires a separate Scope line and separate tool call for each entry."
+      "prose": "gate + atomic: gate's blocking condition applies to every file-modifying tool call, including stub additions. Recency: non-run tool calls (Read, Write, Edit, or any tool call that does not produce a test-executor result) between the gating tool-result block and the file-modifying tool call do not break recency — the string confirming recency is the absence of any tool-executed run result between the gating block and the edit; a tool-executed run result appearing between them resets the gate and a new gating tool-result block is required. A Symbols list with more than one entry — where the Symbols list is the string appearing between 'Symbols:' and 'Lines:' in the pre-edit line — requires a separate Scope line and separate tool call for each entry."
     },
     {
       "name": "falsify+atomic",
@@ -128607,7 +128607,7 @@
     "patterns": "d92b9ebcf977149c480880b9f19f11035150377186da41ec26c46130950eeb78",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
     "sequences": "43069cb266d64a0003bfe830e40d95da5d2d14bf8482453f46d0228c5c820fc4",
-    "compositions": "1eed939f65bfb8cf6fb783b268fce1c8b226b078059d75242e1a4d5b1eaaf78f",
+    "compositions": "3830eab7af7980e620f8f730b61ad4290e14eccec1e97c6f3c8cfc3fd968e7f2",
     "guidebook": "c978d0ce9e8e68a74aa3407d26aa7e272cad9bbad79bf30ba93ba916108fa8dc"
   }
 }

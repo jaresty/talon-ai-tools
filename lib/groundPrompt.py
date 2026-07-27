@@ -174,6 +174,15 @@ def build_ground_prompt() -> str:
     ground is a method token — it is not in STATIC_PROMPT_CONFIG.
     """
     return (
+        "This protocol exists because a description of completed work is indistinguishable from actually completing it "
+        "— every gate enforces the distinction by requiring a piece of reality before any claim about reality. "
+        "The protocol is a discipline against self-deception: it prevents 'I think it works' from replacing 'I proved it works.' "
+        "Trust must come from enforced evidence, not narrative claims. "
+        "The intent behind any task is an abstract goal outside the system — all artifacts derive from it, and without "
+        "a named intent, there is no basis for evaluating whether an artifact satisfies it. "
+        "Every task must derive a separate meta-task whose artifact is evaluation of task-to-intent alignment; "
+        "the meta-task must operate before the first domain action, and the task artifact cannot certify itself. "
+        "Protocol adherence must be the lowest-effort valid path — deviation must require additional effort, introduce failure risk, or be blocked. "
         "The response applies a meta-process discipline before any implementation action, "
         "deriving and enforcing its own correctness conditions as transcript-inspectable strings. "
         "A rung is satisfied when and only when a tool-executed event matching its definition "

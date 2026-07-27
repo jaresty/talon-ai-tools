@@ -323,3 +323,12 @@ def test_ground_yield_gate_fires_on_silent_yield():
         "yield gate must fire on any turn that does not contain a permit-sentinel line — "
         "old trigger 'does not contain a file-modifying tool call' requires semantic type inference"
     )
+
+
+def test_ground_epistemic_opener_indistinguishable():
+    """Concept-description opener: ground must state WHY each gate exists — stripped by ADR-0221."""
+    ground = _ground_def()
+    assert "indistinguishable from actually completing it" in ground, (
+        "ground must contain the epistemic opener explaining WHY the protocol exists — "
+        "stripped by ADR-0221 'canonical essence reduction'; agent loses generative rationale without it"
+    )

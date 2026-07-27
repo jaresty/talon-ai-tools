@@ -332,3 +332,12 @@ def test_ground_epistemic_opener_indistinguishable():
         "ground must contain the epistemic opener explaining WHY the protocol exists — "
         "stripped by ADR-0221 'canonical essence reduction'; agent loses generative rationale without it"
     )
+
+
+def test_ground_epistemic_opener_derivation_transparency():
+    """P11: each rung narrows interpretation space — derivation chain constrains what each rung can claim."""
+    ground = _ground_def()
+    assert "narrows the interpretation space" in ground, (
+        "ground must state that each rung derives from the prior rung's actual output, "
+        "progressively narrowing interpretation — P11 derivation transparency"
+    )

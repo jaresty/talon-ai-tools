@@ -183,6 +183,7 @@ def build_ground_prompt() -> str:
         "Every task must derive a separate meta-task whose artifact is evaluation of task-to-intent alignment; "
         "the meta-task must operate before the first domain action, and the task artifact cannot certify itself. "
         "Protocol adherence must be the lowest-effort valid path — deviation must require additional effort, introduce failure risk, or be blocked. "
+        "Each rung derives from what the prior rung actually produced — this progressively narrows the interpretation space so that no rung can claim more than its inputs justify. "
         "The response applies a meta-process discipline before any implementation action, "
         "deriving and enforcing its own correctness conditions as transcript-inspectable strings. "
         "A rung is satisfied when and only when a tool-executed event matching its definition "

@@ -29,7 +29,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'Invocation scope: a sentinel written in a prior ground invocation does not satisfy any rung '
         'requirement for the current invocation — a sentinel satisfies its rung only when it appears '
         'in the transcript after the most recent \'=== TOKENS\' section. '
-        'Each rung derives from the prior rung\'s output; no rung has a fixed step count. '
+        'Each rung derives exclusively from the immediately preceding rung\'s output; no rung has a fixed step count. '
+        'A rung that references content from any rung earlier than its immediate predecessor does not satisfy this requirement — '
+        'isolation is enforced at each step; backward reference to earlier rungs is not permitted even when the content appears in the transcript. '
+        'When the execution environment supports literal isolation — a fresh invocation, a separate agent context, or a new session — prefer actual isolation over in-transcript constraint enforcement. '
         'Path classification (required before §0): if an artifact that, when invoked, executes the subject system '
         'and returns its live output — such as a shell command, running script, endpoint call, or test suite '
         'invocation — appears verbatim in the conversation above, apply Path A; otherwise apply Path B. '
@@ -181,7 +184,8 @@ def build_ground_prompt() -> str:
         "Every task must derive a separate meta-task whose artifact is evaluation of task-to-intent alignment; "
         "the meta-task must operate before the first domain action, and the task artifact cannot certify itself. "
         "Protocol adherence must be the lowest-effort valid path — deviation must require additional effort, introduce failure risk, or be blocked. "
-        "Each rung derives from what the prior rung actually produced — this progressively narrows the interpretation space so that no rung can claim more than its inputs justify. "
+        "Each rung derives exclusively from the immediately preceding rung's output — this progressively narrows the interpretation space so that no rung can claim more than its inputs justify; a rung that reaches back past its immediate predecessor to earlier rungs violates this constraint regardless of whether the earlier content is visible in the transcript. "
+        "The behavioral observation — the executed FAIL result showing the system's actual behavior against the absent governed behavior — is the rung where reality enters the chain; every rung before it is agent-authored artifact, and every rung after it derives from what that observation actually produced, not from what the agent wrote before it. "
         "Memory is not evidence — what a model recalls about a prior step carries the same confabulation risk as any other model output, so only what is visible in the transcript counts as having happened. "
         "A shorter ladder is not more efficient — each collapsed step is ambiguity that was not closed, and ambiguity that was not closed remains available as an escape route. "
         "Path B §0 is a starting gate, not a bypass — description, analysis, and planning tasks run §1–§5 in full after writing '§0 Path B: [scenario]'; the declaration opens the ladder, it does not close it. "

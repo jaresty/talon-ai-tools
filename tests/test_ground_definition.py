@@ -383,9 +383,19 @@ def test_ground_example_ladder_software_domain():
 
 
 def test_ground_epistemic_opener_intent_inference():
-    """The user's message is an approximation of intent — governing goal must always be inferred, never merely quoted."""
+    """Intent cannot be read directly — governing goal must always be derived, never quoted from request."""
     ground = _ground_def()
-    assert "approximation of" in ground, (
-        "ground must state that the user's message is an approximation of their intent, not the intent itself — "
-        "governing goal derivation is always an inference step, never a quotation"
+    assert "cannot be read directly" in ground, (
+        "ground must state that intent cannot be read directly from a request — "
+        "every governing goal must be derived, because the request describes what was asked for, "
+        "not what would satisfy the underlying need"
+    )
+
+
+def test_ground_path_b_no_verbatim_quotation_path():
+    """Path B §1 must not permit verbatim quotation of user message as governing goal."""
+    ground = _ground_def()
+    assert "if the user's message states the goal verbatim" not in ground, (
+        "Path B §1 must not offer a verbatim-quotation path — intent is never literally what someone says; "
+        "every governing goal must be derived, so the verbatim path must be removed"
     )

@@ -341,3 +341,12 @@ def test_ground_epistemic_opener_derivation_transparency():
         "ground must state that each rung derives from the prior rung's actual output, "
         "progressively narrowing interpretation — P11 derivation transparency"
     )
+
+
+def test_ground_epistemic_opener_memory_is_not_evidence():
+    """P4: memory is not evidence — recall carries confabulation risk; only transcript content counts as having happened."""
+    ground = _ground_def()
+    assert "confabulation risk" in ground, (
+        "ground must state WHY transcript-visibility is required: memory carries the same "
+        "confabulation risk as any other model output — P4 derivation chain"
+    )

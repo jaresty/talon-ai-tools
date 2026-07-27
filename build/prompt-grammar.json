@@ -127937,7 +127937,7 @@
         {
           "token": "show mean mint reify align enforce hollow",
           "role": "assumption derivation and addressability audit",
-          "prompt_hint": "Produce a rewritten definition that an agent cannot nominally satisfy."
+          "prompt_hint": "Classify each clause in the token definition before auditing: a process clause requires a specific string or structural property to be present or absent in the transcript — compliance is verifiable without semantic inference; a concept-description clause names what the token means, the reasoning move it performs, or the output shape it produces — no transcript state is required by it. Apply hollow to every process clause. Skip hollow for every concept-description clause — semantic accuracy is the quality criterion there, not structural constraint. Produce a rewritten definition that an agent cannot nominally satisfy."
         },
         {
           "token": "make",
@@ -128606,7 +128606,7 @@
     "slugs": "3dd9e8409b2cc5b2236c38d9ce36a5ff0882a7938c092853c2bf361d1d36b377",
     "patterns": "d92b9ebcf977149c480880b9f19f11035150377186da41ec26c46130950eeb78",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "6b81e191be0748c953be3ce597047609a6f680e86e65090d06c44415021d0d12",
+    "sequences": "43069cb266d64a0003bfe830e40d95da5d2d14bf8482453f46d0228c5c820fc4",
     "compositions": "a8c97a75225c117f9aa26871cc15b59dbbac27f9b9692f7f9a6e8d72ef0bf156",
     "guidebook": "c978d0ce9e8e68a74aa3407d26aa7e272cad9bbad79bf30ba93ba916108fa8dc"
   }

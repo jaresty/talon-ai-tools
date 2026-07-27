@@ -593,7 +593,14 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "show mean mint reify align enforce hollow",
                 "role": "assumption derivation and addressability audit",
-                "prompt_hint": "Produce a rewritten definition that an agent cannot nominally satisfy.",
+                "prompt_hint": (
+                    "Classify each clause in the token definition before auditing: "
+                    "a process clause requires a specific string or structural property to be present or absent in the transcript — compliance is verifiable without semantic inference; "
+                    "a concept-description clause names what the token means, the reasoning move it performs, or the output shape it produces — no transcript state is required by it. "
+                    "Apply hollow to every process clause. "
+                    "Skip hollow for every concept-description clause — semantic accuracy is the quality criterion there, not structural constraint. "
+                    "Produce a rewritten definition that an agent cannot nominally satisfy."
+                ),
             },
             {
                 "token": "make",

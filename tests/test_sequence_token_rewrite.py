@@ -43,3 +43,21 @@ def test_token_rewrite_sequence_mint_step_includes_enforce():
     tokens = [s.get("token", "") for s in _token_rewrite_steps()]
     assert "show mean mint reify align enforce hollow" in tokens
     assert "show mean mint reify align hollow" not in tokens
+
+
+def test_token_rewrite_step3_prompt_hint_names_process_clause():
+    """BD-CONDITIONAL: step 3 prompt_hint must name 'process clause' to encode the conditional hollow framing."""
+    steps = _token_rewrite_steps()
+    mint_step = next(s for s in steps if s.get("token", "") == "show mean mint reify align enforce hollow")
+    assert "process clause" in mint_step.get("prompt_hint", ""), (
+        "Step 3 prompt_hint must define 'process clause' to gate hollow application"
+    )
+
+
+def test_token_rewrite_step3_prompt_hint_names_concept_description_clause():
+    """BD-CONDITIONAL: step 3 prompt_hint must name 'concept-description clause' to encode the skip branch."""
+    steps = _token_rewrite_steps()
+    mint_step = next(s for s in steps if s.get("token", "") == "show mean mint reify align enforce hollow")
+    assert "concept-description clause" in mint_step.get("prompt_hint", ""), (
+        "Step 3 prompt_hint must name 'concept-description clause' to identify where hollow is skipped"
+    )

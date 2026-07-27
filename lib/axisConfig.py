@@ -231,8 +231,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
         "trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
-        "interactive": "An interaction exists because one side cannot fully model the other's state, goals, or constraints from a single message — the response's role is to advance the shared "
-        "epistemic state incrementally, not to resolve it unilaterally. The response names a current state and at least one available input from that state, and ends with a prompt "
+        "interactive": "The response advances the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully model "
+        "the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and ends with a prompt "
         "that itself names at least one of those inputs. The response does not assert that any named input produces a named system state — causal claims of the form 'input → state' "
         "are withheld until the user acts.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "

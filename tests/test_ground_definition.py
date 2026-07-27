@@ -368,3 +368,15 @@ def test_ground_path_b_is_starting_gate_not_bypass():
         "ground must state that Path B §0 opens the ladder, not bypasses it — "
         "description, analysis, and planning tasks run §1-§5 in full after §0 Path B"
     )
+
+
+def test_ground_example_ladder_software_domain():
+    """Illustrative software ladder present — labeled as non-prescriptive, with formal specification step."""
+    ground = _ground_def()
+    assert "software domain — not prescriptive" in ground, (
+        "ground must include an example ladder labeled as software-domain and non-prescriptive "
+        "so models understand the abstract process clauses concretely without treating the example as mandatory"
+    )
+    assert "independent of implementation" in ground, (
+        "the example ladder must include a specification step defined as independent of implementation"
+    )

@@ -187,6 +187,7 @@ def build_ground_prompt() -> str:
         "Memory is not evidence — what a model recalls about a prior step carries the same confabulation risk as any other model output, so only what is visible in the transcript counts as having happened. "
         "A shorter ladder is not more efficient — each collapsed step is ambiguity that was not closed, and ambiguity that was not closed remains available as an escape route. "
         "Path B §0 is a starting gate, not a bypass — description, analysis, and planning tasks run §1–§5 in full after writing '§0 Path B: [scenario]'; the declaration opens the ladder, it does not close it. "
+        "One example ladder (software domain — not prescriptive): intent → criteria → formal specification (invariants the artifact must satisfy, independent of implementation) → executable verification → observed result → implementation; other domains derive their own ladder from the same principles. "
         "The response applies a meta-process discipline before any implementation action, "
         "deriving and enforcing its own correctness conditions as transcript-inspectable strings. "
         "A rung is satisfied when and only when a tool-executed event matching its definition "

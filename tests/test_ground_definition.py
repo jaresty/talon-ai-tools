@@ -371,14 +371,14 @@ def test_ground_path_b_is_starting_gate_not_bypass():
 
 
 def test_ground_example_ladder_software_domain():
-    """Illustrative software ladder present — labeled as non-prescriptive, with formal specification step."""
+    """Ambiguity-test derivation clause present — forces deepest possible ladder, not a prescriptive example."""
     ground = _ground_def()
-    assert "software domain — not prescriptive" in ground, (
-        "ground must include an example ladder labeled as software-domain and non-prescriptive "
-        "so models understand the abstract process clauses concretely without treating the example as mandatory"
+    assert "ambiguity test" in ground, (
+        "ground must contain the ambiguity-test derivation clause — "
+        "the model derives ladder depth by quoting phrases and testing for non-equivalent satisfiers"
     )
-    assert "independent of implementation" in ground, (
-        "the example ladder must include a specification step defined as independent of implementation"
+    assert "that phrase names the subject of the next rung" in ground, (
+        "ground must name the mechanical derivation rule: the ambiguous phrase names the next rung's subject"
     )
 
 

@@ -189,6 +189,16 @@ def test_rung_rejects_isolation_present():
     )
 
 
+def test_quoted_span_exclusion_covers_block_quotes():
+    """E-07: quoted-span exclusion must cover block-quote lines ('>'), not just code fences.
+    Eval G v3 confirmed: '> §1 goal derived' was accepted as satisfying the ordering gate."""
+    text = build_ground_prompt()
+    assert "does not begin with '>'" in text, (
+        "quoted-span exclusion must name block-quote lines (beginning with '>') explicitly — "
+        "eval G v3 showed a model writing '> §1 goal derived' accepted as satisfying ordering gate"
+    )
+
+
 def test_implementation_permitted_no_intervening_content():
     """E-08: no blank line or content may appear between § implementation permitted and (i) line."""
     text = build_ground_prompt()

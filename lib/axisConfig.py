@@ -238,6 +238,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
+        "ontology": "The response defines the concepts and relations that constitute the subject domain: each named concept gets a definition and a set of properties; each named relation gets a "
+        "source concept, a target concept, and a cardinality constraint. Output adapts to channel: diagram channel → entity-relation graph; code channel → formal schema (types, fields, "
+        "constraints); no channel → prose concept entries. Differs from taxonomy, which classifies instances into categories; ontology defines what kinds of things exist and how they "
+        "are structurally related.",
         "prep": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code "
         "structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
@@ -1020,6 +1024,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "interactive": "Multi-turn exchange",
         "log": "Work or research log entry",
         "merge": "Combine multiple sources coherently",
+        "ontology": "Concept and relation definitions for a domain",
         "prep": "Experiment design write-up",
         "questions": "Answer as probing questions",
         "quiz": "Quiz structure, questions before answers",
@@ -1277,6 +1282,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "interactive": "対",
         "log": "誌",
         "merge": "合",
+        "ontology": "存",
         "prep": "備",
         "questions": "問",
         "quiz": "試",
@@ -1734,6 +1740,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "interactive": "Multi-turn exchange",
         "log": "Work log entry",
         "merge": "Combine sources",
+        "ontology": "Domain concept and relation map",
         "prep": "Experiment design",
         "questions": "Probing questions",
         "quiz": "Quiz structure",
@@ -4606,6 +4613,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "bring these together",
                 "unify these documents",
                 "integrate these into a single output",
+            ],
+        },
+        "ontology": {
+            "distinctions": [
+                {
+                    "note": "taxonomy = classifies instances into categories or types; ontology = defines the concepts that exist in a domain and the named relations between "
+                    "them",
+                    "token": "taxonomy",
+                },
+                {
+                    "note": "coupling = maps which components are joined at a seam and what crosses the boundary; ontology = defines concepts and relations across a whole "
+                    "domain, not just boundaries",
+                    "token": "coupling",
+                },
+            ],
+            "heuristics": [
+                "what concepts exist in this domain",
+                "define the entities and their relationships",
+                "map the concepts and how they relate",
+                "what are the properties of each entity",
+                "entity-relation model",
+                "domain model",
+                "concept map with named relations",
+                "what relations hold between these things",
             ],
         },
         "prep": {

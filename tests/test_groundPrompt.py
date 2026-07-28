@@ -153,3 +153,18 @@ def test_1a_decomposed_precedes_1_goal_derived():
     assert "'§1 goal derived' must not appear before '§1a decomposed'" in text, (
         "ground must gate §1 goal derived on §1a decomposed having appeared first in the transcript"
     )
+
+
+def test_deep_ladder_ambiguity_test_clause_present():
+    """ADR-XXXX: ground must require deepest possible ladder via ambiguity test, not prescribe example rungs."""
+    text = build_ground_prompt()
+    assert "ambiguity test" in text, (
+        "ground must contain the ambiguity test derivation clause — "
+        "the 'One example ladder' hint is not sufficient"
+    )
+    assert "that phrase names the subject of the next rung" in text, (
+        "ground must name the mechanical derivation rule: the ambiguous phrase names the next rung's subject"
+    )
+    assert "One example ladder" not in text, (
+        "example ladder hint must be replaced by the derivation principle"
+    )

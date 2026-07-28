@@ -168,3 +168,22 @@ def test_deep_ladder_ambiguity_test_clause_present():
     assert "One example ladder" not in text, (
         "example ladder hint must be replaced by the derivation principle"
     )
+
+
+def test_formalization_sentinel_present():
+    """Ground must contain § formalization complete sentinel gating enforcement sequence."""
+    text = build_ground_prompt()
+    assert "§ formalization complete" in text, (
+        "ground must require the § formalization complete sentinel before ## Enforcement sequence"
+    )
+    assert "## Formalization" in text, (
+        "ground must name ## Formalization as a required heading — detectable without semantic inference"
+    )
+
+
+def test_rung_rejects_isolation_present():
+    """Ground must require § rung rejects: prefix on each rung to enforce predecessor isolation."""
+    text = build_ground_prompt()
+    assert "§ rung rejects:" in text, (
+        "ground must require § rung rejects: prefix quoting a verbatim phrase from the preceding rung"
+    )

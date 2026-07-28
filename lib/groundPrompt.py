@@ -111,6 +111,15 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'naming a literal string or structural pattern whose presence in the response constitutes '
         'satisfaction independently of any other listed dimension; '
         'when every dimension carries an \'[observable:]\' tag, write \'§2 dimensions closed\'; '
+        '(2b) derive formalization: \'## Formalization\' must not appear before \'§2 dimensions closed\' '
+        'in the transcript; the ## Formalization section must contain at least one expression matching '
+        'one of: a typed function signature, a logical predicate (∀/∃ notation), or a concrete '
+        'input/output example (f(v) = w or equivalent); immediately after that expression, apply the '
+        'ambiguity test: write \'§ ambiguity test:\' followed by one quoted phrase from the expression '
+        'and whether it could be satisfied by two non-equivalent outputs; if yes, that phrase names the '
+        'subject of the next rung and ## Formalization must not close; when no phrase in the expression '
+        'admits two non-equivalent outputs, write \'§ formalization complete\'; '
+        '\'## Enforcement sequence\' must not appear before \'§ formalization complete\' in the transcript; '
         '(3) derive the enforcement sequence: \'## Enforcement sequence\' must not appear before '
         '\'§2 dimensions closed\' in the transcript, '
         'and must appear before the first file-modifying tool call regardless of whether '
@@ -187,6 +196,7 @@ def build_ground_prompt() -> str:
         "the meta-task must operate before the first domain action, and the task artifact cannot certify itself. "
         "Protocol adherence must be the lowest-effort valid path — deviation must require additional effort, introduce failure risk, or be blocked. "
         "Each rung derives exclusively from the immediately preceding rung's output — this progressively narrows the interpretation space so that no rung can claim more than its inputs justify; a rung that reaches back past its immediate predecessor to earlier rungs violates this constraint regardless of whether the earlier content is visible in the transcript. "
+        "Rung isolation enforcement: before writing each rung after §0, write '§ rung rejects: [quoted phrase]' where [quoted phrase] is a verbatim substring of the immediately preceding rung's output that this rung eliminates as insufficiently precise; a rung whose first non-blank line does not begin with '§ rung rejects:' does not satisfy the isolation requirement; a '§ rung rejects:' value that does not appear verbatim as a substring of the immediately preceding rung's output does not satisfy this requirement. "
         "The behavioral observation — the executed FAIL result showing the system's actual behavior against the absent governed behavior — is the rung where reality enters the chain; every rung before it is agent-authored artifact, and every rung after it derives from what that observation actually produced, not from what the agent wrote before it. "
         "Memory is not evidence — what a model recalls about a prior step carries the same confabulation risk as any other model output, so only what is visible in the transcript counts as having happened. "
         "A shorter ladder is not more efficient — each collapsed step is ambiguity that was not closed, and ambiguity that was not closed remains available as an escape route. "

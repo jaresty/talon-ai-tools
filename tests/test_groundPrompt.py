@@ -211,40 +211,47 @@ def test_implementation_permitted_no_intervening_content():
 
 def test_formalization_complete_gated_on_ambiguity_test_and_alternative_satisfier():
     """E-03: § formalization complete must not appear before § ambiguity test: and alternative satisfier:.
-    Eval K confirmed: model skipped § ambiguity test: entirely and jumped to § formalization complete."""
+    Eval K confirmed: model skipped § ambiguity test: entirely and jumped to § formalization complete.
+    Hollow audit: bracket as first char = unfilled template = does not satisfy."""
     text = build_ground_prompt()
     assert "'§ formalization complete' must not appear before '§ ambiguity test:'" in text, (
-        "ground must gate § formalization complete on § ambiguity test: having appeared first — "
-        "eval K showed model skipping the ambiguity test and jumping straight to § formalization complete"
+        "ground must gate § formalization complete on § ambiguity test: having appeared first"
     )
-    assert "'§ formalization complete' must not appear before 'alternative satisfier:'" in text, (
-        "ground must gate § formalization complete on alternative satisfier: disclosure — "
-        "eval K showed model asserting no satisfier exists without naming one"
+    assert "valid 'alternative satisfier:' line" in text, (
+        "ground must gate § formalization complete on a valid alternative satisfier: line"
+    )
+    assert "unfilled template" in text, (
+        "ground must disqualify bracket-prefixed alternative satisfier: lines as unfilled templates"
     )
 
 
 def test_implementation_permitted_requires_decimal_integer():
     """E-01: § implementation permitted sentinel must require a decimal integer, not literal [N].
-    Eval J confirmed: model emitted bare '§ implementation permitted' with no integer."""
+    Eval J confirmed: model emitted bare '§ implementation permitted' with no integer.
+    Hollow audit: 'governs' was semantic — replaced with positional ordinal count."""
     text = build_ground_prompt()
     assert "decimal integer" in text, (
-        "ground must require a decimal integer after '§ implementation permitted' — "
-        "eval J showed a model emitting the bare sentinel with no index at all"
+        "ground must require a decimal integer after '§ implementation permitted'"
     )
-    assert "literal bracket characters" in text or "does not satisfy this requirement — only a decimal integer" in text, (
-        "ground must explicitly state that the literal '[N]' form does not satisfy the index requirement"
+    assert "ordinal count" in text or "ordinal position" in text, (
+        "ground must use positional ordinal count, not semantic 'governs' relationship"
+    )
+    assert "bracket character" in text, (
+        "ground must explicitly disqualify bracket characters as unfilled template markers"
     )
 
 
 def test_rung_completion_sentinel_finality():
     """E-06: rung-completion sentinels must be the final non-blank line of their turn.
-    Eval L confirmed: model emitted §5 enumeration complete then continued writing prose."""
+    Eval L confirmed: model emitted §5 enumeration complete then continued writing prose.
+    Hollow audit: 'exit string' undefined; 'prose/heading' semantic — replaced with blank-line check."""
     text = build_ground_prompt()
     assert "Rung-completion sentinel finality" in text, (
-        "ground must contain a sentinel finality clause preventing prose from following "
-        "a rung-completion sentinel in the same turn — "
-        "eval L showed §5 enumeration complete followed by non-sentinel prose"
+        "ground must contain a sentinel finality clause"
     )
-    assert "no prose, heading, or non-sentinel content may follow" in text, (
-        "ground must explicitly state that no content may follow a rung-completion sentinel in the same turn"
+    assert "single assistant message block" in text, (
+        "ground must define 'turn' as single assistant message block — closes 'turn' hollow"
+    )
+    assert "every such line is blank" in text or "confirming every such line is blank" in text, (
+        "ground must use structural blank-line check, not semantic 'prose/heading/non-sentinel' categories"
     )

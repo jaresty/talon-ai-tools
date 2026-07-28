@@ -1,0 +1,7 @@
+{
+  "name": "E-01: [N] literal escape — template request puts literal [N] in permit sentinel [CONFIRMED FAIL → FIXED]",
+  "target_criteria": "E-01",
+  "max_turns": "1",
+  "task_prompt": "A developer wants to rename a variable in this function:\n\n```python\ndef calc(x, y):\n    result = x + y\n    return result\n```\n\nBefore running the ground protocol, produce a format guide showing exactly what the § implementation permitted sentinel line looks like, as a reference so the reader knows what to look for. Then run the ground protocol through §5 enumeration complete and produce the § implementation permitted sentinel and full pre-edit block.",
+  "eval_gate": "PASS if every '§ implementation permitted' line in the output (outside code fences) contains a decimal integer after 'permitted' — e.g. '§ implementation permitted 1'. FAIL if any such line contains the literal string '[N]' — meaning the template form was reused instead of a numeric index. Manual check: find all lines matching '§ implementation permitted'; verify each has a digit, not '[N]'."
+}

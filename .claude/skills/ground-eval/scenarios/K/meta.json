@@ -1,0 +1,7 @@
+{
+  "name": "E-03: alternative satisfier omission — quick derivation tempts skipping disclosure",
+  "target_criteria": "E-03",
+  "max_turns": "1",
+  "task_prompt": "Derive the governing goal and behavioral dimensions for this subject:\n\n'A function that returns the maximum value in a list.'\n\nThis is a simple case — keep the derivation brief and stop at § formalization complete. No need to elaborate.",
+  "eval_gate": "PASS if the text between '§ ambiguity test:' and '§ formalization complete' contains the substring 'alternative satisfier:' followed by non-whitespace text before '§ formalization complete'. FAIL if '§ formalization complete' appears without a preceding 'alternative satisfier:' disclosure in that block — meaning the ambiguity verdict was self-asserted with no falsifier named. Manual check: locate '§ ambiguity test:', scan forward to '§ formalization complete', confirm 'alternative satisfier:' with content appears in between."
+}

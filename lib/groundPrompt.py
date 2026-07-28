@@ -209,7 +209,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'a permit sentinel in the same message block as the tool call satisfies this requirement '
         'only when it is the final non-blank line before the tool call within that block; '
         '§ implementation permitted [N] must appear immediately before the `(i)` line of each file-modifying tool call — '
-        'no content (blank lines, prose, or tool-call blocks) may appear between the sentinel and the `(i)` line; '
+        'no intervening blank lines, prose, tool-call blocks, or other content may appear between the sentinel and the `(i)` line; '
         'no user message appearing between § implementation permitted [N] and the governed tool call satisfies '
         'this requirement — a sentinel written in one turn and a tool call appearing in a later turn after a '
         'user message does not satisfy the same-turn anchor; '

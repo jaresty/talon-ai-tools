@@ -670,14 +670,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "§1 must be fetched before §1 is written; the string '§5 enumeration complete' appears exactly once; the string '§ implementation permitted [N]' where N is the 1-based index of "
         "the file-modifying tool call this sentinel governs must appear in the transcript after '§5 enumeration complete'; no file-modifying tool call may appear before the first '§ "
         "implementation permitted [N]' sentinel; the literal string '§ implementation permitted [N]' with N matching the 1-based index of the governed tool call must appear immediately "
-        "before the `(i)` line of the five-line block in the assistant text block immediately before each file-modifying tool call, in the same response turn as that tool call — a user "
-        "message appearing between '§ implementation permitted [N]' and the tool call does not satisfy this requirement; a file-modifying tool call not immediately preceded by "
-        "assistant text whose final non-blank content ends with the `(iv)` line of the five-line block does not satisfy this requirement. Quoted-span exclusion: an occurrence of any "
-        "named sentinel or heading string inside a markdown code fence (a span beginning with ``` or ~~~ on its own line) does not satisfy any rung or ordering requirement — only "
-        "occurrences outside code fences count toward compliance. Continuation invariant: when the final non-blank content line of a turn contains or follows one of the rung-completion "
-        "strings '§0 observed', '§1 goal derived', '§2 dimensions closed', '§4 coverage verified', or '§5 enumeration complete', that turn must end with one of: '§ blocked: <text>', '§ "
-        "awaiting: <text>', or '§ no-next-action: <text>', where '<text>' is non-empty. A turn whose final non-blank content line contains or follows one of these strings and does not "
-        "end with one of the three exit strings does not satisfy ground.",
+        "before the `(i)` line of the five-line block with no intervening blank lines or other content between '§ implementation permitted [N]' and the `(i)` line — a blank line, "
+        "horizontal rule, or any other content between them does not satisfy this requirement; in the assistant text block immediately before each file-modifying tool call, in the same "
+        "response turn as that tool call — a user message appearing between '§ implementation permitted [N]' and the tool call does not satisfy this requirement; a file-modifying tool "
+        "call not immediately preceded by assistant text whose final non-blank content ends with the `(iv)` line of the five-line block does not satisfy this requirement. Quoted-span "
+        "exclusion: an occurrence of any named sentinel or heading string inside a markdown code fence (a span beginning with ``` or ~~~ on its own line) does not satisfy any rung or "
+        "ordering requirement — only occurrences outside code fences count toward compliance. Continuation invariant: when the final non-blank content line of a turn contains or "
+        "follows one of the rung-completion strings '§0 observed', '§1 goal derived', '§2 dimensions closed', '§4 coverage verified', or '§5 enumeration complete', that turn must end "
+        "with one of: '§ blocked: <text>', '§ awaiting: <text>', or '§ no-next-action: <text>', where '<text>' is non-empty. A turn whose final non-blank content line contains or "
+        "follows one of these strings and does not end with one of the three exit strings does not satisfy ground.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause that governs model behavior in the subject instruction, in any domain where instructions govern model behavior — first "

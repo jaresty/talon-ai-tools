@@ -162,6 +162,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         '\'§ implementation permitted [N]\' sentinel; '
         'the literal string \'§ implementation permitted [N]\' with N matching the 1-based index '
         'of the governed tool call must appear immediately before the `(i)` line of the five-line block '
+        'with no intervening blank lines or other content between \'§ implementation permitted [N]\' and the `(i)` line — '
+        'a blank line, horizontal rule, or any other content between them does not satisfy this requirement; '
         'in the assistant text block immediately before each file-modifying tool call, in the same response turn as that tool call — '
         'a user message appearing between \'§ implementation permitted [N]\' and the tool call does not satisfy this requirement; '
         'a file-modifying tool call not immediately preceded by assistant text whose final non-blank '

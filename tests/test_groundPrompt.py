@@ -187,3 +187,13 @@ def test_rung_rejects_isolation_present():
     assert "§ rung rejects:" in text, (
         "ground must require § rung rejects: prefix quoting a verbatim phrase from the preceding rung"
     )
+
+
+def test_implementation_permitted_no_intervening_content():
+    """E-08: no blank line or content may appear between § implementation permitted and (i) line."""
+    text = build_ground_prompt()
+    assert "no intervening blank lines" in text, (
+        "ground must state that no blank line or intervening content may appear between "
+        "'§ implementation permitted [N]' and the '(i)' line — "
+        "eval H showed a model inserting '---' between them and satisfying the current clause"
+    )

@@ -194,6 +194,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "form": {
         "actions": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
         "activities": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
+        "axiom": "The response structures the content as a named set of axioms over a given vocabulary: each axiom is stated as a constraint, paired with a brief note naming the class of "
+        "interpretation it rules out. The vocabulary (the symbols the axioms range over) must be named before the first axiom — either as a prior ontology or as an inline preamble. Output "
+        "adapts to channel: formal/code channel → predicate or type-system notation; no channel → prose axiom entries.",
         "bug": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable "
         "details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction "
         "with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live "
@@ -1004,6 +1007,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     "form": {
         "actions": "Concrete actions and tasks",
         "activities": "Session activities and segments",
+        "axiom": "Named constraints over a vocabulary",
         "bug": "Bug report format",
         "bullets": "Concise bullet points",
         "cards": "Discrete cards with headings",
@@ -1262,6 +1266,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     "form": {
         "actions": "行",
         "activities": "動",
+        "axiom": "則",
         "bug": "虫",
         "bullets": "列",
         "cards": "卡",
@@ -1720,6 +1725,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     "form": {
         "actions": "Actionable next steps",
         "activities": "Session activities",
+        "axiom": "Named constraints ruling out interpretations",
         "bug": "Bug report",
         "bullets": "Bullet points",
         "cards": "Cards/items",
@@ -4189,6 +4195,28 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "design sprint activities",
                 "what happens in each segment",
                 "activities list for the workshop",
+            ],
+        },
+        "axiom": {
+            "distinctions": [
+                {
+                    "note": "ontology = introduces the symbols (what exists); axiom = constrains which interpretations of those symbols are admissible (what must hold)",
+                    "token": "ontology",
+                },
+                {
+                    "note": "formal (channel) = governs notation style; axiom (form) = governs content structure — what constraints are named and what each rules out",
+                    "token": "formal",
+                },
+            ],
+            "heuristics": [
+                "what must always be true",
+                "what invariants hold",
+                "name the constraints over this model",
+                "what rules out invalid interpretations",
+                "axioms for this domain",
+                "what assumptions does this theory make",
+                "necessary truths over the vocabulary",
+                "what is ruled out by each constraint",
             ],
         },
         "bug": {

@@ -17,14 +17,11 @@ def defn():
 def test_c1_direct_callee_of_assertion():
     assert "direct callee of the assertion call expression" in defn()
 
-def test_c1_test_identifier_echo_line():
-    assert "test-identifier echo line" in defn()
+def test_c1_read_from_failure_line():
+    assert "read from the failure line, not chosen independently" in defn()
 
-def test_c1_non_fail_line():
-    assert "non-FAIL line" in defn()
-
-def test_c1_summary_line():
-    assert "summary line" in defn()
+def test_c1_failure_line_is_line_on_which_a_appears():
+    assert "the line on which (a) appears" in defn()
 
 
 # C2 — (d) derivation from assertion call expression direct callee in governing artifact

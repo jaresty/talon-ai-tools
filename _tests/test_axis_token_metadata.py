@@ -1138,7 +1138,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         falsify = self.meta.get("falsify", {})
         definition = falsify.get("definition", "")
         self.assertIn(
-            "(c) the literal string identifying each governed behavior",
+            "(c) the literal string identifying the governed behavior",
             definition,
             "falsify must require (c) to identify each governed behavior specifically — closes the integration-level FAIL scope gap",
         )

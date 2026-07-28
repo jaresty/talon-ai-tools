@@ -13,14 +13,17 @@ def defn():
     return AXIS_KEY_TO_VALUE["method"]["falsify"]
 
 
-def test_a_marker_appears_when_artifact_absent():
-    assert "appears in executor output when the governed artifact is absent" in defn()
+def test_a_marker_failure_line_defined_first():
+    assert "Before naming (a) and (c), identify the failure line" in defn()
+
+def test_a_marker_failure_line_transform_not_echo():
+    assert "rather than by echoing content supplied as a string literal argument to an output-producing call" in defn()
+
+def test_a_marker_read_from_failure_line():
+    assert "substring of the failure line that signals the artifact detected behavior absence" in defn()
 
 def test_a_marker_no_artifact_created():
     assert "where the governed artifact has not yet been created" in defn()
 
 def test_a_marker_requires_artifact_executed_invalid():
     assert "requires the governed artifact to have executed in order to appear" in defn()
-
-def test_a_marker_independence_from_test_body():
-    assert "a string appearing in the assertion message, description, or name written by the agent does not satisfy (a)" in defn()

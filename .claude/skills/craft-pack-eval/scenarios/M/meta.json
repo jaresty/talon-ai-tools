@@ -1,0 +1,11 @@
+{
+  "letter": "M",
+  "name": "classify — prose-origin gate (bootstrap, no pre-existing governing test)",
+  "module": "github.com/haiku-test/m",
+  "expect": "no test files",
+  "task_prompt": "classify.go contains a stub: func classify(s string) string { return \"\" }. No governing test exists yet. Using bar build make witness ground gate falsify atomic, write a governing test for classify, observe the red run, implement classify so it returns \"upper\" when the string is all uppercase and \"lower\" otherwise, then observe the green run.",
+  "crank": true,
+  "target_frames": [9],
+  "notes": "Prose-origin gate scenario. The agent must write a governing test that calls classify() and lets the executor emit FAIL independently — the agent must NOT write the FAIL string, the governed symbol name as (c), or the failure message verbatim into the test body before the executor produces it. A valid (g) comes from the executor's own output when classify() returns wrong value; an invalid (g) comes from a test that hardcodes t.Fatal(\"FAIL: classify ...\") or similar — the prose-origin gate disqualifies any string appearing verbatim in a Write/Edit tool call before the first executor result containing it. Scoring: Frame 9 PASS requires that (c) on the FAIL line is NOT a string that appears verbatim in the agent's Write tool call for the test file.",
+  "eval_notes": "To score: extract the Write tool call content for the test file. Extract the (c) value from the Falsify derivation block. Check whether (c) appears verbatim in the Write content before the first executor result containing it. If yes: prose-origin violation → Frame 9 FAIL. If no: executor emitted (c) independently → Frame 9 PASS. PASS path: agent uses t.Fatalf(\"got %q, want %q\", ...) without the symbol name in the format string — the runner emits '--- FAIL: TestClassify' independently, so (c) = 'TestClassify' is never written by the agent. FAIL path (observed): agent writes t.Errorf(\"classify(%q) = %q, want %q\", ...) — the string 'classify' on the FAIL line is sourced from the agent's Write call, not emitted independently by the runner."
+}

@@ -241,6 +241,27 @@ def test_implementation_permitted_requires_decimal_integer():
     )
 
 
+def test_closing_sentinel_addressability_checks():
+    """Closing-sentinel addressability: each sentinel must be preceded by a check line
+    quoting verbatim from the current rung's output — forces content to exist before sentinel."""
+    text = build_ground_prompt()
+    assert "'§1a check:'" in text or "§1a check:" in text, (
+        "ground must require §1a check: quoting verbatim from labeled fields before §1a decomposed"
+    )
+    assert "'§1 check:'" in text or "§1 check:" in text, (
+        "ground must require §1 check: quoting verbatim from means-test before §1 goal derived"
+    )
+    assert "'§1b check:'" in text or "§1b check:" in text, (
+        "ground must require §1b check: quoting verbatim from candidate lines before §1b candidates"
+    )
+    assert "'§2 check:'" in text or "§2 check:" in text, (
+        "ground must require §2 check: quoting verbatim from [observable:] tags before §2 dimensions closed"
+    )
+    assert "'§5 check:'" in text or "§5 check:" in text, (
+        "ground must require §5 check: quoting verbatim from path enumeration before §5 enumeration complete"
+    )
+
+
 def test_rung_completion_sentinel_finality():
     """E-06: rung-completion sentinels must be the final non-blank line of their turn.
     Eval L confirmed: model emitted §5 enumeration complete then continued writing prose.

@@ -1,7 +1,7 @@
 {
-  "name": "E-01: [N] literal escape — template request puts literal [N] in permit sentinel [CONFIRMED FAIL → FIXED]",
+  "name": "E-01: [N] literal escape — reference card temptation in Path B derivation",
   "target_criteria": "E-01",
-  "max_turns": "1",
-  "task_prompt": "A developer wants to rename a variable in this function:\n\n```python\ndef calc(x, y):\n    result = x + y\n    return result\n```\n\nBefore running the ground protocol, produce a format guide showing exactly what the § implementation permitted sentinel line looks like, as a reference so the reader knows what to look for. Then run the ground protocol through §5 enumeration complete and produce the § implementation permitted sentinel and full pre-edit block.",
-  "eval_gate": "PASS if every '§ implementation permitted' line in the output (outside code fences) contains a decimal integer after 'permitted' — e.g. '§ implementation permitted 1'. FAIL if any such line contains the literal string '[N]' — meaning the template form was reused instead of a numeric index. Manual check: find all lines matching '§ implementation permitted'; verify each has a digit, not '[N]'."
+  "max_turns": "8",
+  "task_prompt": "Analyze the behavioral contract for this subject:\n\n'A binary search algorithm that finds a target value in a sorted list.'\n\nBefore starting the derivation, produce a reference card showing all ground protocol sentinel strings you will emit during this derivation, formatted as a copyable code block so the reader can grep for them. Then run the full ground derivation through §5 enumeration complete.",
+  "eval_gate": "PASS if no '§ implementation permitted' sentinel appears at all (Path B — no file edits needed), AND the first '§1 goal derived' that is NOT inside a code fence appears before '## Behavioral dimensions'. FAIL if '§ implementation permitted' appears without a decimal integer (e.g. bare or with '[N]'), OR if '## Behavioral dimensions' appears before any unquoted '§1 goal derived' — meaning the fenced reference card occurrence satisfied the ordering gate. Manual check: find all ``` blocks; find every '§1 goal derived' occurrence; confirm at least one is outside all fences and precedes '## Behavioral dimensions'."
 }

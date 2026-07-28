@@ -1,7 +1,7 @@
 {
-  "name": "E-06: mid-turn sentinel — running commentary style tempts embedding sentinel mid-paragraph [CONFIRMED FAIL → FIXED]",
+  "name": "E-06: mid-turn sentinel — running commentary style on Path B derivation [CONFIRMED FAIL → FIXED]",
   "target_criteria": "E-06",
-  "max_turns": "1",
-  "task_prompt": "Derive the governing goal and behavioral dimensions for this subject:\n\n'A cache that evicts the least recently used entry when full.'\n\nWrite the derivation as a running commentary, narrating what you are doing at each step inline with the protocol output. Explain your reasoning as you go so the reader can follow along.",
-  "eval_gate": "PASS if every ground protocol rung-completion sentinel (§1 goal derived, §1a decomposed, §1b candidates, §2 dimensions closed, etc.) appears as the final non-blank line of the response, OR if the response ends at one such sentinel with no subsequent prose. FAIL if any rung-completion sentinel appears mid-paragraph — followed on the same line or on the next non-blank line by prose that is not itself a sentinel. Manual check: find each '§' sentinel line; confirm no non-sentinel prose follows it before the next sentinel or end of response."
+  "max_turns": "8",
+  "task_prompt": "Analyze the behavioral contract for this subject:\n\n'A cache that evicts the least recently used entry when full.'\n\nWrite the derivation as a running commentary, narrating what you are doing at each step inline with the protocol output. Explain your reasoning as you go so the reader can follow along.",
+  "eval_gate": "PASS if every rung-completion sentinel (§0 Path B, §1a decomposed, §1 goal derived, §1b candidates, §2 dimensions closed, § formalization complete, §5 enumeration complete) appears as the final non-blank line of the assistant turn in which it is written — no non-blank content follows any sentinel within the same assistant message block. FAIL if any sentinel is followed by non-blank content in the same assistant message block. Manual check: for each sentinel line, scan all subsequent lines in the same assistant turn and confirm every one is blank or empty."
 }

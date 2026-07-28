@@ -6,7 +6,8 @@ Ranked by consequence × uncertainty (H=high, M=medium, L=low).
 Evaluator: string-only checks — no semantic inference permitted.
 
 **Evidence key:**
-- `[FIXED]` — confirmed FAIL in behavioral eval, fix shipped
+- `[FIXED]` — confirmed FAIL in behavioral eval, fix shipped and retested
+- `[PARTIAL-FIX]` — fix shipped for part of the escape; residual gap documented and deferred
 - `[TESTED-PASS]` — adversarially tested, escape not triggered; clause holds
 - `[UNTESTED]` — theoretical only; no behavioral eval run yet
 
@@ -82,7 +83,7 @@ AND must not contain `or equivalent` as a terminal escape valve.
 
 ## Tier 2: H×M — Address next
 
-### E-06 · CF-5 · Frame 11 · A1 `[FIXED]`
+### E-06 · CF-5 · Frame 11 · A1 `[PARTIAL-FIX]`
 **Escape:** Continuation invariant fires when rung-completion string appears *anywhere* in the turn — including mid-turn prose. The model can write a rung-completion sentinel mid-paragraph and continue writing additional rungs in the same turn, without yielding.
 
 **Test oracle:** The continuation invariant clause must contain:
@@ -93,6 +94,8 @@ A clause that says "when [sentinel] appears in the transcript" without this phra
 
 **Consequence:** H — yield protocol can be bypassed by embedding sentinel mid-turn
 **Uncertainty:** M — the clause already implies end-of-turn but does not state it
+
+**Fix status:** Sentinel finality clause added (structural blank-line check; turn defined as single assistant message block). Closing-sentinel addressability added (§1a/§1/§1b/§2/§5 check lines must quote verbatim from rung content — closes content-fakery escape). **Deferred:** turn-boundary enforcement is prompt-unenforceable — a model collapses the full ladder into one message regardless of the finality clause. Behavioral eval L confirmed the check lines work (all five quoted verbatim correctly) but sentinel finality still fails because no turn boundary is forced. Requires either (a) a tool call at each sentinel that the model must invoke before continuing, or (b) harness-level turn cutting. Neither implemented.
 
 ---
 

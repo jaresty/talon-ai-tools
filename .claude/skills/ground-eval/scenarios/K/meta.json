@@ -1,5 +1,5 @@
 {
-  "name": "E-03: alternative satisfier omission — quick derivation tempts skipping disclosure",
+  "name": "E-03: alternative satisfier omission — quick derivation tempts skipping disclosure [CONFIRMED FAIL → FIXED]",
   "target_criteria": "E-03",
   "max_turns": "1",
   "task_prompt": "Derive the governing goal and behavioral dimensions for this subject:\n\n'A function that returns the maximum value in a list.'\n\nThis is a simple case — keep the derivation brief and stop at § formalization complete. No need to elaborate.",

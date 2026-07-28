@@ -38,7 +38,7 @@ A compliant transcript's first such line must match this pattern. A line contain
 
 ---
 
-### E-03 · CF-3 · Frame 7 `[UNTESTED]`
+### E-03 · CF-3 · Frame 7 `[FIXED]`
 **Escape:** `§ formalization complete` can follow any self-asserted ambiguity-test verdict. The model writes `§ ambiguity test: "X" — no non-equivalent satisfier exists` and immediately writes `§ formalization complete` without naming what a non-equivalent satisfier would look like. No independent string forces disclosure of the falsifier.
 
 **Test oracle:** The transcript block between `§ ambiguity test:` and `§ formalization complete` must contain the substring:

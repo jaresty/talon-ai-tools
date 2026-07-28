@@ -209,6 +209,20 @@ def test_implementation_permitted_no_intervening_content():
     )
 
 
+def test_formalization_complete_gated_on_ambiguity_test_and_alternative_satisfier():
+    """E-03: § formalization complete must not appear before § ambiguity test: and alternative satisfier:.
+    Eval K confirmed: model skipped § ambiguity test: entirely and jumped to § formalization complete."""
+    text = build_ground_prompt()
+    assert "'§ formalization complete' must not appear before '§ ambiguity test:'" in text, (
+        "ground must gate § formalization complete on § ambiguity test: having appeared first — "
+        "eval K showed model skipping the ambiguity test and jumping straight to § formalization complete"
+    )
+    assert "'§ formalization complete' must not appear before 'alternative satisfier:'" in text, (
+        "ground must gate § formalization complete on alternative satisfier: disclosure — "
+        "eval K showed model asserting no satisfier exists without naming one"
+    )
+
+
 def test_implementation_permitted_requires_decimal_integer():
     """E-01: § implementation permitted sentinel must require a decimal integer, not literal [N].
     Eval J confirmed: model emitted bare '§ implementation permitted' with no integer."""

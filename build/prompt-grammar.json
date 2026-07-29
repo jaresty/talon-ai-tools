@@ -129549,7 +129549,7 @@
       "mode": "autonomous",
       "steps": [
         {
-          "token": "method:sim",
+          "token": "task:sim",
           "role": "scenario simulation",
           "prompt_hint": "Use this step to simulate the scenario and observe what it implies."
         },
@@ -129572,7 +129572,7 @@
       "mode": "autonomous",
       "steps": [
         {
-          "token": "method:sim",
+          "token": "task:sim",
           "role": "consequence simulation",
           "prompt_hint": "Use this step to simulate the scenario and surface what it implies is missing or needed."
         },
@@ -129943,7 +129943,7 @@
       "mode": "linear",
       "steps": [
         {
-          "token": "method:sim",
+          "token": "task:sim",
           "role": "pre-execution simulation",
           "prompt_hint": "Use this step to anticipate risks and surface hidden dependencies before the user executes.",
           "requires_user_input": true
@@ -130718,7 +130718,7 @@
     "slugs": "461d87b33e089bb7a3da88b35123483481531f64e5ccfdcb340162abef070f88",
     "patterns": "d92b9ebcf977149c480880b9f19f11035150377186da41ec26c46130950eeb78",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "43069cb266d64a0003bfe830e40d95da5d2d14bf8482453f46d0228c5c820fc4",
+    "sequences": "e7b49fbeca5aac1ae01968caf4a971bf690c345f99c2fada4836b8fae89f47f3",
     "compositions": "2e8d197975b3e1c65f62dae3c62272d1bf0c2631adf7a55ba72638ca99aae01a",
     "guidebook": "a0202bc93ba485e0fa4bcd278f016f3924cf2b68f386450f0967d259cfd4aa7a"
   }

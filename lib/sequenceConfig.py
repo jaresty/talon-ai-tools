@@ -179,7 +179,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "mode": "autonomous",
         "steps": [
             {
-                "token": "method:sim",
+                "token": "task:sim",
                 "role": "scenario simulation",
                 "prompt_hint": "Use this step to simulate the scenario and observe what it implies.",
             },
@@ -197,7 +197,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "mode": "autonomous",
         "steps": [
             {
-                "token": "method:sim",
+                "token": "task:sim",
                 "role": "consequence simulation",
                 "prompt_hint": "Use this step to simulate the scenario and surface what it implies is missing or needed.",
             },
@@ -509,7 +509,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "mode": "linear",
         "steps": [
             {
-                "token": "method:sim",
+                "token": "task:sim",
                 "role": "pre-execution simulation",
                 "prompt_hint": "Use this step to anticipate risks and surface hidden dependencies before the user executes.",
                 "requires_user_input": True,  # user must execute before review

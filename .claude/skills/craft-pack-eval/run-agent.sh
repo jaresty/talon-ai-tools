@@ -32,6 +32,18 @@ NO_CODE=$(jq -r '.no_code // false' "$META")
 # Build the craft-pack system prompt
 # Override with BAR_CMD=/path/to/bar to use a dev build
 BAR_CMD="${BAR_CMD:-bar}"
+# If using a non-default bar binary, prepend its directory to PATH so agent `bar` calls use it too
+if [[ "$BAR_CMD" != "bar" ]]; then
+  BAR_DEV_DIR="$(dirname "$BAR_CMD")"
+  BAR_DEV_NAME="$(basename "$BAR_CMD")"
+  if [[ "$BAR_DEV_NAME" != "bar" ]]; then
+    # binary isn't named 'bar' — create a temp wrapper dir
+    BAR_DEV_DIR="/tmp/bar-dev-bin"
+    mkdir -p "$BAR_DEV_DIR"
+    cp "$BAR_CMD" "$BAR_DEV_DIR/bar"
+  fi
+  export PATH="$BAR_DEV_DIR:$PATH"
+fi
 SYSTEM_PROMPT="$("$BAR_CMD" build make witness ground gate falsify atomic 2>/dev/null)"
 if [[ -z "$SYSTEM_PROMPT" ]]; then
   echo "Error: $BAR_CMD build make witness ground gate falsify atomic produced no output." >&2

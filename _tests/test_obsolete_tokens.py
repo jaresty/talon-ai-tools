@@ -20,7 +20,7 @@ OBSOLETE_TOKENS = {
     'todo',           # → make (static prompt)
     'focus',          # → struct (scope)
     'system',         # → act (scope)
-    'relations',      # → thing (scope)
+    # 'relations' reinstated as scope token (was retired → thing; now distinct: connections as primary object of study)
     'steps',          # → flow (method)
     'announce',       # → bullets (form)
     'coach_junior',   # → teach_junior_dev (persona preset)

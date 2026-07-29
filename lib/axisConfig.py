@@ -422,6 +422,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "unification fails after it, and the unified form contains fewer named representations than the original.",
         "compare": "The response enhances the task by systematically comparing alternatives against explicit criteria, surfacing tradeoffs, relative strengths and weaknesses, and decision "
         "factors. Use when the user presents options and asks which to choose or how they differ.",
+        "conjoin": "The response surfaces conjunctive dependencies in the subject — places where multiple distinct conditions must hold simultaneously to enable an outcome, and where no proper "
+        "subset is sufficient. For each conjunctive dependency found, it names the outcome, names every required condition, and names what fails to hold if any single condition is "
+        "absent. A dependency requiring conditions in sequence is not conjunctive; a dependency where all conditions must be co-present is.",
         "control": "The response distinguishes between factors within agency and those outside it by naming each, and confines recommendations to the within-agency factors — no recommendation "
         "names a factor identified as outside agency as a required action.",
         "converge": "The response enhances the task by narrowing from a broader set of possibilities to a smaller named set, naming each option not carried forward and the criterion that "
@@ -800,6 +803,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "general discourse about the domain. The irresolution is not a tone or atmosphere — it is structural: the reader cannot resolve it by thinking harder. Do not name the tension or "
         "state that something cannot be resolved. The response succeeds if it presents at least two claims each of which names a proposition from the subject's stated text and names at "
         "least one condition stated in the subject's own text under which the other claim's proposition does not hold.",
+        "navigate": "The response treats the subject as a structured space and the user as positioned within it. It identifies the user's current location in the space, names what is visible or "
+        "reachable from that position, names the available moves and what each leads toward, and orients output around the goal relative to current position — not around the full "
+        "space. It does not describe the whole structure; it describes what matters from here.",
         "objectivity": "The response enhances the task by marking each claim as either grounded in cited evidence or in the responder's assessment, and supporting cited-evidence claims with "
         "named sources.",
         "operations": "The response enhances the task by naming the objective being optimized, the constraints that bound it, and the tradeoffs that must be navigated — making the structural "
@@ -866,7 +872,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "bottlenecks, tipping points, and emergent effects.",
         "snag": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean separation.",
         "split": "The response enhances the task by deliberately decomposing the subject into parts or components, analyzing each in isolation while intentionally bracketing interactions, naming "
-        "at least one cross-component interaction that the isolation brackets and marking it as deferred.",
+        "at least one cross-component interaction that the isolation brackets and marking it as deferred. When the subject contains multiple overlapping structures over the same "
+        "elements — such as distinct relation types over the same nodes, or multiple constraint sets over the same system — split treats each structure as a separate part for "
+        "independent analysis, even though the elements themselves are shared across all parts.",
         "spur": "The response enhances the task by exploring multiple reasoning paths in parallel, branching on assumptions or choices each of which, if changed, produces a named difference in "
         "the response's conclusion, before evaluating and pruning alternatives.",
         "square": "The response enhances the task by mapping the full semantic field of a binary opposition: surfacing the original pair, their negations, and the four relational positions "
@@ -920,6 +928,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "their internal topology in detail or their boundary-spanning distribution.",
         "product": "The response focuses on the subject through a product lens — features, user needs, and value propositions — suppressing concerns that do not bear on what users want, what the "
         "product does, and why it matters to them.",
+        "relations": "The response treats the connections between entities as the primary object of study rather than the entities themselves. It names each relationship type present, "
+        "characterizes what each type asserts, and examines how the relationship structure as a whole enables or constrains the entities it connects. Entity properties are referenced "
+        "only insofar as they explain or are explained by the relationships.",
         "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how "
         "perturbations affect their continuity.",
         "storage": "The response focuses on the storage dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
@@ -1100,6 +1111,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "cluster": "Group items by shared characteristics",
         "collapse": "Reduce to minimal canonical form",
         "compare": "Compare alternatives against criteria",
+        "conjoin": "Surface conjunctive dependencies",
         "control": "Focus on what is within agency",
         "converge": "Narrow from broad to focused",
         "crystal": "Shape toward explicit structure",
@@ -1138,6 +1150,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "mod": "Equivalence classes and cyclic reasoning",
         "models": "Apply named mental models explicitly",
         "mu": "State central tension as irresolvable conjunction; stop",
+        "navigate": "Positioned traversal of a structured space",
         "objectivity": "Separate facts from opinions",
         "operations": "Objective/constraint/tradeoff structure",
         "orbit": "Find attractor geometry across trajectories",
@@ -1194,6 +1207,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
         "product": "Product lens — features, users, value",
+        "relations": "Connections between entities as primary object",
         "stable": "Stability and persistence of states",
         "storage": "Durable state and storage layer",
         "struct": "Arrangement and relationships",
@@ -1359,6 +1373,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "cluster": "集",
         "collapse": "縮",
         "compare": "較",
+        "conjoin": "合",
         "control": "掌",
         "converge": "収",
         "crystal": "晶",
@@ -1397,6 +1412,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "mod": "周",
         "models": "型",
         "mu": "無",
+        "navigate": "渡",
         "objectivity": "客",
         "operations": "営",
         "orbit": "軌",
@@ -1511,6 +1527,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "mean": "意",
         "motifs": "紋",
         "product": "商",
+        "relations": "縁",
         "stable": "安",
         "storage": "庫",
         "struct": "造",
@@ -1570,6 +1587,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "cluster": "Structural",
         "collapse": "Structural",
         "compare": "Comparative",
+        "conjoin": "Structural",
         "control": "Conduct",
         "converge": "Comparative",
         "crystal": "Structural",
@@ -1608,6 +1626,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "mod": "Generative",
         "models": "Generative",
         "mu": "Reasoning",
+        "navigate": "Exploration",
         "objectivity": "Reasoning",
         "operations": "Temporal/Dynamic",
         "orbit": "Temporal/Dynamic",
@@ -1818,6 +1837,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "cluster": "Group/categorize",
         "collapse": "Minimize to canonical form",
         "compare": "Side-by-side comparison",
+        "conjoin": "Joint conditions / all required together",
         "control": "Focus on what you control",
         "converge": "Narrow to recommendation",
         "crystal": "Crystallize into explicit structure",
@@ -1856,6 +1876,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "mod": "Cyclic/periodic patterns",
         "models": "Named mental models",
         "mu": "Irresolvable conjunction; no elaboration",
+        "navigate": "Where am I / what's next / available moves",
         "objectivity": "Facts vs opinions",
         "operations": "Objective, constraints, and tradeoffs",
         "orbit": "Attractor geometry",
@@ -1912,6 +1933,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "mean": "Understanding/meaning",
         "motifs": "Recurring patterns",
         "product": "Product lens",
+        "relations": "Connections / relationships between things",
         "stable": "Invariants/stable states",
         "storage": "Durable state and storage layer",
         "struct": "Entities/boundaries",
@@ -5755,6 +5777,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "which library should I use for this",
             ],
         },
+        "conjoin": {
+            "distinctions": [
+                {
+                    "note": "cluster = group items by similarity; conjoin = surface dependencies where all items in a set must be co-present to enable an outcome",
+                    "token": "cluster",
+                },
+                {
+                    "note": "chain = sequential dependency (A then B); conjoin = simultaneous dependency (A and B must both hold at once)",
+                    "token": "chain",
+                },
+            ],
+            "heuristics": [
+                "what conditions must all be true at once",
+                "what requires everything together",
+                "what only works when both X and Y hold",
+                "find the joint requirements",
+                "what are the necessary and sufficient conditions",
+                "where do multiple things have to coincide",
+                "what enables this only when all of the following hold",
+            ],
+        },
         "control": {
             "distinctions": [
                 {
@@ -6649,6 +6692,33 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "find where two requirements can't both be true",
                 "what forces are fighting each other in this design",
                 "name the condition under which each side breaks the other",
+            ],
+        },
+        "navigate": {
+            "distinctions": [
+                {
+                    "note": "visual = render the structure spatially; navigate = orient from the user's current position within the structure and surface available moves",
+                    "token": "visual",
+                },
+                {
+                    "note": "fog/dig/rog/ong = orient the response style; navigate = model the user's position in a space and name reachable next moves",
+                    "token": "fog",
+                },
+                {
+                    "note": "zoom = control depth of coverage; navigate = orient output around current position and goal-relative moves, regardless of depth",
+                    "token": "zoom",
+                },
+            ],
+            "heuristics": [
+                "where am I in this",
+                "what can I do from here",
+                "what's reachable from my current position",
+                "orient me in this space",
+                "what are my next moves",
+                "given where I am, what matters",
+                "show me what's adjacent",
+                "what paths lead toward the goal from here",
+                "I'm lost in this system, help me find my bearings",
             ],
         },
         "objectivity": {
@@ -7848,6 +7918,35 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "product thinking",
                 "view this technical decision through a product lens",
                 "what is the user-facing impact of this implementation choice",
+            ],
+        },
+        "relations": {
+            "distinctions": [
+                {
+                    "note": "struct = identify entities and their boundaries; relations = treat the connections between entities as the primary object of study",
+                    "token": "struct",
+                },
+                {
+                    "note": "cross = concerns that span multiple areas; relations = the connections between entities as a primary lens, regardless of whether they cross "
+                    "boundaries",
+                    "token": "cross",
+                },
+                {
+                    "note": "mesh = coupling problems between components; relations = connections as the primary subject, not as a diagnostic lens for coupling issues",
+                    "token": "mesh",
+                },
+            ],
+            "heuristics": [
+                "what connects these",
+                "how are these related",
+                "focus on the relationships",
+                "what's the relationship structure",
+                "map the connections",
+                "what does X relate to",
+                "show me what links these together",
+                "analyze the relationship types",
+                "what does the connection structure look like",
+                "I care about the links, not just the nodes",
             ],
         },
         "stable": {

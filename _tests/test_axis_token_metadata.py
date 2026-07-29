@@ -319,7 +319,7 @@ class DirectionalAxisMetadataTests(unittest.TestCase):
 
 
 class ScopeAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-6: scope axis has structured metadata for all 18 tokens (lever added; jobs/product moved from method)."""
+    """ADR-0155 T-6: scope axis has structured metadata for all 19 tokens (lever added; jobs/product moved from method; relations added)."""
 
     AXIS = "scope"
     EXPECTED_TOKENS = {
@@ -334,6 +334,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         "mean",
         "motifs",
         "product",
+        "relations",
         "storage",
         "stable",
         "lever",
@@ -781,7 +782,7 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 99 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out)."""
+    """ADR-0155 T-8: method axis has structured metadata for all 101 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out; conjoin/navigate added)."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
@@ -808,6 +809,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "collapse",
         "cluster",
         "compare",
+        "conjoin",
         "control",
         "converge",
         "crystal",
@@ -846,6 +848,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "mod",
         "models",
         "mu",
+        "navigate",
         "objectivity",
         "operations",
         "orbit",
@@ -893,7 +896,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 100 method tokens must have metadata entries (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; hollow/distill added; distill removed ADR-0235 — constraints absorbed into hollow; risks/resilience/jobs/product moved out)."""
+        """All 101 method tokens must have metadata entries (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; hollow/distill added; distill removed ADR-0235 — constraints absorbed into hollow; risks/resilience/jobs/product moved out; conjoin/navigate added)."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

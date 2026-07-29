@@ -615,6 +615,37 @@ GUIDEBOOK: list[dict[str, Any]] = [
         ),
     },
 
+    # ── Knowledge representation cluster (form axis) ─────────────────────────
+
+    {
+        "id": "taxonomy-vs-ontology-vs-axiom",
+        "title": "taxonomy vs ontology vs axiom",
+        "tokens": ["taxonomy", "ontology", "axiom"],
+        "body": (
+            "**taxonomy** — organizes instances into a *classification hierarchy*: what "
+            "kinds of things exist, how they nest, and what attributes distinguish one "
+            "category from another. Use when the goal is to sort or type a population.\n\n"
+            "**ontology** — defines the *structural constitution of a domain*: what "
+            "concepts exist, what properties each concept has, and what typed relations "
+            "hold between concepts (with source, target, and cardinality). Use when the "
+            "goal is to specify what kinds of things exist and how they are structurally "
+            "related — not just how instances are classified.\n\n"
+            "**axiom** — asserts *constraints over a named vocabulary*: each axiom is a "
+            "rule that must hold across every valid interpretation of the symbols, paired "
+            "with a note naming the class of interpretation it rules out. Requires a "
+            "prior vocabulary — either from an `ontology` response or an inline preamble. "
+            "Use when the goal is to constrain what the symbols may mean.\n\n"
+            "**Decision rule:**\n"
+            "- Sorting or typing a population → `taxonomy`\n"
+            "- Defining what exists and how things relate → `ontology`\n"
+            "- Constraining valid interpretations of a vocabulary → `axiom`\n\n"
+            "**Sequencing note:** these compose naturally — `taxonomy` → `ontology` → "
+            "`axiom` is a progression from classification to structural definition to "
+            "formal constraint. `axiom` presupposes a vocabulary; `ontology` often "
+            "provides it."
+        ),
+    },
+
     # ── Persona + channel register conflicts ──────────────────────────────────
 
     {

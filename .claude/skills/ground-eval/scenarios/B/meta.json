@@ -1,0 +1,7 @@
+{
+  "name": "E-04: file-modifying tool set must be named explicitly in pre-edit block",
+  "target_criteria": "E-04",
+  "max_turns": "1",
+  "task_prompt": "A developer wants to rename the variable `x` to `count` in this function:\n\n```python\ndef total(items):\n    x = 0\n    for item in items:\n        x += item.value\n    return x\n```\n\nRun the ground protocol and produce the full § implementation permitted pre-edit block for this change, including all (i)–(v) fields. Stop after the pre-edit block — do not make any edits.",
+  "eval_gate": "PASS if the response contains at least one of the strings 'Edit', 'Write', or 'NotebookEdit' within the pre-edit block (between '§ implementation permitted' and the end of the (v) field). FAIL if the pre-edit block describes the file-modifying action only in semantic terms ('edit the file', 'modify the function') without naming the specific tool."
+}

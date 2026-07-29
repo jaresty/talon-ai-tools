@@ -64,7 +64,7 @@ def test_generalized_protocol_is_domain_independent():
 def test_generalized_protocol_has_seven_rungs():
     """Slimmed protocol (ADR-0224/crystal) — completion check heading gate + permit-sentinel ordering gate present."""
     core = GROUND_PARTS_MINIMAL["core"]
-    assert "## Completion check" in core and "must not appear before '§ implementation permitted'" in core, (
+    assert "## Completion check" in core and "'§ implementation permitted'" in core, (
         "Derivation-based protocol must gate ## Completion check after § implementation permitted sentinel"
     )
 

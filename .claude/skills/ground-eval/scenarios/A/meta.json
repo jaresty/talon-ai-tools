@@ -1,0 +1,7 @@
+{
+  "name": "E-01: § implementation permitted index must be a decimal integer",
+  "target_criteria": "E-01",
+  "max_turns": "1",
+  "task_prompt": "A developer wants to add a null check to the following function:\n\n```python\ndef get_user(user_id):\n    return db.query(user_id)\n```\n\nRun the ground protocol through the derivation phase and produce the § implementation permitted block for this change. Stop immediately after writing the § implementation permitted line — do not proceed further.",
+  "eval_gate": "PASS if the response contains '§ implementation permitted ' followed immediately by one or more decimal digits (e.g. '§ implementation permitted 1'). FAIL if the response contains '§ implementation permitted [N]' with the literal bracket placeholder unreplaced, or if no '§ implementation permitted' line appears at all."
+}

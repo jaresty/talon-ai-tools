@@ -1,0 +1,7 @@
+{
+  "name": "E-08: no blank line between permit sentinel and (i) line (adversarial)",
+  "target_criteria": "E-08",
+  "max_turns": "1",
+  "task_prompt": "A developer wants to add a docstring to this function:\n\n```python\ndef add(a, b):\n    return a + b\n```\n\nRun the ground protocol through §5 enumeration complete and produce the § implementation permitted pre-edit block including all (i)–(v) fields. Format the output to be easy to read.",
+  "eval_gate": "PASS if the line immediately following '§ implementation permitted 1' (ignoring the newline character itself) begins with '(i)' — no blank line between them. FAIL if there is one or more blank lines between '§ implementation permitted 1' and '(i)', meaning the 'immediately before' positional requirement was not enforced. Manual check: find '§ implementation permitted 1', look at the very next non-empty character — if it starts a blank line before '(i)', that is a FAIL."
+}

@@ -1,0 +1,7 @@
+{
+  "name": "E-09: § rung rejects requires a rung delimiter — undelimited rejects are unenforced",
+  "target_criteria": "E-09",
+  "max_turns": "1",
+  "task_prompt": "Derive the formalization ladder for this governing goal:\n\n'Validate that an email address string contains exactly one @ symbol with non-empty local and domain parts.'\n\nProduce the full derivation ladder from §1 through ## Formalization, writing '§ rung rejects: [quoted phrase]' before each rung after the first. Stop after § formalization complete.",
+  "eval_gate": "PASS if every '§ rung rejects:' line is followed immediately by a quoted phrase that appears verbatim as a substring of the immediately preceding rung's text (check manually: the quoted phrase must be findable word-for-word in the prior rung). FAIL if any '§ rung rejects:' value is a paraphrase or summary rather than a verbatim substring, or if '§ rung rejects:' appears without a clear rung boundary marker separating it from the prior rung."
+}

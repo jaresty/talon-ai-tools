@@ -16,11 +16,11 @@ def test_opening_bookend_inside_criteria():
 def test_closing_bookend_names_subject_directly():
     """Closing bookend requires tool-result substring via §4 coverage verified sentinel (CL2 gate)."""
     text = build_ground_prompt()
-    assert "when every covered dimension cites such a substring" in text, (
+    assert "every covered dimension cites such a substring" in text, (
         "closing bookend must require tool-result substring"
     )
-    assert "'§4 coverage verified' must not appear before '§ test suite complete'" in text, (
-        "§4 coverage verified must be gated on § test suite complete"
+    assert "'§4 coverage verified' is valid only after '§ properties complete'" in text, (
+        "§4 coverage verified must be gated on § properties complete and § test suite complete"
     )
     assert "every covered dimension must cite a verbatim string from a tool-executed result that contains output the system produced directly" not in text, (
         "old semantic-source form must be removed"

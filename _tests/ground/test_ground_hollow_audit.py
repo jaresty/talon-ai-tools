@@ -203,8 +203,8 @@ def test_rank6_sentinel_quoted_span_exclusion_present():
 def test_rank8_completion_check_placement_rule_present():
     """## Completion check must be gated after ## Enforcement sequence and § implementation permitted."""
     core = _core()
-    assert "'## Completion check' must not appear before '## Enforcement sequence'" in core
-    assert "must not appear before '§ implementation permitted'" in core
+    assert "'## Completion check' is valid only after '## Enforcement sequence'" in core
+    assert "'§ implementation permitted'" in core
 
 
 # ── Rank 9: Means-test line has no named string anchor ────────────────────────

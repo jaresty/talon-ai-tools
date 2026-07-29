@@ -1,0 +1,7 @@
+{
+  "name": "E-05: typed signature must contain ':' or '->' substring; 'or equivalent' must not close the ladder",
+  "target_criteria": "E-05",
+  "max_turns": "1",
+  "task_prompt": "Derive the formalization rung for this governing goal:\n\n'Parse a comma-separated string of integers and return their sum, returning 0 for an empty string.'\n\nProduce only the ## Formalization section. Write a typed function signature as your terminal form, apply the ambiguity test, and stop after § formalization complete.",
+  "eval_gate": "PASS if the ## Formalization section contains a typed signature with ':' or '->' as a substring (e.g. 'parse_sum(s: str) -> int' or 'parse_sum :: String -> Int'). FAIL if the terminal form contains only a bare function name with no type annotation, or if the response uses 'or equivalent' to justify the terminal form without producing a concrete typed expression."
+}

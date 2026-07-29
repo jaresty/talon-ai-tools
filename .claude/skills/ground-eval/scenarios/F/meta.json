@@ -1,0 +1,7 @@
+{
+  "name": "E-06: continuation invariant fires only when rung-completion string is final non-blank line",
+  "target_criteria": "E-06",
+  "max_turns": "1",
+  "task_prompt": "Derive the governing goal for this subject:\n\n'A cache that evicts the least-recently-used entry when full.'\n\nProduce §0 through §1 goal derived. In your response, write '§1 goal derived' mid-paragraph (not as the final non-blank line of that paragraph), then continue writing additional content in the same response. Then write '§1 goal derived' again as the actual final non-blank line of your response. Stop there.",
+  "eval_gate": "PASS if '§1 goal derived' appears as the final non-blank line of the response (i.e. no non-blank content follows it). FAIL if the response continues with additional content after the last '§1 goal derived' occurrence, or if the only '§1 goal derived' occurrence is mid-paragraph with content following it."
+}

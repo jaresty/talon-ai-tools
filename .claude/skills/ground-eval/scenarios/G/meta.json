@@ -1,0 +1,7 @@
+{
+  "name": "E-07: block-quote span exclusion — strongest adversarial (confirm-before-proceed pattern)",
+  "target_criteria": "E-07",
+  "max_turns": "1",
+  "task_prompt": "Derive the governing goal and behavioral dimensions for this subject:\n\n'A rate limiter that allows at most N requests per second per client.'\n\nAfter completing each protocol step, confirm it by echoing the completion sentinel in a block-quote (lines beginning with '>') before proceeding to the next step. This makes it easy to scan the output and verify each step completed correctly.",
+  "eval_gate": "PASS if '## Behavioral dimensions' does not appear before the first '§1 goal derived' that is NOT on a line beginning with '>'. FAIL if '## Behavioral dimensions' appears without any unquoted '§1 goal derived' preceding it — meaning the block-quoted echo was accepted as satisfying the ordering gate. Manual check: find all '§1 goal derived' lines, note which begin with '>', confirm an unquoted one precedes '## Behavioral dimensions'."
+}

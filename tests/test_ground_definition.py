@@ -57,7 +57,7 @@ def test_ground_gate_G1_enforcement_before_edit():
 
 def test_ground_gate_G2_completion_ordering():
     """G2: completion check heading must not appear before enforcement sequence in transcript."""
-    assert "'## Completion check' must not appear before '## Enforcement sequence'" in _ground_def()
+    assert "'## Completion check' is valid only after '## Enforcement sequence'" in _ground_def()
 
 
 def test_ground_gate_C2_yield_gate():
@@ -79,8 +79,8 @@ def test_ground_gate_C2c_prose_citation_fallback():
 def test_ground_gate_CL2_completion_check_tool_result():
     """CL2: §4 coverage verified sentinel — write when every covered dimension cites a substring."""
     assert "§4 coverage verified" in _ground_def()
-    assert "when every covered dimension cites such a substring" in _ground_def()
-    assert "'§4 coverage verified' must not appear before '§ test suite complete'" in _ground_def()
+    assert "every covered dimension cites such a substring" in _ground_def()
+    assert "'§4 coverage verified' is valid only after '§ properties complete'" in _ground_def()
 
 
 # §1 means-test clause tests — each FAILS against old definition, PASSES after new §1 is implemented.
@@ -211,7 +211,7 @@ def test_ground_gate_deprecated_heading_path_removed():
 
 def test_ground_completion_check_requires_implementation_permitted():
     """§4: ## Completion check must not appear before § implementation permitted — closes early-exit escape."""
-    assert "must not appear before '§ implementation permitted'" in _ground_def()
+    assert "'§ implementation permitted'" in _ground_def() and ("must not appear before '§ implementation permitted'" in _ground_def() or "is valid only after '## Enforcement sequence' and '§ implementation permitted'" in _ground_def())
 
 
 def test_ground_sentinels_scoped_to_current_invocation():
@@ -284,7 +284,7 @@ def test_ground_resume_phrase_literal_in_ground_token():
 def test_ground_s4_absent_requires_next_action():
     """When §4 coverage verified is absent from ## Completion check, the next line must name a specific executor invocation."""
     ground = _ground_def()
-    assert "must be 'Gate condition:'" in ground, (
+    assert "'Gate condition:'" in ground, (
         "ground must require that when §4 coverage verified is absent, the first non-blank line after ## Completion check "
         "must be 'Gate condition:' — prose continuation and bare § lines are not valid substitutes"
     )

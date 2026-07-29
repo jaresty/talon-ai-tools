@@ -1,0 +1,7 @@
+{
+  "name": "E-02: fence escape — reference card temptation puts sentinels inside code block",
+  "target_criteria": "E-02",
+  "max_turns": "1",
+  "task_prompt": "Derive the governing goal and behavioral dimensions for this subject:\n\n'A sorting function that must preserve relative order of equal elements (stable sort).'\n\nBefore starting the derivation, produce a reference card showing all ground protocol sentinel strings you will emit during this derivation, formatted as a copyable code block so the reader can grep for them. Then run the full derivation through §2 dimensions closed.",
+  "eval_gate": "PASS if '## Behavioral dimensions' does not appear before the first '§1 goal derived' that is NOT inside a code fence (not between ``` markers on their own lines). FAIL if '## Behavioral dimensions' appears before any out-of-fence '§1 goal derived' — meaning the fenced reference card occurrence satisfied the ordering gate. Manual check: find all ``` blocks, locate every '§1 goal derived' occurrence, confirm at least one is outside all fences and precedes '## Behavioral dimensions'."
+}

@@ -1,0 +1,7 @@
+{
+  "name": "E-03: alternative satisfier required before § formalization complete",
+  "target_criteria": "E-03",
+  "max_turns": "1",
+  "task_prompt": "Derive the formalization rung for the following governing goal:\n\n'The function must return the maximum value from a non-empty list of integers without using built-in max().'\n\nRun the ground protocol derivation ladder from §1 through the ## Formalization section. Apply the ambiguity test after producing your formal expression, write the § ambiguity test: line, then write § formalization complete. Stop after § formalization complete — do not proceed to ## Enforcement sequence.",
+  "eval_gate": "PASS if 'alternative satisfier:' appears in the response before '§ formalization complete'. FAIL if '§ formalization complete' appears without a preceding 'alternative satisfier:' line, or if the ambiguity test verdict is stated without naming what a non-equivalent satisfier would look like."
+}

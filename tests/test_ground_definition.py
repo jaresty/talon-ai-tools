@@ -79,7 +79,8 @@ def test_ground_gate_C2c_prose_citation_fallback():
 def test_ground_gate_CL2_completion_check_tool_result():
     """CL2: §4 coverage verified sentinel — write when every covered dimension cites a substring."""
     assert "§4 coverage verified" in _ground_def()
-    assert "when every covered dimension cites such a substring, write '§4 coverage verified'" in _ground_def()
+    assert "when every covered dimension cites such a substring" in _ground_def()
+    assert "'§4 coverage verified' must not appear before '§ test suite complete'" in _ground_def()
 
 
 # §1 means-test clause tests — each FAILS against old definition, PASSES after new §1 is implemented.

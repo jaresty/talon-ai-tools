@@ -201,9 +201,9 @@ def test_rank6_sentinel_quoted_span_exclusion_present():
 # without naming evaluator-checkable strings. Fix: name a structural signal.
 
 def test_rank8_completion_check_placement_rule_present():
-    """## Completion check must be gated after ## Enforcement sequence and § implementation permitted."""
+    """## Completion check must be gated after §5 enumeration complete."""
     core = _core()
-    assert "'## Completion check' is valid only after '## Enforcement sequence'" in core
+    assert "'## Completion check' is valid only after '§5 enumeration complete'" in core
     assert "'§ implementation permitted'" in core
 
 

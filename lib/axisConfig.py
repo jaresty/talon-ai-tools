@@ -6825,6 +6825,21 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "why is this the way it is",
             ],
         },
+        "own": {
+            "distinctions": [],
+            "heuristics": [
+                "don't push",
+                "keep it local",
+                "no shared changes",
+                "local only",
+                "don't affect others",
+                "private changes only",
+                "don't touch shared files",
+                "keep changes to myself",
+                "operator-private",
+                "don't modify shared state",
+            ],
+        },
         "paradox": {
             "distinctions": [
                 {

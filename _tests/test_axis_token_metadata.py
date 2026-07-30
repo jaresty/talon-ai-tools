@@ -782,7 +782,7 @@ class FormAxisMetadataTests(unittest.TestCase):
 
 
 class MethodAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-8: method axis has structured metadata for all 101 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out; conjoin/navigate added)."""
+    """ADR-0155 T-8: method axis has structured metadata for all 102 tokens (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; gloss/mu/paradox AXIS_TOKEN_METADATA entries added; falsify added ADR-0227; risks/resilience/jobs/product moved out; conjoin/navigate added; own added)."""
 
     AXIS = "method"
     EXPECTED_TOKENS = {
@@ -854,6 +854,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "orbit",
         "order",
         "origin",
+        "own",
         "paradox",
         "perturb",
         "polar",
@@ -896,7 +897,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         self.meta = _AXIS_TOKEN_METADATA.get(self.AXIS, {})
 
     def test_method_metadata_covers_all_tokens(self):
-        """All 101 method tokens must have metadata entries (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; hollow/distill added; distill removed ADR-0235 — constraints absorbed into hollow; risks/resilience/jobs/product moved out; conjoin/navigate added)."""
+        """All 102 method tokens must have metadata entries (enforce added ADR-0231; mu/paradox/mint/root added; gate/chain/atomic added ADR-0224; automate/gloss revived; hollow/distill added; distill removed ADR-0235 — constraints absorbed into hollow; risks/resilience/jobs/product moved out; conjoin/navigate added; own added)."""
         self.assertEqual(
             set(self.meta.keys()),
             self.EXPECTED_TOKENS,

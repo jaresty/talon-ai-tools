@@ -6,5 +6,6 @@
   "task_prompt": "Design a function signature and docstring for normalize(input string) string satisfying these acceptance criteria: (1) output is lowercase, (2) spaces replaced with underscores, (3) leading/trailing whitespace removed. No test runner is available. Produce a design artifact only — no implementation code.",
   "crank": false,
   "target_frames": [21],
-  "notes": "Non-software frame. Tests Frame 21: acceptance criterion before design sketch; named violation before revision; completion check enumerates all criteria."
+  "notes": "Non-software frame. Tests Frame 21: acceptance criterion before design sketch; named violation before revision; completion check enumerates all criteria.",
+  "eval_notes": "Score: (1) '## Completion check' block appears after '§5 enumeration complete' in the transcript; (2) 'Formalized properties:' label appears inside '## Completion check'; (3) at least one 'property [N]:' line with formal expression present; (4) '§ properties complete' appears inside '## Completion check'; (5) '§4 coverage verified' appears inside '## Completion check'. All five required for PASS."
 }

@@ -56,8 +56,8 @@ def test_ground_gate_G1_enforcement_before_edit():
 
 
 def test_ground_gate_G2_completion_ordering():
-    """G2: completion check heading must not appear before enforcement sequence in transcript."""
-    assert "'## Completion check' is valid only after '## Enforcement sequence'" in _ground_def()
+    """G2: completion check heading must not appear before §5 enumeration complete in transcript."""
+    assert "'## Completion check' is valid only after '§5 enumeration complete'" in _ground_def()
 
 
 def test_ground_gate_C2_yield_gate():
@@ -209,9 +209,9 @@ def test_ground_gate_deprecated_heading_path_removed():
     assert "an observation not under such a heading does not satisfy §0" not in _ground_def()
 
 
-def test_ground_completion_check_requires_implementation_permitted():
-    """§4: ## Completion check must not appear before § implementation permitted — closes early-exit escape."""
-    assert "'§ implementation permitted'" in _ground_def() and ("must not appear before '§ implementation permitted'" in _ground_def() or "is valid only after '## Enforcement sequence' and '§ implementation permitted'" in _ground_def())
+def test_ground_completion_check_requires_enumeration_complete():
+    """§4: ## Completion check must not appear before §5 enumeration complete — closes early-exit escape on all paths."""
+    assert "'## Completion check' is valid only after '§5 enumeration complete'" in _ground_def()
 
 
 def test_ground_sentinels_scoped_to_current_invocation():

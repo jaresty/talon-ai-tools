@@ -56,8 +56,8 @@ def test_ground_gate_G1_enforcement_before_edit():
 
 
 def test_ground_gate_G2_completion_ordering():
-    """G2: completion check heading must not appear before §5 enumeration complete in transcript."""
-    assert "'## Completion check' is valid only after '§5 enumeration complete'" in _ground_def()
+    """G2: ## Completion check must appear as next heading after §5 enumeration complete."""
+    assert "'## Completion check' must appear as the next heading after '§5 enumeration complete'" in _ground_def()
 
 
 def test_ground_gate_C2_yield_gate():
@@ -79,8 +79,8 @@ def test_ground_gate_C2c_prose_citation_fallback():
 def test_ground_gate_CL2_completion_check_tool_result():
     """CL2: §4 coverage verified sentinel — write when every covered dimension cites a substring."""
     assert "§4 coverage verified" in _ground_def()
-    assert "every covered dimension cites such a substring" in _ground_def()
-    assert "'§4 coverage verified' is valid only after '§ properties complete'" in _ground_def()
+    assert "every covered dimension cites a property number and such a substring" in _ground_def()
+    assert "'§4 coverage verified' is valid only after '§ test suite complete'" in _ground_def()
 
 
 # §1 means-test clause tests — each FAILS against old definition, PASSES after new §1 is implemented.
@@ -210,8 +210,9 @@ def test_ground_gate_deprecated_heading_path_removed():
 
 
 def test_ground_completion_check_requires_enumeration_complete():
-    """§4: ## Completion check must not appear before §5 enumeration complete — closes early-exit escape on all paths."""
-    assert "'## Completion check' is valid only after '§5 enumeration complete'" in _ground_def()
+    """§4: ## Completion check must appear immediately after §5 enumeration complete — allow-list, not deny-list."""
+    assert "must appear as the next heading after '§5 enumeration complete'" in _ground_def()
+    assert "a '## Completion check' appearing anywhere before '§5 enumeration complete' does not satisfy ground" in _ground_def()
 
 
 def test_ground_sentinels_scoped_to_current_invocation():

@@ -1491,3 +1491,26 @@ func TestTokensContinuityAnchor2(t *testing.T) {
 		t.Errorf("TOKENS instruction must contain post-completion continuity anchor 'is not a turn-end signal and no user message may appear between it and the Token derivations block', got:\n%s", tokensBlock)
 	}
 }
+
+func TestCompositionActiveProtocolPresent(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "method", Token: "gate", Description: "Gate."},
+			{Axis: "method", Token: "falsify", Description: "Falsify."},
+		},
+		ActiveCompositions: []Composition{
+			{Name: "gate+falsify"},
+		},
+	}
+	output := RenderPlainText(result)
+	compIdx := strings.Index(output, sectionCompositionRules)
+	if compIdx < 0 {
+		t.Fatal("COMPOSITION RULES section absent")
+	}
+	formatIdx := strings.Index(output, sectionFormat)
+	compBlock := output[compIdx:formatIdx]
+	if !strings.Contains(compBlock, "Composition active:") {
+		t.Errorf("COMPOSITION RULES must contain 'Composition active:' protocol, got:\n%s", compBlock)
+	}
+}

@@ -164,6 +164,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'decompose each §2 dimension into its atomic formal claims; '
         'each claim must appear on its own line beginning with the literal text \'property [N]:\' where N is a 1-based integer — '
         'a line beginning with \'**property\' or any markdown-formatted variant does not satisfy this requirement; '
+        'each \'property [N]:\' line must contain at least one formal expression — a logical predicate (∀/∃ notation), a typed function signature, or a concrete input/output example (f(v)=w or equivalent) — as a literal substring; a \'property [N]:\' line whose content is prose only, with none of {∀, ∃, →, a typed parameter list, or f(v)=w pattern} present as a substring, does not satisfy this requirement; '
         'for each property write \'§ property [N] atomic: [sub-claim that would be false while the property as a whole holds]\' — '
         'if no such sub-claim exists the property is already atomic; '
         'when all \'property [N]:\' lines and atomicity checks are written, write \'§ properties check: "[quoted phrase]"\' '

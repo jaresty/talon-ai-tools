@@ -172,6 +172,12 @@ def test_notation_derived_sentinel_required():
     assert "immediately after '§ notation derived:', write the label line 'Formalized properties:'" in text, (
         "ground must require Formalized properties: immediately after § notation derived: (positive predecessor)"
     )
+    assert "bracketed placeholder" in text or "'['" in text, (
+        "ground must require § notation derived: form to contain a bracketed placeholder (structural check)"
+    )
+    assert "non-bracket portion" in text, (
+        "ground must require property lines to contain the non-bracket portion of the sentinel template"
+    )
 
 
 def test_formalization_sentinel_present():

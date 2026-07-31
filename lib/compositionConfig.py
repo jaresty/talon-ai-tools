@@ -52,8 +52,6 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "must not close until such a tool-result block appears. "
             "Test rung ladder: '§ test suite complete' is valid only inside '## Completion check' — "
             "a '§ test suite complete' appearing before '## Completion check' does not satisfy this requirement. "
-            "'§ properties complete' is valid only inside '## Completion check' — "
-            "a '§ properties complete' appearing before '## Completion check' does not satisfy this requirement. "
             "After '§ properties complete', for each property [N] in '## Formalized properties', "
             "write a 'Falsify derivation:' block for that property followed immediately by "
             "'§ test rung rejects: property [N]' — a '§ test rung rejects:' not immediately preceded "

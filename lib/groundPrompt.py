@@ -132,7 +132,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'decompose each §2 dimension into its formal atomic claims; '
         'each claim must appear on its own line beginning with the literal text \'property [N]:\' where N is a 1-based integer — '
         'a line beginning with \'**property\' or any markdown-formatted variant does not satisfy this requirement; '
-        'each \'property [N]:\' line must contain at least one formal expression — a logical predicate (∀/∃ notation), a typed function signature, or a concrete input/output example (f(v)=w or equivalent) — as a literal substring; a \'property [N]:\' line whose content is prose only, with none of {∀, ∃, →, a typed parameter list, or f(v)=w pattern} present as a substring, does not satisfy this requirement; '
+        'each \'property [N]:\' line must contain at least one mathematical expression — any notation in which every term has a fixed denotation independent of natural-language context (e.g. ∀/∃ predicates, typed function signatures, relational expressions, or interface-shape patterns such as check(G) → PASS | FAIL(reason)) — as a literal substring; a \'property [N]:\' line containing no mathematical expression does not satisfy this requirement; '
         'after writing each \'property [N]:\' line, immediately write \'§ split test: [quoted sub-expression]\' '
         'where [quoted sub-expression] is a phrase from the parent expression naming a candidate sub-expression to split on, '
         'followed by a sentence stating whether splitting at that sub-expression yields two independently falsifiable sub-properties — '

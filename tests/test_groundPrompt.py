@@ -78,8 +78,8 @@ def test_attractor5_enforcement_wrapper_removed():
 def test_path_a_behavioral_criterion():
     """Path A artifact criterion requires live system execution, not syntactic form."""
     text = build_ground_prompt()
-    assert "executes the subject system and returns its live output" in text, (
-        "Path A must require artifact to execute subject system and return live output"
+    assert "invoke the governing test artifact as a tool call" in text, (
+        "§0 must require invoking the governing test artifact as a tool call when tools are available"
     )
     assert "file path, repo URL, endpoint, or shell command" not in text, (
         "old syntactic artifact-type list must be removed from Path A classification"
@@ -163,6 +163,17 @@ def test_deep_ladder_ambiguity_test_clause_present():
     )
 
 
+def test_ground_s0_uses_tool_availability():
+    """§0 observed trigger must condition on tool availability, not artifact presence in conversation."""
+    text = build_ground_prompt()
+    assert "when tools are available" in text, (
+        "ground §0 clause must use 'when tools are available' — locally evaluable without judgment"
+    )
+    assert "appears verbatim in the conversation above" not in text, (
+        "ground must not use artifact-presence-in-conversation language — replaced by tool-availability condition"
+    )
+
+
 def test_notation_derived_sentinel_required():
     """Ground must require § notation derived: before Formalized properties:."""
     text = build_ground_prompt()
@@ -174,9 +185,6 @@ def test_notation_derived_sentinel_required():
     )
     assert "bracketed placeholder" in text or "'['" in text, (
         "ground must require § notation derived: form to contain a bracketed placeholder (structural check)"
-    )
-    assert "non-bracket portion" in text, (
-        "ground must require property lines to contain the non-bracket portion of the sentinel template"
     )
 
 

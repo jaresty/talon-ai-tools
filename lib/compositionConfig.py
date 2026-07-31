@@ -29,11 +29,12 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "event is established by a quoted string from a prior tool-result block showing both "
             "the artifact and the changed file were invoked by that event. No file-modifying tool "
             "call is permitted until such a tool-result block appears above it in the transcript. "
-            "No-artifact exemption: when no executable artifact is available (§0 observed is absent "
-            "from the transcript), the blocking FAIL condition is satisfied by a named FAIL pattern "
-            "written in the response text — a line beginning with 'FAIL:' that names the assertion "
-            "text and the absent behavior; a tool-result block is not required when §0 observed is "
-            "absent and its absence does not block the ladder."
+            "No-artifact exemption: when tools are unavailable in this execution environment, "
+            "the blocking FAIL condition is satisfied by a named FAIL pattern written in the response "
+            "text — a line beginning with 'FAIL:' that names the assertion text and the absent "
+            "behavior; this exemption does not apply when tools are available — when tools are "
+            "available, a tool-executed FAIL result must appear in the transcript before any "
+            "file-modifying tool call."
         ),
     },
     {

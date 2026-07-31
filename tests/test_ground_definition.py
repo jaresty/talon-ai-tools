@@ -191,7 +191,7 @@ def test_ground_attractor_tool_executed_event():
 
 def test_ground_gate_path_a_classification_criterion():
     """Path A/B: explicit classification criterion — behavioral artifact triggers Path A."""
-    assert "executes the subject system and returns its live output" in _ground_def()
+    assert "invoke the governing test artifact as a tool call" in _ground_def()
 
 
 def test_ground_gate_S0_unified_sentinel():

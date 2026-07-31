@@ -77,3 +77,15 @@ def test_ground_falsify_p9_epistemic_opener():
         "ground+falsify must state WHY evaluation artifacts must precede edits — "
         "P9 guard-task separation: co-evolution of solution and evaluation permits silent goalpost movement"
     )
+
+
+def test_gate_falsify_exemption_uses_tool_availability():
+    """gate+falsify no-artifact exemption must condition on tool availability, not artifact presence."""
+    prose = _get_entry("gate+falsify")
+    assert prose is not None, "gate+falsify entry not found"
+    assert "tools are unavailable" in prose, (
+        "gate+falsify exemption must use 'tools are unavailable' — locally evaluable without judgment"
+    )
+    assert "no executable artifact" not in prose, (
+        "gate+falsify must not use artifact-presence language — replaced by tool-availability condition"
+    )

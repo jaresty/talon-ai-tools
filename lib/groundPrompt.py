@@ -26,9 +26,8 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
     "core": (
         'All compliance headings must be markdown \'## \' headings — a line not beginning with \'## \' '
         'does not satisfy any heading requirement. '
-        'Invocation scope: a sentinel written in a prior ground invocation does not satisfy any rung '
-        'requirement for the current invocation — a sentinel satisfies its rung only when it appears '
-        'in the transcript after the most recent \'=== TOKENS\' section. '
+        'Invocation scope: a sentinel satisfies its rung only when it appears in the current response — '
+        'a sentinel from a prior response does not satisfy any rung in this response. '
         'Each derivation-phase rung (§0 through § properties complete) derives exclusively from the immediately preceding rung\'s output; no rung has a fixed step count. '
         'A derivation-phase rung that references content from any rung earlier than its immediate predecessor does not satisfy this requirement — '
         'isolation is enforced at each derivation step; backward reference to earlier derivation rungs is not permitted even when the content appears in the transcript. '

@@ -156,8 +156,8 @@ def test_ground_gate_S0_observed_conditioned_on_artifact():
 
 
 def test_ground_gate_S1_governing_goal_unified():
-    """S1: governing goal is written in both artifact and no-artifact cases."""
-    assert "write '## Governing goal: [text]'" in _ground_def()
+    """S1: governing goal heading is the first ## heading after §0: — defined by position, not procedure."""
+    assert "'## Governing goal:' is the first '## ' heading in the transcript after '§0:'" in _ground_def()
 
 
 def test_ground_gate_S1_text_verbatim_when_observed():
@@ -216,8 +216,17 @@ def test_ground_completion_check_requires_enumeration_complete():
 
 
 def test_ground_sentinels_scoped_to_current_invocation():
-    """Sentinels from prior ground invocations must not satisfy current invocation rungs."""
-    assert "most recent '=== TOKENS'" in _ground_def()
+    """Sentinels from prior responses must not satisfy current response rungs — no === TOKENS reference."""
+    text = _ground_def()
+    assert "a sentinel satisfies its rung only when it appears in the current response" in text, (
+        "invocation scope must be defined in ground's own terms — 'current response', not '=== TOKENS'"
+    )
+    assert "a sentinel from a prior response does not satisfy any rung in this response" in text, (
+        "invocation scope must name the non-compliant case: sentinel from a prior response"
+    )
+    assert "most recent '=== TOKENS'" not in text, (
+        "invocation scope must not reference '=== TOKENS' — that is outside ground's own vocabulary"
+    )
 
 
 def test_ground_implementation_permitted_same_turn():

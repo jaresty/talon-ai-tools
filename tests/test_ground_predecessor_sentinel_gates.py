@@ -44,3 +44,16 @@ def test_completion_check_gated_on_enumeration_complete():
     """## Completion check must not appear before §5 enumeration complete."""
     core = _core()
     assert "'## Completion check' must not appear before '§5 enumeration complete'" in core
+
+
+def test_atomicity_test_sentinel_required_before_atomic_declaration():
+    """§ atomicity test: sentinel must appear before property [Na]: atomic —."""
+    core = _core()
+    assert "'§ atomicity test:'" in core
+    assert "'property [Na]: atomic —' line that does not have a '§ atomicity test:' line" in core
+
+
+def test_atomic_restatement_notation_class_requirement():
+    """atomic restatement must use same notation class as parent property [N]:."""
+    core = _core()
+    assert "same notation class" in core

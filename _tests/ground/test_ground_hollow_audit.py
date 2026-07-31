@@ -65,18 +65,17 @@ def test_rank1_path_a_document_content_named_strings_present():
 # word or phrase not present as a substring of the §0 scenario declaration.
 
 def test_rank2_derived_text_scope_restricted_to_scenario_declaration():
-    """[derived: text] must be restricted to claims present in the §0 declaration, not prior context."""
+    """[text] goal must be restricted to claims present in the scenario, not prior context."""
     core = _core()
-    # The protocol must state the restriction is to "the user's message" or "the scenario"
-    # and must not merely say "absent from" without naming the scope.
-    assert "absent from the user's message" in core
+    # The protocol must state the restriction is to "the scenario"
+    assert "absent from the scenario" in core
 
 
 def test_rank2_derived_text_violation_clause_present():
-    """Protocol must name the specific violation condition for [derived: text]."""
+    """Protocol must name the specific violation condition for the derived goal."""
     core = _core()
-    # The clause naming what makes a [derived: text] invalid must be present.
-    assert "a '[derived: text]' value that adds a claim absent from the user's message does not satisfy §1" in core
+    # The clause naming what makes a derived goal invalid must be present.
+    assert "a '[text]' value that adds a claim absent from the scenario does not satisfy §1" in core
 
 
 # ── Rank 3: Sentinel detachment — sentinels written before preconditions met ──

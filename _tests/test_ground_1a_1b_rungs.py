@@ -45,10 +45,12 @@ def test_ground_means_test_requires_two_alternatives():
 
 
 def test_ground_1a_decomposed_appears_before_means_test_gate():
-    """§1a decomposed sentinel must be required before the means-test line."""
+    """§1a decomposed sentinel must be triggered before the means-test is derived."""
     core = _core()
-    # The protocol must state that §1a decomposed must appear before the means-test
-    assert "'§1a decomposed' must appear before the means-test line" in core
+    # The protocol uses allow-list trigger: after §1a check, immediately write §1a decomposed,
+    # then immediately below §1a decomposed derive the means-test
+    assert "after a valid '§1a check:' line has appeared, immediately write '§1a decomposed'" in core
+    assert "immediately below '§1a decomposed', derive a means-test" in core
 
 
 def test_ground_1b_candidates_appears_before_behavioral_dimensions_gate():

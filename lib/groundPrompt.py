@@ -179,6 +179,7 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         'a \'## Completion check\' block that does not contain \'§4 coverage verified\' does not satisfy this requirement '
         'and the governed turn must continue to the next derived step rather than ending — '
         'a turn whose final non-blank content line is \'§4 coverage verified\' is exempt from the resume phrase requirement; '
+        'a turn whose final non-blank content line begins with \'§ blocked:\', \'§ awaiting:\', or \'§ no-next-action:\' is exempt from the resume phrase requirement — the continuation invariant exit string is the terminal constraint for that turn; '
         'when a turn is non-exempt, its final non-blank content line, after trimming trailing whitespace, must equal exactly: '
         'Resume: say "Continue autonomously — gates still apply" to proceed under the same protocol. '
         '(5) enumerate escape paths: after \'§ enforcement complete\', immediately write \'## Path enumeration\' — '

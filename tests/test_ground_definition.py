@@ -138,8 +138,8 @@ def test_ground_gate_S4_sentinel():
 
 
 def test_ground_gate_S4_path_enumeration_gate():
-    """S4: ## Path enumeration must not appear before ## Enforcement sequence in transcript."""
-    assert "must not appear before '## Enforcement sequence'" in _ground_def()
+    """S4: ## Path enumeration must not appear before § enforcement complete in transcript."""
+    assert "must not appear before '§ enforcement complete'" in _ground_def()
 
 
 # §0 observed sentinel tests — FAIL against current definition, PASS after implementation.
@@ -232,11 +232,11 @@ def test_ground_implementation_permitted_immediacy():
 
 
 def test_ground_path_enumeration_gate_enforcement_sequence():
-    """§5 must gate on ## Enforcement sequence, not §4 coverage verified — closes circular deadlock."""
+    """§5 must gate on § enforcement complete, not ## Enforcement sequence heading."""
     ground = _ground_def()
-    assert "'## Path enumeration' must not appear before '## Enforcement sequence'" in ground, (
-        "§5 gate must reference '## Enforcement sequence', not '§4 coverage verified' — "
-        "the old gate created a circular deadlock"
+    assert "'## Path enumeration' must not appear before '§ enforcement complete'" in ground, (
+        "§5 gate must reference '§ enforcement complete' sentinel, not '## Enforcement sequence' heading — "
+        "heading alone does not prevent empty enforcement sequence"
     )
     assert "'## Path enumeration' must not appear before '§4 coverage verified'" not in ground, (
         "old deadlock gate string must be absent from ground definition"

@@ -231,4 +231,4 @@ def test_rank9_means_test_line_has_named_prefix():
 def test_rank10_path_enumeration_gate_conditioned_on_coverage_verified():
     """## Path enumeration must not appear before ## Enforcement sequence."""
     core = _core()
-    assert "'## Path enumeration' must not appear before '## Enforcement sequence'" in core
+    assert "'## Path enumeration' must not appear before '§ enforcement complete'" in core

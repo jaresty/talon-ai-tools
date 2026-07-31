@@ -59,6 +59,18 @@ def test_sub_property_logical_equivalence_definition():
     assert "strict subset" in core and "strict superset" in core
 
 
+def test_formalization_complete_positive_trigger():
+    """after valid alternative satisfier: and § ambiguity test:, immediately write § formalization complete."""
+    core = _core()
+    assert "immediately write '§ formalization complete'" in core
+
+
+def test_properties_complete_positive_trigger():
+    """after § properties check:, immediately write § properties complete."""
+    core = _core()
+    assert "immediately write '§ properties complete'" in core
+
+
 def test_enforcement_sequence_positive_trigger():
     """after § properties complete, immediately write ## Enforcement sequence."""
     core = _core()

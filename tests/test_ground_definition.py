@@ -244,11 +244,11 @@ def test_ground_path_enumeration_gate_enforcement_sequence():
 
 
 def test_ground_path_enumeration_gate_axisconfig():
-    """axisConfig.py ground description must also gate §5 on ## Enforcement sequence."""
+    """axisConfig.py ground description must gate §5 on § enforcement complete sentinel."""
     from lib.axisConfig import AXIS_KEY_TO_VALUE
     ground = AXIS_KEY_TO_VALUE["method"]["ground"]
-    assert "'## Path enumeration' must not appear before '## Enforcement sequence'" in ground, (
-        "axisConfig ground must gate §5 on '## Enforcement sequence', not '§4 coverage verified'"
+    assert "'## Path enumeration' must not appear before '§ enforcement complete'" in ground, (
+        "axisConfig ground must gate §5 on '§ enforcement complete' sentinel"
     )
     assert "'## Path enumeration' must not appear before '§4 coverage verified'" not in ground, (
         "old deadlock gate string must be absent from axisConfig ground description"

@@ -32,3 +32,15 @@ def test_path_enumeration_gated_on_enforcement_complete():
     """## Path enumeration must not appear before § enforcement complete."""
     core = _core()
     assert "'## Path enumeration' must not appear before '§ enforcement complete'" in core
+
+
+def test_enumeration_complete_gated_on_enforcement_complete():
+    """§5 enumeration complete must not appear before § enforcement complete."""
+    core = _core()
+    assert "'§5 enumeration complete' must not appear before '§ enforcement complete'" in core
+
+
+def test_completion_check_gated_on_enumeration_complete():
+    """## Completion check must not appear before §5 enumeration complete."""
+    core = _core()
+    assert "'## Completion check' must not appear before '§5 enumeration complete'" in core

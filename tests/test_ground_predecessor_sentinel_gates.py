@@ -53,7 +53,7 @@ def test_atomicity_test_sentinel_required_before_atomic_declaration():
     assert "'property [Na]: atomic —' line that does not have a '§ atomicity test:' line" in core
 
 
-def test_atomic_restatement_notation_class_requirement():
-    """atomic restatement must use same notation class as parent property [N]:."""
+def test_sub_property_logical_equivalence_definition():
+    """conjunction of sub-properties must describe same set of instances as parent."""
     core = _core()
-    assert "same notation class" in core
+    assert "strict subset" in core and "strict superset" in core

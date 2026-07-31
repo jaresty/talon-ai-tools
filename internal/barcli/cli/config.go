@@ -52,6 +52,10 @@ type Config struct {
 	// lookup specific flags (ADR-0163)
 	Axis string
 
+	// Skip holds a phrase passed via --skip; bar help token/composition uses it
+	// to emit a one-line confirmation when the phrase matches the definition.
+	Skip string
+
 	// Plain strips decorations (headers, bullets, descriptions) from token
 	// listings, emitting one slug per line for piping to grep/fzf.
 	Plain bool
@@ -289,6 +293,14 @@ func Parse(args []string) (*Config, error) {
 			cfg.Section = args[i]
 		case strings.HasPrefix(arg, "--section="):
 			cfg.Section = strings.TrimPrefix(arg, "--section=")
+		case arg == "--skip":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--skip requires a value")
+			}
+			cfg.Skip = args[i]
+		case strings.HasPrefix(arg, "--skip="):
+			cfg.Skip = strings.TrimPrefix(arg, "--skip=")
 		case arg == "--compact":
 			cfg.Compact = true
 		case arg == "--plain":

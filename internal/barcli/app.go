@@ -1,6 +1,7 @@
 package barcli
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -639,6 +640,19 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 			writeError(stderr, err.Error())
 			return 1
 		}
+		if opts.Skip != "" {
+			var buf bytes.Buffer
+			if err := renderHelpToken(&buf, grammar, slug); err != nil {
+				writeError(stderr, err.Error())
+				return 1
+			}
+			if strings.Contains(buf.String(), opts.Skip) {
+				fmt.Fprintf(stdout, "# Token: %s (confirmed: %q)\n", slug, opts.Skip)
+				return 0
+			}
+			_, _ = io.Copy(stdout, &buf)
+			return 0
+		}
 		if err := renderHelpToken(stdout, grammar, slug); err != nil {
 			writeError(stderr, err.Error())
 			return 1
@@ -653,6 +667,19 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 		if err != nil {
 			writeError(stderr, err.Error())
 			return 1
+		}
+		if opts.Skip != "" && name != "" {
+			var buf bytes.Buffer
+			if err := renderHelpComposition(&buf, grammar, name); err != nil {
+				writeError(stderr, err.Error())
+				return 1
+			}
+			if strings.Contains(buf.String(), opts.Skip) {
+				fmt.Fprintf(stdout, "# Composition: %s (confirmed: %q)\n", name, opts.Skip)
+				return 0
+			}
+			_, _ = io.Copy(stdout, &buf)
+			return 0
 		}
 		if err := renderHelpComposition(stdout, grammar, name); err != nil {
 			writeError(stderr, err.Error())

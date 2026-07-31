@@ -932,3 +932,93 @@ func TestHelpLLMSequencesSingleTaskDispatchGateObservable(t *testing.T) {
 		t.Errorf("sequences section must not use semantic 'when independent discovery dimensions exist' as dispatch gate condition:\n%s", out)
 	}
 }
+
+// TestHelpTokenSkipMatchEmitsConfirmation specifies that bar help token <slug> --skip "<phrase>"
+// where phrase is a verbatim substring of the full output emits exactly one confirmation line
+// (property [1]).
+func TestHelpTokenSkipMatchEmitsConfirmation(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "token", "witness", "--skip", "inspectable reasoning"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", exit, stderr.String())
+	}
+	out := stdout.String()
+	want := "# Token: witness (confirmed: \"inspectable reasoning\")\n"
+	if out != want {
+		t.Errorf("skip match: got %q, want %q", out, want)
+	}
+}
+
+// TestHelpTokenSkipNoMatchEmitsFullOutput specifies that bar help token <slug> --skip "<phrase>"
+// where phrase is NOT a substring of the full output emits the full token help (property [2]).
+func TestHelpTokenSkipNoMatchEmitsFullOutput(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "token", "witness", "--skip", "this-phrase-does-not-exist-xyz"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", exit, stderr.String())
+	}
+	out := stdout.String()
+	if !strings.HasPrefix(out, "# Token: witness") {
+		preview := out
+		if len(preview) > 60 {
+			preview = preview[:60]
+		}
+		t.Errorf("skip no-match: output should start with full token header, got: %q", preview)
+	}
+	if strings.Contains(out, "(confirmed:") {
+		t.Errorf("skip no-match: output must not contain confirmation line, got: %s", out)
+	}
+}
+
+// TestHelpCompositionSkipMatchEmitsConfirmation specifies that bar help composition <name> --skip "<phrase>"
+// where phrase is a verbatim substring of the composition prose emits exactly one confirmation line
+// (property [3]).
+func TestHelpCompositionSkipMatchEmitsConfirmation(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "composition", "gate+falsify", "--skip", "No file-modifying tool call is permitted"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", exit, stderr.String())
+	}
+	out := stdout.String()
+	want := "# Composition: gate+falsify (confirmed: \"No file-modifying tool call is permitted\")\n"
+	if out != want {
+		t.Errorf("composition skip match: got %q, want %q", out, want)
+	}
+}
+
+// TestHelpCompositionSkipNoMatchEmitsFullOutput specifies that bar help composition <name> --skip "<phrase>"
+// where phrase is NOT a substring emits full composition output (property [4]).
+func TestHelpCompositionSkipNoMatchEmitsFullOutput(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	exit := Run([]string{"help", "composition", "gate+falsify", "--skip", "this-phrase-does-not-exist-xyz"}, os.Stdin, stdout, stderr)
+	if exit != 0 {
+		t.Fatalf("expected exit 0, got %d; stderr: %s", exit, stderr.String())
+	}
+	out := stdout.String()
+	if !strings.Contains(out, "gate") {
+		preview := out
+		if len(preview) > 60 {
+			preview = preview[:60]
+		}
+		t.Errorf("composition skip no-match: output should contain composition content, got: %q", preview)
+	}
+	if strings.Contains(out, "(confirmed:") {
+		t.Errorf("composition skip no-match: output must not contain confirmation line, got: %s", out)
+	}
+}
+
+// TestConfigSkipFlagParsed specifies that --skip is recognized as a valid flag and does not
+// cause an "unknown flag" error (property [5]).
+func TestConfigSkipFlagParsed(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	// If --skip is not parsed, Run returns exit 1 with "unknown flag --skip".
+	exit := Run([]string{"help", "token", "witness", "--skip", "some phrase"}, os.Stdin, stdout, stderr)
+	if exit != 0 && strings.Contains(stderr.String(), "unknown flag") {
+		t.Errorf("--skip flag not recognized: %s", stderr.String())
+	}
+}

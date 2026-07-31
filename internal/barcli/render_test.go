@@ -16,15 +16,6 @@ func TestTokensInstructionRootCriterionPhrase(t *testing.T) {
 	}
 }
 
-func TestTokensInstructionSkipPathBPhrase(t *testing.T) {
-	b, err := os.ReadFile("render.go")
-	if err != nil {
-		t.Fatalf("could not read render.go: %v", err)
-	}
-	if !strings.Contains(string(b), "without a prior valid") {
-		t.Error(`render.go missing skip path (b) phrase "without a prior valid"`)
-	}
-}
 
 func TestTokensInstructionConsecutiveInOrderPhrase(t *testing.T) {
 	b, err := os.ReadFile("render.go")
@@ -1041,25 +1032,6 @@ func TestTokensCacheSkipClause(t *testing.T) {
 	}
 }
 
-// TestCompositionRulesCacheSkipClause verifies the COMPOSITION RULES instruction includes
-// the cache-skip clause tied to a prior Loaded: line in the transcript.
-func TestCompositionRulesCacheSkipClause(t *testing.T) {
-	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
-	if cliErr != nil {
-		t.Fatalf("Build: %v", cliErr)
-	}
-	rendered := RenderPlainText(result)
-	compIdx := strings.Index(rendered, sectionCompositionRules)
-	if compIdx == -1 {
-		t.Fatal("COMPOSITION RULES section must be present")
-	}
-	formatIdx := strings.Index(rendered, sectionFormat)
-	compBlock := rendered[compIdx:formatIdx]
-	if !strings.Contains(compBlock, "already appears verbatim in the transcript") {
-		t.Errorf("COMPOSITION RULES instruction must contain transcript-verifiable cache-skip clause, got:\n%s", compBlock)
-	}
-}
 
 // TestCompositionRulesBindingConstraintSentence verifies the instruction tells the LLM
 // each composition is a binding constraint that applies throughout the response.
@@ -1170,25 +1142,6 @@ func TestTokensLoadedRequiresHeuristicPhrase(t *testing.T) {
 	}
 }
 
-// TestTokensSkipConfirmedForm verifies that the TOKENS instruction uses "(skip confirmed — when: "<phrase>" — not: "<phrase>" — because: <reason>)"
-// for skip acknowledgment, carrying both the selected and rejected provenance phrases forward from the prior Loaded: line.
-// This resolves the clash between the skip clause and the proximity requirement: a (skip confirmed — when: ...)
-// line is structurally distinct from a first-time Loaded: (when: "...") line.
-func TestTokensSkipConfirmedForm(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, `(skip confirmed — when: "<phrase>" — not: "<phrase>" — because: <reason>)`) {
-		t.Errorf("TOKENS skip clause must use '(skip confirmed — when: \"<phrase>\" — not: \"<phrase>\" — because: <reason>)' form, got:\n%s", tokensBlock)
-	}
-}
 
 // TestTokensDerivationsCitesLoadedPhrase verifies that the TOKENS instruction requires
 // each Token derivations line to quote the trigger phrase from the corresponding Loaded: line.
@@ -1368,25 +1321,6 @@ func TestTokensDerivationsDirectAnchorAndTruncationFallback(t *testing.T) {
 	}
 }
 
-// TestTokensSkipRequiresToolResultBlockAdjacency verifies that the skip-confirmed
-// non-compliance gate requires the prior Loaded: line to have appeared immediately
-// following a tool-result block — not merely verbatim anywhere in the transcript.
-// This closes the compaction escape: a summarized load line cannot authorize a skip.
-func TestTokensSkipRequiresToolResultBlockAdjacency(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "copying `when:` and `not:` verbatim from that prior valid line") {
-		t.Errorf("TOKENS skip-confirmed gate must state allow-list form: both phrase values must be verbatim copies, got:\n%s", tokensBlock)
-	}
-}
 
 // TestTokensSectionSentinelPresent verifies that the TOKENS instruction requires the
 // literal sentinel "Token loads complete." before the Token derivations block.
@@ -1512,5 +1446,43 @@ func TestCompositionActiveProtocolPresent(t *testing.T) {
 	compBlock := output[compIdx:formatIdx]
 	if !strings.Contains(compBlock, "Composition active:") {
 		t.Errorf("COMPOSITION RULES must contain 'Composition active:' protocol, got:\n%s", compBlock)
+	}
+}
+
+// TestTokensInstructionNoSelfAssessedSkip specifies that the TOKENS instruction text does not
+// contain the old self-assessed skip conditions "(a)" and "(b)" (property [6]).
+func TestTokensInstructionNoSelfAssessedSkip(t *testing.T) {
+	b, err := os.ReadFile("render.go")
+	if err != nil {
+		t.Fatalf("could not read render.go: %v", err)
+	}
+	src := string(b)
+	// Old skip condition (a): skip when a valid Loaded line already appears in transcript
+	if strings.Contains(src, "Skip the tool call for a slug") {
+		t.Error("render.go TOKENS instruction still contains old self-assessed skip condition — must be replaced with --skip mechanic")
+	}
+}
+
+// TestTokensInstructionMentionsSkipFlag specifies that the TOKENS instruction text
+// references the --skip flag (property [6]).
+func TestTokensInstructionMentionsSkipFlag(t *testing.T) {
+	b, err := os.ReadFile("render.go")
+	if err != nil {
+		t.Fatalf("could not read render.go: %v", err)
+	}
+	if !strings.Contains(string(b), "--skip") {
+		t.Error("render.go TOKENS instruction must mention --skip flag")
+	}
+}
+
+// TestCompositionInstructionNoSelfAssessedSkip specifies that the COMPOSITION RULES instruction
+// text does not contain the old skip-confirmed condition (property [7]).
+func TestCompositionInstructionNoSelfAssessedSkip(t *testing.T) {
+	b, err := os.ReadFile("render.go")
+	if err != nil {
+		t.Fatalf("could not read render.go: %v", err)
+	}
+	if strings.Contains(string(b), "skip confirmed") {
+		t.Error("render.go COMPOSITION instruction still contains old 'skip confirmed' condition — must be replaced with --skip mechanic")
 	}
 }

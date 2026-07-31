@@ -75,6 +75,25 @@ def test_attractor5_enforcement_wrapper_removed():
     )
 
 
+def test_s0_unconditional_entry_point():
+    """§0 must require writing §0: [scenario] before any task content — not as 'first content line of the ground derivation'."""
+    text = build_ground_prompt()
+    assert "before writing any task content, write '§0: [scenario]'" in text, (
+        "§0 must be an unconditional pre-task-content requirement, not anchored to 'first content line of the ground derivation'"
+    )
+    assert "first content line of the ground derivation" not in text, (
+        "old 'first content line of the ground derivation' form must be removed — 'ground derivation' has no structural boundary"
+    )
+
+
+def test_governing_goal_gated_on_s0():
+    """## Governing goal: must be gated on §0: [scenario] having appeared earlier in the current response."""
+    text = build_ground_prompt()
+    assert "'## Governing goal: [text]' is valid only after '§0: [scenario]' has appeared earlier in the current response" in text, (
+        "## Governing goal: must be hard-gated on §0: [scenario] — prevents model from skipping §0 and writing goal directly"
+    )
+
+
 def test_path_a_behavioral_criterion():
     """Path A artifact criterion requires live system execution, not syntactic form."""
     text = build_ground_prompt()

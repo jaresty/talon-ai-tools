@@ -68,7 +68,12 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "'§ test rung rejects: property [N]' sentinel; [N] in '§ test suite complete: [N] properties covered' "
             "must match the count of 'property [N]:' lines in '## Formalized properties' — a count mismatch "
             "does not satisfy this requirement. "
-            "'§4 coverage verified' is valid only after '§ test suite complete' has appeared inside '## Completion check'."
+            "'§4 coverage verified' is valid only after '§ test suite complete' has appeared inside '## Completion check'. "
+            "Adequacy check: after each 'Falsify derivation:' block and before its '§ test rung rejects: property [N]' sentinel, "
+            "write a line 'Adequacy: <yes|no> — <condition under which this test could pass while the property is absent, or \"none\">' — "
+            "a '§ test rung rejects:' not immediately preceded by an 'Adequacy:' line does not satisfy this requirement; "
+            "an 'Adequacy:' line whose answer is not 'no' blocks the sentinel — if the answer is 'yes', rewrite the test, "
+            "re-run the executor to produce a new (g), and write a new 'Adequacy:' line before the sentinel may follow."
         ),
     },
     {

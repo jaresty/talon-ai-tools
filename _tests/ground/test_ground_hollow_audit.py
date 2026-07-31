@@ -112,7 +112,7 @@ def test_rank3_2_dimensions_closed_requires_observable_tag():
 def test_rank3_4_coverage_verified_requires_verbatim_citation():
     """§4 coverage verified must require each dimension to cite a verbatim string."""
     core = _core()
-    assert "each covered dimension cites a verbatim string" in core
+    assert "every covered dimension cites a property number and such a substring" in core
 
 
 def test_rank3_5_enumeration_complete_requires_closing_string_per_path():
@@ -203,7 +203,8 @@ def test_rank6_sentinel_quoted_span_exclusion_present():
 def test_rank8_completion_check_placement_rule_present():
     """## Completion check must be gated after §5 enumeration complete."""
     core = _core()
-    assert "'## Completion check' is valid only after '§5 enumeration complete'" in core
+    assert "must appear as the next heading after '§5 enumeration complete'" in core
+    assert "a '## Completion check' appearing anywhere before '§5 enumeration complete' does not satisfy ground" in core
     assert "'§ implementation permitted'" in core
 
 

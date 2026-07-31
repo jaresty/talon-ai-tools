@@ -4,8 +4,13 @@
 set -euo pipefail
 
 SCENARIO="${1:-}"
+BAR_BIN="${2:-}"
 if [[ -z "$SCENARIO" ]]; then
-  echo "Usage: run-agent.sh <A|B|C|D|E|F|G|H|I|J|K|L|M|N>" >&2
+  echo "Usage: run-agent.sh <A|B|C|D|E|F|G|H|I|J|K|L|M|N> <path-to-bar-binary>" >&2
+  exit 1
+fi
+if [[ -z "$BAR_BIN" ]]; then
+  echo "Error: bar binary path is required as second argument — use /tmp/bar-new for dev build or \$(which bar) for installed." >&2
   exit 1
 fi
 
@@ -29,21 +34,18 @@ fi
 TASK_PROMPT=$(jq -r '.task_prompt' "$META")
 NO_CODE=$(jq -r '.no_code // false' "$META")
 
-# Build the craft-pack system prompt
-# Override with BAR_CMD=/path/to/bar to use a dev build
-BAR_CMD="${BAR_CMD:-bar}"
-# If using a non-default bar binary, prepend its directory to PATH so agent `bar` calls use it too
-if [[ "$BAR_CMD" != "bar" ]]; then
-  BAR_DEV_DIR="$(dirname "$BAR_CMD")"
-  BAR_DEV_NAME="$(basename "$BAR_CMD")"
-  if [[ "$BAR_DEV_NAME" != "bar" ]]; then
-    # binary isn't named 'bar' — create a temp wrapper dir
-    BAR_DEV_DIR="/tmp/bar-dev-bin"
-    mkdir -p "$BAR_DEV_DIR"
-    cp "$BAR_CMD" "$BAR_DEV_DIR/bar"
-  fi
-  export PATH="$BAR_DEV_DIR:$PATH"
+# Build the craft-pack system prompt using the required bar binary
+BAR_CMD="$BAR_BIN"
+# Prepend bar binary's directory to PATH so agent `bar` calls use the same binary
+BAR_DEV_DIR="$(dirname "$BAR_CMD")"
+BAR_DEV_NAME="$(basename "$BAR_CMD")"
+if [[ "$BAR_DEV_NAME" != "bar" ]]; then
+  # binary isn't named 'bar' — create a temp wrapper dir
+  BAR_DEV_DIR="/tmp/bar-dev-bin"
+  mkdir -p "$BAR_DEV_DIR"
+  cp "$BAR_CMD" "$BAR_DEV_DIR/bar"
 fi
+export PATH="$BAR_DEV_DIR:$PATH"
 SYSTEM_PROMPT="$("$BAR_CMD" build make witness ground gate falsify atomic 2>/dev/null)"
 if [[ -z "$SYSTEM_PROMPT" ]]; then
   echo "Error: $BAR_CMD build make witness ground gate falsify atomic produced no output." >&2

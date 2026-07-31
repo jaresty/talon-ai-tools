@@ -163,6 +163,17 @@ def test_deep_ladder_ambiguity_test_clause_present():
     )
 
 
+def test_notation_derived_sentinel_required():
+    """Ground must require § notation derived: before Formalized properties:."""
+    text = build_ground_prompt()
+    assert "§ notation derived:" in text, (
+        "ground must require the § notation derived: sentinel before Formalized properties:"
+    )
+    assert "immediately after '§ notation derived:', write the label line 'Formalized properties:'" in text, (
+        "ground must require Formalized properties: immediately after § notation derived: (positive predecessor)"
+    )
+
+
 def test_formalization_sentinel_present():
     """Ground must contain § formalization complete sentinel gating enforcement sequence."""
     text = build_ground_prompt()

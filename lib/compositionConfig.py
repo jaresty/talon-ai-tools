@@ -28,7 +28,12 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "absent behavior, names at least one other assertion as passing, and whose triggering "
             "event is established by a quoted string from a prior tool-result block showing both "
             "the artifact and the changed file were invoked by that event. No file-modifying tool "
-            "call is permitted until such a tool-result block appears above it in the transcript."
+            "call is permitted until such a tool-result block appears above it in the transcript. "
+            "Path B exemption: when the ground protocol is running Path B (no executable artifact "
+            "available in the conversation), the blocking FAIL condition is satisfied by a named "
+            "FAIL pattern written in the response text — a line beginning with 'FAIL:' that names "
+            "the assertion text and the absent behavior; a tool-result block is not required on "
+            "Path B and its absence does not block the ladder."
         ),
     },
     {

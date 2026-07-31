@@ -46,17 +46,23 @@ def test_completion_check_gated_on_enumeration_complete():
     assert "'## Completion check' must not appear before '§5 enumeration complete'" in core
 
 
-def test_atomicity_test_sentinel_required_before_atomic_declaration():
-    """§ atomicity test: sentinel must appear before property [Na]: atomic —."""
+def test_split_test_sentinel_required_before_sub_properties():
+    """§ split test: sentinel must appear after each property [N]: before sub-properties."""
     core = _core()
-    assert "'§ atomicity test:'" in core
-    assert "'property [Na]: atomic —' line that does not have a '§ atomicity test:' line" in core
+    assert "'§ split test:'" in core
+    assert "'property [Na]:' line that does not have a '§ split test:' line above it does not satisfy" in core
 
 
 def test_sub_property_logical_equivalence_definition():
     """conjunction of sub-properties must describe same set of instances as parent."""
     core = _core()
     assert "strict subset" in core and "strict superset" in core
+
+
+def test_atomicity_test_positive_trigger():
+    """after each property [N]: line, immediately write § split test: to attempt decomposition."""
+    core = _core()
+    assert "after writing each 'property [N]:' line, immediately write '§ split test:" in core
 
 
 def test_formalization_complete_positive_trigger():

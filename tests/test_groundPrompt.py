@@ -3,10 +3,10 @@ from lib.groundPrompt import build_ground_prompt
 
 
 def test_opening_bookend_inside_criteria():
-    """Opening bookend is criterion (0) inside the derivation sequence, not an external pre-condition."""
+    """Opening bookend is §0: [scenario] — opens ladder unconditionally, artifact invocation is conditional."""
     text = build_ground_prompt()
-    assert "invoke the named artifact as a tool call" in text, (
-        "opening bookend must appear as first criterion inside derivation sequence"
+    assert "§0: [scenario]" in text, (
+        "§0: [scenario] must appear as the unified §0 opening sentinel"
     )
     assert "Before writing the governing goal heading, run the system under test" not in text, (
         "old external pre-condition form must be removed"
@@ -102,27 +102,17 @@ def test_path_a_invocation_form_escape():
     )
 
 
-def test_goal_source_status_only_sentinel():
-    """Fix 1: §0 status-only sentinel must be named for execution-status-only §0 results."""
+def test_goal_source_conditional_on_observed():
+    """§1: governing goal source is conditional — verbatim from tool-result if §0 observed, else from scenario."""
     text = build_ground_prompt()
-    assert "§0 status-only" in text, (
-        "ground must name §0 status-only as the sentinel when §0 result contains no user-message substring"
+    assert "if '§0 observed' is present" in text or "§0 observed' is absent" in text, (
+        "ground must make governing goal source conditional on §0 observed presence"
     )
-
-
-def test_goal_source_requires_external_fetch():
-    """Fix 1: ## Governing goal: must not appear before a qualifying tool-result block when §0 status-only."""
-    text = build_ground_prompt()
-    assert "§0 status-only" in text and "## Governing goal:" in text, (
-        "ground must gate ## Governing goal: on an external-fetch tool-result block when §0 status-only"
+    assert "§0 tool-result block above" in text, (
+        "ground must require [text] verbatim from §0 tool-result when §0 observed is present"
     )
-
-
-def test_goal_source_substring_gate():
-    """Fix 1: qualifying tool-result must contain a line that appears as substring of a user message."""
-    text = build_ground_prompt()
-    assert "appears as a substring of a user message" in text, (
-        "ground must require fetched content to contain a line appearing as substring of a user message"
+    assert "derived from the scenario description" in text, (
+        "ground must allow goal derivation from scenario when §0 observed is absent"
     )
 
 
@@ -151,10 +141,10 @@ def test_continuation_invariant_no_next_action_sentinel():
 
 
 def test_1a_decomposed_precedes_1_goal_derived():
-    """§1 goal derived must not appear before §1a decomposed — ordering gate must be explicit."""
+    """§1 goal derived triggered by §1 check — allow-list enforces ordering after §1a decomposed."""
     text = build_ground_prompt()
-    assert "'§1 goal derived' must not appear before '§1a decomposed'" in text, (
-        "ground must gate §1 goal derived on §1a decomposed having appeared first in the transcript"
+    assert "after a valid '§1 check:' line has appeared, immediately write '§1 goal derived'" in text, (
+        "ground must gate §1 goal derived on §1 check via allow-list trigger"
     )
 
 

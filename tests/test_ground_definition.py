@@ -40,9 +40,9 @@ def test_ground_gate_D2_nonsoft_heading():
     assert "§0 Path B:" in _ground_def()
 
 
-def test_ground_gate_D3_goal_before_tool_result():
-    """D3: governing goal must not appear before §0 observed — stronger than old tool-result check."""
-    assert "must not appear before '§0 observed'" in _ground_def()
+def test_ground_gate_D3_s0_opens_ladder():
+    """D3: §0: [scenario] always written first to open the ladder."""
+    assert "'§0: [scenario]'" in _ground_def() or "write '§0: [scenario]'" in _ground_def()
 
 
 def test_ground_gate_D4_dimensions_ordering():
@@ -105,9 +105,9 @@ def test_ground_gate_S1_behavioral_dimensions_gate():
     assert "must not appear before '§1b candidates'" in _ground_def()
 
 
-def test_ground_gate_S1_selection_criterion_revised():
-    """S1: tie-breaking criterion replaced — now selects goal whose means-test names more concrete alternative."""
-    assert "more concrete alternative than those listed in §0" in _ground_def()
+def test_ground_gate_S1_conditional_goal_source():
+    """S1: governing goal source is conditional on §0 observed presence."""
+    assert "if '§0 observed' is present" in _ground_def() or "§0 observed' is absent" in _ground_def()
 
 
 # §2 observable-field clause tests — each FAILS against old definition, PASSES after new §2 is implemented.
@@ -155,14 +155,14 @@ def test_ground_gate_S0_observed_conditioned_on_artifact():
     assert "§0 observed" in _ground_def()
 
 
-def test_ground_gate_S1_governing_goal_requires_S0():
-    """S1: ## Governing goal must not appear before §0 observed in transcript."""
-    assert "must not appear before '§0 observed'" in _ground_def()
+def test_ground_gate_S1_governing_goal_unified():
+    """S1: governing goal is written in both artifact and no-artifact cases."""
+    assert "write '## Governing goal: [text]'" in _ground_def()
 
 
-def test_ground_gate_S1_text_verbatim_in_tool_result():
-    """S1: [text] must appear verbatim as substring of §0 tool-result block."""
-    assert "[text]` must appear verbatim as a substring of the §0 tool-result block" in _ground_def()
+def test_ground_gate_S1_text_verbatim_when_observed():
+    """S1: [text] must appear verbatim in §0 tool-result block when §0 observed is present."""
+    assert "§0 tool-result block above" in _ground_def()
 
 
 # Derivation framing tests — FAIL against current definition, PASS after implementation.
@@ -194,14 +194,14 @@ def test_ground_gate_path_a_classification_criterion():
     assert "executes the subject system and returns its live output" in _ground_def()
 
 
-def test_ground_gate_S0_path_b_sentinel():
-    """Path B §0: 'S0 Path B:' literal sentinel satisfies §0 for non-software subjects."""
-    assert "§0 Path B:" in _ground_def()
+def test_ground_gate_S0_unified_sentinel():
+    """§0: unified §0: [scenario] sentinel satisfies §0 in all cases."""
+    assert "§0: [scenario]" in _ground_def()
 
 
-def test_ground_gate_S1_derived_text_marker():
-    """Path B §1: '[derived: text]' marker for non-verbatim goal derivation."""
-    assert "[derived: text]" in _ground_def()
+def test_ground_gate_S1_no_artifact_derivation():
+    """§1 no-artifact: goal derived from scenario description when §0 observed absent."""
+    assert "derived from the scenario description" in _ground_def()
 
 
 def test_ground_gate_deprecated_heading_path_removed():

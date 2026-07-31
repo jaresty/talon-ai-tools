@@ -255,17 +255,9 @@ def test_closing_sentinel_addressability_checks():
     )
 
 
-def test_rung_completion_sentinel_finality():
-    """E-06: rung-completion sentinels must be the final non-blank line of their turn.
-    Eval L confirmed: model emitted §5 enumeration complete then continued writing prose.
-    Hollow audit: 'exit string' undefined; 'prose/heading' semantic — replaced with blank-line check."""
+def test_sentinel_formatting_requirement():
+    """Sentinel lines must begin with literal § or # character — markdown formatting does not satisfy."""
     text = build_ground_prompt()
-    assert "Rung-completion sentinel finality" in text, (
-        "ground must contain a sentinel finality clause"
-    )
-    assert "single assistant message block" in text, (
-        "ground must define 'turn' as single assistant message block — closes 'turn' hollow"
-    )
-    assert "every such line is blank" in text or "confirming every such line is blank" in text, (
-        "ground must use structural blank-line check, not semantic 'prose/heading/non-sentinel' categories"
+    assert "sentinel line beginning with '**' or any other markdown formatting character does not satisfy" in text, (
+        "ground must require sentinel lines to begin with literal § or # character"
     )

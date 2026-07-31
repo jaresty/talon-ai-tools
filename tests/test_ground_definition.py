@@ -35,9 +35,9 @@ def test_ground_definition_contains_transcript_inspectable():
 
 # Gate string tests — each FAILS against old definition, PASSES after new definition is implemented.
 
-def test_ground_gate_D2_nonsoft_heading():
-    """D2: non-software §0 satisfied by '§0 Path B: [scenario]' sentinel (not ## heading)."""
-    assert "§0 Path B:" in _ground_def()
+def test_ground_gate_D2_unified_s0_sentinel():
+    """D2: §0 always satisfied by '§0: [scenario]' unified sentinel."""
+    assert "§0: [scenario]" in _ground_def()
 
 
 def test_ground_gate_D3_s0_opens_ladder():
@@ -367,8 +367,8 @@ def test_ground_path_b_is_starting_gate_not_bypass():
     """Path B §0 is a starting gate — description/analysis/planning tasks run the full ladder."""
     ground = _ground_def()
     assert "starting gate" in ground, (
-        "ground must state that Path B §0 opens the ladder, not bypasses it — "
-        "description, analysis, and planning tasks run §1-§5 in full after §0 Path B"
+        "ground must state that §0 opens the ladder, not bypasses it — "
+        "description, analysis, and planning tasks run §1-§5 in full after §0: [scenario]"
     )
 
 

@@ -57,3 +57,21 @@ def test_sub_property_logical_equivalence_definition():
     """conjunction of sub-properties must describe same set of instances as parent."""
     core = _core()
     assert "strict subset" in core and "strict superset" in core
+
+
+def test_enforcement_sequence_positive_trigger():
+    """after § properties complete, immediately write ## Enforcement sequence."""
+    core = _core()
+    assert "after '§ properties complete', immediately write '## Enforcement sequence'" in core
+
+
+def test_path_enumeration_positive_trigger():
+    """after § enforcement complete, immediately write ## Path enumeration."""
+    core = _core()
+    assert "after '§ enforcement complete', immediately write '## Path enumeration'" in core
+
+
+def test_completion_check_positive_trigger():
+    """after §5 enumeration complete, immediately write ## Completion check."""
+    core = _core()
+    assert "after '§5 enumeration complete', immediately write '## Completion check'" in core

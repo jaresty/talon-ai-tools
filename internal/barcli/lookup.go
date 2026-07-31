@@ -395,10 +395,12 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		return bm25Results[i].score > bm25Results[j].score
 	})
 
-	// Build label map for BM25 results
+	// Build label and body maps for BM25 results
 	labelFor := make(map[string]string, len(docs))
+	bodyFor := make(map[string]string, len(docs))
 	for _, doc := range docs {
 		labelFor[doc.id] = doc.title
+		bodyFor[doc.id] = doc.body
 	}
 
 	// Build guide token set for HasGuide annotation (ADR-0237).
@@ -456,6 +458,7 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 			Tier:         -1,
 			Score:        br.score,
 			MatchedField: "bm25",
+			MatchedText:  bm25Snippet(bodyFor[br.id], query),
 			Token:        name,
 			HasGuide:     guideTokens[name],
 		}
@@ -488,6 +491,37 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		return nil
 	}
 	return results
+}
+
+// bm25Snippet returns a short excerpt from body near the first query word match.
+func bm25Snippet(body, query string) string {
+	if body == "" || query == "" {
+		return ""
+	}
+	bodyLower := strings.ToLower(body)
+	for _, word := range strings.Fields(strings.ToLower(query)) {
+		if len(word) < 3 {
+			continue
+		}
+		idx := strings.Index(bodyLower, word)
+		if idx < 0 {
+			continue
+		}
+		start := idx - 20
+		if start < 0 {
+			start = 0
+		}
+		end := idx + len(word) + 40
+		if end > len(body) {
+			end = len(body)
+		}
+		return strings.TrimSpace(body[start:end])
+	}
+	// fallback: first 60 chars of body
+	if len(body) > 60 {
+		return body[:60]
+	}
+	return body
 }
 
 // LookupTokensWithEmbedder is kept for API compatibility; delegates to LookupTokens.

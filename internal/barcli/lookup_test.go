@@ -429,6 +429,30 @@ func TestLookupBM25MultiWord(t *testing.T) {
 	}
 }
 
+// TestLookupBM25MatchedText specifies that BM25-only results have a non-empty matched_text field.
+func TestLookupBM25MatchedText(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	results := LookupTokens("map structural relationships before revising model", grammar, "")
+	var bm25Results []LookupResult
+	for _, r := range results {
+		if r.MatchedField == "bm25" {
+			bm25Results = append(bm25Results, r)
+		}
+	}
+	if len(bm25Results) == 0 {
+		t.Fatal("expected at least one BM25 result")
+	}
+	for _, r := range bm25Results {
+		if r.MatchedText == "" {
+			t.Errorf("BM25 result %s:%s has empty matched_text", r.Axis, r.Token)
+		}
+	}
+}
+
 // TestLookupTierBeforeBM25 specifies that tier-3/2/1 results appear before BM25-only results.
 func TestLookupTierBeforeBM25(t *testing.T) {
 	t.Setenv(envGrammarPath, "")

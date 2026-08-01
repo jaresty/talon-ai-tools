@@ -240,12 +240,7 @@ PLANNING_DIRECTIVE: str = (
     "Write 'Derived stance complete.' to close the derivation span; task content must follow in the same response turn — "
     "'Derived stance complete.' is not a turn-end signal and no user message may appear between it and the task content. "
     "No tool call result blocks appear between 'Token derivations:' and 'Derived stance complete.' — "
-    "a tool call result block in that span renders the derivation non-compliant. "
-    "A turn is exempt from the resume phrase requirement when it contains a tool-call block, "
-    "a line beginning with 'Gate condition:', or a line beginning with '§ blocked:'. "
-    "Every non-exempt turn's final non-blank content line, after trimming trailing whitespace, "
-    "must equal exactly: "
-    "Resume: say \"Continue autonomously — gates still apply\" to proceed under the same protocol."
+    "a tool call result block in that span renders the derivation non-compliant."
 )
 
 META_INTERPRETATION_GUIDANCE: str = (

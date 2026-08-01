@@ -182,10 +182,6 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         '\'## Completion check\' is satisfied only when the literal string \'§4 coverage verified\' appears within it — '
         'a \'## Completion check\' block that does not contain \'§4 coverage verified\' does not satisfy this requirement '
         'and the governed turn must continue to the next derived step rather than ending — '
-        'a turn whose final non-blank content line is \'§4 coverage verified\' is exempt from the resume phrase requirement; '
-        'a turn whose final non-blank content line begins with \'§ blocked:\', \'§ awaiting:\', or \'§ no-next-action:\' is exempt from the resume phrase requirement — the continuation invariant exit string is the terminal constraint for that turn; '
-        'when a turn is non-exempt, its final non-blank content line, after trimming trailing whitespace, must equal exactly: '
-        'Resume: say "Continue autonomously — gates still apply" to proceed under the same protocol. '
         '(5) enumerate escape paths: after \'§ enforcement complete\', immediately write \'## Path enumeration\' — '
         '\'## Path enumeration\' must not appear before \'§ enforcement complete\' in the transcript; '
         'enumerate every path by which §1–§4 headings could be present '
@@ -238,7 +234,10 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
         '\'§4 coverage verified\', or \'§5 enumeration complete\', that turn must end with one of: '
         '\'§ blocked: <text>\', \'§ awaiting: <text>\', or \'§ no-next-action: <text>\', where \'<text>\' '
         'is non-empty. A turn whose final non-blank content line contains or follows one of these strings '
-        'and does not end with one of the three exit strings does not satisfy ground.'
+        'and does not end with one of the three exit strings does not satisfy ground. '
+        'When the continuation invariant applies, it governs the turn exclusively — no other turn-ending requirement applies. '
+        'A rung-completion string may not appear as the final non-blank content line of a turn; '
+        'a turn whose final non-blank content line is a rung-completion string and not one of the three exit sentinels does not satisfy the continuation invariant.'
     ),
 }
 

@@ -21,129 +21,22 @@ COMPOSITIONS: list[dict[str, Any]] = [
     {
         "name": "gate+falsify",
         "tokens": ["gate", "falsify"],
-        "prose": (
-            "gate + falsify: the blocking condition gate requires is that a FAIL satisfying "
-            "falsify's validity criteria exists in the transcript — a tool-result block appearing "
-            "above the current position whose output names the assertion text that fires on the "
-            "absent behavior, names at least one other assertion as passing, and whose triggering "
-            "event is established by a quoted string from a prior tool-result block showing both "
-            "the artifact and the changed file were invoked by that event. No file-modifying tool "
-            "call is permitted until such a tool-result block appears above it in the transcript. "
-            "No-artifact exemption: when tools are unavailable in this execution environment, "
-            "the blocking FAIL condition is satisfied by a named FAIL pattern written in the response "
-            "text — a line beginning with 'FAIL:' that names the assertion text and the absent "
-            "behavior; this exemption does not apply when tools are available — when tools are "
-            "available, a tool-executed FAIL result must appear in the transcript before any "
-            "file-modifying tool call."
-        ),
+        "prose": "",
     },
     {
         "name": "ground+falsify",
         "tokens": ["ground", "falsify"],
-        "prose": (
-            "ground + falsify: evaluation artifacts and the behaviors they evaluate must not change "
-            "in the same phase — co-evolution of solution and evaluation weakens trust and permits "
-            "silent goalpost movement. "
-            "Every behavior governed by ground's enforcement process must be "
-            "governed by a falsifiable artifact satisfying falsify's validity criteria — meaning "
-            "the behavior cannot regress without the artifact detecting it. Producing passing "
-            "artifacts that happen to exist alongside the implementation does not satisfy this "
-            "requirement; each artifact must have fired against the absent behavior. During "
-            "ground's completion check, each governed behavior must have a correlated tool-result "
-            "block in the transcript showing the artifact fired against the absent behavior — "
-            "self-assessed certainty does not substitute for a visible tool-result block. For each "
-            "governed behavior, the completion check must locate a tool-result block in the "
-            "transcript whose output contains the assertion text that fires on the absent behavior "
-            "as a FAIL string; if none exists, that behavior is a gap and the completion check "
-            "must not close until such a tool-result block appears. "
-            "Test rung ladder: '§ test suite complete' is valid only inside '## Completion check' — "
-            "a '§ test suite complete' appearing before '## Completion check' does not satisfy this requirement. "
-            "After '§ properties complete', for each property [N] in '## Formalized properties', "
-            "write a 'Falsify derivation:' block for that property followed immediately by "
-            "'§ test rung rejects: property [N]' — a '§ test rung rejects:' not immediately preceded "
-            "by a 'Falsify derivation:' block containing '(g) observed FAIL' does not satisfy "
-            "this requirement. "
-            "Write '§ test suite complete: [N] properties covered' only after all properties have "
-            "a corresponding 'Falsify derivation:' block with '(g) observed FAIL' and "
-            "'§ test rung rejects: property [N]' sentinel; [N] in '§ test suite complete: [N] properties covered' "
-            "must match the count of 'property [N]:' lines in '## Formalized properties' — a count mismatch "
-            "does not satisfy this requirement. "
-            "'§4 coverage verified' is valid only after '§ test suite complete' has appeared inside '## Completion check'. "
-            "Blind spot check: after each 'Falsify derivation:' block and before its '§ test rung rejects: property [N]' sentinel, "
-            "write a line 'Blind spot: <behavior this test would miss if the property were absent> — none' — "
-            "a '§ test rung rejects:' not immediately preceded by a 'Blind spot:' line does not satisfy this requirement; "
-            "a 'Blind spot:' line whose value is not 'none' identifies a gap — rewrite the test to close it, "
-            "re-run the executor to produce a new (g), and write a new 'Blind spot:' line before the sentinel may follow."
-        ),
+        "prose": "",
     },
     {
         "name": "gate+atomic",
         "tokens": ["gate", "atomic"],
-        "prose": (
-            "gate + atomic: gate's blocking condition applies to every file-modifying tool call, "
-            "including stub additions. Recency: non-run tool calls (Read, Write, Edit, or any tool "
-            "call that does not produce a test-executor result) between the gating tool-result "
-            "block and the file-modifying tool call do not break recency — the string confirming "
-            "recency is the absence of any tool-executed run result between the gating block and "
-            "the edit; a tool-executed run result appearing between them resets the gate and a new "
-            "gating tool-result block is required. A Symbols list with more than one entry — where "
-            "the Symbols list is the string appearing between 'Symbols:' and 'Lines:' in the "
-            "pre-edit line — requires a separate Scope line and separate tool call for each entry."
-        ),
+        "prose": "",
     },
     {
         "name": "falsify+atomic",
         "tokens": ["falsify", "atomic"],
-        "prose": (
-            "falsify + atomic: each file-modifying tool call is governed independently — a "
-            "transcript-visible causal chain (artifact fires against absent behavior → named "
-            "minimal change → edit) must precede that specific call. Immediately before each "
-            "file-modifying tool call, the line 'Pre-edit [N]:' must appear in the transcript, "
-            "where N is the 1-based index of that file-modifying tool call in the current "
-            "response; a file-modifying tool call not immediately preceded by a 'Pre-edit [N]:' "
-            "line does not satisfy this requirement regardless of whether a pre-edit block for a "
-            "prior call appears above it. The 'Pre-edit [N]:' line must contain: 'Governing "
-            "artifact: <verbatim FAIL output from falsify's verification phase>' whose content is a substring of a tool-executed result block "
-            "appearing above this Pre-edit line in the transcript; a Governing artifact field whose content is not a substring of any "
-            "tool-executed result block above this line does not satisfy this requirement; and 'Minimal "
-            "state: <behavior being removed> / <at least one unchanged behavior>' — a "
-            "'Pre-edit [N]:' line missing either field does not satisfy this requirement. The "
-            "governing artifact must be run such that the scope text appears as a line in the "
-            "tool-result block; a run command whose output does not contain the scope text as a "
-            "line does not satisfy this requirement — use the same command for both pre-edit and "
-            "post-edit runs. If a tool-executed FAIL result shows the same failure with less than "
-            "the named behavior removed, the named behavior is not the sole governed cause and "
-            "must be rederived. "
-            "When falsify and atomic are co-present, the scope commitment quotes the first line in "
-            "the run result identified by the FAIL signal prefix — field (a) of the Falsify "
-            "derivation: block names the literal string that is the FAIL signal prefix for that invocation. "
-            "When falsify and atomic are co-present, the pre-edit block must include a fifth line "
-            "`(v) implementation depth: <string>` immediately after `(iv) post-call line mismatch: <string>` — "
-            "this line confirms the edit introduces a stub (for new symbols) or targets only an existing "
-            "symbol without expanding its implementation; a new-symbol edit whose `(v)` line does not "
-            "confirm stub form does not satisfy this requirement. "
-            "When the governed symbol contains a mechanism-level behavior, that behavior requires its "
-            "own governing FAIL before it is implemented; an outcome-contract FAIL does not automatically govern "
-            "mechanism-level behaviors beneath it. A governed FAIL satisfies this requirement for a "
-            "mechanism-level behavior only when: (1) the failure line names an identifier that does not "
-            "appear as a substring of the outcome-contract symbol's identifier, and (2) that identifier "
-            "appears as a substring of the assert statement of the governing artifact — a FAIL whose "
-            "failure line names only the outcome-contract symbol's identifier does not govern any "
-            "mechanism-level behavior beneath it. "
-            "When falsify and atomic are co-present, two identifiers are two symbols when each can appear "
-            "as an independent invocation site — an identifier introduced inside another identifier's body "
-            "that can be invoked independently is a second symbol requiring its own governing FAIL before "
-            "it may be introduced. The symbol commitment identifier must appear as a substring of a line "
-            "in the immediately preceding run result that also contains the FAIL signal prefix (field (a) "
-            "from the Falsify derivation block); an identifier appearing only on a non-FAIL line does not "
-            "satisfy this requirement. When the immediately preceding run result does not contain a line "
-            "satisfying this co-occurrence requirement for the next governed symbol, a re-execution of the "
-            "executor is required before the next scope commitment may be written. "
-            "A Write or Edit tool call that introduces a syntactic branch construct — any source construct that directs execution to follow one of two or more paths depending on a "
-            "runtime value, including conditionals, guards, and early returns — requires that at least one identifier appearing in that construct's condition or guard expression also "
-            "appears on a failure line in the immediately preceding governing executor result block; a branch construct whose condition or guard contains no identifier from any failure "
-            "line in that block requires its own governing failure before it may be introduced."
-        ),
+        "prose": "",
     },
     {
         "name": "falsify+chain",
@@ -164,21 +57,7 @@ COMPOSITIONS: list[dict[str, Any]] = [
     {
         "name": "atomic+ground",
         "tokens": ["atomic", "ground"],
-        "prose": (
-            "atomic + ground: ground's completion check is not permitted to open until a "
-            "tool-result block showing zero items in the run result appears above it in the "
-            "transcript; the completion check block must end before any done declaration opens. "
-            "Satisfying atomic's requirements does not exempt ground's requirements; satisfying "
-            "ground's requirements does not exempt atomic's requirements — each applies "
-            "independently. Adversarial completion check: treat each distinct file-modifying tool "
-            "call as one step. For each step, the completion check must locate a tool-result block "
-            "appearing in the transcript at that step's position that shows exactly one "
-            "independently testable change — where independently testable means a separate named "
-            "test or observable can detect one change while being blind to the other. If no such "
-            "tool-result block exists, or if it shows more than one independently testable change, "
-            "that step is a gap requiring re-execution as separate tool calls before the "
-            "completion check may close."
-        ),
+        "prose": "",
     },
     {
         "name": "skim+gate",
@@ -249,26 +128,7 @@ COMPOSITIONS: list[dict[str, Any]] = [
     {
         "name": "ground+gate+falsify+atomic+chain",
         "tokens": ["ground", "gate", "falsify", "atomic", "chain"],
-        "prose": (
-            "ground + gate + falsify + atomic + chain (multi-layer work): ground's first "
-            "artifact is a dependency graph that partitions the work into independent branches — "
-            "two branches are independent if neither's first step depends on any node in the "
-            "other. Each node carries an explicit predecessor/successor contract. This graph "
-            "is required before any branch begins. The protocol's ordering constraint applies "
-            "within each branch, not across independent branches. Once a shared upstream "
-            "dependency satisfies its assertions, independent branches must be executed as "
-            "parallel subagent invocations; parallel execution is available if and only if "
-            "the execution context supports simultaneous tool calls — if not, name the specific "
-            "tool or context property that is absent before proceeding sequentially; a statement "
-            "of unavailability without a named absent property does not satisfy this condition. "
-            "Each subagent runs "
-            "gate+falsify+atomic+chain on its assigned branch; ground is the orchestrating "
-            "protocol and its dependency graph is not re-derived within a branch. When "
-            "asserting layer boundaries, structural impossibility (the assertion cannot be "
-            "written) and pressure to stop early (a high-quality intermediate creates a "
-            "false sense of completion) are distinct failure modes with different causes; "
-            "they are not resolved by the same intervention."
-        ),
+        "prose": "",
     },
     {
         "name": "cards+gherkin",

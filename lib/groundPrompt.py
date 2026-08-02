@@ -243,40 +243,15 @@ GROUND_PARTS_MINIMAL: dict[str, str] = {
 
 
 def build_ground_prompt() -> str:
-    """Return the ground method prompt string (ADR-0220: generative ladder).
+    """Return the ground method prompt string.
 
-    This is the value injected into AXIS_KEY_TO_VALUE["method"]["ground"] via axisConfig.py.
-    ground is a method token — it is not in STATIC_PROMPT_CONFIG.
+    Spike definition: ground = recursive ambiguity resolution in ## Plan.
     """
     return (
-        "The response runs a meta-process protocol that exists because a description of completed work is indistinguishable from actually completing it "
-        "— every gate enforces the distinction by requiring a piece of reality before any claim about reality. "
-        "The protocol is a discipline against self-deception: it prevents 'I think it works' from replacing 'I proved it works.' "
-        "Trust must come from enforced evidence, not narrative claims. "
-        "The intent behind any task is an abstract goal outside the system — all artifacts derive from it, and without "
-        "a named intent, there is no basis for evaluating whether an artifact satisfies it. "
-        "Every task must derive a separate meta-task whose artifact is evaluation of task-to-intent alignment; "
-        "the meta-task must operate before the first domain action, and the task artifact cannot certify itself. "
-        "Protocol adherence must be the lowest-effort valid path — deviation must require additional effort, introduce failure risk, or be blocked. "
-        "Each derivation-phase rung derives exclusively from the immediately preceding rung's output — this progressively narrows the interpretation space so that no rung can claim more than its inputs justify; a derivation-phase rung that reaches back past its immediate predecessor violates this constraint regardless of whether the earlier content is visible in the transcript. Verification phases (## Enforcement sequence, ## Path enumeration, ## Completion check) are explicitly permitted to reference earlier derivation outputs by property number or sentinel name — they are not derivation rungs and the isolation constraint does not apply to them. "
-        "Rung isolation enforcement: before writing each derivation-phase rung after §0, write '§ rung rejects: [quoted phrase]' where [quoted phrase] is a verbatim substring of the immediately preceding rung's output that this rung eliminates as insufficiently precise; a derivation-phase rung whose first non-blank line does not begin with '§ rung rejects:' does not satisfy the isolation requirement; a '§ rung rejects:' value that does not appear verbatim as a substring of the immediately preceding rung's output does not satisfy this requirement. "
-        "When tools are available (§0 observed is present): the behavioral observation — the executed FAIL result showing the system's actual behavior against the absent governed behavior — is the rung where reality enters the chain; every rung before it is agent-authored artifact, and every rung after it derives from what that observation actually produced, not from what the agent wrote before it. When tools are unavailable (§0 observed is absent): the derivation structure itself is the primary artifact — the ladder runs to completion using prose-satisfiable sentinels, and this is a fully legitimate execution mode, not a degraded one. "
-        "Memory is not evidence — what a model recalls about a prior step carries the same confabulation risk as any other model output, so only what is visible in the transcript counts as having happened. "
-        "A shorter ladder is not more efficient — each collapsed step is ambiguity that was not closed, and ambiguity that was not closed remains available as an escape route. "
-        "§0 is a starting gate, not a bypass — description, analysis, and planning tasks run §1–§5 in full after writing '§0: [scenario]'; the declaration opens the ladder, it does not close it; every rung sentinel is satisfied by the literal string appearing in the response text when no executable artifact is present — no tool call is required or expected to satisfy any rung when §0 observed is absent. "
-        "Ladder depth: a ladder is complete only when its final pre-implementation rung contains at least one expression of the form: a typed function signature, a logical predicate (∀/∃ notation), or a concrete input/output example (f(v) = w or equivalent); other domains use the equivalent terminal form — a notation where every term has an unambiguous denotation such that two independent agents given only that rung would produce functionally equivalent outputs. After writing each rung, apply the ambiguity test: quote one phrase from the rung and ask whether that phrase could be satisfied by two non-equivalent outputs given the governing goal as context — the test is decidable per rung because the governing goal provides a fixed reference that bounds what counts as non-equivalent. If such a phrase exists, that phrase names the subject of the next rung. The ladder is complete only when the ambiguity test finds no such phrase. A ladder that reaches implementation before passing the ambiguity test has collapsed a step and must be re-derived. "
-        "Rung-type homogeneity: rung types must stay homogeneous across the ladder — all derivation-phase rungs must be successive precision-narrowings of the same governed behavior; introducing a new kind of artifact, deliverable, preflight check, or task category as a rung is not a narrowing and does not satisfy the ladder. A ladder that begins with intent → criteria → specification and then inserts a preflight check, implementation step, or presenter-support deliverable as a rung has switched dimensions — those items belong outside the ladder as governed actions following it, not inside it as rungs. "
-        "Intent cannot be read directly from a request — every governing goal must be derived by inferring what would satisfy the underlying need from the scenario's subject matter; derivation means selecting the most precise formulation of what the scenario implies, not adding requirements absent from it; a goal that introduces a new constraint not implied by the scenario has overreached, and a goal that merely restates the request has not derived anything. "
-        "The response applies a meta-process discipline before any implementation action, "
-        "deriving and enforcing its own correctness conditions as transcript-inspectable strings. "
-        "A rung is satisfied when and only when a transcript-visible event matching its definition "
-        "appears — when §0 observed is present, rungs require tool-executed events and the behavioral "
-        "observation is where reality enters the chain; when §0 observed is absent, no executable "
-        "artifact exists and rungs are satisfied by the literal sentinel string appearing in the "
-        "response text — this is an acknowledged weaker form of evidence that enables the protocol "
-        "to run on non-executable subjects (specifications, contracts, analyses) while preserving the "
-        "derivation structure; the protocol's preference for execution over description holds, but "
-        "does not block the protocol when execution is unavailable; "
-        "inference, prediction, and prior knowledge do not satisfy rung gates regardless of accuracy. "
-        + GROUND_PARTS_MINIMAL["core"]
+        "The response resolves ambiguity before acting. "
+        "Plan: write two plausible interpretations of the request; "
+        "pick one and state why the other is less fitting; "
+        "use the picked interpretation as the new request and apply this plan again; "
+        "when no second non-equivalent interpretation can be written, say 'Unambiguous request: [request]'. "
+        "An unambiguous request must be expressed in formal mathematical notation."
     )

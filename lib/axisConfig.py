@@ -456,32 +456,36 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "SplitDecision | SplitCandidate | Property | TerminalProperty | PlanningComplete. Type dispatch table — each type has exactly one permitted transition; any other transition "
         "applied to that type is a syntax error: Request → Interpret. InterpretationPair → Expand. Interpretation → Select (if chosen) or Discard (if not chosen). Selected → "
         "GroundCheck. Discarded → Consume. AmbiguityCheck → GroundResolve. FormalismChoice → Formalize. UnambiguousRequest → SplitCheck. SplitDecision → AnalyzeSplit. SplitCandidate → "
-        "Materialize. Property → SplitCheck. TerminalProperty → Terminal. PlanningComplete → emit 'Planning complete.' Pending is a FIFO queue — nodes are processed strictly in enqueue "
-        "order (breadth-first). The head of Pending is the only valid next Active node — processing any other node is a syntax error. A parent transition may not depend on its "
-        "descendants being processed immediately; sibling nodes will be dequeued before children. Trace grammar — every state has exactly three lines:   Line 1: Active: <id>:<type>    "
-        "Line 2: <transition line> — must immediately follow Active:; nothing may appear between them    Line 3: Pending: <id:type list in queue order, or 'empty'>  Any text inside a "
-        "state other than these three lines is a syntax error. Any text between states (between a Pending: line and the next Active: line) is a syntax error. Nodes are opaque: during "
-        "planning, nodes have no descriptions, claims, meanings, attributes, or annotations. Only node identifiers, transition keywords, and the two permitted payload lines "
-        "(U.expression= and SC.expression=) may appear in the trace. A node cannot be explained or described until after 'Planning complete.' A newly created node is inert until it "
-        "appears in a future Active: line. Transitions: Interpret(R:Request): write 'Interpret: R → IP0'; enqueue IP0:InterpretationPair. Expand(IP:InterpretationPair): write 'Expand: "
-        "IP → I1 / I2'; enqueue I1:Interpretation, I2:Interpretation. Select(I:Interpretation): write 'Select: I → S; <sibling-id> → X' on one line; enqueue S:Selected then "
-        "X:Discarded. Consume(X:Discarded): write 'Consume: X'; enqueue nothing. GroundCheck(S:Selected): write 'GroundCheck: S → C'; enqueue C:AmbiguityCheck. "
-        "GroundResolve(C:AmbiguityCheck): if ambiguity remains, write 'GroundResolve: C → R\\'' and enqueue R\\':Request; otherwise write 'GroundResolve: C → F' and enqueue "
-        "F:FormalismChoice. Formalize(F:FormalismChoice): write 'Formalism: <language>' (first-order predicate logic | set-builder notation | lambda calculus | typed function "
-        "signatures); write 'Formalize: F → U'; write 'U.expression=<formal expression in chosen formalism>' — U.expression is the immutable source text for future parsing; no natural "
-        "language; U.expression must preserve all predicates, quantifiers, operators, and domains from the selected interpretation and may not introduce predicates or terms not present "
-        "in it; enqueue U:UnambiguousRequest. SplitCheck(N:UnambiguousRequest or Property): write 'SplitCheck: N → D'; enqueue D:SplitDecision. SplitCheck never produces terminal — it "
-        "always produces exactly one SplitDecision. AnalyzeSplit(D:SplitDecision): inspect the expression text of D's source (U.expression for UnambiguousRequest, or the SC.expression "
-        "of the SplitCandidate that created the Property); if the expression's outermost operator is a binary connective (∧, ∨, ↔, →) with exactly two operands E1 and E2, write "
-        "'AnalyzeSplit: D → SC1 / SC2'; write 'SC1.expression=<E1 verbatim>'; write 'SC2.expression=<E2 verbatim>' — E1 and E2 must be contiguous substrings of that expression text; "
-        "semantic descriptions, implementation steps, or invented text are syntax errors; enqueue SC1:SplitCandidate, SC2:SplitCandidate. Otherwise (expression is atomic or has no "
-        "binary root connective — direct AST children only, not inferred concepts, goals, implementation steps, or semantic consequences): write 'AnalyzeSplit: D → T'; enqueue "
-        "T:TerminalProperty. Terminal(T:TerminalProperty): write 'Terminal: T'; enqueue nothing. Materialize(SC:SplitCandidate): write 'Materialize: SC → P'; enqueue P:Property. P "
-        "contains no expression — it exists only as a lifecycle wrapper; its source is SC. When Pending is empty after completing a Terminal or Consume transition: this is the one "
-        "permitted meta-transition outside the node dispatch table — enqueue PC:PlanningComplete. PlanningComplete: write 'Planning complete.'; enqueue nothing. Task content begins "
-        "after. Validity: every identifier introduced exactly once; every Active: names the head of Pending; every state is exactly Active:/transition/Pending: (plus U.expression= or "
-        "SC.expression= payload lines where specified); 'Planning complete.' only from PlanningComplete; SC1.expression and SC2.expression are contiguous substrings of U.expression or "
-        "the parent SC.expression.",
+        "Materialize. Property → SplitCheck. TerminalProperty → Terminal. PlanningComplete → emit 'Planning complete.' Pending is an ordered FIFO sequence, not a set. The leftmost "
+        "identifier in the Pending line is the queue head. The next Active line MUST name exactly the leftmost identifier from the previous Pending line — naming any other identifier "
+        "is a queue violation and a syntax error. The Pending line is authoritative: it defines the only legal next transition. Removing any identifier other than the leftmost Pending "
+        "identifier is a queue violation. A parent transition may not depend on its descendants being processed immediately; sibling nodes will be dequeued before children "
+        "(breadth-first). Trace grammar — every state has exactly three lines:   Line 1: Active: <id>:<type>    Line 2: <transition line> — must immediately follow Active:; nothing may "
+        "appear between them    Line 3: Pending: <id:type list in exact dequeue order, or 'empty'>  Any text inside a state other than these three lines is a syntax error. Any text "
+        "between states (between a Pending: line and the next Active: line) is a syntax error. Nodes are opaque: during planning, nodes have no descriptions, claims, meanings, "
+        "attributes, or annotations. Only node identifiers, transition keywords, and the two permitted payload lines (U.expression= and SC.expression=) may appear in the trace. A node "
+        "cannot be explained or described until after 'Planning complete.' A newly created node is inert until it appears in a future Active: line. Transitions: Interpret(R:Request): "
+        "write 'Interpret: R → IP0'; enqueue IP0:InterpretationPair. Expand(IP:InterpretationPair): write 'Expand: IP → I1 / I2'; enqueue I1:Interpretation, I2:Interpretation. "
+        "Select(I:Interpretation): write 'Select: I → S; <sibling-id> → X' on one line; creates exactly two nodes: S:Selected and X:Discarded; the enqueue operation appends in this "
+        "exact order: Pending := Pending ++ [S:Selected, X:Discarded]; the Pending line after Select must list S before X — any other order is a queue violation. Consume(X:Discarded): "
+        "write 'Consume: X'; enqueue nothing. GroundCheck(S:Selected): write 'GroundCheck: S → C'; enqueue C:AmbiguityCheck. GroundResolve(C:AmbiguityCheck): if ambiguity remains, "
+        "write 'GroundResolve: C → R\\'' and enqueue R\\':Request; otherwise write 'GroundResolve: C → F' and enqueue F:FormalismChoice. Formalize(F:FormalismChoice): write 'Formalism: "
+        "<language>' (first-order predicate logic | set-builder notation | lambda calculus | typed function signatures); write 'Formalize: F → U'; write 'U.expression=<formal "
+        "expression in chosen formalism>' — U.expression is the immutable source text for future parsing; no natural language; U.expression must preserve all predicates, quantifiers, "
+        "operators, and domains from the selected interpretation and may not introduce predicates or terms not present in it; enqueue U:UnambiguousRequest. "
+        "SplitCheck(N:UnambiguousRequest or Property): write 'SplitCheck: N → D'; enqueue D:SplitDecision. SplitCheck never produces terminal — it always produces exactly one "
+        "SplitDecision. AnalyzeSplit(D:SplitDecision): inspect the expression text of D's source (U.expression for UnambiguousRequest, or the SC.expression of the SplitCandidate that "
+        "created the Property); if the expression's outermost operator is a binary connective (∧, ∨, ↔, →) with exactly two operands E1 and E2, write 'AnalyzeSplit: D → SC1 / SC2'; "
+        "write 'SC1.expression=<E1 verbatim>'; write 'SC2.expression=<E2 verbatim>' — E1 and E2 must be contiguous substrings of that expression text; semantic descriptions, "
+        "implementation steps, or invented text are syntax errors; enqueue SC1:SplitCandidate, SC2:SplitCandidate. Otherwise (expression is atomic or has no binary root connective — "
+        "direct AST children only, not inferred concepts, goals, implementation steps, or semantic consequences): write 'AnalyzeSplit: D → T'; enqueue T:TerminalProperty. "
+        "Terminal(T:TerminalProperty): write 'Terminal: T'; enqueue nothing. TerminalProperty represents a Property whose expression has reached irreducible form — it is a lifecycle "
+        "terminal marker, not a task-domain result; it may not be explained, described, or annotated during planning. Materialize(SC:SplitCandidate): write 'Materialize: SC → P'; "
+        "enqueue P:Property. P contains no expression — it exists only as a lifecycle wrapper; its source is SC. When Pending is empty after completing a Terminal or Consume "
+        "transition: this is the one permitted meta-transition outside the node dispatch table — enqueue PC:PlanningComplete. PlanningComplete: write 'Planning complete.'; enqueue "
+        "nothing. Task content begins after. Validity: every identifier introduced exactly once; every Active: names the head of Pending; every state is exactly "
+        "Active:/transition/Pending: (plus U.expression= or SC.expression= payload lines where specified); 'Planning complete.' only from PlanningComplete; SC1.expression and "
+        "SC2.expression are contiguous substrings of U.expression or the parent SC.expression.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause that governs model behavior in the subject instruction, in any domain where instructions govern model behavior — first "
@@ -6061,19 +6065,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
             ],
             "heuristics": [
+                "before implementing any code change",
+                "before writing any file-modifying tool call",
+                "derive what correctness means before acting",
+                "make the interpretation choice explicit and formal before proceeding",
                 "the request could mean more than one thing",
-                "I need to resolve ambiguity before acting",
                 "multiple plausible interpretations exist",
-                "don't assume which interpretation is correct",
-                "enumerate interpretations and pick one explicitly",
                 "recursive disambiguation",
                 "formal unambiguous specification",
-                "make the interpretation choice visible",
-                "open-ended request with no obvious single meaning",
-                "I want the model to commit to one interpretation before proceeding",
                 "enforce your own process before acting",
-                "before touching this codebase, derive what correctness means for this change",
-                "I don't know what process this refactor needs — figure it out first",
             ],
         },
         "grove": {

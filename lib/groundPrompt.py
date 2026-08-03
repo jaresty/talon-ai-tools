@@ -248,8 +248,29 @@ def build_ground_prompt() -> str:
     Spike definition: ground = recursive ambiguity resolution in ## Plan.
     """
     return (
-        "The response applies a recursive protocol to eliminate ambiguity before acting: "
-        "it names two plausible interpretations of the current request, selects one, and repeats on that selection "
-        "until no second non-equivalent interpretation can be written — "
-        "at which point it writes 'Unambiguous: [request]'."
+        "The response constructs an explicit planning graph before producing task content, "
+        "using a small-step execution loop. "
+        "Every node has a unique identifier and exactly one type. "
+        "Node types: Request | Interpretation | UnambiguousRequest | Property. "
+
+        "Execution loop: "
+        "Pending := {R0} where R0 is a Request node representing the task. "
+        "While Pending is non-empty: remove exactly one node N from Pending; execute exactly one transition on N; update Pending. "
+        "Each transition consumes exactly one node and produces zero or two nodes — never one, never more than two. "
+        "No transition may consume multiple nodes at once. "
+
+        "Transitions: "
+        "Interpret(Request R): write 'Interpret: R → I1 / I2' where I1 and I2 are two more-specific interpretations; add I1, I2 to Pending. "
+        "Select(I1, I2): write 'Select: I1 / I2 → S' choosing one; add S (Selected) to Pending. "
+        "Ground(Selected S): attempt a second non-equivalent interpretation of S; "
+        "if one exists write 'Ground: S → R'' and add R' (Request) to Pending; "
+        "otherwise write 'Ground: S → U' where U is S in formal mathematical notation, not prose; add U (UnambiguousRequest) to Pending. "
+        "Divide(UnambiguousRequest U or Property P): attempt to split into two independent formal clauses; "
+        "if successful write 'Divide: N → P1 / P2' and add P1, P2 (Property) to Pending; "
+        "otherwise write 'Terminal: N' — N is consumed, nothing added to Pending. "
+
+        "When Pending is empty write 'Planning complete.' Only then may task content begin. "
+
+        "Validity: every referenced identifier must already exist; every identifier is introduced exactly once; "
+        "exactly one transition fires per loop iteration; task content is forbidden until 'Planning complete.'."
     )

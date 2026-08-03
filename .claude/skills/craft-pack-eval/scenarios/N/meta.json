@@ -3,7 +3,7 @@
   "name": "classify — test rung ladder (ground+falsify formalized properties)",
   "module": "github.com/haiku-test/n",
   "expect": "no test files",
-  "task_prompt": "classify.go contains a stub: func classify(s string) string { return \"\" }. No governing test exists yet. Using bar build make witness ground gate falsify atomic, implement classify so it returns \"upper\" when the string is all uppercase and \"lower\" otherwise.",
+  "task_prompt": "classify.go contains a stub: func classify(s string) string { return \"\" }. No governing test exists yet. Using bar build make witness ground gate falsify, implement classify so it returns \"upper\" when the string is all uppercase and \"lower\" otherwise.",
   "crank": true,
   "target_frames": [9],
   "notes": "Test rung ladder scenario. After § formalization complete, the agent must produce 'Formalized properties:' with atomic sub-properties before the artifact. During completion check, each property is cited by number with a Falsify derivation block and '§ test rung rejects: property [N]'.",

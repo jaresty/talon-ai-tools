@@ -352,9 +352,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals — for each premise, naming the specific "
         "claim it supports and at least one condition under which it would not support that claim.",
-        "atomic": "The response applies a recursive protocol to enumerate independent parts before acting: it names two independent parts of the current request, acts on the first, and repeats "
-        "on each part until no second independent part can be written — at which point it writes 'Terminal: [part]'. When every part has reached Terminal, it writes 'Terminal "
-        "complete.'.",
+        "atomic": "The response makes one observable change per step.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "
@@ -447,8 +445,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "grain": "The response enhances the task by naming the directions in which the system's existing structure already propagates — interfaces, dependencies, data flows — and naming "
         "interventions that follow those directions rather than crossing them. Optionality mapping, directional guidance, and structural prediction derive from naming where existing "
         "propagation paths run.",
-        "ground": "The response applies a recursive protocol to eliminate ambiguity before acting: it names two plausible interpretations of the current request, selects one, and repeats on that "
-        "selection until no second non-equivalent interpretation can be written — at which point it writes 'Unambiguous: [request]'.",
+        "ground": "The response constructs an explicit planning graph before producing task content, using a small-step execution loop. Every node has a unique identifier and exactly one type. "
+        "Node types: Request | Interpretation | UnambiguousRequest | Property. Execution loop: Pending := {R0} where R0 is a Request node representing the task. While Pending is "
+        "non-empty: remove exactly one node N from Pending; execute exactly one transition on N; update Pending. Each transition consumes exactly one node and produces zero or two "
+        "nodes — never one, never more than two. No transition may consume multiple nodes at once. Transitions: Interpret(Request R): write 'Interpret: R → I1 / I2' where I1 and I2 are "
+        "two more-specific interpretations; add I1, I2 to Pending. Select(I1, I2): write 'Select: I1 / I2 → S' choosing one; add S (Selected) to Pending. Ground(Selected S): attempt a "
+        "second non-equivalent interpretation of S; if one exists write 'Ground: S → R'' and add R' (Request) to Pending; otherwise write 'Ground: S → U' where U is S in formal "
+        "mathematical notation, not prose; add U (UnambiguousRequest) to Pending. Divide(UnambiguousRequest U or Property P): attempt to split into two independent formal clauses; if "
+        "successful write 'Divide: N → P1 / P2' and add P1, P2 (Property) to Pending; otherwise write 'Terminal: N' — N is consumed, nothing added to Pending. When Pending is empty "
+        "write 'Planning complete.' Only then may task content begin. Validity: every referenced identifier must already exist; every identifier is introduced exactly once; exactly one "
+        "transition fires per loop iteration; task content is forbidden until 'Planning complete.'.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause that governs model behavior in the subject instruction, in any domain where instructions govern model behavior — first "
@@ -5179,9 +5185,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "rigor",
                 },
                 {
-                    "note": "ground = recursive ambiguity resolution — resolves the request until a single unambiguous interpretation remains; atomic = recursive divisibility — "
-                    "divides the unambiguous request until each part is independent and indivisible. They are co-equal planning predicates: ground runs first, atomic "
-                    "runs on ground's output.",
+                    "note": "ground = recursive protocol that resolves ambiguity then divides the request into independent parts using Divide:/Terminal: sentinels; atomic = one "
+                    "observable change per step. use ground when the request needs disambiguation and decomposition; use atomic to control step size.",
                     "token": "ground",
                 },
             ],
@@ -6003,29 +6008,28 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "distinctions": [
                 {
                     "note": "gate = hard-blocking checkpoint (next action blocked until condition met); falsify = falsifiable artifact must fire before implementation; ground = "
-                    "meta-token that derives what constraints apply. use gate/falsify when you know the constraints; use ground when you want the model to figure out "
-                    "what constraints this task needs.",
+                    "recursive protocol that first resolves ambiguity then divides the request into independent parts. use gate/falsify when you know the constraints; "
+                    "use ground when you need to derive the unambiguous request before acting.",
                     "token": "gate",
                 },
                 {
-                    "note": "chain = the specific constraint that each step cites its predecessor; ground = meta-token that derives what constraints apply. chain is one thing "
-                    "ground might derive.",
+                    "note": "chain = the specific constraint that each step cites its predecessor; ground = recursive protocol for disambiguation then decomposition. chain "
+                    "governs step ordering; ground governs what the steps operate on.",
                     "token": "chain",
                 },
                 {
-                    "note": "atomic = recursive divisibility predicate — divides the request until each part requires only one independent operation; ground = recursive "
-                    "ambiguity predicate — resolves the request until only one interpretation remains. They are co-equal planning predicates run in sequence: ground "
-                    "first, then atomic on ground's output.",
+                    "note": "atomic = one observable change per step; ground = recursive protocol that resolves ambiguity then divides the request into independent parts using "
+                    "Divide:/Terminal: sentinels. ground handles decomposition; atomic governs step size within each part.",
                     "token": "atomic",
                 },
                 {
-                    "note": "verify = falsification pressure on claims; ground = optimizer assumption + derive your own enforcement process. verify applies to claims; ground "
-                    "applies to the overall task process.",
+                    "note": "verify = falsification pressure on claims; ground = recursive disambiguation and decomposition before acting. verify applies to claims; ground "
+                    "applies to the request itself before any claims are made.",
                     "token": "verify",
                 },
                 {
-                    "note": "mint = build forward from assumptions toward conclusions; ground = derive an enforcement process that makes shortcuts costly — they operate in "
-                    "opposite directions",
+                    "note": "mint = build forward from assumptions toward conclusions; ground = resolve ambiguity and divide before acting. mint constructs; ground clarifies "
+                    "what to construct.",
                     "token": "mint",
                 },
             ],

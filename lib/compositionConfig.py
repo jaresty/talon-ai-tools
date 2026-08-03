@@ -26,7 +26,7 @@ COMPOSITIONS: list[dict[str, Any]] = [
     {
         "name": "ground+falsify",
         "tokens": ["ground", "falsify"],
-        "prose": "When ground and falsify are both active: the 'Ground properties:' block must appear before any falsify artifact. Every 'Observing: property [N]' line must cite a property [N] that appears in the 'Ground properties:' block above it. A falsify artifact whose preceding 'Observing:' line cites a property not present in 'Ground properties:' does not satisfy this composition.",
+        "prose": "When ground and falsify are both active: the 'Ground properties:' block must appear before any falsify artifact. Every 'Observing: property [N]' line must cite a property [N] that appears in the 'Ground properties:' block above it. A falsify artifact whose preceding 'Observing:' line cites a property not present in 'Ground properties:' does not satisfy this composition. Every property [N] in the 'Ground properties:' block must have at least one 'Observing: property [N]' line in the response — a property with no corresponding 'Observing:' line is ungoverned and does not satisfy this composition. Before any implementation write, a verbatim failure line from the test run must be quoted in the response — an implementation not preceded by a quoted failure line does not satisfy this composition. After implementation, the blind-spot check must attempt to find a regression the test guard would miss; if found, the implementation is rewritten minimally until no such path exists. After the blind-spot check passes, the coverage check must verify each ground property is satisfied; if any property is unsatisfied, the test for that property is refined and the full cycle repeats.",
     },
     {
         "name": "gate+atomic",

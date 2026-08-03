@@ -57,7 +57,7 @@ COMPOSITIONS: list[dict[str, Any]] = [
     {
         "name": "atomic+ground",
         "tokens": ["atomic", "ground"],
-        "prose": "",
+        "prose": "When ground and atomic are both active, they form a single unified planning procedure: ground runs first and recursively resolves ambiguity until writing 'Unambiguous: [request]'; atomic's division step then takes that unambiguous request as input and recursively divides it until every part reaches Terminal.",
     },
     {
         "name": "skim+gate",

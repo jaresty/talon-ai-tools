@@ -240,11 +240,7 @@ PLANNING_DIRECTIVE: str = (
     "Write 'Derived stance complete.' to close the derivation span; task content must follow in the same response turn — "
     "'Derived stance complete.' is not a turn-end signal and no user message may appear between it and the task content. "
     "No tool call result blocks appear between 'Token derivations:' and 'Derived stance complete.' — "
-    "a tool call result block in that span renders the derivation non-compliant. "
-    "After 'Derived stance complete.', structure the response in three labeled sections: "
-    "## Plan: execute each active method token's procedure in full here. "
-    "## Response: produce the task content. "
-    "## Check: verify the response satisfies the plan, applying any active method tokens."
+    "a tool call result block in that span renders the derivation non-compliant."
 )
 
 META_INTERPRETATION_GUIDANCE: str = (

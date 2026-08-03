@@ -249,9 +249,8 @@ def build_ground_prompt() -> str:
     """
     return (
         "The response resolves ambiguity before acting. "
-        "Plan: write two plausible interpretations of the request; "
-        "pick one and state why the other is less fitting; "
-        "use the picked interpretation as the new request and apply this plan again; "
-        "when no second non-equivalent interpretation can be written, say 'Unambiguous request: [request]'. "
-        "An unambiguous request must be expressed in formal mathematical notation."
+        "Enumerate two plausible more specific interpretations of the request; "
+        "while two are possible, pick one and repeat this step using the picked interpretation as input; "
+        "when no second non-equivalent interpretation can be written, write 'Unambiguous: [request]'. "
+        "An unambiguous request must be expressible in formal notation."
     )

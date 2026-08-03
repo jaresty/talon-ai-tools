@@ -352,11 +352,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals — for each premise, naming the specific "
         "claim it supports and at least one condition under which it would not support that claim.",
-        "atomic": "The response splits each property before acting on it. Plan: for each property, apply the divisibility test: write 'Divisible? [property]' — then enumerate what independent "
-        "sub-properties this property would need to contain for the answer to be yes. If any such sub-property exists, split and re-test each part. If none can be named, write "
-        "'Terminal: [property]'. A 'Terminal:' verdict is valid only when both hold: (a) no candidate sub-property can be named that could be satisfied while leaving another "
-        "unsatisfied, and (b) the property names a single observable state change with no intermediate state. Act only on terminal properties. A 'Terminal:' verdict with no preceding "
-        "enumeration of candidate sub-properties does not satisfy this token.",
+        "atomic": "The response divides the request into independent parts before acting. Divide the current request into two independent parts; if you can do so, repeat this step with each part "
+        "as input to the next iteration; when a part has no meaningful independent sub-parts, write 'Terminal: [part]'.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "
@@ -449,9 +446,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "grain": "The response enhances the task by naming the directions in which the system's existing structure already propagates — interfaces, dependencies, data flows — and naming "
         "interventions that follow those directions rather than crossing them. Optionality mapping, directional guidance, and structural prediction derive from naming where existing "
         "propagation paths run.",
-        "ground": "The response resolves ambiguity before acting. Plan: write two plausible interpretations of the request; pick one and state why the other is less fitting; use the picked "
-        "interpretation as the new request and apply this plan again; when no second non-equivalent interpretation can be written, say 'Unambiguous request: [request]'. An unambiguous "
-        "request must be expressed in formal mathematical notation.",
+        "ground": "The response resolves ambiguity before acting. Enumerate two plausible more specific interpretations of the request; while two are possible, pick one and repeat this step "
+        "using the picked interpretation as input; when no second non-equivalent interpretation can be written, write 'Unambiguous: [request]'. An unambiguous request must be "
+        "expressible in formal notation.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause that governs model behavior in the subject instruction, in any domain where instructions govern model behavior — first "
@@ -5182,8 +5179,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "rigor",
                 },
                 {
-                    "note": "ground = derive an enforcement process before acting; atomic = the specific constraint that each step changes exactly one thing. atomic is one "
-                    "component of what ground might derive.",
+                    "note": "ground = recursive ambiguity resolution — resolves the request until a single unambiguous interpretation remains; atomic = recursive divisibility — "
+                    "divides the unambiguous request until each part is independent and indivisible. They are co-equal planning predicates: ground runs first, atomic "
+                    "runs on ground's output.",
                     "token": "ground",
                 },
             ],
@@ -6015,8 +6013,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "chain",
                 },
                 {
-                    "note": "atomic = the specific constraint of one observable change per step; ground = meta-token that derives what constraints apply. atomic is one thing "
-                    "ground might derive.",
+                    "note": "atomic = recursive divisibility predicate — divides the request until each part requires only one independent operation; ground = recursive "
+                    "ambiguity predicate — resolves the request until only one interpretation remains. They are co-equal planning predicates run in sequence: ground "
+                    "first, then atomic on ground's output.",
                     "token": "atomic",
                 },
                 {
@@ -6031,16 +6030,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 },
             ],
             "heuristics": [
-                "don't let it look done when it isn't",
-                "I'm worried it will take shortcuts",
-                "make deviation costly",
-                "derive an enforcement process",
-                "optimizer assumption",
-                "appearance vs actuality",
-                "prevent plausible-looking outputs",
-                "I don't know what process this task needs",
-                "open-ended task with no obvious structure",
-                "make the gap between appearance and reality visible",
+                "the request could mean more than one thing",
+                "I need to resolve ambiguity before acting",
+                "multiple plausible interpretations exist",
+                "don't assume which interpretation is correct",
+                "enumerate interpretations and pick one explicitly",
+                "recursive disambiguation",
+                "formal unambiguous specification",
+                "make the interpretation choice visible",
+                "open-ended request with no obvious single meaning",
+                "I want the model to commit to one interpretation before proceeding",
                 "enforce your own process before acting",
                 "before touching this codebase, derive what correctness means for this change",
                 "I don't know what process this refactor needs — figure it out first",

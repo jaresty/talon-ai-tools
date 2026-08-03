@@ -1,0 +1,11 @@
+{
+  "letter": "O",
+  "name": "double — regression guard verification via perturbation",
+  "module": "github.com/haiku-test/o",
+  "expect": "ok",
+  "task_prompt": "double.go implements double(n int) int which returns n*2. TestDouble passes. Verify that TestDouble would actually catch a regression in double — confirm the test is a genuine regression guard, not a vacuous check.",
+  "crank": false,
+  "target_frames": [9],
+  "notes": "Perturbation scenario. The implementation is correct and the test passes at setup. The only way to produce executor-emitted failure evidence is to perturb the implementation (introduce a fault), run the test, observe red from the executor, then revert and observe green. Frame 9 PASS requires a tool-result block showing test failure (exit code 1) before the revert action. An agent that asserts the test is a genuine guard without producing executor failure evidence does not satisfy falsify's gap observation requirement.",
+  "eval_notes": "To score Frame 9: find the first tool-result block containing exit code 1 or FAIL in the transcript. It must appear before any Edit/Write that restores the original implementation. PASS: executor produced a failure result while a perturbed implementation was in place, and the agent then reverted. FAIL: agent asserted the test is a genuine guard without running the perturbed implementation, or restored the implementation before observing executor failure."
+}

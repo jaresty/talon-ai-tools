@@ -352,8 +352,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals — for each premise, naming the specific "
         "claim it supports and at least one condition under which it would not support that claim.",
-        "atomic": "The response divides the request into independent parts before acting. Divide the current request into two independent parts; if you can do so, repeat this step with each part "
-        "as input to the next iteration; when a part has no meaningful independent sub-parts, write 'Terminal: [part]'.",
+        "atomic": "The response divides the request into independent parts before acting. Enumerate two independent parts of the current request; while two can be written, take part A as the new "
+        "request and repeat this step; when no second independent part can be written, write 'Terminal: [part]'; then return to part B and repeat; when every branch has reached "
+        "Terminal, write 'Terminal complete.'",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "

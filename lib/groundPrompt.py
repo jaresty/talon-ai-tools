@@ -248,9 +248,8 @@ def build_ground_prompt() -> str:
     Spike definition: ground = recursive ambiguity resolution in ## Plan.
     """
     return (
-        "The response resolves ambiguity before acting. "
-        "Enumerate two plausible more specific interpretations of the request; "
-        "while two are possible, pick one and repeat this step using the picked interpretation as input; "
-        "when no second non-equivalent interpretation can be written, write 'Unambiguous: [request]'. "
-        "An unambiguous request must be expressible in formal notation."
+        "The response applies a recursive protocol to eliminate ambiguity before acting: "
+        "it names two plausible interpretations of the current request, selects one, and repeats on that selection "
+        "until no second non-equivalent interpretation can be written — "
+        "at which point it writes 'Unambiguous: [request]'."
     )

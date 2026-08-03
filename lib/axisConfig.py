@@ -352,9 +352,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals — for each premise, naming the specific "
         "claim it supports and at least one condition under which it would not support that claim.",
-        "atomic": "The response divides the request into independent parts before acting. Enumerate two independent parts of the current request; while two can be written, take part A as the new "
-        "request and repeat this step; when no second independent part can be written, write 'Terminal: [part]'; then return to part B and repeat; when every branch has reached "
-        "Terminal, write 'Terminal complete.'",
+        "atomic": "The response applies a recursive protocol to enumerate independent parts before acting: it names two independent parts of the current request, acts on the first, and repeats "
+        "on each part until no second independent part can be written — at which point it writes 'Terminal: [part]'. When every part has reached Terminal, it writes 'Terminal "
+        "complete.'.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "
@@ -447,9 +447,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "grain": "The response enhances the task by naming the directions in which the system's existing structure already propagates — interfaces, dependencies, data flows — and naming "
         "interventions that follow those directions rather than crossing them. Optionality mapping, directional guidance, and structural prediction derive from naming where existing "
         "propagation paths run.",
-        "ground": "The response resolves ambiguity before acting. Enumerate two plausible more specific interpretations of the request; while two are possible, pick one and repeat this step "
-        "using the picked interpretation as input; when no second non-equivalent interpretation can be written, write 'Unambiguous: [request]'. An unambiguous request must be "
-        "expressible in formal notation.",
+        "ground": "The response applies a recursive protocol to eliminate ambiguity before acting: it names two plausible interpretations of the current request, selects one, and repeats on that "
+        "selection until no second non-equivalent interpretation can be written — at which point it writes 'Unambiguous: [request]'.",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause that governs model behavior in the subject instruction, in any domain where instructions govern model behavior — first "

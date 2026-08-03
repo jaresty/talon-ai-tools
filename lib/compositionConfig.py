@@ -26,7 +26,7 @@ COMPOSITIONS: list[dict[str, Any]] = [
     {
         "name": "ground+falsify",
         "tokens": ["ground", "falsify"],
-        "prose": "",
+        "prose": "When ground and falsify are both active: the 'Ground properties:' block must appear before any falsify artifact. Every 'Observing: property [N]' line must cite a property [N] that appears in the 'Ground properties:' block above it. A falsify artifact whose preceding 'Observing:' line cites a property not present in 'Ground properties:' does not satisfy this composition.",
     },
     {
         "name": "gate+atomic",

@@ -434,13 +434,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "from a tool-result block must appear; if the failure line does not specifically witness the violation of property [N], fix the violating state or implementation and repeat "
         "from step (4); (5) write the implementation, then immediately emit 'Quoted implementation: <smallest contiguous verbatim text uniquely identifying the implementation>'; no "
         "subsequent step may occur until this sentinel has been emitted; (6) for each 'Property [N] assertion [M]:' line in the transcript, ask: does a 'Failure:' line from a "
-        "tool-result block appear that specifically witnesses that assertion failing? emit 'Implementation overreach: all assertions witnessed — Property [N] assertion [1]: ... "
-        "Property [N] assertion [M]: ...' quoting each label, or 'Implementation overreach: assertion unwitnessed — Property [N] assertion [M]: <quoted text>'; if any assertion is "
-        "unwitnessed, reduce the implementation to a state where that assertion fails, emit the resulting 'Failure:' line, then rebuild the implementation incrementally — emitting a "
-        "new 'Quoted implementation:' at each step — until every listed assertion has a witnessed failure line; after all assertions are witnessed, emit the 'all assertions witnessed' "
-        "sentinel and proceed. After all properties complete these steps, emit 'Coverage: complete' if all properties are resolved, or 'Coverage: gap — property [N]' for any "
-        "unresolved property. A response that omits any required sentinel, performs a step before emitting its required quoted artifact, writes an implementation before a quoted "
-        "failure line appears, or leaves a property without an automatic regression guard does not satisfy this token.",
+        "tool-result block appear that specifically witnesses that assertion failing? emit 'Implementation overreach: all assertions witnessed — <Property [N] assertion [M]: text for "
+        "every assertion in the transcript, listed in full>' — omitting any assertion label from this sentinel means that assertion is not witnessed; or emit 'Implementation "
+        "overreach: assertion unwitnessed — Property [N] assertion [M]: <quoted text>'; if any assertion is unwitnessed, reduce the implementation to a state where that assertion "
+        "fails, emit the resulting 'Failure:' line, then rebuild the implementation incrementally — emitting a new 'Quoted implementation:' at each step — until every listed assertion "
+        "has a witnessed failure line; after all assertions are witnessed, emit the 'all assertions witnessed' sentinel and proceed. After all properties complete these steps, emit "
+        "'Coverage: complete' if all properties are resolved, or 'Coverage: gap — property [N]' for any unresolved property. A response that omits any required sentinel, performs a "
+        "step before emitting its required quoted artifact, writes an implementation before a quoted failure line appears, or leaves a property without an automatic regression guard "
+        "does not satisfy this token.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

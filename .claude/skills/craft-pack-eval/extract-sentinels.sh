@@ -81,7 +81,7 @@ TBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1
 FAIL=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Failure: property \[', l, re.I)))" 2>/dev/null || echo 0)
 UNOBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Unobservable: property \[', l, re.I)))" 2>/dev/null || echo 0)
 QIMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Quoted implementation:', l, re.I)))" 2>/dev/null || echo 0)
-IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Implementation overreach:', l, re.I)))" 2>/dev/null || echo 0)
+IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Implementation overreach: (all guards witnessed|guard \[)', l, re.I)))" 2>/dev/null || echo 0)
 COV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Coverage: (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
 
 echo "Properties defined:              $PROPS"

@@ -431,12 +431,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "violating state and use the resulting failure line instead; before writing any implementation, a verbatim failure line from a tool-result block must appear; if the failure "
         "line does not specifically witness the violation of property [N], fix the violating state or implementation and repeat from step (4); (5) write the implementation, then "
         "immediately emit 'Quoted implementation: <smallest contiguous verbatim text uniquely identifying the implementation>'; no subsequent step may occur until this sentinel has "
-        "been emitted; (6) attempt to falsify the quoted implementation by constructing a concrete scenario in which the quoted implementation satisfies the quoted guard while "
-        "property [N] remains false; emit 'Implementation blind-spot: found — <construction>' or 'Implementation blind-spot: not found'; if found, fix the implementation or guard and "
-        "repeat from step (2). Every blind-spot analysis must reason only from quoted artifacts emitted earlier in the transcript, not from an imagined or intended version. After all "
-        "properties complete these steps, emit 'Coverage: complete' if all properties are resolved, or 'Coverage: gap — property [N]' for any unresolved property. A response that "
-        "omits any required sentinel, performs a step before emitting its required quoted artifact, writes an implementation before a quoted failure line appears, or leaves a property "
-        "without an automatic regression guard does not satisfy this token.",
+        "been emitted; (6) attempt to construct a concrete scenario in which the quoted implementation can be changed while the quoted guard continues to succeed; emit 'Implementation "
+        "overreach: found — <construction>' or 'Implementation overreach: not found'; if found, minimally revise the implementation so the described change is no longer possible "
+        "without the quoted guard detecting it, then emit a new 'Quoted implementation:' and repeat from step (6). Every overreach analysis must reason only from the quoted "
+        "implementation and quoted guard emitted earlier in the transcript, not from an imagined or intended version. After all properties complete these steps, emit 'Coverage: "
+        "complete' if all properties are resolved, or 'Coverage: gap — property [N]' for any unresolved property. A response that omits any required sentinel, performs a step before "
+        "emitting its required quoted artifact, writes an implementation before a quoted failure line appears, or leaves a property without an automatic regression guard does not "
+        "satisfy this token.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

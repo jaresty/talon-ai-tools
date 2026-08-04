@@ -62,9 +62,9 @@ echo "--- (5) Quoted implementation ---"
 grep -in "quoted implementation:" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Step (6): Implementation blind-spot
-echo "--- (6) Implementation blind-spot ---"
-grep -in "implementation blind-spot:" "$TRANSCRIPT" || echo "(absent)"
+# Step (6): Implementation overreach
+echo "--- (6) Implementation overreach ---"
+grep -in "implementation overreach:" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
 # Coverage
@@ -81,7 +81,7 @@ TBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1
 FAIL=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Failure: property \[', l, re.I)))" 2>/dev/null || echo 0)
 UNOBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Unobservable: property \[', l, re.I)))" 2>/dev/null || echo 0)
 QIMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Quoted implementation:', l, re.I)))" 2>/dev/null || echo 0)
-IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Implementation blind-spot:', l, re.I)))" 2>/dev/null || echo 0)
+IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Implementation overreach:', l, re.I)))" 2>/dev/null || echo 0)
 COV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Coverage: (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
 
 echo "Properties defined:              $PROPS"
@@ -91,7 +91,7 @@ echo "(3) Test blind-spot: lines:      $TBSP"
 echo "(4) Failure: lines:              $FAIL"
 echo "(4) Unobservable: lines:         $UNOBS"
 echo "(5) Quoted implementation: lines: $QIMP"
-echo "(6) Implementation blind-spot:   $IBSP"
+echo "(6) Implementation overreach:    $IBSP"
 echo "Coverage: lines:                 $COV"
 echo ""
 

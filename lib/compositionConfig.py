@@ -30,7 +30,7 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "The property list for falsify's per-property cycle is exactly the set of property [N]: lines in the 'Ground properties:' block, iterated in order. "
         "Every 'Observing: property [N]' line must cite a property [N] that appears in the 'Ground properties:' block above it — "
         "a falsify artifact whose preceding 'Observing:' line cites a property not present in 'Ground properties:' does not satisfy this composition. "
-        "Every property [N] in the 'Ground properties:' block must receive all three falsify cycle lines (Observing:, Failure:/Unobservable:, Blind-spot:) "
+        "Every property [N] in the 'Ground properties:' block must receive all three falsify cycle lines (Observing:, Failure:/Unobservable:, Implementation overreach:) "
         "before the Coverage: sentinel is emitted — a property that has not received all three lines before Coverage: is ungoverned and does not satisfy this composition.",
     },
     {

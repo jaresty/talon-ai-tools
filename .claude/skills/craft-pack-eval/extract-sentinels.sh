@@ -39,6 +39,11 @@ echo "--- (1) Observing ---"
 grep -in "observing: property \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
+# Step (2): Assertion inventory
+echo "--- (2) Assertion inventory ---"
+grep -in "property \[.*\] assertion \[" "$TRANSCRIPT" || echo "(absent)"
+echo ""
+
 # Step (2): Quoted test
 echo "--- (2) Quoted test ---"
 grep -in "quoted test:" "$TRANSCRIPT" || echo "(absent)"

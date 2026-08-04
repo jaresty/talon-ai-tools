@@ -72,9 +72,21 @@ def test_formalization_complete_positive_trigger():
 
 
 def test_properties_complete_positive_trigger():
-    """after § properties check:, immediately write § properties complete."""
+    """§ properties complete must not appear before § properties complete? yes."""
     core = _core()
-    assert "immediately write '§ properties complete'" in core
+    assert "'§ properties complete' must not appear before '§ properties complete? yes'" in core
+
+
+def test_properties_completeness_check_gate():
+    """§ completeness check: quotes governing goal + all properties — closes overage and translation-loss escapes."""
+    core = _core()
+    assert "§ completeness check:" in core
+    assert "§ properties complete? no" in core
+    assert "§ properties complete? yes" in core
+    assert "a '§ properties complete? yes' line that appears without a preceding '§ completeness check:' line does not satisfy this requirement" in core
+    assert "quoting the governing goal verbatim from '## Governing goal:' above" in core
+    assert "omits the governing goal text or omits any listed property expression does not satisfy this requirement" in core
+    assert "name one thing present in the quoted governing goal that is not covered by any quoted property expression" in core
 
 
 def test_enforcement_sequence_positive_trigger():

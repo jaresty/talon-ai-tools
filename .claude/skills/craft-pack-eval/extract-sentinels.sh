@@ -19,54 +19,54 @@ fi
 echo "=== Sentinel extraction: scenario $SCENARIO ==="
 echo ""
 
-# Ground properties block — the header line
+# Ground properties block — the header line (allow optional markdown: ## or **)
 echo "--- Ground properties block ---"
-grep -n "^Ground properties:" "$TRANSCRIPT" || echo "(absent)"
+grep -in "ground properties:" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# All property [N]: lines
+# All property [N]: lines (allow optional ** bold markers)
 echo "--- Properties ---"
-grep -n "^property \[" "$TRANSCRIPT" || echo "(absent)"
+grep -in "\bproperty \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
 # Interpretation line
 echo "--- Interpretation ---"
-grep -n "^Interpretation:" "$TRANSCRIPT" || echo "(absent)"
+grep -in "interpretation:" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
 # Observing lines
 echo "--- Observing ---"
-grep -n "^Observing: property \[" "$TRANSCRIPT" || echo "(absent)"
+grep -in "observing: property \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
 # Failure lines
 echo "--- Failure ---"
-grep -n "^Failure: property \[" "$TRANSCRIPT" || echo "(absent)"
+grep -in "failure: property \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
 # Blind-spot lines
 echo "--- Blind-spot ---"
-grep -n "^Blind-spot: property \[" "$TRANSCRIPT" || echo "(absent)"
+grep -in "blind-spot: property \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
 # Unobservable lines
 echo "--- Unobservable ---"
-grep -n "^Unobservable: property \[" "$TRANSCRIPT" || echo "(absent)"
+grep -in "unobservable: property \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Coverage
+# Coverage (complete or gap both valid resolutions)
 echo "--- Coverage ---"
-grep -n "^Coverage:" "$TRANSCRIPT" || echo "(absent)"
+grep -in "coverage: \(complete\|gap\)" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Summary counts
+# Summary counts — use python3 to avoid grep -c platform differences
 echo "=== Summary ==="
-PROPS=$(grep -c "^property \[" "$TRANSCRIPT" 2>/dev/null || echo 0)
-OBS=$(grep -c "^Observing: property \[" "$TRANSCRIPT" 2>/dev/null || echo 0)
-FAIL=$(grep -c "^Failure: property \[" "$TRANSCRIPT" 2>/dev/null || echo 0)
-BLIND=$(grep -c "^Blind-spot: property \[" "$TRANSCRIPT" 2>/dev/null || echo 0)
-UNOBS=$(grep -c "^Unobservable: property \[" "$TRANSCRIPT" 2>/dev/null || echo 0)
-COV=$(grep -c "^Coverage:" "$TRANSCRIPT" 2>/dev/null || echo 0)
+PROPS=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\**property \[', l.strip())))" 2>/dev/null || echo 0)
+OBS=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Observing: property \[', l, re.I)))" 2>/dev/null || echo 0)
+FAIL=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Failure: property \[', l, re.I)))" 2>/dev/null || echo 0)
+BLIND=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Blind-spot: property \[', l, re.I)))" 2>/dev/null || echo 0)
+UNOBS=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Unobservable: property \[', l, re.I)))" 2>/dev/null || echo 0)
+COV=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Coverage: (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
 
 echo "Properties defined:     $PROPS"
 echo "Observing: lines:       $OBS"

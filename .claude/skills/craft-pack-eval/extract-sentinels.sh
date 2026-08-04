@@ -19,12 +19,12 @@ fi
 echo "=== Sentinel extraction: scenario $SCENARIO ==="
 echo ""
 
-# Ground properties block — the header line (allow optional markdown: ## or **)
+# Ground properties block
 echo "--- Ground properties block ---"
 grep -in "ground properties:" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# All property [N]: lines (allow optional ** bold markers)
+# All property [N]: lines
 echo "--- Properties ---"
 grep -in "\bproperty \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
@@ -34,55 +34,86 @@ echo "--- Interpretation ---"
 grep -in "interpretation:" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Observing lines
-echo "--- Observing ---"
+# Step (1): Observing
+echo "--- (1) Observing ---"
 grep -in "observing: property \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Failure lines
-echo "--- Failure ---"
+# Step (2): Quoted test
+echo "--- (2) Quoted test ---"
+grep -in "quoted test:" "$TRANSCRIPT" || echo "(absent)"
+echo ""
+
+# Step (3): Test blind-spot
+echo "--- (3) Test blind-spot ---"
+grep -in "test blind-spot:" "$TRANSCRIPT" || echo "(absent)"
+echo ""
+
+# Step (4): Failure or Unobservable
+echo "--- (4) Failure ---"
 grep -in "failure: property \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
-
-# Blind-spot lines
-echo "--- Blind-spot ---"
-grep -in "blind-spot: property \[" "$TRANSCRIPT" || echo "(absent)"
-echo ""
-
-# Unobservable lines
-echo "--- Unobservable ---"
+echo "--- (4) Unobservable ---"
 grep -in "unobservable: property \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Coverage (complete or gap both valid resolutions)
+# Step (5): Quoted implementation
+echo "--- (5) Quoted implementation ---"
+grep -in "quoted implementation:" "$TRANSCRIPT" || echo "(absent)"
+echo ""
+
+# Step (6): Implementation blind-spot
+echo "--- (6) Implementation blind-spot ---"
+grep -in "implementation blind-spot:" "$TRANSCRIPT" || echo "(absent)"
+echo ""
+
+# Coverage
 echo "--- Coverage ---"
 grep -in "coverage: \(complete\|gap\)" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Summary counts — use python3 to avoid grep -c platform differences
+# Summary counts
 echo "=== Summary ==="
-PROPS=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\**property \[', l.strip())))" 2>/dev/null || echo 0)
-OBS=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Observing: property \[', l, re.I)))" 2>/dev/null || echo 0)
-FAIL=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Failure: property \[', l, re.I)))" 2>/dev/null || echo 0)
-BLIND=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Blind-spot: property \[', l, re.I)))" 2>/dev/null || echo 0)
-UNOBS=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Unobservable: property \[', l, re.I)))" 2>/dev/null || echo 0)
-COV=$(python3 -c "import re,sys; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Coverage: (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
+PROPS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\**property \[', l.strip())))" 2>/dev/null || echo 0)
+OBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Observing: property \[', l, re.I)))" 2>/dev/null || echo 0)
+QTST=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Quoted test:', l, re.I)))" 2>/dev/null || echo 0)
+TBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Test blind-spot:', l, re.I)))" 2>/dev/null || echo 0)
+FAIL=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Failure: property \[', l, re.I)))" 2>/dev/null || echo 0)
+UNOBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Unobservable: property \[', l, re.I)))" 2>/dev/null || echo 0)
+QIMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Quoted implementation:', l, re.I)))" 2>/dev/null || echo 0)
+IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Implementation blind-spot:', l, re.I)))" 2>/dev/null || echo 0)
+COV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Coverage: (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
 
-echo "Properties defined:     $PROPS"
-echo "Observing: lines:       $OBS"
-echo "Failure: lines:         $FAIL"
-echo "Blind-spot: lines:      $BLIND"
-echo "Unobservable: lines:    $UNOBS"
-echo "Coverage: lines:        $COV"
+echo "Properties defined:              $PROPS"
+echo "(1) Observing: lines:            $OBS"
+echo "(2) Quoted test: lines:          $QTST"
+echo "(3) Test blind-spot: lines:      $TBSP"
+echo "(4) Failure: lines:              $FAIL"
+echo "(4) Unobservable: lines:         $UNOBS"
+echo "(5) Quoted implementation: lines: $QIMP"
+echo "(6) Implementation blind-spot:   $IBSP"
+echo "Coverage: lines:                 $COV"
 echo ""
 
-# Basic compliance check
-RESOLVED=$((BLIND + UNOBS))
-if [[ "$PROPS" -gt 0 && "$OBS" -ge "$PROPS" && "$RESOLVED" -ge "$PROPS" && "$COV" -ge 1 ]]; then
-  echo "PASS: sentinel counts consistent (properties=$PROPS, observing=$OBS, resolved=$RESOLVED, coverage=$COV)"
+# Compliance check — for check tasks (no implementation), steps 5+6 may be absent
+RESOLVED=$((FAIL + UNOBS))
+if [[ "$PROPS" -gt 0 \
+  && "$OBS" -ge "$PROPS" \
+  && "$QTST" -ge "$PROPS" \
+  && "$TBSP" -ge "$PROPS" \
+  && "$RESOLVED" -ge "$PROPS" \
+  && "$COV" -ge 1 ]]; then
+  echo "PASS: sentinel counts consistent (properties=$PROPS, steps 1-4 complete, coverage=$COV)"
+  if [[ "$QIMP" -ge "$PROPS" && "$IBSP" -ge "$PROPS" ]]; then
+    echo "PASS: steps 5-6 also complete (implementation cycle present)"
+  else
+    echo "NOTE: steps 5-6 absent or partial — expected for check/verify tasks"
+  fi
 else
   echo "FAIL: sentinel gap detected"
-  [[ "$OBS" -lt "$PROPS" ]] && echo "  - Missing Observing: lines ($OBS of $PROPS)"
-  [[ "$RESOLVED" -lt "$PROPS" ]] && echo "  - Missing Blind-spot:/Unobservable: lines ($RESOLVED of $PROPS)"
-  [[ "$COV" -lt 1 ]] && echo "  - Missing Coverage: line"
+  [[ "$OBS" -lt "$PROPS" ]]   && echo "  - (1) Missing Observing: lines ($OBS of $PROPS)"
+  [[ "$QTST" -lt "$PROPS" ]]  && echo "  - (2) Missing Quoted test: lines ($QTST of $PROPS)"
+  [[ "$TBSP" -lt "$PROPS" ]]  && echo "  - (3) Missing Test blind-spot: lines ($TBSP of $PROPS)"
+  [[ "$RESOLVED" -lt "$PROPS" ]] && echo "  - (4) Missing Failure:/Unobservable: lines ($RESOLVED of $PROPS)"
+  [[ "$COV" -lt 1 ]]          && echo "  - Missing Coverage: sentinel"
 fi

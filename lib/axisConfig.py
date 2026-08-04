@@ -420,18 +420,18 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "falsify": "The response observes each gap between intent and current state before it is closed, and leaves a mechanism that will detect regression without human initiation. Before "
-        "acting, observe the gap: name what is currently absent or failing. For each property [N] defined in the Ground properties: block, emit exactly these three lines in order "
-        "before moving to property [N+1]: (1) 'Observing: property [N] — <what the artifact observes>' — a property with no Observing: line is ungoverned and does not satisfy this "
-        "token; (2) 'Failure: property [N] — <verbatim quoted failure line from a tool-result block>' OR 'Unobservable: property [N] — <reason>' — emit Unobservable: only when no test "
-        "input or assertion could ever distinguish a violation from satisfaction regardless of what tests are written; if a test can be written, write it, run it against a violating "
-        "stub, and use the resulting failure line instead; (3) 'Blind-spot: property [N] — not found' OR 'Blind-spot: property [N] — found — <construction>' — attempt to construct a "
-        "scenario where the failure line exists in the transcript but property [N] could still be false; emit not found if no such construction exists. A response that does not emit "
-        "all three lines for every property [N] before emitting Coverage: does not satisfy this token. If 'found' was emitted for any property, fix the test or implementation so the "
-        "failure line specifically witnesses the violation, then repeat from (1) for that property. After all properties have their three lines, emit 'Coverage: complete' if all "
-        "properties are resolved, or 'Coverage: gap — property [N]' for any property that remains unresolved. A response that emits neither Coverage: sentinel does not satisfy this "
-        "token. Before writing any implementation, a verbatim failure line from a tool-result block must appear in the response — an implementation written without a quoted failure "
-        "line does not satisfy this token. The regression guard must be a mechanism that fires automatically — a test, assertion, constraint, or rule that triggers without human "
-        "action if the governed property regresses. A closure observation with no automatic guard does not satisfy this token.",
+        "acting, observe the gap: name what is currently absent or failing. For each property [N] to be governed, emit exactly these three lines in order before moving to property "
+        "[N+1]: (1) 'Observing: property [N] — <what the artifact observes>' — a property with no Observing: line is ungoverned and does not satisfy this token; (2) 'Failure: property "
+        "[N] — <verbatim quoted failure line from a tool-result block>' OR 'Unobservable: property [N] — <reason>' — emit Unobservable: only when no test input or assertion could ever "
+        "distinguish a violation from satisfaction regardless of what tests are written; if a test can be written, write it, run it against a violating stub, and use the resulting "
+        "failure line instead; (3) 'Blind-spot: property [N] — not found' OR 'Blind-spot: property [N] — found — <construction>' — attempt to construct a scenario where the failure "
+        "line exists in the transcript but property [N] could still be false; emit not found if no such construction exists. A response that does not emit all three lines for every "
+        "property [N] before emitting Coverage: does not satisfy this token. If 'found' was emitted for any property, fix the test or implementation so the failure line specifically "
+        "witnesses the violation, then repeat from (1) for that property. After all properties have their three lines, emit 'Coverage: complete' if all properties are resolved, or "
+        "'Coverage: gap — property [N]' for any property that remains unresolved. A response that emits neither Coverage: sentinel does not satisfy this token. Before writing any "
+        "implementation, a verbatim failure line from a tool-result block must appear in the response — an implementation written without a quoted failure line does not satisfy this "
+        "token. The regression guard must be a mechanism that fires automatically — a test, assertion, constraint, or rule that triggers without human action if the governed property "
+        "regresses. A closure observation with no automatic guard does not satisfy this token.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

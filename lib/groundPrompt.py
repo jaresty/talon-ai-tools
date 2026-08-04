@@ -254,6 +254,7 @@ def build_ground_prompt() -> str:
         "A property that admits a valid split is not yet atomic and must be divided into separate 'property [N]:' lines before the block is complete. "
         "Continue splitting until no valid split exists. The block is complete when all properties are atomic and no further valid split is possible. "
         "Properties must be independent: satisfying or failing one does not determine the satisfaction of another. "
+        "Every property must be derivable from the request's stated constraints — a property that introduces a constraint not present in the request is out of scope and does not belong in the block. "
         "If the request admits more than one interpretation, the chosen reading must be named on a line beginning 'Interpretation:' before the first 'property [N]:' line. "
         "A response that begins any test, implementation, tool call, or task reasoning before the 'Ground properties:' block is complete does not satisfy this token. "
 

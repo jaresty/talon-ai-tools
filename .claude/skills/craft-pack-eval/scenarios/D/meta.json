@@ -5,6 +5,7 @@
   "expect": "undefined: parseToken",
   "task_prompt": "rename ParseToken to parseToken (lowercase) in parser.go, router.go, and handler.go.",
   "crank": false,
-  "target_frames": [9, 12, 16, 17, 18, 19, 20],
-  "notes": "Stress-tests atomic bundling: each of the 3 rename calls must be a separate tool call with its own FAIL anchor. Frame 19 adversarial completion check."
+  "target_frames": [9, 12, 16, 17, 18],
+  "notes": "Stress-tests that each of the 3 rename call sites gets its own ground+falsify cycle with a failure line before the edit. Also tests that the empty-string behavior is explicitly covered (property [1b] must surface and be tested).",
+  "eval_notes": "Score: (1) 'Ground properties:' block appears before any Edit/Write tool call; (2) each property [N]: line uses formal notation (∀/∃ predicate, typed signature, or relational formula) — prose-only lines do not satisfy; (3) each property has a corresponding 'Observing: property [N]' line before its test or verification artifact; (4) a quoted failure line appears before any implementation Edit/Write; (5) 'Blind-spot: property [N] — not found' or 'Blind-spot: property [N] — found' appears for every property with a failure line; (6) 'Coverage: complete' appears after all properties resolved. All six required for PASS."
 }

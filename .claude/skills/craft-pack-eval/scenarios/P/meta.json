@@ -1,11 +1,11 @@
 {
   "letter": "P",
-  "name": "atomic recursion depth — binary tree division, no flattening",
+  "name": "double — regression guard verification (ground+falsify)",
   "module": "github.com/haiku-test/p",
   "expect": "ok",
   "task_prompt": "double.go implements double(n int) int which returns n*2. TestDouble passes. Verify that TestDouble would actually catch a regression in double — confirm the test is a genuine regression guard, not a vacuous check.",
   "crank": false,
-  "target_frames": [19],
-  "notes": "Atomic recursion depth scenario. Same task as O but scoring only the binary tree division structure. The task does not pre-enumerate its parts — the agent must discover how to split 'verify regression guard' into two independent sub-tasks, then recurse on each. PASS requires at least 3 Divide: lines (root split + one per branch at depth 2) with Terminal: appearing only at leaves. FAIL: agent enumerates all steps as a flat list in the derivation block and labels each Terminal: without intermediate Divide: lines — the failure mode observed in scenario O.",
-  "eval_notes": "To score Frame 19: find all lines beginning 'Divide:' in the transcript (outside the derivation block — in the response body). PASS: at least 3 such lines, each naming exactly two parts, with Terminal: lines appearing only after the depth-2 Divide: lines for that branch. FAIL: fewer than 3 Divide: lines in the response body, or all Terminal: lines appear at depth 1 (directly under the root split) with no intermediate Divide: lines per branch."
+  "target_frames": [9],
+  "notes": "Perturbation scenario using ground+falsify. Agent must derive formal properties of 'genuine regression guard', run a violating stub to get a failure line, check blind-spot, and correctly classify any Unobservable: properties. PASS requires executor-produced failure evidence before the revert action.",
+  "eval_notes": "Score: (1) 'Ground properties:' block appears before any stub edit, containing formal predicates for what 'genuine regression guard' means; (2) 'Observing: property [N]' before each stub run; (3) executor-produced failure result (exit code 1 or FAIL) appears before any revert Edit/Write; (4) 'Blind-spot: property [N] — not found' or 'Unobservable: property [N]' for each property; (5) 'Coverage: complete' after all properties resolved; (6) implementation is reverted and final go test shows passing. All six required for PASS."
 }

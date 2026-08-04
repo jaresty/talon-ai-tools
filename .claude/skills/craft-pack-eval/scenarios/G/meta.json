@@ -5,6 +5,7 @@
   "expect": "got \"\", want \"localhost\"",
   "task_prompt": "fix NewConfig in config.go so that an empty host defaults to localhost and a zero port defaults to 8080.",
   "crank": false,
-  "target_frames": [4, 5, 6, 7, 15, 19],
-  "notes": "Two independent behavioral dimensions: host default and port default. Each must derive its dimension heading as a literal substring of the governing goal. Frame 15: completion check needs a FAIL tool-result block per governed behavior. Frame 19: the two fixes must be separate atomic tool calls."
+  "target_frames": [4, 5, 6, 7, 15],
+  "notes": "Two independent behavioral dimensions: host default and port default. Each must appear as a separate property in the Ground properties: block. Both must get their own Observing: line and failure line before any implementation.",
+  "eval_notes": "Score: (1) 'Ground properties:' block contains at least two properties — one for host default, one for port default; (2) formal notation on each; (3) 'Observing: property [N]' appears before each test artifact, one per property; (4) separate quoted failure lines for host and port before any implementation Edit/Write; (5) 'Blind-spot:' check for each property; (6) 'Coverage: complete'. FAIL if both dimensions are collapsed into a single property."
 }

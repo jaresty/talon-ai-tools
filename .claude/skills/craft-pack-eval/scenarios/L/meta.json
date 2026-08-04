@@ -1,10 +1,11 @@
 {
   "letter": "L",
-  "name": "SF itinerary — observation-derived goal (non-executable subject)",
+  "name": "SF itinerary — ground on non-executable subject",
   "no_code": true,
   "expect": "ready",
-  "task_prompt": "Using `bar build make witness ground gate falsify`, plan a one-day itinerary for a first-time visitor to San Francisco who wants to avoid tourist crowds, prefers walking, and has a vegetarian diet. The subject is the visitor's situation — not executable software. Produce a structured plan only.",
+  "task_prompt": "Using bar build make ground falsify, plan a one-day itinerary for a first-time visitor to San Francisco who wants to avoid tourist crowds, prefers walking, and has a vegetarian diet. The subject is the visitor's situation — not executable software. Produce a structured plan only.",
   "crank": false,
   "target_frames": [24],
-  "notes": "Non-software frame. Tests Frame 24: agent must adapt 'run the subject' to mean 'examine the visitor's situation as it currently stands.' Observation section must appear before governing goal heading. Governing goal heading must contain a literal substring from the observation (e.g. 'tourist crowds', 'walking', 'vegetarian') — not a synonym."
+  "notes": "Non-software frame. Tests ground token on a non-executable subject: 'run the subject' means 'examine the visitor's situation as it currently stands.' Ground properties: must appear before the plan, formalizing the visitor's constraints. Falsify blind-spot check must adapt to non-executable context — 'Unobservable:' is expected for constraints that cannot be tested by perturbation.",
+  "eval_notes": "Score: (1) 'Ground properties:' block appears before the itinerary, containing formal predicates for the visitor's constraints (crowds, walking, vegetarian); (2) formal notation on each property — not prose; (3) atomicity check performed; (4) each itinerary section cites the property it satisfies (e.g. 'satisfies property [2]: walking-only'); (5) 'Unobservable: property [N]' correctly used for constraints that cannot be verified by perturbation (e.g. 'avoids tourist crowds' cannot be executor-tested); (6) 'Coverage: complete' after all properties addressed. All six required for PASS."
 }

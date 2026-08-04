@@ -432,13 +432,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "violating state and use the resulting failure line instead; before writing any implementation, a verbatim failure line from a tool-result block must appear; if the failure "
         "line does not specifically witness the violation of property [N], fix the violating state or implementation and repeat from step (4); (5) write the implementation, then "
         "immediately emit 'Quoted implementation: <smallest contiguous verbatim text uniquely identifying the implementation>'; no subsequent step may occur until this sentinel has "
-        "been emitted; (6) for each guard written across all properties, ask: does a 'Failure:' line from a tool-result block appear in the transcript for that guard? emit "
-        "'Implementation overreach: all guards witnessed' or 'Implementation overreach: guard [N] unwitnessed'; if any guard is unwitnessed, reduce the implementation until that guard "
-        "fails, emit the resulting 'Failure:' line, then rebuild the implementation incrementally — emitting a new 'Quoted implementation:' at each step — until all guards have a "
-        "witnessed failure line in the transcript; after all guards are witnessed, repeat from the start of step (6). After all properties complete these steps, emit 'Coverage: "
-        "complete' if all properties are resolved, or 'Coverage: gap — property [N]' for any unresolved property. A response that omits any required sentinel, performs a step before "
-        "emitting its required quoted artifact, writes an implementation before a quoted failure line appears, or leaves a property without an automatic regression guard does not "
-        "satisfy this token.",
+        "been emitted; (6) for each assertion in the quoted guard for property [N], ask: does a 'Failure:' line from a tool-result block appear in the transcript that specifically "
+        "witnesses that assertion failing? emit 'Implementation overreach: all assertions witnessed' or 'Implementation overreach: assertion unwitnessed — <assertion>'; if any "
+        "assertion is unwitnessed, reduce the implementation to a state where that assertion fails, emit the resulting 'Failure:' line, then rebuild the implementation incrementally — "
+        "emitting a new 'Quoted implementation:' at each step — until every assertion in the quoted guard has a witnessed failure line; after all assertions are witnessed, repeat from "
+        "the start of step (6). After all properties complete these steps, emit 'Coverage: complete' if all properties are resolved, or 'Coverage: gap — property [N]' for any "
+        "unresolved property. A response that omits any required sentinel, performs a step before emitting its required quoted artifact, writes an implementation before a quoted "
+        "failure line appears, or leaves a property without an automatic regression guard does not satisfy this token.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

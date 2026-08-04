@@ -420,18 +420,20 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
         "falsify": "The response observes each gap between intent and current state before it is closed, and leaves a mechanism that will detect regression without human initiation. Before "
-        "acting, observe the gap: name what is currently absent or failing. For each property [N] to be governed, emit exactly these three lines in order before moving to property "
-        "[N+1]: (1) 'Observing: property [N] — <what the artifact observes>' — a property with no Observing: line is ungoverned and does not satisfy this token; (2) 'Failure: property "
-        "[N] — <verbatim quoted failure line from a tool-result block>' OR 'Unobservable: property [N] — <reason>' — emit Unobservable: only when no test input or assertion could ever "
-        "distinguish a violation from satisfaction regardless of what tests are written; if a test can be written, write it, run it against a violating stub, and use the resulting "
-        "failure line instead; (3) 'Blind-spot: property [N] — not found' OR 'Blind-spot: property [N] — found — <construction>' — attempt to construct a scenario where the failure "
-        "line exists in the transcript but property [N] could still be false; emit not found if no such construction exists. A response that does not emit all three lines for every "
-        "property [N] before emitting Coverage: does not satisfy this token. If 'found' was emitted for any property, fix the test or implementation so the failure line specifically "
-        "witnesses the violation, then repeat from (1) for that property. After all properties have their three lines, emit 'Coverage: complete' if all properties are resolved, or "
-        "'Coverage: gap — property [N]' for any property that remains unresolved. A response that emits neither Coverage: sentinel does not satisfy this token. Before writing any "
-        "implementation, a verbatim failure line from a tool-result block must appear in the response — an implementation written without a quoted failure line does not satisfy this "
-        "token. The regression guard must be a mechanism that fires automatically — a test, assertion, constraint, or rule that triggers without human action if the governed property "
-        "regresses. A closure observation with no automatic guard does not satisfy this token.",
+        "acting, observe the gap: name what is currently absent or failing. For each property [N] to be governed, emit exactly these steps in order before moving to property [N+1]: "
+        "(1) 'Observing: property [N] — <what the artifact observes>' — a property with no Observing: line is ungoverned and does not satisfy this token; (2) write an automatic "
+        "regression guard for property [N], then emit 'Quoted test: <smallest contiguous verbatim text uniquely identifying the guard>'; (3) attempt to falsify the quoted test as "
+        "written by constructing a concrete implementation lacking property [N] that nevertheless satisfies the quoted guard; emit 'Test blind-spot: found — <construction>' or 'Test "
+        "blind-spot: not found'; if found, rewrite the guard and repeat from step (2); (4) execute the quoted guard against a violating stub — an implementation intentionally lacking "
+        "property [N] — and emit 'Failure: property [N] — <verbatim quoted failure line from a tool-result block>' or 'Unobservable: property [N] — <reason>'; emit Unobservable only "
+        "when no executable assertion could ever distinguish satisfaction from violation regardless of implementation; if any executable guard can exist, write it, execute it against "
+        "a violating stub, and quote the resulting failure line instead; no target implementation may be written before a quoted Failure: line appears; (5) write the target "
+        "implementation, then emit 'Quoted implementation: <smallest contiguous verbatim text uniquely identifying the implementation>'; (6) attempt to falsify the quoted "
+        "implementation by constructing a concrete implementation or execution satisfying the quoted guard while property [N] remains false; emit 'Implementation blind-spot: found — "
+        "<construction>' or 'Implementation blind-spot: not found'; if found, strengthen the guard or rewrite the implementation and repeat from step (2). After all properties "
+        "complete these steps, emit 'Coverage: complete' if all properties are resolved, or 'Coverage: gap — property [N]' for any unresolved property. A response that omits any "
+        "required line, omits either Coverage sentinel, writes the target implementation before a quoted Failure: line, or leaves a property without an automatic regression guard does "
+        "not satisfy this token.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",
@@ -458,9 +460,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "is valid only when: (a) each part can be falsified by an input that does not falsify the others, and (b) the parts have identical coverage to the original — every input that "
         "satisfies the original satisfies exactly one part, and vice versa. A property that admits a valid split is not yet atomic and must be divided into separate 'property [N]:' "
         "lines before the block is complete. Continue splitting until no valid split exists. The block is complete when all properties are atomic and no further valid split is "
-        "possible. Properties must be independent: satisfying or failing one does not determine the satisfaction of another. If the request admits more than one interpretation, the "
-        "chosen reading must be named on a line beginning 'Interpretation:' before the first 'property [N]:' line. A response that begins any test, implementation, tool call, or task "
-        "reasoning before the 'Ground properties:' block is complete does not satisfy this token. ",
+        "possible. Properties must be independent: satisfying or failing one does not determine the satisfaction of another. Every property must be derivable from the request's stated "
+        "constraints — a property that introduces a constraint not present in the request is out of scope and does not belong in the block. If the request admits more than one "
+        "interpretation, the chosen reading must be named on a line beginning 'Interpretation:' before the first 'property [N]:' line. A response that begins any test, implementation, "
+        "tool call, or task reasoning before the 'Ground properties:' block is complete does not satisfy this token. ",
         "grove": "The response enhances the task by naming at least one mechanism by which an effect named earlier in the response produces an effect named later through feedback loops, network "
         "effects, or iterative growth — asking not just what fails or succeeds, but naming the mechanism by which failures or successes accumulate.",
         "hollow": "The response applies the root criterion to each clause that governs model behavior in the subject instruction, in any domain where instructions govern model behavior — first "

@@ -428,7 +428,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "tool call may appear for property [N] before this line has been emitted; a property cycle whose first emitted content is not the Observing: line does not satisfy this token; "
         "Every property — including preconditions, invariants, absence properties, boundary conditions, already-satisfied properties, and no-op properties — shall execute the complete six-step cycle without abbreviation. "
         "No class of property may omit or abbreviate any step on the basis that the property is already satisfied, vacuously satisfied, structural, informational, observational, or requires no implementation change. "
-        "Step (2) is mandatory for every property: before any reasoning, verification, implementation, or execution for property [N], exactly one regression guard shall be written. "
+        "Step (2) is mandatory for every property: before any reasoning, verification, implementation, or execution for property [N], exactly one regression guard shall be established (written or identified). "
         "The existence, triviality, or pre-satisfied status of the property does not eliminate this requirement. "
         "Every property requires a regression guard because the guard governs future regressions, not the current edit — whether the current response changes the governed artifact is irrelevant to the requirement to write and execute the guard. "
         "(2) the text immediately following the 'Observing: property [N]' line must be the tool call that establishes the regression guard — no narrative, planning, explanation, analysis, "
@@ -460,11 +460,16 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "emit 'Unobservable: property [N] \"<verbatim property definition>\" — <reason>' only after demonstrating that no temporary violating state can be constructed within the governed artifact on which the guard could distinguish satisfaction from violation — Unobservable: is the last resort, not the first; "
         "successful compilation, build output, or unrelated verification does not satisfy this step — the violating state must exist solely to witness that the guard detects the absence of property [N]; "
         "before modifying the governed artifact to satisfy property [N], a verbatim Failure line from a tool-result block must appear; if the failure line does not specifically witness the violation of "
-        "property [N], modify the violating state and repeat from step (4); (5) modify the governed artifact to satisfy property [N], then immediately emit 'Quoted implementation: "
-        "<smallest contiguous verbatim text uniquely identifying the modified artifact>'; no subsequent step may occur until this sentinel has been emitted; (6) attempt to construct a "
-        "minimal modification to the quoted implementation that preserves the success of the quoted guard while changing the governed artifact, and attempt to construct a concrete "
+        "property [N], modify the violating state and repeat from step (4); "
+        "(5) identify the governed artifact for property [N] — the artifact whose modification satisfies property [N]; depending on the property, this may be the implementation, the regression guard, a configuration file, or another explicitly governed artifact; "
+        "modify the governed artifact to satisfy property [N], then immediately emit 'Quoted implementation: "
+        "<smallest contiguous verbatim text uniquely identifying the modification to the governed artifact>'; "
+        "if step (4) required constructing a temporary violating state because the governed artifact already satisfied property [N], "
+        "step (5) is satisfied by confirming the original state is restored — emit 'Quoted implementation: <verbatim text identifying the restored governed artifact>' to confirm; "
+        "no subsequent step may occur until this sentinel has been emitted; (6) attempt to construct a "
+        "minimal modification to the quoted implementation that preserves the success of the quoted guard while still changing the governed artifact, and attempt to construct a concrete "
         "execution path through the quoted implementation that is not exercised or distinguished by the quoted guard; emit 'Implementation overreach: found — <modification or "
-        "execution path>' or 'Implementation overreach: not found'; if found, minimally revise the implementation to eliminate the overreach, emit a new 'Quoted implementation:', and "
+        "execution path>' or 'Implementation overreach: not found'; if found, minimally revise the governed artifact to eliminate the overreach, emit a new 'Quoted implementation:', and "
         "repeat from step (6); every implementation overreach analysis must reason only from the quoted implementation and quoted guard emitted earlier in the transcript, not from an "
         "imagined or intended version. After all properties complete these steps, emit 'Coverage: complete' if all properties are resolved, or 'Coverage: gap — property [N] "
         '"<verbatim property definition>"\' for any unresolved property; if any gap exists, return to step (1) for each ungoverned property and complete all six steps before '
@@ -5263,8 +5268,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "rigor",
                 },
                 {
-                    "note": "ground = recursive protocol that resolves ambiguity then divides the request into independent parts using Divide:/Terminal: sentinels; atomic = one "
-                    "observable change per step. use ground when the request needs disambiguation and decomposition; use atomic to control step size.",
+                    "note": "ground = recursive protocol that resolves ambiguity by deriving formal atomic properties (§ ground complete sentinel); atomic = one "
+                    "observable change per step. use ground when the request needs disambiguation and formal property derivation; use atomic to control step size.",
                     "token": "ground",
                 },
             ],
@@ -6096,8 +6101,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "chain",
                 },
                 {
-                    "note": "atomic = one observable change per step; ground = recursive protocol that resolves ambiguity then divides the request into independent parts using "
-                    "Divide:/Terminal: sentinels. ground handles decomposition; atomic governs step size within each part.",
+                    "note": "atomic = one observable change per step; ground = recursive protocol that resolves ambiguity by deriving formal atomic properties (§ ground complete sentinel). "
+                    "ground handles disambiguation and formal property derivation; atomic governs step size within each part.",
                     "token": "atomic",
                 },
                 {

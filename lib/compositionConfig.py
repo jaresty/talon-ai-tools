@@ -17,12 +17,7 @@
 
 from typing import Any
 
-COMPOSITIONS: list[dict[str, Any]] = [
-    {
-        "name": "gate+falsify",
-        "tokens": ["gate", "falsify"],
-        "prose": "",
-    },
+COMPOSITIONS: list[dict[str, Any]] = [,
     {
         "name": "ground+falsify",
         "tokens": ["ground", "falsify"],
@@ -30,18 +25,8 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "The property list for falsify's per-property cycle is exactly the set of property [N]: lines in the 'Ground properties:' block, iterated in order. "
         "Every 'Observing: property [N]' line must cite a property [N] that appears in the 'Ground properties:' block above it — "
         "a falsify artifact whose preceding 'Observing:' line cites a property not present in 'Ground properties:' does not satisfy this composition. "
-        "Every property [N] in the 'Ground properties:' block must receive all three falsify cycle lines (Observing:, Failure:/Unobservable:, Implementation overreach:) "
-        "before the Coverage: sentinel is emitted — a property that has not received all three lines before Coverage: is ungoverned and does not satisfy this composition.",
-    },
-    {
-        "name": "gate+atomic",
-        "tokens": ["gate", "atomic"],
-        "prose": "",
-    },
-    {
-        "name": "falsify+atomic",
-        "tokens": ["falsify", "atomic"],
-        "prose": "",
+        "Every property [N] in the 'Ground properties:' block must complete the full falsify six-step cycle — Observing:, guard establishment (step 2), Quoted test:, Test blind-spot:, Failure:/Unobservable:, Quoted implementation:, and Implementation overreach: not found — "
+        "before the Coverage: sentinel is emitted; a property that has not received 'Implementation overreach: not found' before Coverage: is ungoverned and does not satisfy this composition.",
     },
     {
         "name": "falsify+chain",
@@ -58,11 +43,6 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "Note: classification and derivation steps are not implementation steps and are "
             "not governed by this rule."
         ),
-    },
-    {
-        "name": "atomic+ground",
-        "tokens": ["atomic", "ground"],
-        "prose": "",
     },
     {
         "name": "skim+gate",
@@ -129,11 +109,6 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "structural models must be unified into one, or their dependency relationship must be "
             "made explicit before either is used as a generative basis."
         ),
-    },
-    {
-        "name": "ground+gate+falsify+atomic+chain",
-        "tokens": ["ground", "gate", "falsify", "atomic", "chain"],
-        "prose": "",
     },
     {
         "name": "cards+gherkin",

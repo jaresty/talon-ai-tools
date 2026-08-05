@@ -131,18 +131,17 @@ if [[ "$CYCLES" -gt 0 \
   && "$QTST" -ge "$CYCLES" \
   && "$TBSP" -ge "$CYCLES" \
   && "$RESOLVED" -ge "$CYCLES" \
+  && "$QIMP" -ge "$CYCLES" \
+  && "$IBSP" -ge "$CYCLES" \
   && "$COV" -ge 1 ]]; then
-  echo "PASS: sentinel counts consistent (cycles=$CYCLES, steps 1-4 complete, coverage=$COV)"
-  if [[ "$QIMP" -ge "$CYCLES" && "$IBSP" -ge "$CYCLES" ]]; then
-    echo "PASS: steps 5-6 also complete (implementation cycle present)"
-  else
-    echo "NOTE: steps 5-6 absent or partial — expected for check/verify tasks"
-  fi
+  echo "PASS: sentinel counts consistent (cycles=$CYCLES, all 6 steps complete, coverage=$COV)"
 else
   echo "FAIL: sentinel gap detected"
-  [[ "$CYCLES" -eq 0 ]]          && echo "  - No Observing: lines found — no cycles completed"
-  [[ "$QTST" -lt "$CYCLES" ]]    && echo "  - (2) Missing Quoted test: lines ($QTST of $CYCLES cycles)"
-  [[ "$TBSP" -lt "$CYCLES" ]]    && echo "  - (3) Missing Test blind-spot: lines ($TBSP of $CYCLES cycles)"
+  [[ "$CYCLES" -eq 0 ]]           && echo "  - No Observing: lines found — no cycles completed"
+  [[ "$QTST" -lt "$CYCLES" ]]     && echo "  - (2) Missing Quoted test: lines ($QTST of $CYCLES cycles)"
+  [[ "$TBSP" -lt "$CYCLES" ]]     && echo "  - (3) Missing Test blind-spot: lines ($TBSP of $CYCLES cycles)"
   [[ "$RESOLVED" -lt "$CYCLES" ]] && echo "  - (4) Missing Failure:/Unobservable: lines ($RESOLVED of $CYCLES cycles)"
-  [[ "$COV" -lt 1 ]]          && echo "  - Missing Coverage: sentinel"
+  [[ "$QIMP" -lt "$CYCLES" ]]     && echo "  - (5) Missing Quoted implementation: lines ($QIMP of $CYCLES cycles)"
+  [[ "$IBSP" -lt "$CYCLES" ]]     && echo "  - (6) Missing Implementation overreach: lines ($IBSP of $CYCLES cycles)"
+  [[ "$COV" -lt 1 ]]              && echo "  - Missing Coverage: sentinel"
 fi

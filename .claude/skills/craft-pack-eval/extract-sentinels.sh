@@ -120,25 +120,26 @@ echo "(6) Implementation overreach:    $IBSP"
 echo "Coverage: lines:                 $COV"
 echo ""
 
-# Compliance check — for check tasks (no implementation), steps 5+6 may be absent
+# Compliance check — use Quoted test count as cycle denominator (property line
+# counting is unreliable when split exploration produces provisional sub-property lines)
+CYCLES="$QTST"
 RESOLVED=$((FAIL + UNOBS))
-if [[ "$PROPS" -gt 0 \
-  && "$OBS" -ge "$PROPS" \
-  && "$QTST" -ge "$PROPS" \
-  && "$TBSP" -ge "$PROPS" \
-  && "$RESOLVED" -ge "$PROPS" \
+if [[ "$CYCLES" -gt 0 \
+  && "$OBS" -ge "$CYCLES" \
+  && "$TBSP" -ge "$CYCLES" \
+  && "$RESOLVED" -ge "$CYCLES" \
   && "$COV" -ge 1 ]]; then
-  echo "PASS: sentinel counts consistent (properties=$PROPS, steps 1-4 complete, coverage=$COV)"
-  if [[ "$QIMP" -ge "$PROPS" && "$IBSP" -ge "$PROPS" ]]; then
+  echo "PASS: sentinel counts consistent (cycles=$CYCLES, steps 1-4 complete, coverage=$COV)"
+  if [[ "$QIMP" -ge "$CYCLES" && "$IBSP" -ge "$CYCLES" ]]; then
     echo "PASS: steps 5-6 also complete (implementation cycle present)"
   else
     echo "NOTE: steps 5-6 absent or partial — expected for check/verify tasks"
   fi
 else
   echo "FAIL: sentinel gap detected"
-  [[ "$OBS" -lt "$PROPS" ]]   && echo "  - (1) Missing Observing: lines ($OBS of $PROPS)"
-  [[ "$QTST" -lt "$PROPS" ]]  && echo "  - (2) Missing Quoted test: lines ($QTST of $PROPS)"
-  [[ "$TBSP" -lt "$PROPS" ]]  && echo "  - (3) Missing Test blind-spot: lines ($TBSP of $PROPS)"
-  [[ "$RESOLVED" -lt "$PROPS" ]] && echo "  - (4) Missing Failure:/Unobservable: lines ($RESOLVED of $PROPS)"
+  [[ "$CYCLES" -eq 0 ]]          && echo "  - No Quoted test: lines found — no cycles completed"
+  [[ "$OBS" -lt "$CYCLES" ]]     && echo "  - (1) Missing Observing: lines ($OBS of $CYCLES cycles)"
+  [[ "$TBSP" -lt "$CYCLES" ]]    && echo "  - (3) Missing Test blind-spot: lines ($TBSP of $CYCLES cycles)"
+  [[ "$RESOLVED" -lt "$CYCLES" ]] && echo "  - (4) Missing Failure:/Unobservable: lines ($RESOLVED of $CYCLES cycles)"
   [[ "$COV" -lt 1 ]]          && echo "  - Missing Coverage: sentinel"
 fi

@@ -442,9 +442,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "execution path>' or 'Implementation overreach: not found'; if found, minimally revise the implementation to eliminate the overreach, emit a new 'Quoted implementation:', and "
         "repeat from step (6); every implementation overreach analysis must reason only from the quoted implementation and quoted guard emitted earlier in the transcript, not from an "
         "imagined or intended version. After all properties complete these steps, emit 'Coverage: complete' if all properties are resolved, or 'Coverage: gap — property [N] "
-        '"<verbatim property definition>"\' for any unresolved property. A response that omits any required sentinel, performs a step before emitting its required quoted artifact, '
-        "modifies the governed artifact to satisfy property [N] before a quoted Failure line appears, omits any executable assertion from the assertion inventory, or leaves a property "
-        "without an automatic regression guard does not satisfy this token.",
+        '"<verbatim property definition>"\' for any unresolved property; if any gap exists, return to step (1) for each ungoverned property and complete all six steps before '
+        "re-emitting Coverage:; Coverage: complete may not be emitted while any property [N] lacks a witnessed Failure: or Unobservable: line. A response that omits any required "
+        "sentinel, performs a step before emitting its required quoted artifact, modifies the governed artifact to satisfy property [N] before a quoted Failure line appears, omits any "
+        "executable assertion from the assertion inventory, or leaves a property without an automatic regression guard does not satisfy this token.",
         "field": "The response models interaction as occurring through a shared structured medium in which effects arise from structural compatibility rather than direct reference between "
         "actors. Explanations must make the medium and its selection rules explicit.",
         "flow": "The response enhances the task by describing the linear ordering of stages or steps in a process, without modeling handoffs or feedback loops.",

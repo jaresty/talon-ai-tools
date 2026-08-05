@@ -44,6 +44,11 @@ echo "--- (2) Assertion inventory ---"
 grep -in "property \[.*\] assertion \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
+# Step (2): Assertion inventory complete
+echo "--- (2) Assertion inventory ---"
+grep -in "assertion inventory:" "$TRANSCRIPT" || echo "(absent)"
+echo ""
+
 # Step (2): Quoted test
 echo "--- (2) Quoted test ---"
 grep -in "quoted test:" "$TRANSCRIPT" || echo "(absent)"

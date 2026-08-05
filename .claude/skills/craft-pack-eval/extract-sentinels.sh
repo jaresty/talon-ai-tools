@@ -11,9 +11,24 @@ if [[ -z "$SCENARIO" ]]; then
 fi
 
 TRANSCRIPT="/tmp/haiku-test-${SCENARIO}/assistant-text.md"
+JSONL="/tmp/haiku-test-${SCENARIO}/transcript.jsonl"
 if [[ ! -f "$TRANSCRIPT" ]]; then
-  echo "Error: $TRANSCRIPT not found. Run setup.sh and run-agent.sh first." >&2
-  exit 1
+  if [[ -f "$JSONL" ]]; then
+    python3 -c "
+import json, sys
+lines = []
+for line in open('$JSONL'):
+    obj = json.loads(line)
+    if obj.get('type') == 'assistant':
+        for block in obj.get('message', {}).get('content', []):
+            if block.get('type') == 'text':
+                lines.append(block['text'])
+print('\n'.join(lines))
+" > "$TRANSCRIPT"
+  else
+    echo "Error: $TRANSCRIPT not found. Run setup.sh and run-agent.sh first." >&2
+    exit 1
+  fi
 fi
 
 echo "=== Sentinel extraction: scenario $SCENARIO ==="
@@ -84,15 +99,15 @@ echo ""
 
 # Summary counts
 echo "=== Summary ==="
-PROPS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\**property \[', l.strip())))" 2>/dev/null || echo 0)
-OBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Observing: property \[', l, re.I)))" 2>/dev/null || echo 0)
-QTST=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Quoted test:', l, re.I)))" 2>/dev/null || echo 0)
-TBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Test blind-spot:', l, re.I)))" 2>/dev/null || echo 0)
-FAIL=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Failure: property \[', l, re.I)))" 2>/dev/null || echo 0)
-UNOBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Unobservable: property \[', l, re.I)))" 2>/dev/null || echo 0)
-QIMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Quoted implementation:', l, re.I)))" 2>/dev/null || echo 0)
-IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Implementation overreach: (all assertions witnessed|assertion unwitnessed)', l, re.I)))" 2>/dev/null || echo 0)
-COV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'Coverage: (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
+PROPS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^[-\s]*\*{0,2}property \[\d+\w*\]:', l.strip(), re.I)))" 2>/dev/null || echo 0)
+OBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Observing:\*{0,2} property \[', l, re.I)))" 2>/dev/null || echo 0)
+QTST=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Quoted test:\*{0,2}', l, re.I)))" 2>/dev/null || echo 0)
+TBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Test blind-spot:\*{0,2}', l, re.I)))" 2>/dev/null || echo 0)
+FAIL=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Failure:\*{0,2} property \[', l, re.I)))" 2>/dev/null || echo 0)
+UNOBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Unobservable:\*{0,2} property \[', l, re.I)))" 2>/dev/null || echo 0)
+QIMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Quoted implementation:\*{0,2}', l, re.I)))" 2>/dev/null || echo 0)
+IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Implementation overreach:\*{0,2}', l, re.I)))" 2>/dev/null || echo 0)
+COV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Coverage:\*{0,2} (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
 
 echo "Properties defined:              $PROPS"
 echo "(1) Observing: lines:            $OBS"

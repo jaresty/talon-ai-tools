@@ -124,6 +124,29 @@ describe('hybridRankTokens', () => {
 		expect(hybrid[0].token.token).toBe('probe');
 	});
 
+	it('B3: bm25RankTokens uses per-field RRF — scores bounded by 4 × 1/(k+1)', () => {
+		const ranked = bm25RankTokens(corpus, 'TDD assertion');
+		const rrfUpperBound = 4 * (1 / 61);
+		for (const r of ranked) {
+			expect(r.score).toBeLessThanOrEqual(rrfUpperBound + 1e-9);
+		}
+	});
+
+	it('H5: hybridRankTokens uses RRF fusion — scores are bounded by 3 × 1/(k+1) ≈ 0.049, not unbounded weighted sums', async () => {
+		// With RRF(k=60): max score = 3 lists × 1/(60+1) ≈ 0.049.
+		// With old 0.4/0.6 weighted sum: scores can exceed 0.6 (cosine alone contributes up to 0.6).
+		const stubEmbedder = async (_: string) => new Float32Array([1, 0]);
+		const corpusWithEmb = corpus.map(t => ({
+			...t,
+			metadata: { ...t.metadata, embedding: [1, 0] }
+		})) as unknown as TokenMeta[];
+		const hybrid = await hybridRankTokens(corpusWithEmb, 'TDD gate', stubEmbedder, freshCache());
+		const rrfUpperBound = 3 * (1 / 61); // 3 lists, k=60, rank=1
+		for (const r of hybrid) {
+			expect(r.score).toBeLessThanOrEqual(rrfUpperBound + 1e-9);
+		}
+	});
+
 	it('H3: embedder is called to embed token doc text (description+heuristics+distinctions+routing_concept) when no pre-computed embedding exists', async () => {
 		// corpus tokens have NO .embedding field in metadata.
 		// We use a stub embedder that returns a high-similarity vector only for

@@ -106,6 +106,70 @@ func TestBuildTokenDocsIncludesRoutingConcept(t *testing.T) {
 	}
 }
 
+// TestBM25ScoresRRFFormula verifies that bm25ScoresRRF computes Σ 1/(60+rank_f)
+// across per-field corpora: a token ranking 1st in title only scores 1/61.
+func TestBM25ScoresRRFFormula(t *testing.T) {
+	// doc "a" has query word in title only; doc "b" has it in definition only.
+	docs := []tokenDoc{
+		{id: "a", title: "widget", heuristics: "unrelated", distinctions: "unrelated", definition: "unrelated"},
+		{id: "b", title: "unrelated", heuristics: "unrelated", distinctions: "unrelated", definition: "widget"},
+	}
+	scores := bm25ScoresRRF(docs, "widget")
+	if scores["a"] == 0 {
+		t.Error("bm25ScoresRRF: doc with query in title should have non-zero RRF score")
+	}
+	if scores["b"] == 0 {
+		t.Error("bm25ScoresRRF: doc with query in definition should have non-zero RRF score")
+	}
+	// Both rank 1st in their respective field and are absent from the other three.
+	// Each should score exactly 1/(60+1) = 1/61.
+	want := 1.0 / 61.0
+	const eps = 1e-9
+	if got := scores["a"]; got < want-eps || got > want+eps {
+		t.Errorf("bm25ScoresRRF: doc 'a' (title-only match) score = %v, want %v", got, want)
+	}
+	if got := scores["b"]; got < want-eps || got > want+eps {
+		t.Errorf("bm25ScoresRRF: doc 'b' (definition-only match) score = %v, want %v", got, want)
+	}
+}
+
+// TestBM25ScoresRRFExclusion verifies tokens absent from all field rankings are excluded.
+func TestBM25ScoresRRFExclusion(t *testing.T) {
+	docs := []tokenDoc{
+		{id: "match", title: "widget", heuristics: "widget", distinctions: "widget", definition: "widget"},
+		{id: "nomatch", title: "unrelated", heuristics: "unrelated", distinctions: "unrelated", definition: "unrelated"},
+	}
+	scores := bm25ScoresRRF(docs, "widget")
+	if _, ok := scores["nomatch"]; ok {
+		t.Error("bm25ScoresRRF: token absent from all field rankings should be excluded from results")
+	}
+	// Also verify no zero-score entry leaks into the result map.
+	for id, s := range scores {
+		if s == 0 {
+			t.Errorf("bm25ScoresRRF: result map contains zero-score entry for %q", id)
+		}
+	}
+}
+
+// TestBM25ScoresRRFFieldIsolation verifies each field corpus contains only its own text.
+// Doc "a" has "alpha" only in heuristics; doc "b" has empty heuristics but "alpha" must not
+// bleed from doc "a"'s heuristics into the definition corpus where doc "b" ranks.
+func TestBM25ScoresRRFFieldIsolation(t *testing.T) {
+	docs := []tokenDoc{
+		// "alpha" in heuristics only; definition is unique "zeta"
+		{id: "a", title: "unrelated", heuristics: "alpha", distinctions: "unrelated", definition: "zeta"},
+		// "alpha" absent from all fields; definition is unique "zeta" too — so if heuristics bled into definition, both would rank in definition corpus
+		{id: "b", title: "unrelated", heuristics: "", distinctions: "unrelated", definition: "zeta"},
+	}
+	scores := bm25ScoresRRF(docs, "alpha")
+	if scores["a"] == 0 {
+		t.Error("bm25ScoresRRF field isolation: doc with query in heuristics should score non-zero")
+	}
+	if _, ok := scores["b"]; ok {
+		t.Error("bm25ScoresRRF field isolation: doc without query in any field should be excluded even if other fields share text")
+	}
+}
+
 // TestBM25TokenizeStem verifies that bm25Tokenize applies Porter stemming.
 func TestBM25TokenizeStem(t *testing.T) {
 	cases := []struct {

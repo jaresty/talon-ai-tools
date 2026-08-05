@@ -384,6 +384,71 @@ func TestLookupCLIMissingQueryExits1(t *testing.T) {
 
 // --- BM25 assertions (ADR-0232) ---
 
+// TestLookupWithContextModeBUsesRRF verifies LookupTokensWithContext Mode B uses bm25ScoresRRF.
+// RRF scores are bounded by 1/(k+1) per field; flat BM25 scores are unbounded raw floats.
+// All Mode B ContextScore values must be ≤ 1.0 (RRF upper bound = 4 fields × 1/61 ≈ 0.066).
+func TestLookupWithContextModeBUsesRRF(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	results := LookupTokensWithContext("", grammar, "", "surface assumptions continuous observer", "")
+	if len(results) == 0 {
+		t.Fatal("expected at least one result from Mode B RRF discovery")
+	}
+	for _, r := range results {
+		if r.ContextScore > 1.0 {
+			t.Errorf("Mode B ContextScore %v for %s:%s exceeds RRF upper bound 1.0 — flat BM25 score leaked", r.ContextScore, r.Axis, r.Token)
+		}
+	}
+}
+
+// TestLookupWithContextModeAUsesRRF verifies Mode A context re-ranking uses bm25ScoresRRF.
+// RRF ContextScore is bounded ≤ 1.0; flat BM25 scores are unbounded raw floats.
+func TestLookupWithContextModeAUsesRRF(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// query="witness" triggers tier match; subject provides context for re-ranking.
+	results := LookupTokensWithContext("witness", grammar, "", "surface assumptions continuous observer", "")
+	if len(results) == 0 {
+		t.Fatal("expected results for Mode A query 'witness'")
+	}
+	for _, r := range results {
+		if r.ContextScore > 1.0 {
+			t.Errorf("Mode A ContextScore %v for %s:%s exceeds RRF upper bound 1.0 — flat BM25 score leaked", r.ContextScore, r.Axis, r.Token)
+		}
+	}
+}
+
+// TestLookupUsesRRFForBM25Fill verifies that LookupTokens uses bm25ScoresRRF (per-field RRF)
+// for the BM25-fill pass. Uses a multi-word phrase that won't AND-match any single token
+// but should surface a Tier -1 result via RRF across fields.
+func TestLookupUsesRRFForBM25Fill(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	// "surface assumptions continuous observer" contains words from witness's heuristics
+	// and description but won't AND-match as a tier result (no single word is an exact/substring
+	// match across all four words simultaneously). Expect at least one Tier -1 result.
+	results := LookupTokens("surface assumptions continuous observer", grammar, "")
+	var found *LookupResult
+	for i := range results {
+		if results[i].Tier == -1 {
+			found = &results[i]
+			break
+		}
+	}
+	if found == nil {
+		t.Fatal("expected at least one Tier -1 (RRF BM25 fill) result for multi-word query")
+	}
+}
+
 // TestBM25CorpusConstruction specifies that buildTokenDocs returns a doc whose title
 // contains the token name and whose body contains definition text.
 func TestBM25CorpusConstruction(t *testing.T) {
@@ -648,8 +713,8 @@ func TestLookupBM25TaskTokenHasLabel(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load grammar: %v", err)
 	}
-	// "explain to audience" → task:show is a BM25-only result; must have label
-	results := LookupTokens("explain to audience", grammar, "")
+	// "describe and explain the subject" → task:show is a BM25-only result; must have label
+	results := LookupTokens("describe and explain the subject", grammar, "")
 	var showResult *LookupResult
 	for i := range results {
 		if results[i].Axis == "task" && results[i].Token == "show" {

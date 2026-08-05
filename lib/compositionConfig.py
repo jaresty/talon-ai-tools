@@ -26,7 +26,14 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "Every 'Observing: property [N]' line must cite a property [N] that appears in the 'Ground properties:' block above it — "
         "a falsify artifact whose preceding 'Observing:' line cites a property not present in 'Ground properties:' does not satisfy this composition. "
         "Every property [N] in the 'Ground properties:' block must complete the full falsify six-step cycle — Observing:, guard establishment (step 2), Quoted test:, Test blind-spot:, Failure:/Unobservable:, Quoted implementation:, and Implementation overreach: not found — "
-        "before the Coverage: sentinel is emitted; a property that has not received 'Implementation overreach: not found' before Coverage: is ungoverned and does not satisfy this composition.",
+        "before the Coverage: sentinel is emitted; a property that has not received 'Implementation overreach: not found' before Coverage: is ungoverned and does not satisfy this composition. "
+        "After every retained property has emitted 'Implementation overreach: not found', perform an implementation audit before emitting 'Coverage: complete'. "
+        "Enumerate the observable partitions of the governed artifact — distinct execution paths, call sites, externally visible interfaces, state transitions, outputs, consumers, and configuration variants. "
+        "For each partition, determine whether at least one retained property governs its externally observable behavior. "
+        "If one does not, emit 'Audit: implementation gap — <description>'; derive one or more new properties governing that partition; "
+        "perform the Ground atomicity and completeness procedures for those properties; execute the complete six-step falsify cycle for each; then repeat the implementation audit. "
+        "Only when no ungoverned partition remains may the response emit 'Audit: implementation complete' followed immediately by 'Coverage: complete'. "
+        "A 'Coverage: complete' sentinel that is not immediately preceded by 'Audit: implementation complete' does not satisfy this composition.",
     },
     {
         "name": "falsify+chain",

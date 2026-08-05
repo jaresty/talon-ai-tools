@@ -32,7 +32,7 @@ func LookupTokensWithContext(query string, g *Grammar, axisFilter, subject, adde
 	// Mode B: no positional query — BM25 discovery from subject+addendum.
 	if query == "" && contextQuery != "" {
 		docs := buildTokenDocs(g, axisFilter)
-		scores := bm25Scores(docs, contextQuery)
+		scores := bm25ScoresRRF(docs, contextQuery)
 		type bm25Candidate struct {
 			id    string
 			score float64
@@ -104,7 +104,7 @@ func LookupTokensWithContext(query string, g *Grammar, axisFilter, subject, adde
 
 	// Compute secondary BM25 scores from context.
 	docs := buildTokenDocs(g, axisFilter)
-	ctxScores := bm25Scores(docs, contextQuery)
+	ctxScores := bm25ScoresRRF(docs, contextQuery)
 	for i := range results {
 		id := results[i].Axis + ":" + results[i].Token
 		results[i].ContextScore = ctxScores[id]
@@ -367,7 +367,7 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		tierKeys[k] = true
 	}
 	docs := buildTokenDocs(g, axisFilter)
-	scores := bm25Scores(docs, query)
+	scores := bm25ScoresRRF(docs, query)
 
 	type bm25Candidate struct {
 		id    string

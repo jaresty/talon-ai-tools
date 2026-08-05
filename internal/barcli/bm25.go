@@ -8,6 +8,7 @@ package barcli
 
 import (
 	"math"
+	"sort"
 	"strings"
 
 	"github.com/kljensen/snowball/english"
@@ -21,9 +22,12 @@ const (
 
 // tokenDoc is a BM25 document representing one grammar token.
 type tokenDoc struct {
-	id    string // "axis:token"
-	title string // name + " " + label
-	body  string // definition + heuristics + distinctions + axis context
+	id           string // "axis:token"
+	title        string // name + " " + label
+	body         string // definition + heuristics + distinctions + axis context (flat, for legacy callers)
+	heuristics   string // heuristics text only
+	distinctions string // distinctions text only
+	definition   string // definition text only
 }
 
 // buildTokenDocs constructs the BM25 corpus from all grammar tokens.
@@ -35,26 +39,35 @@ func buildTokenDocs(g *Grammar, axisFilter string) []tokenDoc {
 		if axisFilter != "" && axis != axisFilter {
 			return
 		}
+		heuristicsText := strings.Join(heuristics, " ")
+		distinctionsText := strings.Join(distinctions, " ")
 		body := definition
-		if len(heuristics) > 0 {
-			body += " " + strings.Join(heuristics, " ")
+		if heuristicsText != "" {
+			body += " " + heuristicsText
 		}
-		if len(distinctions) > 0 {
-			body += " " + strings.Join(distinctions, " ")
+		if distinctionsText != "" {
+			body += " " + distinctionsText
 		}
 		if axisH := g.AxisLevelHeuristics(axis); len(axisH) > 0 {
-			body += " " + strings.Join(axisH, " ")
+			ah := strings.Join(axisH, " ")
+			body += " " + ah
+			heuristicsText += " " + ah
 		}
 		if axisDesc := g.AxisLevelDescription(axis); axisDesc != "" {
 			body += " " + axisDesc
+			heuristicsText += " " + axisDesc
 		}
 		if rc := g.AxisRoutingConcept(axis, token); rc != "" {
 			body += " " + rc
+			definition += " " + rc
 		}
 		docs = append(docs, tokenDoc{
-			id:    axis + ":" + token,
-			title: token + " " + label,
-			body:  body,
+			id:           axis + ":" + token,
+			title:        token + " " + label,
+			body:         body,
+			heuristics:   strings.TrimSpace(heuristicsText),
+			distinctions: strings.TrimSpace(distinctionsText),
+			definition:   strings.TrimSpace(definition),
 		})
 	}
 
@@ -130,6 +143,51 @@ func bm25Tokenize(s string) []string {
 		}
 	}
 	return tokens
+}
+
+const rrfK = 60.0
+
+// bm25ScoresRRF computes RRF-fused scores across four per-field corpora:
+// title, heuristics, distinctions, definition. Each field is ranked independently
+// by BM25; scores are fused as Σ 1/(k + rank_i(d)) with k=60.
+// Returns a map from doc ID to RRF score; docs absent from all field rankings score 0 and are excluded.
+func bm25ScoresRRF(docs []tokenDoc, query string) map[string]float64 {
+	type fieldCorpus struct {
+		docs []tokenDoc
+	}
+	corpora := []fieldCorpus{
+		{docs: make([]tokenDoc, len(docs))}, // title
+		{docs: make([]tokenDoc, len(docs))}, // heuristics
+		{docs: make([]tokenDoc, len(docs))}, // distinctions
+		{docs: make([]tokenDoc, len(docs))}, // definition
+	}
+	for i, d := range docs {
+		corpora[0].docs[i] = tokenDoc{id: d.id, title: d.title}
+		corpora[1].docs[i] = tokenDoc{id: d.id, title: d.heuristics}
+		corpora[2].docs[i] = tokenDoc{id: d.id, title: d.distinctions}
+		corpora[3].docs[i] = tokenDoc{id: d.id, title: d.definition}
+	}
+
+	rrf := make(map[string]float64)
+	for _, corpus := range corpora {
+		scores := bm25Scores(corpus.docs, query)
+		if len(scores) == 0 {
+			continue
+		}
+		type kv struct {
+			id    string
+			score float64
+		}
+		ranked := make([]kv, 0, len(scores))
+		for id, s := range scores {
+			ranked = append(ranked, kv{id, s})
+		}
+		sort.Slice(ranked, func(i, j int) bool { return ranked[i].score > ranked[j].score })
+		for rank, entry := range ranked {
+			rrf[entry.id] += 1.0 / (rrfK + float64(rank+1))
+		}
+	}
+	return rrf
 }
 
 // bm25Scores computes BM25 relevance scores for each tokenDoc against the query.

@@ -79,8 +79,7 @@ export function bm25Score(tokens: TokenMeta[], query: string): Map<string, numbe
 	return scores;
 }
 
-const HYBRID_BM25_WEIGHT = 0.4;
-const HYBRID_EMB_WEIGHT = 0.6;
+const RRF_K = 60;
 
 function cosineSimilarity(a: Float32Array, b: Float32Array): number {
 	if (a.length !== b.length) return 0;
@@ -100,30 +99,63 @@ function tokenDocText(t: TokenMeta): string {
 	return parts.join(' ');
 }
 
+// rrfFuse merges ranked lists via Reciprocal Rank Fusion: Σ 1/(k + rank_i(d)).
+function rrfFuse(lists: string[][], k: number): Map<string, number> {
+	const scores = new Map<string, number>();
+	for (const list of lists) {
+		list.forEach((id, idx) => {
+			scores.set(id, (scores.get(id) ?? 0) + 1 / (k + idx + 1));
+		});
+	}
+	return scores;
+}
+
 // Shared production cache: token name → embedding vector. Populated lazily on first hybrid search.
 export const sharedTokenEmbCache = new Map<string, Float32Array>();
 
-// hybridRankTokens merges BM25 and cosine similarity scores (0.4/0.6 weighted).
-// embedder is an async function that returns a unit-norm Float32Array for the query,
-// or null to degrade to BM25-only. Token embeddings are computed lazily from full
-// doc text (description, heuristics, distinctions, routing_concept) and cached in
-// tokenEmbCache (defaults to the shared production cache; pass a fresh Map in tests).
+// hybridRankTokens fuses three ranked lists via RRF(k=60):
+//   1. BM25-title (token name + label only)
+//   2. BM25-body (definition + heuristics + distinctions only)
+//   3. Cosine similarity (embeddings)
+// embedder returns a unit-norm Float32Array or null to degrade to BM25-only.
+// Token embeddings are cached in tokenEmbCache (pass a fresh Map in tests).
 export async function hybridRankTokens(
 	tokens: TokenMeta[],
 	query: string,
 	embedder: ((q: string) => Promise<Float32Array | null>) | null,
 	tokenEmbCache: Map<string, Float32Array> = sharedTokenEmbCache
 ): Promise<RankedToken[]> {
-	const bm25Scores = bm25Score(tokens, query);
-	let maxBM25 = 0;
-	bm25Scores.forEach((s) => { if (s > maxBM25) maxBM25 = s; });
+	// BM25-title corpus: score using token+label as the entire document text.
+	const titleOnlyTokens = tokens.map((t) => ({
+		...t,
+		description: t.token + ' ' + t.label,
+		metadata: { definition: '', heuristics: [], distinctions: [] }
+	} as unknown as TokenMeta));
+	const titleScores = bm25Score(titleOnlyTokens, query);
+	const titleList = [...titleScores.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
 
+	// BM25-body corpus: score using definition+heuristics+distinctions only.
+	const bodyText = (t: TokenMeta): string => {
+		const parts: string[] = [];
+		if (t.metadata?.definition) parts.push(t.metadata.definition);
+		if (t.metadata?.heuristics?.length) parts.push(t.metadata.heuristics.join(' '));
+		if (t.metadata?.distinctions?.length)
+			parts.push(t.metadata.distinctions.map((d) => d.token + ' ' + d.note).join(' '));
+		return parts.join(' ');
+	};
+	const bodyOnlyTokens = tokens.map((t) => ({
+		...t,
+		description: bodyText(t),
+		metadata: { definition: '', heuristics: [], distinctions: [] }
+	} as unknown as TokenMeta));
+	const bodyScores = bm25Score(bodyOnlyTokens, query);
+	const bodyList = [...bodyScores.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
+
+	// Cosine similarity list.
 	let queryVec: Float32Array | null = null;
 	if (embedder) {
 		try { queryVec = await embedder(query); } catch { queryVec = null; }
 	}
-
-	// Embed any tokens not yet in cache that lack a pre-computed embedding.
 	if (queryVec && embedder) {
 		await Promise.all(tokens.map(async (t) => {
 			if (tokenEmbCache.has(t.token)) return;
@@ -135,29 +167,62 @@ export async function hybridRankTokens(
 			try {
 				const vec = await embedder(tokenDocText(t));
 				if (vec) tokenEmbCache.set(t.token, vec);
-			} catch { /* leave uncached; cosine score will be 0 */ }
+			} catch { /* leave uncached */ }
 		}));
 	}
+	const cosineList: string[] = queryVec
+		? tokens
+			.map((t) => {
+				const vec = tokenEmbCache.get(t.token);
+				return { id: t.token, score: vec ? Math.max(0, cosineSimilarity(queryVec!, vec)) : 0 };
+			})
+			.filter((x) => x.score > 0)
+			.sort((a, b) => b.score - a.score)
+			.map((x) => x.id)
+		: [];
 
+	// RRF fusion across all three lists.
+	const fused = rrfFuse([titleList, bodyList, cosineList], RRF_K);
 	const ranked: RankedToken[] = [];
 	for (const t of tokens) {
-		const b = maxBM25 > 0 ? (bm25Scores.get(t.token) ?? 0) / maxBM25 : 0;
-		const tokenVec = queryVec ? tokenEmbCache.get(t.token) : undefined;
-		const c = queryVec && tokenVec ? cosineSimilarity(queryVec, tokenVec) : 0;
-		const score = HYBRID_BM25_WEIGHT * b + HYBRID_EMB_WEIGHT * Math.max(0, c);
+		const score = fused.get(t.token) ?? 0;
 		if (score > 0) ranked.push({ token: t, score });
 	}
 	ranked.sort((a, b) => b.score - a.score);
 	return ranked;
 }
 
-// bm25RankTokens returns tokens sorted by BM25 score descending.
-// Tokens with score 0 are excluded.
+// bm25RankTokens ranks tokens via RRF across four per-field corpora:
+// title, heuristics, distinctions, definition. Tokens absent from all field rankings are excluded.
 export function bm25RankTokens(tokens: TokenMeta[], query: string): RankedToken[] {
-	const scores = bm25Score(tokens, query);
+	const titleList = [...bm25Score(tokens.map((t) => ({
+		...t,
+		description: t.token + ' ' + t.label,
+		metadata: { definition: '', heuristics: [], distinctions: [] }
+	} as unknown as TokenMeta)), query).entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
+
+	const heuristicsList = [...bm25Score(tokens.map((t) => ({
+		...t,
+		description: t.metadata?.heuristics?.join(' ') ?? '',
+		metadata: { definition: '', heuristics: [], distinctions: [] }
+	} as unknown as TokenMeta)), query).entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
+
+	const distinctionsList = [...bm25Score(tokens.map((t) => ({
+		...t,
+		description: t.metadata?.distinctions?.map((d) => d.token + ' ' + d.note).join(' ') ?? '',
+		metadata: { definition: '', heuristics: [], distinctions: [] }
+	} as unknown as TokenMeta)), query).entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
+
+	const definitionList = [...bm25Score(tokens.map((t) => ({
+		...t,
+		description: t.metadata?.definition ?? '',
+		metadata: { definition: '', heuristics: [], distinctions: [] }
+	} as unknown as TokenMeta)), query).entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
+
+	const fused = rrfFuse([titleList, heuristicsList, distinctionsList, definitionList], RRF_K);
 	const ranked: RankedToken[] = [];
 	for (const t of tokens) {
-		const score = scores.get(t.token) ?? 0;
+		const score = fused.get(t.token) ?? 0;
 		if (score > 0) ranked.push({ token: t, score });
 	}
 	ranked.sort((a, b) => b.score - a.score);

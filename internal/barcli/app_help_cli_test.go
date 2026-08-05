@@ -712,7 +712,7 @@ func TestHelpLLMHeuristicsWorkflowStructureBlock(t *testing.T) {
 func TestLookupDispatchHintWhenSequencesPresent(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"lookup", "plan implementation"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"lookup", "probe and plan"}, os.Stdin, stdout, stderr)
 	if exit != 0 {
 		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
 	}

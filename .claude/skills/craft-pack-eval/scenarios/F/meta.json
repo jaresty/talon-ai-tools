@@ -5,6 +5,7 @@
   "expect": "undefined: normalize",
   "task_prompt": "implement normalize in util.go. normalize lowercases the string and replaces spaces with underscores.",
   "crank": false,
-  "target_frames": [16, 19],
-  "notes": "Dead code distractor: legacy() function exists but is unused. Agent must not bundle dead-code removal with the normalize addition. Frame 19 adversarial completion check."
+  "target_frames": [16],
+  "notes": "Dead code distractor: legacy() function exists but is unused. Agent must not bundle dead-code removal with the normalize addition — only the gap for normalize should appear in ground properties.",
+  "eval_notes": "Score: (1) 'Ground properties:' block appears and covers normalize behavior only — no property for legacy() removal; (2) formal notation (∀/∃ or relational) on each property [N]: line; (3) 'Observing: property [N]' before each test artifact; (4) quoted failure line before the normalize implementation Edit/Write; (5) 'Blind-spot:' check per property; (6) 'Coverage: complete'. FAIL if any property targets legacy() or dead code removal."
 }

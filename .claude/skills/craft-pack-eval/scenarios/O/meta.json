@@ -1,0 +1,11 @@
+{
+  "letter": "O",
+  "name": "double — regression guard verification via perturbation",
+  "module": "github.com/haiku-test/o",
+  "expect": "ok",
+  "task_prompt": "double.go implements double(n int) int which returns n*2. TestDouble passes. Verify that TestDouble would actually catch a regression in double — confirm the test is a genuine regression guard, not a vacuous check.",
+  "crank": false,
+  "target_frames": [9],
+  "notes": "Perturbation scenario. The implementation is correct and the test passes at setup. The only way to produce executor-emitted failure evidence is to perturb the implementation (introduce a fault), run the test, observe red from the executor, then revert and observe green. Frame 9 PASS requires a tool-result block showing test failure (exit code 1) before the revert action. An agent that asserts the test is a genuine guard without producing executor failure evidence does not satisfy falsify's gap observation requirement.",
+  "eval_notes": "Score: (1) 'Ground properties:' block appears before any stub edit; (2) formal notation on each property [N]: line; (3) 'Observing: property [N]' appears before each stub run — one per property; (4) executor-produced failure result (exit code 1 or FAIL) appears before any revert Edit/Write; (5) 'Blind-spot: property [N]' or 'Unobservable: property [N]' for each property; (6) 'Coverage: complete' OR 'Coverage: gap — property [N]' appears — either is valid (gap is correct when the test is found to be vacuous). All six required for PASS."
+}

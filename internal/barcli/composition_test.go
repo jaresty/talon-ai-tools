@@ -24,23 +24,6 @@ func TestActiveCompositions_GroundFalsify(t *testing.T) {
 	}
 }
 
-func TestActiveCompositions_FalsifyAtomic(t *testing.T) {
-	g := loadCompletionGrammar(t)
-	active := g.ActiveCompositions(map[string]struct{}{"falsify": {}, "atomic": {}})
-	if len(active) == 0 {
-		t.Fatal("expected falsify+atomic to activate a composition")
-	}
-	found := false
-	for _, c := range active {
-		if c.Name == "falsify+atomic" {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("expected composition named 'falsify+atomic', got %v", active)
-	}
-}
-
 func TestActiveCompositions_FalsifyChain(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	active := g.ActiveCompositions(map[string]struct{}{"falsify": {}, "chain": {}})
@@ -58,37 +41,37 @@ func TestActiveCompositions_FalsifyChain(t *testing.T) {
 	}
 }
 
-func TestActiveCompositions_GateFalsify(t *testing.T) {
+func TestActiveCompositions_ProbeFalsify(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	active := g.ActiveCompositions(map[string]struct{}{"gate": {}, "falsify": {}})
+	active := g.ActiveCompositions(map[string]struct{}{"probe": {}, "falsify": {}})
 	if len(active) == 0 {
-		t.Fatal("expected gate+falsify to activate a composition")
+		t.Fatal("expected probe+falsify to activate a composition")
 	}
 	found := false
 	for _, c := range active {
-		if c.Name == "gate+falsify" {
+		if c.Name == "probe+falsify" {
 			found = true
 		}
 	}
 	if !found {
-		t.Errorf("expected composition named 'gate+falsify', got %v", active)
+		t.Errorf("expected composition named 'probe+falsify', got %v", active)
 	}
 }
 
-func TestActiveCompositions_AtomicGround(t *testing.T) {
+func TestActiveCompositions_SkimGate(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	active := g.ActiveCompositions(map[string]struct{}{"atomic": {}, "ground": {}})
+	active := g.ActiveCompositions(map[string]struct{}{"skim": {}, "gate": {}})
 	if len(active) == 0 {
-		t.Fatal("expected atomic+ground to activate a composition")
+		t.Fatal("expected skim+gate to activate a composition")
 	}
 	found := false
 	for _, c := range active {
-		if c.Name == "atomic+ground" {
+		if c.Name == "skim+gate" {
 			found = true
 		}
 	}
 	if !found {
-		t.Errorf("expected composition named 'atomic+ground', got %v", active)
+		t.Errorf("expected composition named 'skim+gate', got %v", active)
 	}
 }
 
@@ -121,7 +104,7 @@ func TestActiveCompositions_SingleTokenNoActivation(t *testing.T) {
 
 func TestRenderPlainText_CompositionRulesSectionPresent(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "ground", "gate", "atomic", "chain"})
+	result, cliErr := Build(g, []string{"make", "falsify", "chain"})
 	if cliErr != nil {
 		t.Fatalf("Build: %v", cliErr)
 	}
@@ -156,27 +139,27 @@ func TestRenderPlainText_NoCompositionRulesWithoutTokenPair(t *testing.T) {
 // falsify is the renamed 'gate' token: it governs falsifiable artifact quality.
 // The new 'gate' token is the general hard-blocking checkpoint.
 
-func TestFalsifyDefinition_AbsenceDetection(t *testing.T) {
+func TestFalsifyDefinition_ObservesGap(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "written to assert that specific behavior") && !strings.Contains(def, "behavior is absent") && !strings.Contains(def, "behavior absent") && !strings.Contains(def, "detected absence of the behavior") && !strings.Contains(def, "absence of each governed behavior") {
-		t.Error("falsify definition must require artifact to be written to assert the specific governed behavior")
+	if !strings.Contains(def, "gap between intent and current state") && !strings.Contains(def, "observes each gap") {
+		t.Error("falsify definition must require observing each gap between intent and current state")
 	}
 }
 
-func TestFalsifyDefinition_FiredBeforeImplementation(t *testing.T) {
+func TestFalsifyDefinition_RegressionGuard(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "before any tool call that modifies") && !strings.Contains(def, "before any edit tool call") && !strings.Contains(def, "FAIL tool result already present") && !strings.Contains(def, "before any implementation") && !strings.Contains(def, "before any governed action") && !strings.Contains(def, "before any governed artifact-producing action") {
-		t.Error("falsify definition must require FAIL result to precede the governed action")
+	if !strings.Contains(def, "regression guard") {
+		t.Error("falsify definition must require a regression guard mechanism")
 	}
 }
 
-func TestFalsifyDefinition_ImplementationStepConstraint(t *testing.T) {
+func TestFalsifyDefinition_SixStepCycle(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "(c) is absent before the action and present after it") {
-		t.Error("falsify definition must name the creation-step boundary: (c) is absent before the action and present after it")
+	if !strings.Contains(def, "Observing: property") {
+		t.Error("falsify definition must require the Observing: property sentinel for the per-property cycle")
 	}
 }
 
@@ -234,23 +217,6 @@ func TestActiveCompositions_PickIndirect(t *testing.T) {
 	}
 }
 
-func TestActiveCompositions_ProbeFalsify(t *testing.T) {
-	g := loadCompletionGrammar(t)
-	active := g.ActiveCompositions(map[string]struct{}{"probe": {}, "falsify": {}})
-	if len(active) == 0 {
-		t.Fatal("expected probe+falsify to activate a composition")
-	}
-	found := false
-	for _, c := range active {
-		if c.Name == "probe+falsify" {
-			found = true
-		}
-	}
-	if !found {
-		t.Errorf("expected composition named 'probe+falsify', got %v", active)
-	}
-}
-
 func TestActiveCompositions_ResetGood(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	active := g.ActiveCompositions(map[string]struct{}{"reset": {}, "good": {}})
@@ -292,14 +258,14 @@ func TestBuildProbeFalsifyInjectsCompositionRules(t *testing.T) {
 	}
 }
 
-// TestHelpComposition_KnownName verifies that bar help composition gate+falsify prints the composition prose.
+// TestHelpComposition_KnownName verifies that bar help composition ground+falsify prints the composition prose.
 func TestHelpComposition_KnownName(t *testing.T) {
-	result := runBuildCLI(t, []string{"help", "composition", "gate+falsify"}, nil)
+	result := runBuildCLI(t, []string{"help", "composition", "ground+falsify"}, nil)
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
 	}
-	if !strings.Contains(result.Stdout, "gate") {
-		t.Errorf("expected composition prose containing 'gate', got:\n%s", result.Stdout)
+	if !strings.Contains(result.Stdout, "ground") {
+		t.Errorf("expected composition prose containing 'ground', got:\n%s", result.Stdout)
 	}
 	if !strings.Contains(result.Stdout, "falsify") {
 		t.Errorf("expected composition prose containing 'falsify', got:\n%s", result.Stdout)
@@ -323,7 +289,7 @@ func TestHelpComposition_NoArg(t *testing.T) {
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d; stderr: %s", result.Exit, result.Stderr)
 	}
-	if !strings.Contains(result.Stdout, "gate+falsify") {
-		t.Errorf("expected composition list to contain 'gate+falsify', got:\n%s", result.Stdout)
+	if !strings.Contains(result.Stdout, "ground+falsify") {
+		t.Errorf("expected composition list to contain 'ground+falsify', got:\n%s", result.Stdout)
 	}
 }

@@ -1,0 +1,11 @@
+{
+  "letter": "P",
+  "name": "double — regression guard verification (ground+falsify)",
+  "module": "github.com/haiku-test/p",
+  "expect": "ok",
+  "task_prompt": "double.go implements double(n int) int which returns n*2. TestDouble passes. Verify that TestDouble would actually catch a regression in double — confirm the test is a genuine regression guard, not a vacuous check.",
+  "crank": false,
+  "target_frames": [9],
+  "notes": "Perturbation scenario using ground+falsify. Agent must derive formal properties of 'genuine regression guard', run a violating stub to get a failure line, check blind-spot, and correctly classify any Unobservable: properties. PASS requires executor-produced failure evidence before the revert action.",
+  "eval_notes": "Score: (1) 'Ground properties:' block appears before any stub edit, containing formal predicates for what 'genuine regression guard' means; (2) formal notation on each property [N]: line; (3) 'Observing: property [N]' before each stub run — one per property; (4) executor-produced failure result (exit code 1 or FAIL) appears before any revert Edit/Write; (5) 'Blind-spot: property [N]' or 'Unobservable: property [N]' for each property; (6) 'Coverage: complete' OR 'Coverage: gap — property [N]' appears — either is valid (gap is correct when the test is found to be vacuous). All six required for PASS."
+}

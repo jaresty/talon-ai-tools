@@ -1,95 +1,104 @@
-"""Tests for predecessor-sentinel gates on ## Enforcement sequence and ## Path enumeration."""
+"""Tests for ground token definition — spike/craft-token-refactor branch."""
 import sys
 import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from lib.groundPrompt import GROUND_PARTS_MINIMAL
+from lib.groundPrompt import build_ground_prompt
 
 
 def _core() -> str:
-    return GROUND_PARTS_MINIMAL["core"]
+    return build_ground_prompt()
 
 
-def test_enforcement_sequence_gated_on_properties_complete():
-    """## Enforcement sequence must not appear before § properties complete."""
+def test_ground_properties_block_required_before_action():
+    """Ground properties block must precede any test, implementation, tool call, or task reasoning."""
     core = _core()
-    assert "'## Enforcement sequence' must not appear before '§ properties complete'" in core
+    assert "before any test, implementation step, tool call, or task reasoning begins" in core
 
 
-def test_enforcement_complete_sentinel_present():
-    """§ enforcement complete sentinel must exist to close ## Enforcement sequence."""
+def test_interpretation_line_required_for_ambiguous_requests():
+    """Ambiguous requests must declare chosen interpretation before first property."""
     core = _core()
-    assert "§ enforcement complete" in core
+    assert "'Interpretation: <chosen interpretation>'" in core
+    assert "all subsequent properties are derived exclusively from this interpretation" in core
 
 
-def test_enforcement_check_required_before_enforcement_complete():
-    """§ enforcement check: must be required before § enforcement complete."""
+def test_properties_derivable_from_interpretation():
+    """Every property must be derivable from the explicit constraints of the chosen interpretation."""
     core = _core()
-    assert "'§ enforcement complete' is valid only after a valid '§ enforcement check:' line has appeared" in core
+    assert "Every property must be derivable from the explicit constraints of the chosen interpretation" in core
+    assert "out of scope and must not appear in the block" in core
 
 
-def test_path_enumeration_gated_on_enforcement_complete():
-    """## Path enumeration must not appear before § enforcement complete."""
+def test_split_test_sentinel_present():
+    """§ split test: sentinel must be present."""
     core = _core()
-    assert "'## Path enumeration' must not appear before '§ enforcement complete'" in core
+    assert "§ split test:" in core
 
 
-def test_enumeration_complete_gated_on_enforcement_complete():
-    """§5 enumeration complete must not appear before § enforcement complete."""
+def test_split_test_quotes_verbatim():
+    """Split test must quote provisional definitions verbatim."""
     core = _core()
-    assert "'§5 enumeration complete' must not appear before '§ enforcement complete'" in core
+    assert "quoted definitions must match the immediately preceding provisional definitions verbatim" in core
 
 
-def test_completion_check_gated_on_enumeration_complete():
-    """## Completion check must not appear before §5 enumeration complete."""
+def test_split_test_atomic_no_valid_split_form():
+    """If no valid split exists, emit atomic no valid split form."""
     core = _core()
-    assert "'## Completion check' must not appear before '§5 enumeration complete'" in core
+    assert "atomic, no valid split: <reason>" in core
+    assert "The quoted definition must match the retained property verbatim" in core
 
 
-def test_split_test_sentinel_required_before_sub_properties():
-    """§ split test: sentinel must appear after each property [N]: before sub-properties."""
+def test_split_recursion_until_atomic():
+    """Continue recursively until every retained property has a split test concluding atomic."""
     core = _core()
-    assert "'§ split test:'" in core
-    assert "'property [Na]:' line that does not have a '§ split test:' line above it does not satisfy" in core
+    assert "Continue recursively until every retained property has a split test concluding 'atomic, no valid split.'" in core
 
 
-def test_sub_property_logical_equivalence_definition():
-    """conjunction of sub-properties must describe same set of instances as parent."""
+def test_completeness_check_sentinel_present():
+    """§ completeness check: sentinel must be present."""
     core = _core()
-    assert "strict subset" in core and "strict superset" in core
+    assert "§ completeness check:" in core
 
 
-def test_atomicity_test_positive_trigger():
-    """after each property [N]: line, immediately write § split test: to attempt decomposition."""
+def test_completeness_check_quotes_request_constraints():
+    """§ completeness check must quote request constraints verbatim."""
     core = _core()
-    assert "after writing each 'property [N]:' line, immediately write '§ split test:" in core
+    assert "request constraints must be quoted verbatim from the chosen interpretation" in core
 
 
-def test_formalization_complete_positive_trigger():
-    """after valid alternative satisfier: and § ambiguity test:, immediately write § formalization complete."""
+def test_completeness_check_quotes_all_properties():
+    """§ completeness check must include every retained atomic property expression."""
     core = _core()
-    assert "immediately write '§ formalization complete'" in core
+    assert "every retained atomic property expression must appear exactly once, separated by ' / '" in core
+    assert "omits the request constraints or omits any retained property expression does not satisfy this requirement" in core
 
 
-def test_properties_complete_positive_trigger():
-    """after § properties check:, immediately write § properties complete."""
+def test_properties_complete_no_sentinel():
+    """§ properties complete? no must be emitted when a gap is found."""
     core = _core()
-    assert "immediately write '§ properties complete'" in core
+    assert "§ properties complete? no" in core
 
 
-def test_enforcement_sequence_positive_trigger():
-    """after § properties complete, immediately write ## Enforcement sequence."""
+def test_properties_complete_yes_sentinel():
+    """§ properties complete? yes gates completion — requires preceding completeness check."""
     core = _core()
-    assert "after '§ properties complete', immediately write '## Enforcement sequence'" in core
+    assert "§ properties complete? yes" in core
+    assert "a '§ properties complete? yes' line without a preceding completeness check does not satisfy this protocol" in core
 
 
-def test_path_enumeration_positive_trigger():
-    """after § enforcement complete, immediately write ## Path enumeration."""
+def test_observational_independence_check():
+    """Observational independence must be verified after completeness."""
     core = _core()
-    assert "after '§ enforcement complete', immediately write '## Path enumeration'" in core
+    assert "observationally independent" in core
+    assert "observationally redundant and must be removed or merged" in core
 
 
-def test_completion_check_positive_trigger():
-    """after §5 enumeration complete, immediately write ## Completion check."""
+def test_completion_conditions_enumerated():
+    """Ground properties block completion requires all five conditions simultaneously."""
     core = _core()
-    assert "after '§5 enumeration complete', immediately write '## Completion check'" in core
+    assert "they are derived from the chosen interpretation" in core
+    assert "they are atomic" in core
+    assert "they collectively cover every explicit request constraint" in core
+    assert "they are observationally independent" in core
+    assert "they introduce no out-of-scope constraints" in core

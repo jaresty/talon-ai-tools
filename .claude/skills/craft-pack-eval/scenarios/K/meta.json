@@ -6,5 +6,6 @@
   "task_prompt": "Derive whether the following holds: 'If a function is pure and its inputs are unchanged, its output is deterministic.' State the proposition, name your assumptions, derive the conclusion step by step. No test runner is available. Produce a derivation artifact only.",
   "crank": false,
   "target_frames": [23],
-  "notes": "Non-software frame. Tests Frame 23: proposition before derivation; blocked-lemma statement before proceeding; completion check enumerates all proof obligations."
+  "notes": "Non-software frame. Tests ground on a logical proposition: agent must produce a Ground properties: block formalizing what 'pure', 'inputs unchanged', and 'deterministic' mean before deriving the conclusion. Atomicity check must appear.",
+  "eval_notes": "Score: (1) 'Ground properties:' block appears before the derivation, formalizing at least 'pure function' and 'deterministic output' as typed predicates or relational formulas; (2) each property [N]: uses formal notation — prose-only fails; (3) atomicity check documented for at least one property; (4) derivation steps cite property numbers (e.g. 'by property [1]'); (5) conclusion stated as a grounded claim, not a prose assertion; (6) 'Coverage: complete' or equivalent appears confirming all properties used. All six required for PASS."
 }

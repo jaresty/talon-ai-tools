@@ -100,14 +100,14 @@ echo ""
 # Summary counts
 echo "=== Summary ==="
 PROPS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^[-\s]*\*{0,2}property \[\d+\w*\]:', l.strip(), re.I)))" 2>/dev/null || echo 0)
-OBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Observing:\*{0,2} property \[', l, re.I)))" 2>/dev/null || echo 0)
-QTST=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Quoted test:\*{0,2}', l, re.I)))" 2>/dev/null || echo 0)
-TBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Test blind-spot:\*{0,2}', l, re.I)))" 2>/dev/null || echo 0)
-FAIL=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Failure:\*{0,2} property \[', l, re.I)))" 2>/dev/null || echo 0)
-UNOBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Unobservable:\*{0,2} property \[', l, re.I)))" 2>/dev/null || echo 0)
-QIMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Quoted implementation:\*{0,2}', l, re.I)))" 2>/dev/null || echo 0)
-IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Implementation overreach:\*{0,2}', l, re.I)))" 2>/dev/null || echo 0)
-COV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'\*{0,2}Coverage:\*{0,2} (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
+OBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^#{0,6}\s*\*{0,2}Observing:?\*{0,2}:? property \[', l, re.I)))" 2>/dev/null || echo 0)
+QTST=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Quoted test:?\*{0,2}:?', l, re.I)))" 2>/dev/null || echo 0)
+TBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Test blind-spot:?\*{0,2}:?', l, re.I)))" 2>/dev/null || echo 0)
+FAIL=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Failure:?\*{0,2}:? property \[', l, re.I)))" 2>/dev/null || echo 0)
+UNOBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Unobservable:?\*{0,2}:? property \[', l, re.I)))" 2>/dev/null || echo 0)
+QIMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Quoted implementation:?\*{0,2}:?', l, re.I)))" 2>/dev/null || echo 0)
+IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Implementation overreach:?\*{0,2}:?', l, re.I)))" 2>/dev/null || echo 0)
+COV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^#{0,6}\s*\*{0,2}Coverage:?\*{0,2}:? (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
 
 echo "Properties defined:              $PROPS"
 echo "(1) Observing: lines:            $OBS"
@@ -120,12 +120,15 @@ echo "(6) Implementation overreach:    $IBSP"
 echo "Coverage: lines:                 $COV"
 echo ""
 
-# Compliance check — use Quoted test count as cycle denominator (property line
-# counting is unreliable when split exploration produces provisional sub-property lines)
-CYCLES="$QTST"
+# Compliance check — use Observing: count as cycle denominator.
+# Observing: is emitted exactly once per retained property and cannot be inflated
+# by guard iteration (a property may have multiple Quoted test: lines when the
+# blind-spot check triggers guard revision). Quoted test count must be >= Observing
+# count (each property needs at least one guard) but may exceed it.
+CYCLES="$OBS"
 RESOLVED=$((FAIL + UNOBS))
 if [[ "$CYCLES" -gt 0 \
-  && "$OBS" -ge "$CYCLES" \
+  && "$QTST" -ge "$CYCLES" \
   && "$TBSP" -ge "$CYCLES" \
   && "$RESOLVED" -ge "$CYCLES" \
   && "$COV" -ge 1 ]]; then
@@ -137,8 +140,8 @@ if [[ "$CYCLES" -gt 0 \
   fi
 else
   echo "FAIL: sentinel gap detected"
-  [[ "$CYCLES" -eq 0 ]]          && echo "  - No Quoted test: lines found — no cycles completed"
-  [[ "$OBS" -lt "$CYCLES" ]]     && echo "  - (1) Missing Observing: lines ($OBS of $CYCLES cycles)"
+  [[ "$CYCLES" -eq 0 ]]          && echo "  - No Observing: lines found — no cycles completed"
+  [[ "$QTST" -lt "$CYCLES" ]]    && echo "  - (2) Missing Quoted test: lines ($QTST of $CYCLES cycles)"
   [[ "$TBSP" -lt "$CYCLES" ]]    && echo "  - (3) Missing Test blind-spot: lines ($TBSP of $CYCLES cycles)"
   [[ "$RESOLVED" -lt "$CYCLES" ]] && echo "  - (4) Missing Failure:/Unobservable: lines ($RESOLVED of $CYCLES cycles)"
   [[ "$COV" -lt 1 ]]          && echo "  - Missing Coverage: sentinel"

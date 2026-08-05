@@ -17,7 +17,7 @@
 
 from typing import Any
 
-COMPOSITIONS: list[dict[str, Any]] = [,
+COMPOSITIONS: list[dict[str, Any]] = [
     {
         "name": "ground+falsify",
         "tokens": ["ground", "falsify"],

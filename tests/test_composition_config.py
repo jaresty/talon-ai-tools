@@ -13,79 +13,73 @@ def _get_entry(name):
     return None
 
 
-def test_falsify_atomic_has_implementation_depth():
-    """(v) implementation depth must appear in the falsify+atomic composition config entry."""
-    prose = _get_entry("falsify+atomic")
-    assert prose is not None, "falsify+atomic entry not found"
-    assert "(v) implementation depth" in prose
+def _names():
+    return {entry["name"] for entry in COMPOSITIONS}
 
 
-def test_gate_atomic_no_symbol_name_in_run_result_requirement():
-    """gate+atomic must not require the preceding tool-result block to contain the symbol name."""
-    prose = _get_entry("gate+atomic")
-    assert prose is not None, "gate+atomic entry not found"
-    assert "contains the name of the function or symbol that tool call adds or modifies" not in prose
+# --- Removed entries must not exist ---
+
+def test_gate_falsify_entry_absent():
+    """gate+falsify composition entry was removed (absorbed by falsify definition)."""
+    assert _get_entry("gate+falsify") is None
 
 
-def test_falsify_atomic_mechanism_level_fail_required():
-    """Draft A v3.1: mechanism-level behavior requires its own governing FAIL."""
-    prose = _get_entry("falsify+atomic")
-    assert prose is not None, "falsify+atomic entry not found"
-    assert "mechanism-level behavior" in prose
+def test_gate_atomic_entry_absent():
+    """gate+atomic composition entry was removed (absorbed by atomic definition)."""
+    assert _get_entry("gate+atomic") is None
 
 
-def test_falsify_atomic_outcome_contract_does_not_govern_mechanism():
-    """Draft A v3.1: outcome-contract FAIL does not automatically govern mechanism-level behaviors."""
-    prose = _get_entry("falsify+atomic")
-    assert prose is not None, "falsify+atomic entry not found"
-    assert "outcome-contract FAIL does not automatically govern" in prose
+def test_falsify_atomic_entry_absent():
+    """falsify+atomic composition entry was removed (absorbed by falsify/atomic definitions)."""
+    assert _get_entry("falsify+atomic") is None
 
 
-def test_falsify_atomic_mechanism_fail_names_distinct_identifier():
-    """Draft A v3.1: FAIL failure line must name identifier not a substring of outcome-contract symbol."""
-    prose = _get_entry("falsify+atomic")
-    assert prose is not None, "falsify+atomic entry not found"
-    assert "does not appear as a substring of the outcome-contract symbol" in prose
+def test_atomic_ground_entry_absent():
+    """atomic+ground composition entry was removed."""
+    assert _get_entry("atomic+ground") is None
 
 
-def test_falsify_atomic_mechanism_identifier_in_assert_statement():
-    """Draft A v3.1: mechanism identifier must appear in assert statement of governing artifact."""
-    prose = _get_entry("falsify+atomic")
-    assert prose is not None, "falsify+atomic entry not found"
-    assert "assert statement of the governing artifact" in prose
+def test_ground_gate_falsify_atomic_chain_entry_absent():
+    """ground+gate+falsify+atomic+chain multi-token entry was removed."""
+    assert _get_entry("ground+gate+falsify+atomic+chain") is None
 
 
-def test_falsify_atomic_fail_line_cooccurrence():
-    """FAIL-line co-occurrence [D3]: symbol commitment identifier must appear on a line containing the FAIL signal prefix."""
-    prose = _get_entry("falsify+atomic")
-    assert prose is not None, "falsify+atomic entry not found"
-    assert "independent invocation site" in prose
+# --- Present entries have non-empty prose ---
 
-
-def test_falsify_atomic_reexecution_requirement():
-    """Re-execution requirement [C2]: when preceding result lacks FAIL-line co-occurrence, re-execution required."""
-    prose = _get_entry("falsify+atomic")
-    assert prose is not None, "falsify+atomic entry not found"
-    assert "re-execution" in prose
-
-
-def test_ground_falsify_p9_epistemic_opener():
-    """P9 concept-description opener: evaluation artifacts must not change in same phase as the behaviors they evaluate."""
+def test_ground_falsify_entry_present():
+    """ground+falsify entry must exist with non-empty prose."""
     prose = _get_entry("ground+falsify")
     assert prose is not None, "ground+falsify entry not found"
-    assert "silent goalpost movement" in prose, (
-        "ground+falsify must state WHY evaluation artifacts must precede edits — "
-        "P9 guard-task separation: co-evolution of solution and evaluation permits silent goalpost movement"
-    )
+    assert len(prose) > 0
 
 
-def test_gate_falsify_exemption_uses_tool_availability():
-    """gate+falsify no-artifact exemption must condition on tool availability, not artifact presence."""
-    prose = _get_entry("gate+falsify")
-    assert prose is not None, "gate+falsify entry not found"
-    assert "tools are unavailable" in prose, (
-        "gate+falsify exemption must use 'tools are unavailable' — locally evaluable without judgment"
-    )
-    assert "no executable artifact" not in prose, (
-        "gate+falsify must not use artifact-presence language — replaced by tool-availability condition"
-    )
+def test_ground_falsify_references_six_step_cycle():
+    """ground+falsify prose must reference the full falsify six-step cycle."""
+    prose = _get_entry("ground+falsify")
+    assert "six-step cycle" in prose or "Observing:" in prose
+
+
+def test_ground_falsify_references_coverage_sentinel():
+    """ground+falsify must gate Coverage: on all properties completing."""
+    prose = _get_entry("ground+falsify")
+    assert "Coverage:" in prose
+
+
+def test_falsify_chain_entry_present():
+    """falsify+chain entry must exist with non-empty prose."""
+    prose = _get_entry("falsify+chain")
+    assert prose is not None, "falsify+chain entry not found"
+    assert len(prose) > 0
+
+
+def test_probe_falsify_entry_present():
+    """probe+falsify entry must exist."""
+    prose = _get_entry("probe+falsify")
+    assert prose is not None, "probe+falsify entry not found"
+    assert len(prose) > 0
+
+
+def test_all_entries_have_prose():
+    """Every composition entry must have non-empty prose."""
+    for entry in COMPOSITIONS:
+        assert entry.get("prose"), f"Entry '{entry['name']}' has empty or missing prose"

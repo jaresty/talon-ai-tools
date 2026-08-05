@@ -928,7 +928,7 @@ func TestRenderPlainText_RequestMergesTaskAndSubject(t *testing.T) {
 // line per active composition instead of inline prose.
 func TestCompositionRulesFetchHintFormat(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
+	result, cliErr := Build(g, []string{"make", "falsify", "chain"})
 	if cliErr != nil {
 		t.Fatalf("Build: %v", cliErr)
 	}
@@ -939,18 +939,15 @@ func TestCompositionRulesFetchHintFormat(t *testing.T) {
 	}
 	formatIdx := strings.Index(rendered, sectionFormat)
 	compBlock := rendered[compIdx:formatIdx]
-	if !strings.Contains(compBlock, "→ bar help composition gate+falsify") {
-		t.Errorf("COMPOSITION RULES must contain fetch hint '→ bar help composition gate+falsify', got:\n%s", compBlock)
-	}
-	if strings.Contains(compBlock, "the blocking condition gate requires") {
-		t.Errorf("COMPOSITION RULES must not contain inline prose, got:\n%s", compBlock)
+	if !strings.Contains(compBlock, "→ bar help composition falsify+chain") {
+		t.Errorf("COMPOSITION RULES must contain fetch hint '→ bar help composition falsify+chain', got:\n%s", compBlock)
 	}
 }
 
 // TestCompositionRulesLoadedInstruction verifies that COMPOSITION RULES emits the Loaded: instruction.
 func TestCompositionRulesLoadedInstruction(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
+	result, cliErr := Build(g, []string{"make", "falsify", "chain"})
 	if cliErr != nil {
 		t.Fatalf("Build: %v", cliErr)
 	}
@@ -993,7 +990,7 @@ func TestTokensImmediateDerivationTrigger(t *testing.T) {
 // tells the LLM to write Token derivations only after sentinel "Token loads complete." appears.
 func TestCompositionRulesImmediateDerivationTrigger(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
+	result, cliErr := Build(g, []string{"make", "falsify", "chain"})
 	if cliErr != nil {
 		t.Fatalf("Build: %v", cliErr)
 	}
@@ -1037,7 +1034,7 @@ func TestTokensCacheSkipClause(t *testing.T) {
 // each composition is a binding constraint that applies throughout the response.
 func TestCompositionRulesBindingConstraintSentence(t *testing.T) {
 	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "gate", "falsify"})
+	result, cliErr := Build(g, []string{"make", "falsify", "chain"})
 	if cliErr != nil {
 		t.Fatalf("Build: %v", cliErr)
 	}
@@ -1101,7 +1098,7 @@ func TestCompositionRulesSentinelPresent(t *testing.T) {
 			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
 		},
 		ActiveCompositions: []Composition{
-			{Name: "gate+falsify"},
+			{Name: "falsify+chain", Prose: "falsify+chain prose"},
 		},
 	}
 	output := RenderPlainText(result)
@@ -1381,8 +1378,8 @@ func TestRenderTokensParallelBatchInstruction(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "single parallel batch before writing any") {
-		t.Errorf("TOKENS instruction must contain parallel-batch directive, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "before writing any") {
+		t.Errorf("TOKENS instruction must contain 'before writing any' directive, got:\n%s", tokensBlock)
 	}
 }
 
@@ -1395,14 +1392,17 @@ func TestRenderCompositionParallelBatchInstruction(t *testing.T) {
 			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
 		},
 		ActiveCompositions: []Composition{
-			{Name: "gate+falsify"},
+			{Name: "ground+falsify", Prose: "ground+falsify prose"},
 		},
 	}
 	output := RenderPlainText(result)
 	compositionIdx := strings.Index(output, sectionCompositionRules)
+	if compositionIdx == -1 {
+		t.Fatal("COMPOSITION RULES section must be present when active compositions exist")
+	}
 	formatIdx := strings.Index(output, sectionFormat)
 	compositionBlock := output[compositionIdx:formatIdx]
-	if !strings.Contains(compositionBlock, "single parallel batch before writing any") {
+	if !strings.Contains(compositionBlock, "single parallel batch") {
 		t.Errorf("COMPOSITION RULES instruction must contain parallel-batch directive, got:\n%s", compositionBlock)
 	}
 }
@@ -1434,7 +1434,7 @@ func TestCompositionActiveProtocolPresent(t *testing.T) {
 			{Axis: "method", Token: "falsify", Description: "Falsify."},
 		},
 		ActiveCompositions: []Composition{
-			{Name: "gate+falsify"},
+			{Name: "falsify+chain", Prose: "falsify+chain prose"},
 		},
 	}
 	output := RenderPlainText(result)

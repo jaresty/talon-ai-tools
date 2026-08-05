@@ -110,10 +110,10 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 
-	// "transcript-inspectable strings" appears in method:ground definition but not heuristics/distinctions.
-	results := LookupTokens("transcript-inspectable strings", grammar, "method")
+	// "§ split test:" appears in method:ground definition but not heuristics/distinctions.
+	results := LookupTokens("§ split test:", grammar, "method")
 	if len(results) == 0 {
-		t.Fatal("expected results for 'transcript-inspectable strings', got none")
+		t.Fatal("expected results for '§ split test:', got none")
 	}
 	var found *LookupResult
 	for i := range results {
@@ -123,7 +123,7 @@ func TestLookupDefinitionSubstringMatchTier0(t *testing.T) {
 		}
 	}
 	if found == nil {
-		t.Fatalf("expected method:ground in results for 'transcript-inspectable strings', got %v", results)
+		t.Fatalf("expected method:ground in results for '§ split test:', got %v", results)
 	}
 	if found.Tier != 0 {
 		t.Errorf("expected tier 0 for definition-only match, got %d", found.Tier)

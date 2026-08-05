@@ -978,12 +978,12 @@ func TestHelpTokenSkipNoMatchEmitsFullOutput(t *testing.T) {
 func TestHelpCompositionSkipMatchEmitsConfirmation(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"help", "composition", "gate+falsify", "--skip", "No file-modifying tool call is permitted"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"help", "composition", "ground+falsify", "--skip", "Ground properties:"}, os.Stdin, stdout, stderr)
 	if exit != 0 {
 		t.Fatalf("expected exit 0, got %d; stderr: %s", exit, stderr.String())
 	}
 	out := stdout.String()
-	want := "# Composition: gate+falsify (confirmed: \"No file-modifying tool call is permitted\")\n"
+	want := "# Composition: ground+falsify (confirmed: \"Ground properties:\")\n"
 	if out != want {
 		t.Errorf("composition skip match: got %q, want %q", out, want)
 	}
@@ -994,12 +994,12 @@ func TestHelpCompositionSkipMatchEmitsConfirmation(t *testing.T) {
 func TestHelpCompositionSkipNoMatchEmitsFullOutput(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	stderr := &bytes.Buffer{}
-	exit := Run([]string{"help", "composition", "gate+falsify", "--skip", "this-phrase-does-not-exist-xyz"}, os.Stdin, stdout, stderr)
+	exit := Run([]string{"help", "composition", "ground+falsify", "--skip", "this-phrase-does-not-exist-xyz"}, os.Stdin, stdout, stderr)
 	if exit != 0 {
 		t.Fatalf("expected exit 0, got %d; stderr: %s", exit, stderr.String())
 	}
 	out := stdout.String()
-	if !strings.Contains(out, "gate") {
+	if !strings.Contains(out, "ground") {
 		preview := out
 		if len(preview) > 60 {
 			preview = preview[:60]

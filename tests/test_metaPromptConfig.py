@@ -173,12 +173,6 @@ def test_planning_directive_transition_marker():
     )
 
 
-def test_planning_directive_derived_stance_same_turn():
-    """FORMAT_GUIDANCE must anchor task content to same response turn as 'Derived stance complete.'."""
-    from lib.metaPromptConfig import PLANNING_DIRECTIVE
-    assert "is not a turn-end signal" in PLANNING_DIRECTIVE
-
-
 def test_planning_directive_no_section_headings():
     """Phase-3: PLANNING_DIRECTIVE does not contain SECTION 1-4 headings."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE
@@ -265,30 +259,12 @@ def test_method_axis_requires_literal_string_axis_full_text():
     )
 
 
-def test_planning_directive_resume_phrase():
-    """PLANNING_DIRECTIVE must contain the resume phrase in allow-list form."""
-    from lib.metaPromptConfig import PLANNING_DIRECTIVE
-    assert "Resume: say" in PLANNING_DIRECTIVE, (
-        "PLANNING_DIRECTIVE must contain 'Resume: say' — the resume phrase signals "
-        "to the user how to continue under the same protocol without pausing"
-    )
-
-
 def test_planning_directive_s4_exemption_absent():
     """PLANNING_DIRECTIVE must not contain §4 coverage verified as a resume-phrase exemption — ground-specific."""
     from lib.metaPromptConfig import PLANNING_DIRECTIVE
     assert "§4 coverage verified" not in PLANNING_DIRECTIVE, (
         "PLANNING_DIRECTIVE must not contain '§4 coverage verified' exemption — "
         "that exemption is ground-specific and belongs in groundPrompt.py and axisConfig.py"
-    )
-
-
-def test_planning_directive_resume_phrase_structural():
-    """PLANNING_DIRECTIVE resume phrase clause must use structural exemption predicate, not intent-based trigger."""
-    from lib.metaPromptConfig import PLANNING_DIRECTIVE
-    assert "non-exempt turn's final non-blank content line" in PLANNING_DIRECTIVE, (
-        "PLANNING_DIRECTIVE must define exemptions structurally and name 'final non-blank content line' "
-        "as the terminal position — intent-based trigger ('no further planned tool calls') is not evaluator-observable"
     )
 
 

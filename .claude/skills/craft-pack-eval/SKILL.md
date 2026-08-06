@@ -75,6 +75,22 @@ for line in sys.stdin:
 cat /tmp/haiku-test-<scenario>/assistant-text.md
 ```
 
+First run the sentinel extractor to surface structural gaps before manual frame scoring:
+```bash
+bash .claude/skills/craft-pack-eval/extract-sentinels.sh <scenario>
+```
+
+The extractor checks these sentinel counts per cycle (denominator = Observing: lines):
+- **(2) Assertion inventory: complete** — must appear before each Quoted test:
+- **(2) Quoted test:** — one per cycle
+- **(3) Test blind-spot:** — one per cycle
+- **(4) Failure: / Unobservable:** — one per resolved cycle
+- **(4) Assertion witnesses: complete** — must appear after each Failure:/Unobservable:; count must equal resolved-cycle count
+- **(5) Quoted implementation:** — one per cycle
+- **(6) Implementation overreach:** — one per cycle
+
+A `FAIL: sentinel gap detected` line names every missing sentinel class. Any missing sentinel is grounds for FAIL on the corresponding frame regardless of other evidence.
+
 Then read `assistant-text.md` and `transcript.jsonl`. For each frame in the scenario's
 target frame list (coverage matrix in ADR-0239), apply the pass criterion:
 
@@ -91,6 +107,8 @@ target frame list (coverage matrix in ADR-0239), apply the pass criterion:
 - Prose narration ("I would now run...") does not count as a tool-result block
 - A tool-result block is absent if no line in `transcript.jsonl` matching
   `"type":"tool_result"` contains the required string
+- `Assertion inventory: complete` absent for a cycle → FAIL on step (2) for that cycle
+- `Assertion witnesses: complete` absent after a Failure: → FAIL on step (4) for that cycle
 
 ### Phase 4 — Output
 

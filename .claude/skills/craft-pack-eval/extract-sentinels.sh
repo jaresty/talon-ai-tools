@@ -82,6 +82,11 @@ echo "--- (4) Unobservable ---"
 grep -in "unobservable: property \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
+# Step (4): Assertion witnesses
+echo "--- (4) Assertion witnesses ---"
+grep -in "assertion witnesses:" "$TRANSCRIPT" || echo "(absent)"
+echo ""
+
 # Step (5): Quoted implementation
 echo "--- (5) Quoted implementation ---"
 grep -in "quoted implementation:" "$TRANSCRIPT" || echo "(absent)"
@@ -108,13 +113,17 @@ UNOBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(
 QIMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Quoted implementation:?\*{0,2}:?', l, re.I)))" 2>/dev/null || echo 0)
 IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Implementation overreach:?\*{0,2}:?', l, re.I)))" 2>/dev/null || echo 0)
 COV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^#{0,6}\s*\*{0,2}Coverage:?\*{0,2}:? (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
+AINV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'assertion inventory: complete', l, re.I)))" 2>/dev/null || echo 0)
+AWIT=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'assertion witnesses: complete', l, re.I)))" 2>/dev/null || echo 0)
 
 echo "Properties defined:              $PROPS"
 echo "(1) Observing: lines:            $OBS"
+echo "(2) Assertion inventory complete: $AINV"
 echo "(2) Quoted test: lines:          $QTST"
 echo "(3) Test blind-spot: lines:      $TBSP"
 echo "(4) Failure: lines:              $FAIL"
 echo "(4) Unobservable: lines:         $UNOBS"
+echo "(4) Assertion witnesses complete: $AWIT"
 echo "(5) Quoted implementation: lines: $QIMP"
 echo "(6) Implementation overreach:    $IBSP"
 echo "Coverage: lines:                 $COV"
@@ -125,12 +134,16 @@ echo ""
 # by guard iteration (a property may have multiple Quoted test: lines when the
 # blind-spot check triggers guard revision). Quoted test count must be >= Observing
 # count (each property needs at least one guard) but may exceed it.
+# Assertion inventory: complete must precede each Quoted test: (checked by count parity).
+# Assertion witnesses: complete must follow each Failure:/Unobservable: (checked by count parity).
 CYCLES="$OBS"
 RESOLVED=$((FAIL + UNOBS))
 if [[ "$CYCLES" -gt 0 \
+  && "$AINV" -ge "$CYCLES" \
   && "$QTST" -ge "$CYCLES" \
   && "$TBSP" -ge "$CYCLES" \
   && "$RESOLVED" -ge "$CYCLES" \
+  && "$AWIT" -ge "$RESOLVED" \
   && "$QIMP" -ge "$CYCLES" \
   && "$IBSP" -ge "$CYCLES" \
   && "$COV" -ge 1 ]]; then
@@ -138,9 +151,11 @@ if [[ "$CYCLES" -gt 0 \
 else
   echo "FAIL: sentinel gap detected"
   [[ "$CYCLES" -eq 0 ]]           && echo "  - No Observing: lines found — no cycles completed"
+  [[ "$AINV" -lt "$CYCLES" ]]     && echo "  - (2) Missing Assertion inventory: complete lines ($AINV of $CYCLES cycles)"
   [[ "$QTST" -lt "$CYCLES" ]]     && echo "  - (2) Missing Quoted test: lines ($QTST of $CYCLES cycles)"
   [[ "$TBSP" -lt "$CYCLES" ]]     && echo "  - (3) Missing Test blind-spot: lines ($TBSP of $CYCLES cycles)"
   [[ "$RESOLVED" -lt "$CYCLES" ]] && echo "  - (4) Missing Failure:/Unobservable: lines ($RESOLVED of $CYCLES cycles)"
+  [[ "$AWIT" -lt "$RESOLVED" ]]   && echo "  - (4) Missing Assertion witnesses: complete lines ($AWIT of $RESOLVED resolved cycles)"
   [[ "$QIMP" -lt "$CYCLES" ]]     && echo "  - (5) Missing Quoted implementation: lines ($QIMP of $CYCLES cycles)"
   [[ "$IBSP" -lt "$CYCLES" ]]     && echo "  - (6) Missing Implementation overreach: lines ($IBSP of $CYCLES cycles)"
   [[ "$COV" -lt 1 ]]              && echo "  - Missing Coverage: sentinel"

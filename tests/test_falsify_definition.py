@@ -135,3 +135,18 @@ def test_falsify_assertion_witness_before_step_5():
     """Witness block must precede step (5)."""
     defn = _defn()
     assert defn.index("Assertion witnesses: complete") < defn.index("(5) identify the governed artifact")
+
+
+def test_falsify_failure_must_immediately_follow_tool_result():
+    """Failure: line must immediately follow the execution tool-result block — no narrative permitted."""
+    assert "the text immediately following the execution tool-result block must be the Failure: line for property [N]" in _defn()
+
+
+def test_falsify_failure_narrative_substitution_forbidden():
+    """Prose explanation, causal argument, or reference to prior failure does not satisfy Failure:."""
+    assert "no narrative, causal argument, prose explanation, reference to a prior failure, or other content may appear between the tool-result block and the Failure: line" in _defn()
+
+
+def test_falsify_failure_not_immediately_following_fails():
+    """A Failure: line not immediately following a tool-result block does not satisfy the token."""
+    assert "a Failure: line that does not immediately follow a tool-result block does not satisfy this token" in _defn()

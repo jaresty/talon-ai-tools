@@ -89,3 +89,34 @@ def test_falsify_unobservable_is_last_resort():
 def test_falsify_universality_no_exemption():
     """No property class may abbreviate or skip steps."""
     assert "without abbreviation" in _defn()
+
+
+# --- Assertion witness classification (step 4 extension) ---
+
+def test_falsify_assertion_witness_sentinel():
+    """Step (4): witness classification sentinel must be present."""
+    assert "Assertion witnesses: complete" in _defn()
+
+
+def test_falsify_assertion_witness_classifications():
+    """Witness classifications Failure, Success, Unreached must all be named."""
+    defn = _defn()
+    assert "witness: Failure" in defn
+    assert "witness: Success" in defn
+    assert "witness: Unreached" in defn
+
+
+def test_falsify_assertion_witness_at_least_one_failure():
+    """At least one Failure witness required — no-failure execution does not satisfy step (4)."""
+    assert "no inventoried assertion is classified 'Failure' does not satisfy step (4)" in _defn()
+
+
+def test_falsify_assertion_witness_verbatim_attribution():
+    """Failure witness text must be a verbatim substring of the tool-result Failure: line."""
+    assert "verbatim substring of the corresponding Failure: tool-result line" in _defn()
+
+
+def test_falsify_assertion_witness_before_step_5():
+    """Witness block must precede step (5)."""
+    defn = _defn()
+    assert defn.index("Assertion witnesses: complete") < defn.index("(5) identify the governed artifact")

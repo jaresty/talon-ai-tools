@@ -85,11 +85,16 @@ The extractor checks these sentinel counts per cycle (denominator = Observing: l
 - **(2) Quoted test:** — one per cycle
 - **(3) Test blind-spot:** — one per cycle
 - **(4) Failure: / Unobservable:** — one per resolved cycle
+- **(4) Observation correspondence:** — emitted before observation harness execution when mechanical derivability requires instrumentation; count informational (harness may not be needed for every cycle)
 - **(4) Assertion witnesses: complete** — must appear after each Failure:/Unobservable:; count must equal resolved-cycle count
 - **(5) Quoted implementation:** — one per cycle
 - **(6) Implementation overreach:** — one per cycle
+- **Audit: implementation gap** — one per ungoverned observable behavior discovered; count informational
+- **Audit: implementation complete** — exactly one required; must appear before Coverage: complete
 
 A `FAIL: sentinel gap detected` line names every missing sentinel class. Any missing sentinel is grounds for FAIL on the corresponding frame regardless of other evidence.
+
+**New Coverage: complete conditions (six-condition conjunction):** Coverage: complete is valid only after (1) all properties completed steps 1–6, (2) all have witnessed Failure or justified Unobservable, (3) assertion inventory equals observed assertions for every property, (4) no implementation gap exists in the final audit pass, (5) Ground reached a fixed point, (6) Audit: implementation complete was emitted.
 
 Then read `assistant-text.md` and `transcript.jsonl`. For each frame in the scenario's
 target frame list (coverage matrix in ADR-0239), apply the pass criterion:

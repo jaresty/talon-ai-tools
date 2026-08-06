@@ -82,6 +82,11 @@ echo "--- (4) Unobservable ---"
 grep -in "unobservable: property \[" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
+# Step (4): Observation correspondence
+echo "--- (4) Observation correspondence ---"
+grep -in "observation correspondence:" "$TRANSCRIPT" || echo "(absent)"
+echo ""
+
 # Step (4): Assertion witnesses
 echo "--- (4) Assertion witnesses ---"
 grep -in "assertion witnesses:" "$TRANSCRIPT" || echo "(absent)"
@@ -95,6 +100,11 @@ echo ""
 # Step (6): Implementation overreach
 echo "--- (6) Implementation overreach ---"
 grep -in "implementation overreach:" "$TRANSCRIPT" || echo "(absent)"
+echo ""
+
+# Implementation audit
+echo "--- Audit ---"
+grep -in "audit: implementation" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
 # Coverage
@@ -115,6 +125,9 @@ IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1
 COV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^#{0,6}\s*\*{0,2}Coverage:?\*{0,2}:? (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
 AINV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'assertion inventory: complete', l, re.I)))" 2>/dev/null || echo 0)
 AWIT=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'assertion witnesses: complete', l, re.I)))" 2>/dev/null || echo 0)
+OBSC=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'observation correspondence:', l, re.I)))" 2>/dev/null || echo 0)
+AUDITCMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'audit: implementation complete', l, re.I)))" 2>/dev/null || echo 0)
+AUDITGAP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'audit: implementation gap', l, re.I)))" 2>/dev/null || echo 0)
 
 echo "Properties defined:              $PROPS"
 echo "(1) Observing: lines:            $OBS"
@@ -123,9 +136,12 @@ echo "(2) Quoted test: lines:          $QTST"
 echo "(3) Test blind-spot: lines:      $TBSP"
 echo "(4) Failure: lines:              $FAIL"
 echo "(4) Unobservable: lines:         $UNOBS"
+echo "(4) Observation correspondence:  $OBSC"
 echo "(4) Assertion witnesses complete: $AWIT"
 echo "(5) Quoted implementation: lines: $QIMP"
 echo "(6) Implementation overreach:    $IBSP"
+echo "Audit: implementation gap:       $AUDITGAP"
+echo "Audit: implementation complete:  $AUDITCMP"
 echo "Coverage: lines:                 $COV"
 echo ""
 
@@ -136,6 +152,7 @@ echo ""
 # count (each property needs at least one guard) but may exceed it.
 # Assertion inventory: complete must precede each Quoted test: (checked by count parity).
 # Assertion witnesses: complete must follow each Failure:/Unobservable: (checked by count parity).
+# Audit: implementation complete must appear before Coverage: complete.
 CYCLES="$OBS"
 RESOLVED=$((FAIL + UNOBS))
 if [[ "$CYCLES" -gt 0 \
@@ -146,8 +163,9 @@ if [[ "$CYCLES" -gt 0 \
   && "$AWIT" -ge "$RESOLVED" \
   && "$QIMP" -ge "$CYCLES" \
   && "$IBSP" -ge "$CYCLES" \
+  && "$AUDITCMP" -ge 1 \
   && "$COV" -ge 1 ]]; then
-  echo "PASS: sentinel counts consistent (cycles=$CYCLES, all 6 steps complete, coverage=$COV)"
+  echo "PASS: sentinel counts consistent (cycles=$CYCLES, all 6 steps complete, audit complete, coverage=$COV)"
 else
   echo "FAIL: sentinel gap detected"
   [[ "$CYCLES" -eq 0 ]]           && echo "  - No Observing: lines found — no cycles completed"
@@ -158,5 +176,6 @@ else
   [[ "$AWIT" -lt "$RESOLVED" ]]   && echo "  - (4) Missing Assertion witnesses: complete lines ($AWIT of $RESOLVED resolved cycles)"
   [[ "$QIMP" -lt "$CYCLES" ]]     && echo "  - (5) Missing Quoted implementation: lines ($QIMP of $CYCLES cycles)"
   [[ "$IBSP" -lt "$CYCLES" ]]     && echo "  - (6) Missing Implementation overreach: lines ($IBSP of $CYCLES cycles)"
+  [[ "$AUDITCMP" -lt 1 ]]         && echo "  - Missing Audit: implementation complete sentinel (required before Coverage: complete)"
   [[ "$COV" -lt 1 ]]              && echo "  - Missing Coverage: sentinel"
 fi

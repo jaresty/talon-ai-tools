@@ -38,6 +38,9 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as pirate": "The response speaks as a pirate — nautical metaphors, irreverent swagger, and enthusiasm for plunder (of ideas).",
         "as enthusiast": "The response speaks with maximum enthusiasm — everything is exciting, possibilities are boundless, and energy is contagious.",
         "as wild": "The response adopts the voice of a specific figure chosen for subject-relative surprise. Before the response content, write two lines: `Obvious: [the figure most associated with this subject]`; `Voice: [a different figure whose perspective is unexpected for this subject but illuminating]`. Then respond entirely in the chosen figure's voice.",
+        "as technical writer": "The response adopts a technical writer's stance: structured, topic-sentence-led prose, audience-scoped vocabulary, minimal redundancy, and document-level coherence.",
+        "as mathematician": "The response adopts a mathematician's stance: precise definitions, explicit assumptions, formal reasoning, and clean notation — claims are stated as propositions and supported by proof or counterexample.",
+        "as plainspeak": "The response applies Simplified Technical English rules: short sentences, active voice, one instruction per sentence, controlled vocabulary, and no ambiguous pronouns.",
     },
     "audience": {
         "to managers": "The response addresses managers, naming outcomes, risk, and staffing.",
@@ -99,6 +102,9 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "as pirate": "Pirate swagger",
         "as enthusiast": "Maximum enthusiasm",
         "as wild": "Surprising subject-relative voice",
+        "as technical writer": "Technical writer structure",
+        "as mathematician": "Mathematical precision and proof",
+        "as plainspeak": "Simplified Technical English",
     },
     "audience": {
         "to managers": "Outcome-focused for managers",
@@ -162,6 +168,9 @@ PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "as pirate":             "Pirate voice",
         "as enthusiast":         "Enthusiast voice",
         "as wild":               "Wild voice",
+        "as technical writer":   "Technical writer voice",
+        "as mathematician":      "Mathematician voice",
+        "as plainspeak":         "Plainspeak voice",
     },
     "audience": {
         "to CEO":                 "CEO audience",
@@ -232,6 +241,9 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "as pirate": "海",
         "as enthusiast": "熱",
         "as wild": "野",
+        "as technical writer": "技",
+        "as mathematician": "数",
+        "as plainspeak": "簡",
     },
     "audience": {
         "to managers": "監",
@@ -1279,6 +1291,69 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 {
                     "token": "casually",
                     "note": "as enthusiast = maximum energy and excitement; casually = relaxed register without the intensity",
+                },
+            ],
+        },
+        "as technical writer": {
+            "definition": "Adopt a technical writer's stance: structured, topic-sentence-led prose, audience-scoped vocabulary, minimal redundancy, and document-level coherence.",
+            "heuristics": [
+                "write documentation",
+                "technical documentation",
+                "docs style",
+                "structured prose",
+                "topic sentences",
+                "clear technical prose",
+            ],
+            "distinctions": [
+                {
+                    "token": "as writer",
+                    "note": "as technical writer = structured docs craft, audience-scoped and minimalist; as writer = narrative prose and storytelling flow",
+                },
+                {
+                    "token": "as teacher",
+                    "note": "as technical writer = document structure and precision for a reader; as teacher = scaffolded pedagogy and concept-building for a learner",
+                },
+            ],
+        },
+        "as mathematician": {
+            "definition": "Adopt a mathematician's stance: precise definitions, explicit assumptions, formal reasoning, and clean notation — claims are stated as propositions and supported by proof or counterexample.",
+            "heuristics": [
+                "mathematically rigorous",
+                "formal proof",
+                "define terms precisely",
+                "proposition and proof",
+                "mathematical notation",
+                "theorem and lemma",
+            ],
+            "distinctions": [
+                {
+                    "token": "as scientist",
+                    "note": "as mathematician = formal proof and logical deduction from axioms; as scientist = hypothesis, evidence, and empirical rigor",
+                },
+                {
+                    "token": "as programmer",
+                    "note": "as mathematician = formal definitions, propositions, proof structure; as programmer = implementation-minded, engineering precision",
+                },
+            ],
+        },
+        "as plainspeak": {
+            "definition": "Apply Simplified Technical English rules: short sentences, active voice, one instruction per sentence, controlled vocabulary, and no ambiguous pronouns.",
+            "heuristics": [
+                "simplified technical english",
+                "STE",
+                "controlled vocabulary",
+                "aviation documentation style",
+                "plain language for procedures",
+                "short sentences active voice",
+            ],
+            "distinctions": [
+                {
+                    "token": "as technical writer",
+                    "note": "as plainspeak = constrained vocabulary and grammar rules (STE standard); as technical writer = document structure and clarity without vocabulary restriction",
+                },
+                {
+                    "token": "to 5 year old",
+                    "note": "as plainspeak = controlled vocabulary for precision in procedures; to 5 year old = simplified vocabulary for comprehension by a child audience",
                 },
             ],
         },

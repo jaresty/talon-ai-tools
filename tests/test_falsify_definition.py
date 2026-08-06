@@ -112,8 +112,23 @@ def test_falsify_assertion_witness_at_least_one_failure():
 
 
 def test_falsify_assertion_witness_verbatim_attribution():
-    """Failure witness text must be a verbatim substring of the tool-result Failure: line."""
-    assert "verbatim substring of the corresponding Failure: tool-result line" in _defn()
+    """Failure witness text must appear in the corresponding tool-result block."""
+    assert "not present in the corresponding Failure: tool-result block does not satisfy this token" in _defn()
+
+
+def test_falsify_assertion_witness_replays_assertion_text():
+    """Each witness line must quote the verbatim assertion text from the inventory line."""
+    assert "verbatim assertion text in each witness line must match the assertion text from the corresponding inventory line exactly" in _defn()
+
+
+def test_falsify_assertion_witness_unreached_requires_reason():
+    """Unreached witness must include a reason — bare Unreached does not satisfy the token."""
+    assert "an 'Unreached' witness without a stated reason does not satisfy this token" in _defn()
+
+
+def test_falsify_assertion_witness_count_matches_inventory():
+    """Witness count must equal the inventory count."""
+    assert "a witness count that differs from the inventory count does not satisfy this token" in _defn()
 
 
 def test_falsify_assertion_witness_before_step_5():

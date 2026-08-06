@@ -99,31 +99,33 @@ def test_falsify_assertion_witness_sentinel():
 
 
 def test_falsify_assertion_witness_classifications():
-    """Witness classifications Failure, Success, Unreached must all be named."""
+    """Witness classifications Failure, Success, Unobservable must all be named (Unreached replaced by Unobservable)."""
     defn = _defn()
     assert "witness: Failure" in defn
     assert "witness: Success" in defn
-    assert "witness: Unreached" in defn
+    assert "witness: Unobservable" in defn
 
 
 def test_falsify_assertion_witness_at_least_one_failure():
     """At least one Failure witness required — no-failure execution does not satisfy step (4)."""
-    assert "no inventoried assertion is classified 'Failure' does not satisfy step (4)" in _defn()
+    assert "classified Failure does not satisfy step (4)" in _defn()
 
 
 def test_falsify_assertion_witness_verbatim_attribution():
-    """Failure witness text must appear in the corresponding tool-result block."""
-    assert "not present in the corresponding Failure: tool-result block does not satisfy this token" in _defn()
+    """Failure witness observed text must appear verbatim in the corresponding tool-result block."""
+    assert "not present verbatim in the corresponding tool-result block does not satisfy this token" in _defn()
 
 
 def test_falsify_assertion_witness_replays_assertion_text():
-    """Each witness line must quote the verbatim assertion text from the inventory line."""
-    assert "verbatim assertion text in each witness line must match the assertion text from the corresponding inventory line exactly" in _defn()
+    """Each witness line must quote the verbatim assertion text from the inventory."""
+    defn = _defn()
+    assert "verbatim assertion text" in defn
+    assert "assertion inventory order" in defn
 
 
 def test_falsify_assertion_witness_unreached_requires_reason():
-    """Unreached witness must include a reason — bare Unreached does not satisfy the token."""
-    assert "an 'Unreached' witness without a stated reason does not satisfy this token" in _defn()
+    """Unobservable witness must be justified by a verbatim tool-result excerpt."""
+    assert "Unobservable is the last resort and must be justified by a verbatim tool-result excerpt" in _defn()
 
 
 def test_falsify_assertion_witness_count_matches_inventory():

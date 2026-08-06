@@ -94,3 +94,17 @@ def test_ground_complete_sentinel():
     """§ ground complete must be the final sentinel of the block."""
     text = build_ground_prompt()
     assert "§ ground complete" in text
+
+
+def test_formality_check_sentinel():
+    """§ formality check: sentinel must appear before split test."""
+    text = build_ground_prompt()
+    assert "§ formality check:" in text
+    assert text.index("§ formality check:") < text.index("§ split test:")
+
+
+def test_formality_check_iterates():
+    """Rewrite loop: rewritten definition must be re-checked until confirmed formal."""
+    text = build_ground_prompt()
+    assert "§ rewritten:" in text
+    assert "confirmed formal" in text

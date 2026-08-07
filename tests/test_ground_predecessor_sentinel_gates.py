@@ -39,20 +39,20 @@ def test_split_test_sentinel_present():
 def test_split_test_quotes_verbatim():
     """Split test must quote provisional definitions verbatim."""
     core = _core()
-    assert "quoted definitions must match the immediately preceding provisional definitions verbatim" in core
+    assert "quoted definitions must match the immediately preceding canonical provisional definitions verbatim" in core
 
 
 def test_split_test_atomic_no_valid_split_form():
     """If no valid split exists, emit atomic no valid split form."""
     core = _core()
     assert "atomic, no valid split: <reason>" in core
-    assert "The quoted definition must match the retained property verbatim" in core
+    assert "The quoted definition must match the retained canonical property verbatim" in core
 
 
 def test_split_recursion_until_atomic():
-    """Continue recursively until every retained property has a split test concluding atomic."""
+    """Termination condition: every retained property reaches Step 4 with no valid split."""
     core = _core()
-    assert "Continue recursively until every retained property has a split test concluding 'atomic, no valid split.'" in core
+    assert "Apply this procedure to every retained property until all have reached Step 4 with no valid split" in core
 
 
 def test_completeness_check_sentinel_present():

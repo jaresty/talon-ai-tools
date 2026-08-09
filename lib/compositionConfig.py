@@ -22,16 +22,20 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "ground+falsify",
         "tokens": ["ground", "falsify"],
         "prose": "When ground and falsify are both active: the 'Ground properties:' block must appear before any falsify artifact. "
-        "The property list for falsify's per-property cycle is exactly the set of property [N]: lines in the 'Ground properties:' block, iterated in order. "
-        "Every 'Observing: property [N]' line must cite a property [N] that appears in the 'Ground properties:' block above it — "
-        "a falsify artifact whose preceding 'Observing:' line cites a property not present in 'Ground properties:' does not satisfy this composition. "
-        "Every property [N] in the 'Ground properties:' block must complete the full falsify six-step cycle — Observing:, guard establishment (step 2), Quoted test:, Test blind-spot:, Failure:/Unobservable:, Quoted implementation:, and Implementation overreach: not found — "
-        "before the Coverage: sentinel is emitted; a property that has not received 'Implementation overreach: not found' before Coverage: is ungoverned and does not satisfy this composition. "
+        "The property list for falsify's per-property cycle is exactly the final retained property set established at '§ ground complete', "
+        "consisting of the retained atomic properties that survive the Ground completion fixed point, iterated in retained-set order. "
+        "Every 'Observing: property [N]' line must cite a property [N] in that final retained set — "
+        "a falsify artifact whose preceding 'Observing:' line cites a property not retained at '§ ground complete' does not satisfy this composition. "
+        "Every property [N] in the final retained property set must complete the full falsify six-step cycle — Observing:, guard establishment (step 2), Quoted test:, Test blind-spot:, Failure:/Unobservable:, Quoted implementation:, and Implementation overreach: not found — "
+        "before the Coverage: sentinel is emitted; a retained property that has not received 'Implementation overreach: not found' before Coverage: is ungoverned and does not satisfy this composition. "
         "After every retained property has emitted 'Implementation overreach: not found', perform an implementation audit before emitting 'Coverage: complete'. "
         "Enumerate the observable partitions of the governed artifact — distinct execution paths, call sites, externally visible interfaces, state transitions, outputs, consumers, and configuration variants. "
         "For each partition, determine whether at least one retained property governs its externally observable behavior. "
-        "If one does not, emit 'Audit: implementation gap — <description>'; derive one or more new properties governing that partition; "
-        "perform the Ground atomicity and completeness procedures for those properties; execute the complete six-step falsify cycle for each; then repeat the implementation audit. "
+        "If one does not, emit 'Audit: implementation gap — <description>'; derive one or more new candidate properties governing that partition and re-enter Ground's completion procedure for the affected retained-property set. "
+        "Complete canonicalization, scope validation, recursive decomposition, completeness, and observational-independence resolution until a new '§ ground complete' fixed point is established. "
+        "The falsify cycle must then be completed for every property in the resulting final retained set that has not already completed that cycle against its current canonical definition; "
+        "if Ground removes, merges, replaces, or changes the canonical definition of a previously governed property, the prior falsify result does not govern the resulting property. "
+        "After all properties in the resulting final retained set have completed the falsify cycle, repeat the implementation audit. "
         "Only when no ungoverned partition remains may the response emit 'Audit: implementation complete' followed immediately by 'Coverage: complete'. "
         "A 'Coverage: complete' sentinel that is not immediately preceded by 'Audit: implementation complete' does not satisfy this composition.",
     },

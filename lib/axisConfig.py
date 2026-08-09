@@ -597,10 +597,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "rejects properties whose primary subject is internal and not explicitly required — not merely properties that happen to be inaccessible. A candidate split can be constructed "
         "only if canonical definitions for [Na] and [Nb] have been established and admissible falsifying constructions satisfying the stated falsifier conditions can be produced for "
         "both sub-properties. A candidate split test is accepted when all split-success conditions are satisfied for that non-void candidate; otherwise the candidate split is rejected. "
-        "Step 4 — Accept or mark atomic. If the candidate split test is accepted, replace the original property with the accepted canonical sub-properties and apply this same recursive "
+        "Step 4 — Accept or mark atomic. A property may be marked atomic only after Step 2 and Step 3 have been entered and the candidate-split construction has been attempted against "
+        "the current canonical state. If the candidate split test is accepted, replace the original property with the accepted canonical sub-properties and apply this same recursive "
         "decomposition procedure (Steps 1–4) independently to each accepted sub-property. If no candidate split can be constructed, emit: '§ atomic: property [N]: \"<verbatim canonical "
         "definition>\" — no candidate split satisfies the construction requirements: <reason>.' If a candidate split test is emitted and rejected, emit: '§ atomic: property [N]: "
-        '"<verbatim canonical definition>" — candidate split rejected: <reason>.\' The quoted definition must match the retained canonical property verbatim. Apply this procedure to '
+        '"<verbatim canonical definition>" — candidate split rejected: <reason>.\' The quoted definition must match the current canonical definition verbatim. Apply this procedure to '
         "every retained property until all have reached Step 4 and emitted '§ atomic:'. After all retained properties are atomic, emit a completeness check: '§ completeness check: "
         '"<request constraints verbatim>" / <P1 expression> / <P2 expression> / ...\' — the request constraints must be quoted verbatim from the explicit constraints of the original '
         "request; the chosen interpretation determines the meaning of those constraints where the request is ambiguous but does not add, remove, or alter explicit constraints; "

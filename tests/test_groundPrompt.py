@@ -69,7 +69,7 @@ def test_split_test_sentinel():
 def test_split_test_atomic_form():
     """Atomic conclusion form must be present."""
     text = build_ground_prompt()
-    assert "atomic, no valid split" in text
+    assert "§ atomic:" in text
 
 
 def test_completeness_check_sentinel():

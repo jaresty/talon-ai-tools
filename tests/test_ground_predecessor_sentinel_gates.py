@@ -39,20 +39,20 @@ def test_split_test_sentinel_present():
 def test_split_test_quotes_verbatim():
     """Split test must quote provisional definitions verbatim."""
     core = _core()
-    assert "quoted definitions must match the immediately preceding canonical provisional definitions verbatim" in core
+    assert "The quoted definitions for [N], [Na], and [Nb] must match the verbatim canonical definitions confirmed in Step 1" in core
 
 
 def test_split_test_atomic_no_valid_split_form():
     """If no valid split exists, emit atomic no valid split form."""
     core = _core()
-    assert "atomic, no valid split: <reason>" in core
-    assert "The quoted definition must match the retained canonical property verbatim" in core
+    assert "no candidate split satisfies the construction requirements: <reason>" in core
+    assert "The quoted definition must match the current canonical definition verbatim" in core
 
 
 def test_split_recursion_until_atomic():
     """Termination condition: every retained property reaches Step 4 with no valid split."""
     core = _core()
-    assert "Apply this procedure to every retained property until all have reached Step 4 with no valid split" in core
+    assert "Apply this procedure to every retained property until all have reached Step 4 and emitted '§ atomic:'" in core
 
 
 def test_completeness_check_sentinel_present():
@@ -64,7 +64,7 @@ def test_completeness_check_sentinel_present():
 def test_completeness_check_quotes_request_constraints():
     """§ completeness check must quote request constraints verbatim."""
     core = _core()
-    assert "request constraints must be quoted verbatim from the chosen interpretation" in core
+    assert "request constraints must be quoted verbatim from the explicit constraints of the original request" in core
 
 
 def test_completeness_check_quotes_all_properties():
@@ -91,7 +91,7 @@ def test_observational_independence_check():
     """Observational independence must be verified after completeness."""
     core = _core()
     assert "observationally independent" in core
-    assert "observationally redundant and must be removed or merged" in core
+    assert "observationally redundant and must be resolved" in core
 
 
 def test_completion_conditions_enumerated():
@@ -99,6 +99,6 @@ def test_completion_conditions_enumerated():
     core = _core()
     assert "they are derived from the chosen interpretation" in core
     assert "they are atomic" in core
-    assert "they collectively cover every explicit request constraint" in core
+    assert "their conjunction logically entails every explicit request constraint" in core
     assert "they are observationally independent" in core
     assert "they introduce no out-of-scope constraints" in core

@@ -139,6 +139,12 @@ def build_ground_prompt() -> str:
         "they are observationally independent; they introduce no out-of-scope constraints, including internal mechanism constraints not explicitly required by the chosen interpretation. "
         "When all conditions are met, emit '§ ground complete' as the final line of the Ground properties block — "
         "this sentinel may not appear before '§ properties complete? yes' in the transcript. "
+        "'§ ground complete' is a phase-boundary sentinel, not a response-termination condition. "
+        "After emitting '§ ground complete', continue with the requested task using the retained atomic properties as the governing constraints for all subsequent task reasoning, tests, implementation steps, and tool calls. "
+        "The response must not terminate solely because '§ ground complete' has been emitted. "
+        "All subsequent task work must remain consistent with the completed Ground properties; "
+        "the Ground properties block is not itself the requested task unless the original request explicitly asks only for property derivation. "
         "Any test, implementation step, tool call, or task reasoning that appears before '§ ground complete' does not satisfy this protocol; "
-        "if task reasoning begins and '§ ground complete' has not yet appeared, emit the Ground properties block in full and '§ ground complete' before continuing."
+        "if task reasoning begins and '§ ground complete' has not yet appeared, emit the Ground properties block in full and '§ ground complete' before continuing. "
+        "After '§ ground complete', continue with the requested task; do not treat the sentinel as terminating the response."
     )

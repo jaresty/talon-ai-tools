@@ -152,3 +152,20 @@ def test_falsify_failure_narrative_substitution_forbidden():
 def test_falsify_failure_not_immediately_following_fails():
     """A Failure: line not immediately following a tool-result block does not satisfy the token."""
     assert "a Failure: line that does not immediately follow a tool-result block does not satisfy this token" in _defn()
+
+
+# --- Governed artifact scope (step 5): the artifact the guard governs, never the guard itself ---
+
+def test_falsify_governed_artifact_menu_clause_absent():
+    """The permissive menu-of-artifact-types clause must be gone from step (5)."""
+    assert (
+        "the governed artifact may be the implementation, the regression guard, "
+        "a configuration file, or another explicitly governed artifact"
+    ) not in _defn()
+
+
+def test_falsify_governed_artifact_is_what_guard_governs():
+    """Step (5) must scope the governed artifact to what the established guard governs, never the guard itself."""
+    defn = _defn()
+    assert "the governed artifact is the artifact that the established regression guard governs" in defn
+    assert "it is never the guard itself" in defn

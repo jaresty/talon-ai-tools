@@ -108,3 +108,22 @@ def test_formality_check_iterates():
     text = build_ground_prompt()
     assert "§ rewritten:" in text
     assert "confirmed formal" in text
+
+
+def test_split_requires_request_granularity_distinction():
+    """A split is valid only when the request itself distinguishes the two
+    sub-constraints at its own granularity — logical distinctness alone is not
+    sufficient. This prevents over-decomposition into immaterial properties."""
+    text = build_ground_prompt()
+    assert "distinguishes" in text
+    assert "granularity" in text
+
+
+def test_scope_and_nontriviality_clauses_preserved():
+    """Editing the granularity clause must not remove the pre-existing
+    scope-filter or nontriviality machinery."""
+    text = build_ground_prompt()
+    # scope filter (internal-mechanism rejection) still present
+    assert "internal mechanism, architecture, algorithm, or representation" in text
+    # nontriviality clause still present
+    assert "decomposes the mathematical or definitional structure of a predicate" in text

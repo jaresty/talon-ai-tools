@@ -744,6 +744,34 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "orient-and-plan": {
+        "description": "Establish destination and current position, ground conclusions in retained evidence, surface where the evidence chain breaks, then commit to a controlled next move that follows the structural grain.",
+        "example": "Choosing the next piece of consequential work in a large effort that can advance on its own, without waiting for a meeting or external sign-off.",
+        "heuristics": ["what should I work on next", "orient then plan", "where am I and what's next", "pick the next independent piece of work", "survey position then commit to a move", "figure out the next seam to work", "orient and choose the next step"],
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "task:probe intent:orient method:navigate method:mapping method:flow",
+                "role": "destination and position",
+                "prompt_hint": "Use this step to establish the destination first, locate the current position relative to it, map the related nodes and their relationships, and trace the relevant flow. Do not select work merely because it is adjacent — anchor on the destination.",
+            },
+            {
+                "token": "task:show method:survive directional:dig",
+                "role": "retained evidence",
+                "prompt_hint": "Use this step to retrieve relevant prior work and ground conclusions in exact, concrete observations rather than recollection. Distinguish the different kinds of evidence in play and name which claims survive scrutiny and which do not.",
+            },
+            {
+                "token": "task:probe scope:fail method:gap method:unknowns",
+                "role": "failures, gaps, and blind spots",
+                "prompt_hint": "Use this step to identify where the evidence chain breaks, where a weaker form of evidence is implicitly treated as a stronger one, and the categories of unexamined dependency. For each category, name a specific unknown and the question that would resolve it.",
+            },
+            {
+                "token": "task:plan method:grain method:control",
+                "role": "controlled next move",
+                "prompt_hint": "Use this step to select the next move by information value, structural propagation, and novelty — following the latent structural grain rather than forcing a direction. Name rejected alternatives, falsifiers, the exact stop condition, what must not follow automatically, and keep recommendations within what is actually controllable.",
+            },
+        ],
+    },
 }
 
 

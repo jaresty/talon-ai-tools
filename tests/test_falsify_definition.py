@@ -64,6 +64,11 @@ def test_falsify_quoted_implementation_rejects_paraphrase():
     assert "a description of the change's purpose, effect, or plan" in _defn()
 
 
+def test_falsify_quoted_implementation_must_flip_failure_witness():
+    """property [1] (comment gap): quoted text must be the artifact text whose introduction flips the Failure witness; text whose removal leaves the guard outcome unchanged (e.g. a comment) does not satisfy the token."""
+    assert "text whose removal would leave the outcome of the guard that produced this property's Failure: witness unchanged does not satisfy this token" in _defn()
+
+
 def test_falsify_implementation_overreach_sentinel():
     """Step (6): Implementation overreach: sentinel must be required."""
     assert "Implementation overreach:" in _defn()

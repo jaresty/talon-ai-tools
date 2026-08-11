@@ -145,6 +145,35 @@ class TestSequenceConfigStructure(unittest.TestCase):
         self.assertIsNotNone(seq, "contradiction-scan sequence must exist")
         self.assertGreaterEqual(len(seq.get("steps", [])), 3, "contradiction-scan must have at least 3 steps")
 
+    # Behavior: orient-and-plan sequence exists
+    def test_orient_and_plan_exists(self):
+        self.assertIn("orient-and-plan", self.sequences, "orient-and-plan sequence must exist")
+
+    # Behavior: orient-and-plan is autonomous with four stages carrying the specified tokens
+    def test_orient_and_plan_shape(self):
+        seq = self.sequences.get("orient-and-plan")
+        self.assertIsNotNone(seq, "orient-and-plan sequence must exist")
+        self.assertEqual(seq.get("mode"), "autonomous", "orient-and-plan must be autonomous")
+        tokens = [s.get("token") for s in seq.get("steps", [])]
+        self.assertEqual(
+            tokens,
+            [
+                "task:probe intent:orient method:navigate method:mapping method:flow",
+                "task:show method:survive directional:dig",
+                "task:probe scope:fail method:gap method:unknowns",
+                "task:plan method:grain method:control",
+            ],
+            "orient-and-plan must carry the four specified stage token strings in order",
+        )
+
+    # Behavior: orient-and-plan is domain-agnostic (no NAIS/nn-specific text)
+    def test_orient_and_plan_domain_agnostic(self):
+        seq = self.sequences.get("orient-and-plan")
+        self.assertIsNotNone(seq, "orient-and-plan sequence must exist")
+        blob = repr(seq).lower()
+        for banned in ("nais", " nn ", "orient note", "--subject"):
+            self.assertNotIn(banned, blob, f"orient-and-plan must not contain domain-specific text {banned!r}")
+
     # Behavior: cycle-mode sequences have a non-empty stop_when predicate
     def test_cycle_sequences_have_stop_when(self):
         for name, seq in self.sequences.items():

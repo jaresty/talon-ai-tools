@@ -131842,6 +131842,42 @@
           "prompt_hint": "Given the visible tensions, select which contradiction to address first. Name the tension chosen, why it has the highest leverage or lowest cost to resolve, and what the first concrete action is. If the user wants to explore a different tension, restart from this step."
         }
       ]
+    },
+    "orient-and-plan": {
+      "description": "Establish destination and current position, ground conclusions in retained evidence, surface where the evidence chain breaks, then commit to a controlled next move that follows the structural grain.",
+      "example": "Choosing the next piece of consequential work in a large effort that can advance on its own, without waiting for a meeting or external sign-off.",
+      "heuristics": [
+        "what should I work on next",
+        "orient then plan",
+        "where am I and what's next",
+        "pick the next independent piece of work",
+        "survey position then commit to a move",
+        "figure out the next seam to work",
+        "orient and choose the next step"
+      ],
+      "mode": "autonomous",
+      "steps": [
+        {
+          "token": "task:probe intent:orient method:navigate method:mapping method:flow",
+          "role": "destination and position",
+          "prompt_hint": "Use this step to establish the destination first, locate the current position relative to it, map the related nodes and their relationships, and trace the relevant flow. Do not select work merely because it is adjacent — anchor on the destination."
+        },
+        {
+          "token": "task:show method:survive directional:dig",
+          "role": "retained evidence",
+          "prompt_hint": "Use this step to retrieve relevant prior work and ground conclusions in exact, concrete observations rather than recollection. Distinguish the different kinds of evidence in play and name which claims survive scrutiny and which do not."
+        },
+        {
+          "token": "task:probe scope:fail method:gap method:unknowns",
+          "role": "failures, gaps, and blind spots",
+          "prompt_hint": "Use this step to identify where the evidence chain breaks, where a weaker form of evidence is implicitly treated as a stronger one, and the categories of unexamined dependency. For each category, name a specific unknown and the question that would resolve it."
+        },
+        {
+          "token": "task:plan method:grain method:control",
+          "role": "controlled next move",
+          "prompt_hint": "Use this step to select the next move by information value, structural propagation, and novelty — following the latent structural grain rather than forcing a direction. Name rejected alternatives, falsifiers, the exact stop condition, what must not follow automatically, and keep recommendations within what is actually controllable."
+        }
+      ]
     }
   },
   "compositions": [
@@ -132321,7 +132357,7 @@
     "slugs": "14c78765533a3a6e098a70afcea48308e2b795f44e404bdf04da5f60898eece6",
     "patterns": "d92b9ebcf977149c480880b9f19f11035150377186da41ec26c46130950eeb78",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "e7b49fbeca5aac1ae01968caf4a971bf690c345f99c2fada4836b8fae89f47f3",
+    "sequences": "e0e032ae4539f1bcdaab765e4abb949970a187fc3993f5f0b7e762a9e34be766",
     "compositions": "15d823ee67e6457062741f45792afa8fb48ffae4515d926d81296c733f17fc79",
     "guidebook": "a0202bc93ba485e0fa4bcd278f016f3924cf2b68f386450f0967d259cfd4aa7a"
   }

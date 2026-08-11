@@ -69,6 +69,16 @@ def test_falsify_quoted_implementation_must_flip_failure_witness():
     assert "text whose removal would leave the outcome of the guard that produced this property's Failure: witness unchanged does not satisfy this token" in _defn()
 
 
+def test_falsify_guard_should_prefer_behavioral_over_static():
+    """property [1] (static-guard drift): step (2) should prefer executing the governed behavior over inspecting its text when the artifact has executable behavior."""
+    assert "should prefer a guard that executes that behavior and derives its assertions from the observed output over a guard that inspects the artifact's source text, structure, or metadata without executing it" in _defn()
+
+
+def test_falsify_guard_static_choice_requires_justification():
+    """property [2] (static-guard drift): choosing a static guard where behavior was executable requires a one-line justification."""
+    assert "emit a one-line justification for why a static guard was chosen" in _defn()
+
+
 def test_falsify_implementation_overreach_sentinel():
     """Step (6): Implementation overreach: sentinel must be required."""
     assert "Implementation overreach:" in _defn()

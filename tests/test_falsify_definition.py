@@ -54,6 +54,16 @@ def test_falsify_quoted_implementation_sentinel():
     assert "Quoted implementation:" in _defn()
 
 
+def test_falsify_quoted_implementation_verbatim_in_following_tool_call():
+    """property [1]: Quoted implementation: content must appear verbatim in the immediately following modification tool call."""
+    assert "does not appear verbatim as literal artifact text in the immediately following modification tool call does not satisfy this token" in _defn()
+
+
+def test_falsify_quoted_implementation_rejects_paraphrase():
+    """property [2]: a purpose/effect/plan paraphrase does not satisfy Quoted implementation:."""
+    assert "a description of the change's purpose, effect, or plan" in _defn()
+
+
 def test_falsify_implementation_overreach_sentinel():
     """Step (6): Implementation overreach: sentinel must be required."""
     assert "Implementation overreach:" in _defn()

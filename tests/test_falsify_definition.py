@@ -54,9 +54,9 @@ def test_falsify_quoted_implementation_sentinel():
     assert "Quoted implementation:" in _defn()
 
 
-def test_falsify_quoted_implementation_verbatim_in_following_tool_call():
-    """property [1]: Quoted implementation: content must appear verbatim in the immediately following modification tool call."""
-    assert "does not appear verbatim as literal artifact text in the immediately following modification tool call does not satisfy this token" in _defn()
+def test_falsify_quoted_implementation_verbatim_in_preceding_tool_result():
+    """property [1b]: Quoted implementation: content must appear verbatim in the immediately preceding modification tool-result block (post-edit)."""
+    assert "does not appear verbatim as literal artifact text in the immediately preceding modification tool-result block does not satisfy this token" in _defn()
 
 
 def test_falsify_quoted_implementation_rejects_paraphrase():
@@ -77,6 +77,16 @@ def test_falsify_guard_should_prefer_behavioral_over_static():
 def test_falsify_guard_static_choice_requires_justification():
     """property [2] (static-guard drift): choosing a static guard where behavior was executable requires a one-line justification."""
     assert "emit a one-line justification for why a static guard was chosen" in _defn()
+
+
+def test_falsify_quoted_implementation_after_edit():
+    """property [1a]: Quoted implementation: must appear AFTER the modification tool-result block; a line appearing before the modification tool call does not satisfy the token."""
+    assert "a 'Quoted implementation:' line that appears before the modification tool call does not satisfy this token" in _defn()
+
+
+def test_falsify_quoted_implementation_names_property():
+    """property [2]: the Quoted implementation: sentinel form must identify the property being closed (property [N])."""
+    assert "Quoted implementation: property [N]:" in _defn()
 
 
 def test_falsify_implementation_overreach_sentinel():

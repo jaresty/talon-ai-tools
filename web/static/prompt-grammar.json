@@ -131868,9 +131868,9 @@
           "prompt_hint": "Use this step to retrieve relevant prior work and ground conclusions in exact, concrete observations rather than recollection. Distinguish the different kinds of evidence in play and name which claims survive scrutiny and which do not."
         },
         {
-          "token": "task:probe scope:fail method:gap method:unknowns",
+          "token": "task:probe scope:fail method:gap method:unknowns as-future-historian fly-ong",
           "role": "failures, gaps, and blind spots",
-          "prompt_hint": "Use this step to identify where the evidence chain breaks, where a weaker form of evidence is implicitly treated as a stronger one, and the categories of unexamined dependency. For each category, name a specific unknown and the question that would resolve it."
+          "prompt_hint": "Use this step to identify where the evidence chain breaks, where a weaker form of evidence is implicitly treated as a stronger one, and the categories of unexamined dependency. Orient toward potential future failure modes: from a future historian's vantage, treat the current plan as already-settled record and name how it will be remembered to have failed, anchoring on general failure patterns and what to do to avert them. For each category, name a specific unknown and the question that would resolve it."
         },
         {
           "token": "task:plan method:grain method:control",
@@ -132357,7 +132357,7 @@
     "slugs": "14c78765533a3a6e098a70afcea48308e2b795f44e404bdf04da5f60898eece6",
     "patterns": "d92b9ebcf977149c480880b9f19f11035150377186da41ec26c46130950eeb78",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "e0e032ae4539f1bcdaab765e4abb949970a187fc3993f5f0b7e762a9e34be766",
+    "sequences": "a4d985e84bd73c9e9ccd23d72f8b43a09fb06ae90f9ef9f21d5a185fa1544c26",
     "compositions": "c58ea55370a2e239ae771d6ceb80970ef3277a371dfbfffb556752096d98b3df",
     "guidebook": "a0202bc93ba485e0fa4bcd278f016f3924cf2b68f386450f0967d259cfd4aa7a"
   }

@@ -761,9 +761,9 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Use this step to retrieve relevant prior work and ground conclusions in exact, concrete observations rather than recollection. Distinguish the different kinds of evidence in play and name which claims survive scrutiny and which do not.",
             },
             {
-                "token": "task:probe scope:fail method:gap method:unknowns",
+                "token": "task:probe scope:fail method:gap method:unknowns as-future-historian fly-ong",
                 "role": "failures, gaps, and blind spots",
-                "prompt_hint": "Use this step to identify where the evidence chain breaks, where a weaker form of evidence is implicitly treated as a stronger one, and the categories of unexamined dependency. For each category, name a specific unknown and the question that would resolve it.",
+                "prompt_hint": "Use this step to identify where the evidence chain breaks, where a weaker form of evidence is implicitly treated as a stronger one, and the categories of unexamined dependency. Orient toward potential future failure modes: from a future historian's vantage, treat the current plan as already-settled record and name how it will be remembered to have failed, anchoring on general failure patterns and what to do to avert them. For each category, name a specific unknown and the question that would resolve it.",
             },
             {
                 "token": "task:plan method:grain method:control",

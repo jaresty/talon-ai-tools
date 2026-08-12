@@ -160,10 +160,21 @@ class TestSequenceConfigStructure(unittest.TestCase):
             [
                 "task:probe intent:orient method:navigate method:mapping method:flow",
                 "task:show method:survive directional:dig",
-                "task:probe scope:fail method:gap method:unknowns",
+                "task:probe scope:fail method:gap method:unknowns as-future-historian fly-ong",
                 "task:plan method:grain method:control",
             ],
             "orient-and-plan must carry the four specified stage token strings in order",
+        )
+
+    # Behavior: the fail step orients toward future failure modes via as-future-historian + fly-ong
+    def test_orient_and_plan_fail_step_orients_to_future_failure(self):
+        seq = self.sequences.get("orient-and-plan")
+        self.assertIsNotNone(seq, "orient-and-plan sequence must exist")
+        fail_step = seq["steps"][2]
+        self.assertEqual(
+            fail_step.get("token"),
+            "task:probe scope:fail method:gap method:unknowns as-future-historian fly-ong",
+            "fail step must append as-future-historian and fly-ong to orient toward future failure modes",
         )
 
     # Behavior: orient-and-plan is domain-agnostic (no NAIS/nn-specific text)

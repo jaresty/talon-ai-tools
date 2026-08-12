@@ -61,7 +61,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "content) or act on (navigate, click, type). Before proceeding, run `agent-browser skills get core --full` to load the usage guide and follow its workflow; load a specialized "
         "skill via `agent-browser skills get <name>` (e.g. electron, slack) when the target warrants it. If the CLI is unavailable, ask the user to install agent-browser first.",
         "canvas": "The response is structured as input to a canvas rendering agent. The subject is represented as named shapes and connections rather than prose alone — the agent invokes the "
-        "available canvas rendering skill to render the output.",
+        "canvas rendering skill named `tldraw-offline` to render the output to the canvas. The tldraw-offline skill operates the user's live tldraw canvas app and its .tldr / .tldraw "
+        "documents. If the tldraw-offline skill is unavailable, ask the user to install it first.",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
         "codetour": "The response is delivered as a valid VS Code CodeTour `.tour` JSON file (schema-compatible) with steps and fields appropriate to the task, omitting extra prose or "
         "surrounding explanation. When tools are available, write the output to a file with a `.tour` extension rather than displaying it inline.",
@@ -3228,6 +3229,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "put this on a canvas",
                 "visualize as shapes",
                 "render as a diagram in tldraw",
+                "render to the tldraw-offline canvas skill",
                 "canvas view of this",
             ],
         },

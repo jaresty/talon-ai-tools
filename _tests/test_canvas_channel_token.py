@@ -59,3 +59,29 @@ class CanvasChannelTokenTests(unittest.TestCase):
         """canvas definition must describe output as shapes and connections."""
         value = AXIS_KEY_TO_VALUE["channel"].get("canvas", "")
         self.assertIn("shapes and connections", value)
+
+    def test_canvas_definition_names_tldraw_offline_skill(self):
+        """canvas definition must name the tldraw-offline skill explicitly."""
+        value = AXIS_KEY_TO_VALUE["channel"].get("canvas", "")
+        self.assertIn("tldraw-offline", value)
+
+    def test_canvas_definition_mentions_tldr_extension(self):
+        """canvas definition must mention the .tldr file vocabulary."""
+        value = AXIS_KEY_TO_VALUE["channel"].get("canvas", "")
+        self.assertIn(".tldr", value)
+
+    def test_canvas_definition_mentions_canvas_app(self):
+        """canvas definition must mention the 'canvas app' vocabulary."""
+        value = AXIS_KEY_TO_VALUE["channel"].get("canvas", "")
+        self.assertIn("canvas app", value)
+
+    def test_canvas_definition_has_unavailability_fallback(self):
+        """canvas definition must name a fallback action if the skill is unavailable."""
+        value = AXIS_KEY_TO_VALUE["channel"].get("canvas", "")
+        self.assertIn("unavailable", value)
+
+    def test_canvas_heuristics_reference_tldraw_offline_skill(self):
+        """canvas routing heuristics must reference the tldraw-offline skill vocabulary."""
+        entry = _AXIS_TOKEN_METADATA.get("channel", {}).get("canvas", {})
+        heuristics_text = " ".join(entry.get("heuristics", []))
+        self.assertIn("tldraw-offline", heuristics_text)

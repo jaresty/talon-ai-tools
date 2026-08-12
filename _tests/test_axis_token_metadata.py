@@ -191,6 +191,7 @@ class ChannelAxisMetadataTests(unittest.TestCase):
         "jira",
         "ledger",
         "notebook",
+        "notion",
         "plain",
         "presenterm",
         "remote",

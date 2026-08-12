@@ -91,6 +91,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "notebook": "The response is delivered as a valid Jupyter notebook (`.ipynb` JSON), with an ordered sequence of markdown and code cells appropriate to the task, structured for execution "
         "and exploration. No surrounding prose outside the notebook structure. When tools are available, write the output to a file with a `.ipynb` extension rather than displaying "
         "it inline.",
+        "notion": "The response is delivered to Notion via the `ntn` CLI rather than displayed inline — a bidirectional target the response may read from or write to. If an `ntn` skill is "
+        "available, load it and follow its workflow; otherwise use the `ntn` CLI directly (its `pages`, `datasources`, and `api` subcommands). Infer the target page or database from "
+        "context and format output as Notion-flavored Markdown. If the target cannot be inferred, ask before writing.",
         "plain": "The response uses plain prose with natural paragraphs and sentences as the delivery format, imposing no additional structural conventions such as bullets, tables, or code "
         "blocks.",
         "presenterm": 'The response is a valid multi-slide presenterm deck expressed as raw Markdown (no code fences). The front matter always matches: "--- newline title: <descriptive title '
@@ -3456,6 +3459,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "notebook with code cells",
                 "data exploration notebook",
                 "interactive notebook",
+            ],
+        },
+        "notion": {
+            "distinctions": [
+                {
+                    "note": "notion = deliver to Notion via the ntn CLI (read or write); store = write to any durable storage medium",
+                    "token": "store",
+                },
+                {
+                    "note": "notion = deliver to Notion via the ntn CLI; github = deliver to GitHub via the gh CLI",
+                    "token": "github",
+                },
+            ],
+            "heuristics": [
+                "post to Notion",
+                "write to Notion",
+                "read from Notion",
+                "update a Notion page",
+                "add to my Notion database",
+                "deliver to Notion",
+                "put this in Notion",
             ],
         },
         "plain": {

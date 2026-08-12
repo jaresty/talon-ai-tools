@@ -158,23 +158,26 @@ class TestSequenceConfigStructure(unittest.TestCase):
         self.assertEqual(
             tokens,
             [
-                "task:probe intent:orient method:navigate method:mapping method:flow",
-                "task:show method:survive directional:dig",
-                "task:probe scope:fail method:gap method:unknowns as-future-historian fly-ong",
-                "task:plan method:grain method:control",
+                "task:probe intent:orient method:navigate method:mapping method:flow method:control",
+                "task:probe scope:fail method:inversion method:robust method:control as-future-historian fly-ong",
+                "task:show method:survive directional:dig method:sweep",
+                "task:plan method:grain method:control method:verify",
             ],
             "orient-and-plan must carry the four specified stage token strings in order",
         )
 
-    # Behavior: the fail step orients toward future failure modes via as-future-historian + fly-ong
+    # Behavior: the fail step precedes evidence and starts from engagement-level failure
+    # via method:inversion (reason from disaster back), not scope:fail enumeration,
+    # while retaining as-future-historian + fly-ong for future-failure orientation.
     def test_orient_and_plan_fail_step_orients_to_future_failure(self):
         seq = self.sequences.get("orient-and-plan")
         self.assertIsNotNone(seq, "orient-and-plan sequence must exist")
-        fail_step = seq["steps"][2]
+        fail_step = seq["steps"][1]
         self.assertEqual(
             fail_step.get("token"),
-            "task:probe scope:fail method:gap method:unknowns as-future-historian fly-ong",
-            "fail step must append as-future-historian and fly-ong to orient toward future failure modes",
+            "task:probe scope:fail method:inversion method:robust method:control as-future-historian fly-ong",
+            "fail step must precede evidence and carry method:inversion (start from disaster) "
+            "so engagement-level failure is projected before any seam is salient",
         )
 
     # Behavior: orient-and-plan is domain-agnostic (no NAIS/nn-specific text)

@@ -132681,7 +132681,7 @@
       ]
     },
     "orient-and-plan": {
-      "description": "Establish destination and current position, ground conclusions in retained evidence, surface where the evidence chain breaks, then commit to a controlled next move that follows the structural grain.",
+      "description": "Establish destination and current position, project how the overall engagement could fail before any seam is salient, then ground conclusions in retained evidence and generate candidate moves against those failures, and finally commit to a controlled next move that follows the structural grain.",
       "example": "Choosing the next piece of consequential work in a large effort that can advance on its own, without waiting for a meeting or external sign-off.",
       "heuristics": [
         "what should I work on next",
@@ -132695,24 +132695,24 @@
       "mode": "autonomous",
       "steps": [
         {
-          "token": "task:probe intent:orient method:navigate method:mapping method:flow",
+          "token": "task:probe intent:orient method:navigate method:mapping method:flow method:control",
           "role": "destination and position",
-          "prompt_hint": "Use this step to establish the destination first, locate the current position relative to it, map the related nodes and their relationships, and trace the relevant flow. Do not select work merely because it is adjacent — anchor on the destination."
+          "prompt_hint": "Use this step to establish the destination first, locate the current position relative to it, map the related nodes and their relationships, and trace the relevant flow. Distinguish what is within agency from what is outside it, and bound the reachable topics accordingly. Do not nominate a seam or select work merely because it is adjacent — anchor on the destination."
         },
         {
-          "token": "task:show method:survive directional:dig",
-          "role": "retained evidence",
-          "prompt_hint": "Use this step to retrieve relevant prior work and ground conclusions in exact, concrete observations rather than recollection. Distinguish the different kinds of evidence in play and name which claims survive scrutiny and which do not."
+          "token": "task:probe scope:fail method:inversion method:robust method:control as-future-historian fly-ong",
+          "role": "engagement-level failure projection",
+          "prompt_hint": "Use this step to project how the overall engagement could fail, before any technical seam is salient. Do not ask how a specific seam breaks — reason from at least one named engagement-level failure state back to what would produce or amplify it and at least one intervention that blocks that path (inversion). From a future historian's vantage, treat the current plan as already-settled record and name how it will be remembered to have failed, anchoring on general failure patterns rather than a chosen seam. Rank each failure across futures — name a scenario in which each candidate mitigation fails and one in which an alternative succeeds (robust) — and mark which failures are even reachable within agency, so unactionable risks do not attract candidate moves (control)."
         },
         {
-          "token": "task:probe scope:fail method:gap method:unknowns as-future-historian fly-ong",
-          "role": "failures, gaps, and blind spots",
-          "prompt_hint": "Use this step to identify where the evidence chain breaks, where a weaker form of evidence is implicitly treated as a stronger one, and the categories of unexamined dependency. Orient toward potential future failure modes: from a future historian's vantage, treat the current plan as already-settled record and name how it will be remembered to have failed, anchoring on general failure patterns and what to do to avert them. For each category, name a specific unknown and the question that would resolve it."
+          "token": "task:show method:survive directional:dig method:sweep",
+          "role": "retained evidence and candidate generation",
+          "prompt_hint": "Use this step to retrieve relevant prior work and ground the projected failures in exact, concrete observations rather than recollection. Distinguish the different kinds of evidence in play and name which claims survive scrutiny and which do not, and where the evidence chain breaks. Then enumerate candidate technical moves without committing — each candidate must name which engagement-level failure from the prior step it materially mitigates; a move that only connects existing work without mitigating a named failure is not a candidate."
         },
         {
-          "token": "task:plan method:grain method:control",
+          "token": "task:plan method:grain method:control method:verify",
           "role": "controlled next move",
-          "prompt_hint": "Use this step to select the next move by information value, structural propagation, and novelty — following the latent structural grain rather than forcing a direction. Name rejected alternatives, falsifiers, the exact stop condition, what must not follow automatically, and keep recommendations within what is actually controllable."
+          "prompt_hint": "Use this step to select the independently executable candidate with the most engagement-relative information value, following the latent structural grain rather than forcing a direction. Name rejected alternatives and the criterion that excluded each. Apply falsification pressure to the chosen move: make its negative space explicit — name what observation would show the move was the wrong bet, such that a claim whose negative space cannot be specified is not carried forward. Name the exact stop condition, what must not follow automatically, and keep recommendations within what is actually controllable."
         }
       ]
     }
@@ -133194,7 +133194,7 @@
     "slugs": "fd7b2c2ab30bc2b1a778226929501fbce1981c2ac23e594115562c8f0a526e36",
     "patterns": "d92b9ebcf977149c480880b9f19f11035150377186da41ec26c46130950eeb78",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "a4d985e84bd73c9e9ccd23d72f8b43a09fb06ae90f9ef9f21d5a185fa1544c26",
+    "sequences": "1ba47e7393c89ab08da67a06b2dcb4999d856a72668eb005d66edfff9d1bd476",
     "compositions": "c58ea55370a2e239ae771d6ceb80970ef3277a371dfbfffb556752096d98b3df",
     "guidebook": "a0202bc93ba485e0fa4bcd278f016f3924cf2b68f386450f0967d259cfd4aa7a"
   }

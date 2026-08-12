@@ -57,6 +57,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "aloud": "The response is delivered via the system text-to-speech command rather than displayed inline. Before speaking: condense the content to spoken-word density — strip code blocks, "
         "raw URLs, and long enumerations; summarize rather than truncate if content would exceed a natural spoken length. Use an elevated speech rate (e.g. `say -r 250` on macOS, "
         "`espeak --speed=250` on Linux). Detect the platform via `uname` if uncertain. If no TTS command is available, display the condensed text inline instead.",
+        "browse": "The response is enacted by driving a browser through the `agent-browser` CLI rather than displayed inline — a bidirectional target the response may read from (fetch page "
+        "content) or act on (navigate, click, type). Before proceeding, run `agent-browser skills get core --full` to load the usage guide and follow its workflow; load a specialized "
+        "skill via `agent-browser skills get <name>` (e.g. electron, slack) when the target warrants it. If the CLI is unavailable, ask the user to install agent-browser first.",
         "canvas": "The response is structured as input to a canvas rendering agent. The subject is represented as named shapes and connections rather than prose alone — the agent invokes the "
         "available canvas rendering skill to render the output.",
         "code": "The response consists only of code or markup as the complete output, with no surrounding natural-language explanation or narrative.",
@@ -3173,6 +3176,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "tts this",
                 "speak it",
                 "read it out",
+            ],
+        },
+        "browse": {
+            "distinctions": [
+                {
+                    "note": "browse = drive a live browser via the agent-browser CLI (navigate, click, read); hunk = deliver via a Hunk diff review session",
+                    "token": "hunk",
+                },
+                {
+                    "note": "browse = act on a live browser via agent-browser skills; canvas = render named shapes and connections via a canvas agent",
+                    "token": "canvas",
+                },
+            ],
+            "heuristics": [
+                "drive the browser",
+                "use agent-browser",
+                "automate the browser",
+                "navigate the page",
+                "click through the site",
+                "read the page with a browser",
+                "browser automation",
             ],
         },
         "canvas": {

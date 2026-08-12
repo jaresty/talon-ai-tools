@@ -22,6 +22,11 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "name": "ground+falsify",
         "tokens": ["ground", "falsify"],
         "prose": "When ground and falsify are both active: the 'Ground properties:' block must appear and reach '§ ground complete' before any falsify artifact. "
+        "Guard-edit entry point: if the response modifies an observation mechanism — a guard, assertion, test, or gate condition — for a reason not traceable to a property already declared in a 'Retained properties:' line in the transcript, the modification does not stand until the property that mechanism observes is named. "
+        "This entry point activates whenever the justification for the edit originates outside the current retained property set — independent review, a failing report, a user comment, or an unexamined intuition all qualify; the trigger is that the edit changes what the mechanism observes and its reason is not already under test, not the source of the reason. "
+        "If a 'Retained properties:' line already declares the property that mechanism observes, cite it by its property [N] before the modification tool call. "
+        "If no such property exists in the transcript, re-enter Ground's completion procedure to derive it — completing canonicalization, scope validation, recursive decomposition, completeness, and observational-independence resolution until a new '§ ground complete' fixed point declaring that property is established — before the guard edit is valid. "
+        "A modification to an observation mechanism whose target property is neither cited from an existing 'Retained properties:' line nor freshly derived to a new '§ ground complete' does not satisfy this composition. "
         "The property list for falsify's per-property cycle is exactly and only the properties declared in the 'Retained properties:' line immediately preceding '§ ground complete', iterated in the order they appear in that declaration. "
         "Properties appearing earlier in the Ground properties block but absent from the 'Retained properties:' declaration are not governed by falsify. "
         "Every 'Observing: property [N]' line must cite a property [N] declared in that 'Retained properties:' line — "

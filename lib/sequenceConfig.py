@@ -772,6 +772,39 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "frame-spike": {
+        "description": "Enumerate independent spike directions, dispatch one throwaway spike artifact per direction with low rigor, co-create on the results, then extract learnings — looping back to fresh directions until the explorer decides to stop.",
+        "example": "Exploring three candidate layouts for a new screen — each dispatched as a quick throwaway spike, reviewed together, then re-spiked with fresh directions informed by what the last round revealed.",
+        "heuristics": ["spike a few directions", "throwaway prototypes in parallel", "explore some options quickly", "rough out several approaches", "parallel spikes then compare", "try a few things and see what sticks", "cheap parallel exploration", "co-create on some spikes"],
+        "mode": "cycle",
+        "stop_when": "The explorer decides enough directions have been explored — they explicitly choose to stop rather than enumerate another round of spike directions.",
+        "steps": [
+            {
+                "token": "make method:prism",
+                "role": "spike direction enumeration",
+                "prompt_hint": "Enumerate independent spike directions — each names a distinct approach worth trying quickly and cheaply. A direction name contains no verb and makes no causal claim. Spikes are throwaway: name what each direction would let the explorer learn, not what it commits to keeping. On later cycles, enumerate fresh directions informed by what prior rounds revealed — do not re-run the same directions. Enumeration is the only output of this step.",
+            },
+            {
+                "type": "dispatch",
+                "role": "parallel throwaway spike production",
+                "fan_out": "enumerate",
+                "join": "all",
+                "isolation": True,
+                "prompt_hint": "Each agent receives only the subject and its assigned spike direction. Produce a quick throwaway artifact exploring that direction — deliberately low rigor: no test-first discipline, no experiment cycle, no verification stack. The goal is a rough, discardable artifact that reveals what the direction feels like, not a kept, hardened one. Return the artifact in a labeled block naming the direction it explored.",
+            },
+            {
+                "type": "action",
+                "role": "co-creation and review",
+                "requires_user_input": True,
+                "prompt_hint": "Present the throwaway spike artifacts side by side and co-create on them with the explorer — react, combine, and refine directions together. This is a collaborative pause: the explorer's input shapes whether to spin a fresh round of directions or stop. Do not converge yet.",
+            },
+            {
+                "token": "make method:converge",
+                "role": "learning extraction",
+                "prompt_hint": "Extract what was learned across the spike directions — what each throwaway artifact revealed, where directions agreed or diverged, and which direction (if any) is worth carrying into real, kept work. The spike artifacts themselves are disposable; the learning is the output. If the explorer wants another round, loop back to fresh direction enumeration.",
+            },
+        ],
+    },
 }
 
 

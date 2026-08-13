@@ -132716,6 +132716,48 @@
           "prompt_hint": "Use this step to select the independently executable candidate with the most engagement-relative information value, following the latent structural grain rather than forcing a direction. Name rejected alternatives and the criterion that excluded each. Apply falsification pressure to the chosen move: make its negative space explicit — name what observation would show the move was the wrong bet, such that a claim whose negative space cannot be specified is not carried forward. Name the exact stop condition, what must not follow automatically, and keep recommendations within what is actually controllable."
         }
       ]
+    },
+    "frame-spike": {
+      "description": "Enumerate independent spike directions, dispatch one throwaway spike artifact per direction with low rigor, co-create on the results, then extract learnings — looping back to fresh directions until the explorer decides to stop.",
+      "example": "Exploring three candidate layouts for a new screen — each dispatched as a quick throwaway spike, reviewed together, then re-spiked with fresh directions informed by what the last round revealed.",
+      "heuristics": [
+        "spike a few directions",
+        "throwaway prototypes in parallel",
+        "explore some options quickly",
+        "rough out several approaches",
+        "parallel spikes then compare",
+        "try a few things and see what sticks",
+        "cheap parallel exploration",
+        "co-create on some spikes"
+      ],
+      "mode": "cycle",
+      "stop_when": "The explorer decides enough directions have been explored — they explicitly choose to stop rather than enumerate another round of spike directions.",
+      "steps": [
+        {
+          "token": "make method:prism",
+          "role": "spike direction enumeration",
+          "prompt_hint": "Enumerate independent spike directions — each names a distinct approach worth trying quickly and cheaply. A direction name contains no verb and makes no causal claim. Spikes are throwaway: name what each direction would let the explorer learn, not what it commits to keeping. On later cycles, enumerate fresh directions informed by what prior rounds revealed — do not re-run the same directions. Enumeration is the only output of this step."
+        },
+        {
+          "type": "dispatch",
+          "role": "parallel throwaway spike production",
+          "fan_out": "enumerate",
+          "join": "all",
+          "isolation": true,
+          "prompt_hint": "Each agent receives only the subject and its assigned spike direction. Produce a quick throwaway artifact exploring that direction — deliberately low rigor: no test-first discipline, no experiment cycle, no verification stack. The goal is a rough, discardable artifact that reveals what the direction feels like, not a kept, hardened one. Return the artifact in a labeled block naming the direction it explored."
+        },
+        {
+          "type": "action",
+          "role": "co-creation and review",
+          "requires_user_input": true,
+          "prompt_hint": "Present the throwaway spike artifacts side by side and co-create on them with the explorer — react, combine, and refine directions together. This is a collaborative pause: the explorer's input shapes whether to spin a fresh round of directions or stop. Do not converge yet."
+        },
+        {
+          "token": "make method:converge",
+          "role": "learning extraction",
+          "prompt_hint": "Extract what was learned across the spike directions — what each throwaway artifact revealed, where directions agreed or diverged, and which direction (if any) is worth carrying into real, kept work. The spike artifacts themselves are disposable; the learning is the output. If the explorer wants another round, loop back to fresh direction enumeration."
+        }
+      ]
     }
   },
   "compositions": [
@@ -133195,7 +133237,7 @@
     "slugs": "fd7b2c2ab30bc2b1a778226929501fbce1981c2ac23e594115562c8f0a526e36",
     "patterns": "d92b9ebcf977149c480880b9f19f11035150377186da41ec26c46130950eeb78",
     "starter_packs": "2d04f196b7ade5f47843bd856ab6441c537c319a401566f19adad0d8a9ad8c8f",
-    "sequences": "1ba47e7393c89ab08da67a06b2dcb4999d856a72668eb005d66edfff9d1bd476",
+    "sequences": "ba2a0e873e8cb27d90cfc77fb17ba446ac800f7c8b6258da60e1aef134f78e90",
     "compositions": "c58ea55370a2e239ae771d6ceb80970ef3277a371dfbfffb556752096d98b3df",
     "guidebook": "a0202bc93ba485e0fa4bcd278f016f3924cf2b68f386450f0967d259cfd4aa7a"
   }

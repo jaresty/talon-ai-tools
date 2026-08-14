@@ -957,8 +957,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "relations": "The response treats the connections between entities as the primary object of study rather than the entities themselves. It names each relationship type present, "
         "characterizes what each type asserts, and examines how the relationship structure as a whole enables or constrains the entities it connects. Entity properties are referenced "
         "only insofar as they explain or are explained by the relationships.",
-        "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves and analyzing how "
-        "perturbations affect their continuity.",
+        "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves, and the properties preserved "
+        "as the system changes — what returns to itself after a disturbance.",
         "storage": "The response focuses on the storage dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
         "guarantees, and the conditions under which it can be lost or corrupted.",
         "struct": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal "
@@ -8065,6 +8065,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "fixed constraints",
                 "what has remained stable",
                 "backward-compatible",
+                "what is preserved under change",
+                "what returns to itself after a disturbance",
+                "what stays true as the system changes",
+                "what is invariant across states",
             ],
         },
         "storage": {

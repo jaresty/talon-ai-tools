@@ -166,6 +166,14 @@ def test_ground_falsify_adequacy_untested_when_execution_unavailable():
     assert "untested is never unrefuted and never adequate" in prose
 
 
+def test_ground_falsify_cross_layer_identity_foreign_key():
+    """P26 (Attack 2 close): adequacy's assertion identity must be the same verbatim guard-emitted identity as the token's Failure — no cross-layer misbinding."""
+    prose = _get_entry("ground+falsify")
+    assert "Cross-layer identity foreign key" in prose
+    assert "must be the same verbatim guard-emitted assertion identity established by that assertion's Failure in the token" in prose
+    assert "binds two facts about different assertions and is rejected" in prose
+
+
 def test_ground_falsify_adequacy_conditional_theorem():
     """P22 (honest boundary): the whole result is machine-grounded conditional on the semantic interpretation of P over S."""
     prose = _get_entry("ground+falsify")

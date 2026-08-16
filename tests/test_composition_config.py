@@ -104,41 +104,72 @@ def test_ground_falsify_gate_2_classification_follows_execution():
     assert "executed discriminator" in prose
 
 
-# --- P21c: executable adequacy witness — do the assertions govern the retained property? ---
+# --- P22: adequacy as a classification differential R_P(S) vs R_A(S) ---
 
 def test_ground_falsify_adequacy_by_constructed_counterexample():
-    """P21c: adequacy is tested by attempted counterexample construction, not asserted equivalence."""
+    """P22: adequacy is tested by attempted counterexample construction, not asserted equivalence."""
     prose = _get_entry("ground+falsify")
     assert "Adequacy is tested by attempted counterexample construction, not by asserted equivalence" in prose
 
 
+def test_ground_falsify_adequacy_is_classification_disagreement():
+    """P22 (non-circular): inadequacy is a disagreement between R_P(S) and R_A(S) — two classifications of the same state."""
+    prose = _get_entry("ground+falsify")
+    assert "Inadequacy exists exactly when R_P(S) and R_A(S) disagree" in prose
+
+
 def test_ground_falsify_adequacy_gap_direction():
-    """P21c (under-govern): P false while all tagged assertions pass → Adequacy gap → strengthen the guard."""
+    """P22 (under-govern): R_P false while all tagged A-pass → Adequacy gap → strengthen."""
     prose = _get_entry("ground+falsify")
     assert "Adequacy gap" in prose
-    assert "P false while every assertion tagged to P passes, the guards do not govern P" in prose
+    assert "R_P(S) is false while every tagged assertion is A-pass, the guards under-govern P" in prose
 
 
 def test_ground_falsify_adequacy_overconstraint_direction():
-    """P21c (over-govern): P true while any tagged assertion fails → Adequacy overconstraint → weaken the guard."""
+    """P22 (over-govern): R_P true while any tagged A-fail → Adequacy overconstraint → weaken."""
     prose = _get_entry("ground+falsify")
     assert "Adequacy overconstraint" in prose
-    assert "P true while any assertion tagged to P fails, the guards over-govern P" in prose
+    assert "R_P(S) is true while any tagged assertion is A-fail, the guards over-govern P" in prose
 
 
-def test_ground_falsify_adequacy_property_supplies_criterion():
-    """P21c: the retained property supplies the observable criterion (P's own evaluation), not a model judgment."""
+def test_ground_falsify_adequacy_rp_input_ra_machine():
+    """P22 (epistemic roles): R_P is a semantic input (not guard evidence); R_A must be machine-observed."""
     prose = _get_entry("ground+falsify")
-    assert "The retained property supplies the observable criterion" in prose
-    assert "not a model judgment of the state" in prose
+    assert "an input to the test, not evidence the guard supplies" in prose
+    assert "must be machine-observed" in prose
+
+
+def test_ground_falsify_adequacy_uninterpretable_candidate():
+    """P22 (classify candidates, not enumerate): a candidate whose R_P or R_A cannot be obtained is uninterpretable — neither counterexample nor adequacy evidence."""
+    prose = _get_entry("ground+falsify")
+    assert "uninterpretable candidate" in prose
+
+
+def test_ground_falsify_adequacy_verdict_follows_execution():
+    """P22: every construction-conditional adequacy verdict (gap/overconstraint/unrefuted) must follow the guard-execution tool-result."""
+    prose = _get_entry("ground+falsify")
+    assert "Verdict-follows-execution governs every construction-conditional adequacy verdict" in prose
 
 
 def test_ground_falsify_adequacy_unrefuted_not_proven():
-    """P21c (Overreach epistemic status): no counterexample = unrefuted by that attempt, never proof of adequacy."""
+    """P22 (Overreach epistemic status): no disagreement = unrefuted by that attempt, never proof of adequacy."""
     prose = _get_entry("ground+falsify")
     assert "adequacy is unrefuted by that attempt" in prose
     assert "never promoted to proof" in prose
-    assert "a bare adequacy claim with no executed construction attempt does not satisfy this gate" in prose
+    assert "a bare adequacy claim with no executed construction does not satisfy this gate" in prose
+
+
+def test_ground_falsify_adequacy_conditional_theorem():
+    """P22 (honest boundary): the whole result is machine-grounded conditional on the semantic interpretation of P over S."""
+    prose = _get_entry("ground+falsify")
+    assert "machine-grounded conditional on the semantic interpretation of the retained formal property over the constructed candidate state" in prose
+
+
+def test_ground_falsify_adequacy_provenance_and_foreign_key():
+    """P23c: R_A and the cited property [N] must quote verbatim the tool-result / Retained properties: text — the cross-layer foreign key."""
+    prose = _get_entry("ground+falsify")
+    assert "Provenance closure applies here too" in prose
+    assert "a cited property [N] with no matching entry on the 'Retained properties:' line" in prose
 
 
 # --- P11: assertion↔property map — each assertion tagged with the property it tests; bijection ---

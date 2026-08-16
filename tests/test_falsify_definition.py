@@ -184,6 +184,57 @@ def test_falsify_p20_witness_line_is_projection_only():
     assert "only projects those two results and is not itself evidence" in defn
 
 
+# --- P23: provenance closure — every evidentiary reference quotes its qualifying execution record ---
+
+def test_falsify_p23_provenance_closure_general_rule():
+    """P23: identity + A-fail + A-pass must quote verbatim the qualifying execution record; one general rule, not per-artifact cases."""
+    defn = _defn()
+    assert "Provenance closure" in defn
+    assert "must quote verbatim the text of the qualifying execution record that establishes it" in defn
+
+
+def test_falsify_p23_authored_prose_is_not_evidence():
+    """P23: a result or identity typed as prose not verbatim in a cited qualifying execution record is not evidence."""
+    defn = _defn()
+    assert "typed as prose that does not appear verbatim in a cited qualifying execution record is not evidence" in defn
+
+
+# --- P24: capability is not evidence — qualifying execution record + Unwitnessed third state ---
+
+def test_falsify_p24_capability_is_not_evidence():
+    """P24: what witnesses is an available qualifying execution record, not whether a tool call occurred this turn."""
+    defn = _defn()
+    assert "Capability is not evidence" in defn
+    assert "available qualifying execution record" in defn
+
+
+def test_falsify_p24_qualifying_record_defined():
+    """P24: a qualifying execution record is guard-produced, carries guard+assertion identity + A-result, transcript-present; prose is never one."""
+    defn = _defn()
+    assert "A qualifying execution record is a transcript-present record produced by the committed guard artifact" in defn
+    assert "model prose is never one" in defn
+
+
+def test_falsify_p24_prior_record_usable_without_tools():
+    """P24: when tools are unavailable, may cite qualifying records already present but must not synthesize/infer/narrate."""
+    defn = _defn()
+    assert "when they are unavailable it may cite qualifying execution records already present but must not synthesize, infer, or narrate an execution result" in defn
+
+
+def test_falsify_p24_unwitnessed_third_state():
+    """P24: a behavioral assertion with no qualifying record is Unwitnessed (not structural Unobservable), and blocks Coverage."""
+    defn = _defn()
+    assert "Unwitnessed: assertion" in defn
+    assert "execution unavailable" in defn
+    assert "neither Failure nor structural Unobservable" in defn
+
+
+def test_falsify_p24_unwitnessed_blocks_coverage():
+    """P24: an Unwitnessed assertion leaves coverage incomplete."""
+    defn = _defn()
+    assert "'Unwitnessed: … — execution unavailable' assertion leaves coverage incomplete" in defn
+
+
 def test_falsify_p20_structural_bifurcation():
     """P20: a structural assertion is witnessed by Unobservable: structural — the deliberate behavioral/structural fork."""
     defn = _defn()

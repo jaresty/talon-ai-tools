@@ -50,27 +50,28 @@ def test_falsify_p1_any_order_permitted():
 # --- P2: minimization gate ---
 
 def test_falsify_p2_gate_1_minimization_present():
-    """P2: Gate 1 minimization is named."""
+    """P2: Gate 1 (shrink implementation to guard) is named."""
     defn = _defn()
     assert "Gate 1" in defn
-    assert "Minimization" in defn
+    assert "Shrink the implementation to the guard" in defn
 
 
-def test_falsify_p2_overreach_proven_by_perturbation():
-    """P2: overreach must be proven by perturbation observed in a tool-result, not asserted."""
+def test_falsify_p2_overreach_requires_executed_attempt():
+    """P2: 'Overreach: not found' requires an executed reduction attempt — a bare claim does not satisfy."""
     defn = _defn()
     assert "Overreach: found" in defn
     assert "Overreach: not found" in defn
-    assert "perturbing whatever is necessary" in defn
+    assert "Always attempt the simpler implementation" in defn
+    assert "A bare 'Overreach: not found' with no" in defn
 
 
-# --- P3: observed-failure gate ---
+# --- P3: witness-every-assertion gate ---
 
-def test_falsify_p3_gate_3_observed_failure_present():
-    """P3: Gate 3 (token) observed-failure is named."""
+def test_falsify_p3_gate_2_witness_present():
+    """P3: Gate 2 (witness every assertion) is named."""
     defn = _defn()
-    assert "Gate 3" in defn
-    assert "Observed failure" in defn
+    assert "Gate 2" in defn
+    assert "Witness every assertion" in defn
 
 
 def test_falsify_p3_every_executable_assertion():
@@ -136,23 +137,17 @@ def test_falsify_p7_inline_command_not_valid_guard():
 # --- P8: Gate 3 must discriminate per assertion — whole-symbol absence does not witness all ---
 
 def test_falsify_p8_positive_discrimination_criterion():
-    """P8 (allow-list): Gate 3 states the positive criterion — symbol present and executes, this property violated, others could hold, cause attributable to this assertion alone."""
+    """P8 (allow-list): Gate 2 states the positive criterion — symbol present and executes, this property violated, others could hold, cause attributable to that assertion alone."""
     defn = _defn()
     assert "the governed symbol is present and executes" in defn
-    assert "every" in defn and "other retained assertion's property could simultaneously hold" in defn
-    assert "attributable to this assertion alone" in defn
+    assert "every other assertion's property could simultaneously hold" in defn
+    assert "attributable to that assertion alone" in defn
 
 
-def test_falsify_p8_stated_as_positive_test_not_denylist():
-    """P8: the criterion is framed as a positive test each assertion must pass, not an enumeration of forbidden failure types."""
+def test_falsify_p8_shared_cause_excluded_by_positive_criterion():
+    """P8: the cause must be distinct from every other assertion's — a shared cause fails the positive criterion (allow-list, not deny-list)."""
     defn = _defn()
-    assert "This is the positive test each assertion must pass" in defn
-
-
-def test_falsify_p8_shared_cause_falls_outside_by_construction():
-    """P8: a shared failure cause fails the positive test (not attributable to one assertion), so it falls outside without being enumerated as forbidden."""
-    defn = _defn()
-    assert "not attributable to any one of them" in defn
+    assert "distinct from every other assertion's cause" in defn
 
 
 # --- P9: verdict-follows-execution — gate verdicts follow a tool-result, not a mental act ---
@@ -178,44 +173,51 @@ def test_falsify_p9_conditioned_on_tool_availability():
 def test_falsify_p9_structural_unobservable_exempt():
     """P9: P5 structural Unobservable is exempt — text-about-text properties have no execution to anchor to."""
     defn = _defn()
-    assert "a structural Unobservable assertion is exempt" in defn
+    assert "structural Unobservable assertion is exempt" in defn
 
 
 # --- P10: visible per-assertion enumeration (non-hollow citation, no count sentinel) ---
 
 def test_falsify_p10_enumerate_each_assertion_verbatim():
-    """P10: before Gate 3, emit one verbatim 'Assertion:' line per executable assertion of the guard."""
+    """P10: in Gate 2, emit one verbatim 'Assertion:' line per executable assertion of the guard."""
     defn = _defn()
-    assert "one 'Assertion:' line for each executable assertion" in defn
+    assert "one 'Assertion: <verbatim assertion text>' line for each executable assertion" in defn
 
 
 def test_falsify_p10_assertion_text_verbatim_from_guard():
     """P10: each enumerated assertion is quoted verbatim from the guard's tool-result, not paraphrased."""
     defn = _defn()
-    assert "quoted verbatim from the established guard's tool-result" in defn
+    assert "quoted verbatim from the guard's tool-result" in defn
 
 
 def test_falsify_p10_no_count_sentinel_reintroduced():
     """P10: enumeration must NOT reintroduce the self-declared count sentinel removed in P4."""
     defn = _defn()
     # the enumeration exists but the hollow count tail must stay gone
-    assert "one 'Assertion:' line for each executable assertion" in defn
+    assert "one 'Assertion: <verbatim assertion text>' line for each executable assertion" in defn
     assert "Assertion inventory: complete" not in defn
+
+
+def test_falsify_p11_binding_by_verbatim_identity():
+    """P11 (the 1-of-6 fix): every enumerated Assertion must receive its own verbatim-matching Failure/Unobservable before Coverage."""
+    defn = _defn()
+    assert "binding is by verbatim identity" in defn
+    assert "an enumerated assertion with no matching outcome line leaves coverage incomplete" in defn
 
 
 # --- P12: anchor the discriminating construction (recovered from old def) ---
 
-def test_falsify_p12_failure_follows_violating_state_execution():
-    """P12: the Failure observation must follow the tool-result of executing the guard against the constructed present-but-wrong state."""
+def test_falsify_p12_present_but_wrong_required():
+    """P12: the violating state must exhibit the governed symbol present and executing, not whole-symbol absence."""
     defn = _defn()
-    assert "against the constructed present-but-wrong state" in defn
+    assert "the governed symbol is present and executes" in defn
 
 
 def test_falsify_p12_compile_absence_rejected():
-    """P12: a successful compilation, build output, or whole-symbol/undefined error does not satisfy Gate 3 (token observed-failure)."""
+    """P12: a successful compilation, build output, or whole-symbol/undefined error does not witness an assertion."""
     defn = _defn()
-    assert "does not satisfy Gate 3" in defn
-    assert "whole-symbol or undefined error" in defn
+    assert "does not witness an assertion" in defn
+    assert "whole-symbol or undefined" in defn
 
 
 def test_falsify_p12_already_satisfied_temporary_violation():
@@ -236,7 +238,7 @@ def test_falsify_p13_evidence_condition_constrains_evidence_not_mechanism():
     """P13: the requirement constrains the evidence (per-assertion outcome); the harness is only one example mechanism, and a framework that already reports per-assertion results satisfies it directly."""
     defn = _defn()
     assert "framework already reports per-assertion results satisfies this directly" in defn
-    assert "any execution mechanism that does" in defn
+    assert "any execution mechanism that yields per-assertion outcomes" in defn
     # the old self-assessed trigger phrasing must be gone
     assert "cannot distinguish which assertion failed" not in defn
     assert "per-assertion outcomes" in defn

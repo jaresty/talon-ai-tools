@@ -159,12 +159,31 @@ def test_ground_falsify_adequacy_verdict_follows_execution():
     assert "Verdict-follows-execution governs every construction-conditional adequacy verdict" in prose
 
 
-def test_ground_falsify_adequacy_unrefuted_not_proven():
-    """P22 (Overreach epistemic status): no disagreement = unrefuted by that attempt, never proof of adequacy."""
+def test_ground_falsify_p29_distinguishing_state_obligation():
+    """P29: S is not arbitrary — it must be a distinguishing state derived from the property's semantic distinctions; a collapsing witness doesn't exercise the distinction."""
     prose = _get_entry("ground+falsify")
-    assert "adequacy is unrefuted by that attempt" in prose
-    assert "never promoted to proof" in prose
-    assert "a bare adequacy claim with no executed construction does not satisfy this gate" in prose
+    assert "it must be a distinguishing state derived from the property's own semantics" in prose
+    assert "identify the semantically relevant distinctions the property makes" in prose
+    assert "a witness that collapses the distinction" in prose
+    # general, not a case catalog
+    assert "not from a fixed catalog of cases" in prose
+
+
+def test_ground_falsify_p29_adequacy_verdict_is_three_way():
+    """P29: verdict is established / refuted / untested — 'unrefuted' is gone (it silently implies a search that may not have happened)."""
+    prose = _get_entry("ground+falsify")
+    assert "Adequacy: refuted" in prose
+    assert "Adequacy: established" in prose
+    assert "Adequacy: untested — property [N]: no distinguishing state constructed" in prose
+    # the old passive 'unrefuted' verdict must be gone
+    assert "adequacy is unrefuted by that attempt" not in prose
+
+
+def test_ground_falsify_p29_established_requires_every_distinction():
+    """P29: 'established' only when a distinguishing state was constructed+executed for EVERY relevant distinction; absence of counterexample != search occurred."""
+    prose = _get_entry("ground+falsify")
+    assert "for every semantically relevant distinction the property makes, a distinguishing state was constructed and executed" in prose
+    assert "absence of a counterexample does not imply that a counterexample search occurred" in prose
 
 
 def test_ground_falsify_adequacy_untested_when_execution_unavailable():

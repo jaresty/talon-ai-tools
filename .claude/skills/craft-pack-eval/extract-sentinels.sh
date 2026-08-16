@@ -134,12 +134,14 @@ echo ""
 # are unique (appear exactly once). A shared cause (e.g. one compile error
 # 'undefined: parseToken' reused across N assertions) collapses to a single
 # unique cause and therefore witnesses at most one assertion, not N.
-read -r FAIL_TOTAL DISTINCT_CAUSES PASS_LABELED <<< "$(python3 -c "
+read -r FAIL_TOTAL DISTINCT_CAUSES PASS_LABELED ABSENCE_LABELED <<< "$(python3 -c "
 import re
 from collections import Counter
 # P17: a cause that indicates success does not count as a Failure.
 SUCCESS = re.compile(r'\b(ok|pass|passed|passes|passing|succeed|succeeded|success)\b', re.I)
-causes=[]; pass_labeled=0
+# P19: an absence (undefined symbol / no observed value) is not a value-mismatch and does not witness.
+ABSENCE = re.compile(r'\b(undefined|not\s+defined|no\s+such|does\s+not\s+exist|not\s+found|cannot\s+find|nameerror|referenceerror|importerror|modulenotfound)\b', re.I)
+causes=[]; pass_labeled=0; absence_labeled=0
 for l in open('$TRANSCRIPT'):
     # accept an optional property tag '[P1.1]' between 'assertion' and the quoted
     # assertion text, e.g. 'Failure: assertion [P1.1] — \"...\"' or 'Failure: assertion \"...\" — \"...\"'
@@ -148,19 +150,22 @@ for l in open('$TRANSCRIPT'):
         cause=m.group(1).strip()
         if SUCCESS.search(cause):
             pass_labeled+=1          # P17: pass-labeled-as-Failure — does not count
+        elif ABSENCE.search(cause):
+            absence_labeled+=1       # P19: absence, not a value-mismatch — does not count
         else:
-            causes.append(cause)
+            causes.append(cause)     # a genuine value-mismatch cause
 c=Counter(causes)
 distinct_attributable=sum(1 for cause,n in c.items() if n==1)
-print(len(causes), distinct_attributable, pass_labeled)
-" 2>/dev/null || echo "0 0 0")"
+print(len(causes), distinct_attributable, pass_labeled, absence_labeled)
+" 2>/dev/null || echo "0 0 0 0")"
 
 # P17 witness line: 'witness: ... present and executes ... property ... violated ...'
 # The agent may name the actual symbol ('function foo is present and executes') rather
 # than the literal word 'symbol', so match on the present-and-executes + violated shape.
 WITNESS_LINES=$(count 'witness:.*(present and executes|symbol present)')
 
-echo "Gate 3 Failure: assertion (parsed, pass-labeled excluded): $FAIL_TOTAL"
+echo "Gate 3 Failure: assertion (genuine value-mismatch only): $FAIL_TOTAL"
+echo "  absence-caused (P19, rejected: undefined/no-value): $ABSENCE_LABELED"
 echo "  pass-labeled-as-Failure (P17, rejected): $PASS_LABELED"
 echo "  witness-validity lines (P17): $WITNESS_LINES"
 echo "Gate 3 distinct-cause (attributable): $DISTINCT_CAUSES"
@@ -188,6 +193,40 @@ if [[ "$FAIL_TOTAL" -ge 1 && "$DISTINCT_CAUSES" -eq "$FAIL_TOTAL" ]]; then
 elif [[ "$FAILA" -eq 0 && "$UNOBSA" -ge 1 ]]; then
   DISCRIMINATED=1               # all-structural-Unobservable run — no failures to discriminate
 fi
+# P20 canonical differential (the heart of the experiment): validity requires, in the
+# tool-results, an ASSERTION-LEVEL failure (A's own assertion reported failing) AND an
+# assertion-level pass — not merely 'some differing outcome'. An execution error (compile,
+# undefined symbol, panic, timeout) is NOT an assertion failure: A never executed, so it is
+# excluded from the fail side. Judged from tool_result blocks, not from model-authored prose.
+DIFFERENTIAL=$(python3 -c "
+import json, re
+# assertion-level failure: a test-framework FAIL naming a test, or an assert mismatch (expected/got)
+ASSERT_FAIL = re.compile(r'(---\s*FAIL|\bFAIL:\s|got .* want|want .* got|expected .* got|assert\w*.*(failed|Error))', re.I)
+# execution errors that are NOT assertion failures (A did not execute) — exclude these from the fail side
+EXEC_ERROR = re.compile(r'\b(undefined|not\s+defined|no\s+such|does\s+not\s+exist|build failed|cannot find|compile|panic|timeout|nameerror|referenceerror|importerror|modulenotfound|segmentation)\b', re.I)
+PASSSHAPE = re.compile(r'(---\s*PASS|\bPASS\b|\bok\b|all tests passed|[0-9]+ passed)', re.I)
+saw_fail=saw_pass=False
+for line in open('$JSONL'):
+    try: o=json.loads(line)
+    except: continue
+    # tool_result blocks live in user-role messages as content items of type tool_result
+    msg=o.get('message',{})
+    for b in (msg.get('content') or []) if isinstance(msg.get('content'),list) else []:
+        if isinstance(b,dict) and b.get('type')=='tool_result':
+            c=b.get('content')
+            txt=' '.join(x.get('text','') for x in c if isinstance(x,dict)) if isinstance(c,list) else str(c)
+            # only consider guard/test executions
+            if re.search(r'\btest\b|go test|pytest|assert', txt, re.I):
+                # assertion-level fail only when an assertion mismatch is present AND it is not
+                # merely an execution error (compile/undefined/panic/timeout = A did not execute).
+                if ASSERT_FAIL.search(txt) and not (EXEC_ERROR.search(txt) and not re.search(r'got .* want|want .* got|expected .* got', txt, re.I)):
+                    saw_fail=True
+                if PASSSHAPE.search(txt): saw_pass=True
+print(1 if (saw_fail and saw_pass) else 0)
+" 2>/dev/null || echo 0)
+
+echo "P20 canonical differential (assertion-level A-fail AND A-pass in tool-results; exec-errors excluded): $DIFFERENTIAL"
+
 # P17 witness-validity gate: every parsed Failure must carry a witness line, and no
 # pass-labeled failure may be present. Witnessed iff a witness line exists per parsed
 # Failure (>= FAIL_TOTAL) and no pass-labeled Failure was found.
@@ -195,16 +234,23 @@ WITNESSED=0
 if [[ "$FAIL_TOTAL" -eq 0 || ( "$WITNESS_LINES" -ge "$FAIL_TOTAL" && "$PASS_LABELED" -eq 0 ) ]]; then
   WITNESSED=1
 fi
+# P19d: a run producing any Failure must exhibit the machine-observed differential in
+# tool-results. All-structural-Unobservable runs (no FAILA) are exempt.
+DIFF_OK=0
+if [[ "$FAILA" -eq 0 || "$DIFFERENTIAL" -eq 1 ]]; then DIFF_OK=1; fi
 if [[ "$OBSERVED" -ge 1 \
   && "$DISCRIMINATED" -eq 1 \
   && "$WITNESSED" -eq 1 \
+  && "$DIFF_OK" -eq 1 \
   && "$OVERNF" -ge 1 \
   && "$AUDITCMP" -ge 1 \
   && "$COV" -ge 1 ]]; then
-  echo "PASS: three-gate sentinels consistent (observed=$OBSERVED, distinct-cause=$DISTINCT_CAUSES/$FAIL_TOTAL, witness=$WITNESS_LINES, Gate 1 clean, audit complete, coverage=$COV)"
+  echo "PASS: three-gate sentinels consistent (observed=$OBSERVED, distinct-cause=$DISTINCT_CAUSES/$FAIL_TOTAL, differential=$DIFFERENTIAL, witness=$WITNESS_LINES, Gate 1 clean, audit complete, coverage=$COV)"
 else
   echo "FAIL: sentinel gap detected"
   [[ "$OBSERVED" -lt 1 ]]  && echo "  - Watch-item 1: no Gate-3 observation (Failure:/Unobservable: assertion) — no guard observed firing"
+  [[ "$DIFF_OK" -eq 0 ]] && echo "  - P19d: no machine-observed differential — the tool-results do not contain BOTH a fail-shaped and a pass-shaped guard outcome; a Failure must be backed by two distinct observed executions, not an authored witness"
+  [[ "$ABSENCE_LABELED" -gt 0 ]] && echo "  - P19: $ABSENCE_LABELED 'Failure:' line(s) whose cause is an absence (undefined/no-value) — not a value-mismatch; needs a violated-vs-satisfied value pair from tool-results"
   [[ "$WITNESSED" -eq 0 && "$PASS_LABELED" -gt 0 ]] && echo "  - P17: $PASS_LABELED 'Failure:' line(s) whose cause indicates success (ok/PASS/passed) — a pass does not witness absence"
   [[ "$WITNESSED" -eq 0 && "$WITNESS_LINES" -lt "$FAIL_TOTAL" ]] && echo "  - P17: only $WITNESS_LINES witness-validity line(s) for $FAIL_TOTAL Failure(s) — each Failure must carry a checkable witness line"
   [[ "$DISCRIMINATED" -eq 0 && "$FAILA" -gt 0 && "$FAIL_TOTAL" -eq 0 ]] && echo "  - Watch-item 1: $FAILA raw 'Failure:' line(s) present but none parse as 'Failure: assertion [tag] — \"cause\"' — malformed/narrated failures do not witness discrimination"

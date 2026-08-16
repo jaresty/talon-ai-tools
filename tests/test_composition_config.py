@@ -104,12 +104,49 @@ def test_ground_falsify_gate_2_classification_follows_execution():
     assert "executed discriminator" in prose
 
 
+# --- P21c: executable adequacy witness — do the assertions govern the retained property? ---
+
+def test_ground_falsify_adequacy_by_constructed_counterexample():
+    """P21c: adequacy is tested by attempted counterexample construction, not asserted equivalence."""
+    prose = _get_entry("ground+falsify")
+    assert "Adequacy is tested by attempted counterexample construction, not by asserted equivalence" in prose
+
+
+def test_ground_falsify_adequacy_gap_direction():
+    """P21c (under-govern): P false while all tagged assertions pass → Adequacy gap → strengthen the guard."""
+    prose = _get_entry("ground+falsify")
+    assert "Adequacy gap" in prose
+    assert "P false while every assertion tagged to P passes, the guards do not govern P" in prose
+
+
+def test_ground_falsify_adequacy_overconstraint_direction():
+    """P21c (over-govern): P true while any tagged assertion fails → Adequacy overconstraint → weaken the guard."""
+    prose = _get_entry("ground+falsify")
+    assert "Adequacy overconstraint" in prose
+    assert "P true while any assertion tagged to P fails, the guards over-govern P" in prose
+
+
+def test_ground_falsify_adequacy_property_supplies_criterion():
+    """P21c: the retained property supplies the observable criterion (P's own evaluation), not a model judgment."""
+    prose = _get_entry("ground+falsify")
+    assert "The retained property supplies the observable criterion" in prose
+    assert "not a model judgment of the state" in prose
+
+
+def test_ground_falsify_adequacy_unrefuted_not_proven():
+    """P21c (Overreach epistemic status): no counterexample = unrefuted by that attempt, never proof of adequacy."""
+    prose = _get_entry("ground+falsify")
+    assert "adequacy is unrefuted by that attempt" in prose
+    assert "never promoted to proof" in prose
+    assert "a bare adequacy claim with no executed construction attempt does not satisfy this gate" in prose
+
+
 # --- P11: assertion↔property map — each assertion tagged with the property it tests; bijection ---
 
 def test_ground_falsify_p11_assertion_tagged_with_property():
     """P11: each enumerated assertion must name the retained property [N] it tests."""
     prose = _get_entry("ground+falsify")
-    assert "tag each 'Assertion:' line enumerated in Gate 3 with the retained property" in prose
+    assert "tag each 'Assertion:' line enumerated in Gate 2 with the retained property" in prose
 
 
 def test_ground_falsify_p11_bijection_both_directions():

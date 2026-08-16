@@ -75,9 +75,9 @@ def test_falsify_p3_gate_2_witness_present():
 
 
 def test_falsify_p3_every_executable_assertion():
-    """P3: every executable assertion must be observed failing against a violating state."""
+    """P3: every enumerated assertion must be witnessed (Failure pair or structural Unobservable)."""
     defn = _defn()
-    assert "every executable assertion" in defn
+    assert "every enumerated assertion" in defn
     assert "Failure: assertion" in defn
 
 
@@ -117,8 +117,8 @@ def test_falsify_p5_unobservable_requires_structural_subject():
 
 
 def test_falsify_p5_unobservable_not_by_demonstrated_negative():
-    """P5: Unobservable must NOT be satisfied merely by having searched for a violating state and found none."""
-    assert "never satisfied by having searched for a violating state and found none" in _defn()
+    """P5: Unobservable must NOT be satisfied merely by having searched for a failing execution and found none."""
+    assert "never satisfied by having searched for a failing execution and found none" in _defn()
 
 
 # --- P7: Gate 3 failure valid only from a committed, re-runnable guard artifact ---
@@ -134,20 +134,61 @@ def test_falsify_p7_inline_command_not_valid_guard():
     assert "never from an inline or ephemeral command" in _defn()
 
 
-# --- P8: Gate 3 must discriminate per assertion — whole-symbol absence does not witness all ---
+# --- P20 canonical rule: the guard's own per-assertion pass/fail IS the property state ---
 
-def test_falsify_p8_positive_discrimination_criterion():
-    """P8 (allow-list): Gate 2 states the positive criterion — symbol present and executes, this property violated, others could hold, cause attributable to that assertion alone."""
+def test_falsify_p20_guard_defines_observable_predicate():
+    """P20 (non-circular): the guard DEFINES the observable predicate — A-pass witnesses property present, A-fail witnesses absent; not 'result is the property'."""
     defn = _defn()
-    assert "the governed symbol is present and executes" in defn
-    assert "every other assertion's property could simultaneously hold" in defn
-    assert "attributable to that assertion alone" in defn
+    assert "The guard defines the observable predicate for A" in defn
+    assert "an A-pass" in defn and "witnesses the property present" in defn
 
 
-def test_falsify_p8_shared_cause_excluded_by_positive_criterion():
-    """P8: the cause must be distinct from every other assertion's — a shared cause fails the positive criterion (allow-list, not deny-list)."""
+def test_falsify_p20_failure_is_a_fail_a_pass_pair():
+    """P20: a behavioral assertion is witnessed only by a pair of A-observations — A-fail in one, A-pass in the other."""
     defn = _defn()
-    assert "distinct from every other assertion's cause" in defn
+    assert "pair of A-observations" in defn
+    assert "A's own guard-defined result is a failure, and one in which A's own result is a pass" in defn
+
+
+def test_falsify_p20_classify_observations_not_failure_modes():
+    """P20 (general, not an enumeration): any execution not producing an A result is not an observation of A — regardless of cause or form."""
+    defn = _defn()
+    assert "An A-observation is an execution of the committed guard in which assertion A is evaluated and produces its own guard-defined result" in defn
+    assert "not an observation of A and cannot witness A, regardless of the cause or form of the execution's outcome" in defn
+    # the failure-mode enumeration must be gone (classify observations, not failures)
+    assert "compilation failure, timeout, panic" not in defn
+
+
+def test_falsify_p20_producer_is_the_a_fail_execution():
+    """P20 (provenance): the A-fail execution immediately precedes Failure:; the A-pass execution is contrast evidence elsewhere."""
+    defn = _defn()
+    assert "execution must immediately precede the" in defn
+    assert "execution is the contrast evidence" in defn
+
+
+def test_falsify_p20_identity_carried_by_guard_output():
+    """P20 (identity): the guard's output must identify A (test name/subtest/message), not model attribution."""
+    defn = _defn()
+    assert "the guard's output must identify A" in defn
+
+
+def test_falsify_p20_temp_modification_isolates_one_assertion():
+    """P20: for an already-passing A, a temporary modification must make A alone fail while others pass."""
+    defn = _defn()
+    assert "makes A alone fail while every other assertion still passes" in defn
+
+
+def test_falsify_p20_witness_line_is_projection_only():
+    """P20: a 'witness:' line only projects the two results and is not itself evidence."""
+    defn = _defn()
+    assert "only projects those two results and is not itself evidence" in defn
+
+
+def test_falsify_p20_structural_bifurcation():
+    """P20: a structural assertion is witnessed by Unobservable: structural — the deliberate behavioral/structural fork."""
+    defn = _defn()
+    assert "A structural assertion" in defn
+    assert "Unobservable: assertion" in defn
 
 
 # --- P9: verdict-follows-execution — gate verdicts follow a tool-result, not a mental act ---
@@ -217,71 +258,16 @@ def test_falsify_p18_loop_terminates_on_empty_unwitnessed_set():
     assert "do not leave Gate 2 until every enumerated assertion has a matching outcome" in defn
 
 
-# --- P12: anchor the discriminating construction (recovered from old def) ---
+# NOTE: the former P8/P12/P13/P17/P19d tests are collapsed into the P20 canonical rule
+# above (guard's own per-assertion pass/fail = property state). Their properties —
+# present-but-wrong (A must execute), compile/undefined/panic rejected, temp-violation
+# isolation, per-assertion outcome, committed-guard evidence, witness-is-projection —
+# are all asserted by the test_falsify_p20_* block. The self-assessed-trigger phrasing
+# must still be gone:
 
-def test_falsify_p12_present_but_wrong_required():
-    """P12: the violating state must exhibit the governed symbol present and executing, not whole-symbol absence."""
-    defn = _defn()
-    assert "the governed symbol is present and executes" in defn
-
-
-def test_falsify_p12_compile_absence_rejected():
-    """P12: a successful compilation, build output, or whole-symbol/undefined error does not witness an assertion."""
-    defn = _defn()
-    assert "does not witness an assertion" in defn
-    assert "whole-symbol or undefined" in defn
-
-
-def test_falsify_p12_already_satisfied_temporary_violation():
-    """P12: for an already-satisfied property, construct a temporary violating modification, execute, then restore."""
-    defn = _defn()
-    assert "construct a temporary violating modification" in defn
-    assert "then restore" in defn
-
-
-def test_falsify_p12_temp_violation_isolated_to_one_assertion():
-    """P17: the temporary violating modification must violate exactly one assertion's property while the others still pass — not a whole-artifact break."""
-    defn = _defn()
-    assert "must violate exactly one assertion's property while the others still pass" in defn
-
-
-# --- P17: witness-validity gate — the three failure conditions as a checkable filter ---
-
-def test_falsify_p17_witness_validity_line_required():
-    """P17: each Failure must carry a witness-validity line making the three conditions checkable, not merely described."""
-    defn = _defn()
-    assert "witness:" in defn
-    assert "symbol present" in defn
-
-
-def test_falsify_p17_rejects_pass_labeled_as_failure():
-    """P17: a Failure whose observed cause indicates a pass (ok/PASS/passed/succeeded) is not a failure observation."""
-    defn = _defn()
-    assert "an observed outcome that indicates success" in defn
-    assert "does not count as a Failure" in defn
-
-
-def test_falsify_p17_failure_without_witness_uncounted():
-    """P17: a Failure line without a passing witness-validity line does not count toward Coverage."""
-    defn = _defn()
-    assert "A 'Failure:' line without a passing witness line does not count" in defn
-
-
-def test_falsify_p12_per_assertion_outcome_unconditional():
-    """P13: the per-assertion outcome is unconditionally required — the tool result must produce an outcome attributable to each assertion alone, regardless of whether the model recognizes any insufficiency."""
-    defn = _defn()
-    assert "regardless of whether the model recognizes" in defn
-    assert "an outcome attributable to that assertion alone" in defn
-
-
-def test_falsify_p13_evidence_condition_constrains_evidence_not_mechanism():
-    """P13: the requirement constrains the evidence (per-assertion outcome); the harness is only one example mechanism, and a framework that already reports per-assertion results satisfies it directly."""
-    defn = _defn()
-    assert "framework already reports per-assertion results satisfies this directly" in defn
-    assert "any execution mechanism that yields per-assertion outcomes" in defn
-    # the old self-assessed trigger phrasing must be gone
-    assert "cannot distinguish which assertion failed" not in defn
-    assert "per-assertion outcomes" in defn
+def test_falsify_p20_no_self_assessed_trigger_phrasing():
+    """The old self-assessed harness trigger phrasing must remain absent."""
+    assert "cannot distinguish which assertion failed" not in _defn()
 
 
 # --- P6b: the coverage/retained-property gate does NOT live in the token ---

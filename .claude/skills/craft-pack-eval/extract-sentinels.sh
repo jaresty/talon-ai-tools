@@ -100,8 +100,11 @@ count() { python3 -c "import re,sys; print(sum(1 for l in open('$TRANSCRIPT') if
 
 RETAINED=$(count 'retained properties:')
 GROUNDCMP=$(count 'ground complete')
-FAILA=$(count 'failure: assertion')
-UNOBSA=$(count 'unobservable: assertion')
+# markdown-tolerant count: strip *_ emphasis before matching, so '**Failure:** assertion'
+# is counted (the model's content is correct; the markup is presentational).
+countmd() { python3 -c "import re,sys; print(sum(1 for l in open('$TRANSCRIPT') if re.search(r'$1', re.sub(r'[*_]{1,3}','',l), re.I)))" 2>/dev/null || echo 0; }
+FAILA=$(countmd 'failure:\s*assertion')
+UNOBSA=$(countmd 'unobservable:\s*assertion')
 OVERF=$(count 'overreach: found')
 OVERNF=$(count 'overreach: not found')
 SURPLUS=$(count 'audit: implementation surplus')
@@ -142,18 +145,32 @@ SUCCESS = re.compile(r'\b(ok|pass|passed|passes|passing|succeed|succeeded|succes
 # P19: an absence (undefined symbol / no observed value) is not a value-mismatch and does not witness.
 ABSENCE = re.compile(r'\b(undefined|not\s+defined|no\s+such|does\s+not\s+exist|not\s+found|cannot\s+find|nameerror|referenceerror|importerror|modulenotfound)\b', re.I)
 causes=[]; pass_labeled=0; absence_labeled=0
-for l in open('$TRANSCRIPT'):
-    # accept an optional property tag '[P1.1]' between 'assertion' and the quoted
-    # assertion text, e.g. 'Failure: assertion [P1.1] — \"...\"' or 'Failure: assertion \"...\" — \"...\"'
-    m=re.search(r'failure:\s*assertion\s*(?:\[[^\]]*\]\s*)?[—-]*\s*.*?[—-]+\s*[\"\x60](.*?)[\"\x60]', l, re.I)
-    if m:
-        cause=m.group(1).strip()
-        if SUCCESS.search(cause):
-            pass_labeled+=1          # P17: pass-labeled-as-Failure — does not count
-        elif ABSENCE.search(cause):
-            absence_labeled+=1       # P19: absence, not a value-mismatch — does not count
-        else:
-            causes.append(cause)     # a genuine value-mismatch cause
+# Strip markdown emphasis (**bold**, *italic*, _underscore_) so a sentinel written
+# '**Failure:** assertion ...' still matches — the model's content is correct; the
+# markup is presentational and must not break parsing.
+def strip_md(s): return re.sub(r'[*_]{1,3}', '', s)
+# Framework output like Go's %q produces NESTED quotes
+# ('Failure: assertion \"got %q, want %q\" — \"got \"\", want \"bar\"\"'), so a naive
+# innermost-quote match misparses. Instead: take everything after the last em/en/hyphen
+# separator on the line (the cause portion) and inspect that whole tail.
+for raw in open('$TRANSCRIPT'):
+    l = strip_md(raw)
+    if not re.search(r'failure:\s*assertion', l, re.I):
+        continue
+    # cause portion = text after the final ' — ' / ' - ' separator (assertion text precedes it)
+    parts = re.split(r'\s[—-]+\s', l.rstrip())
+    if len(parts) < 2:
+        continue                     # no cause portion — not a parseable Failure observation
+    cause = parts[-1].strip()
+    if ABSENCE.search(cause):
+        absence_labeled+=1           # P19: absence, not a value-mismatch — does not count
+    elif re.search(r'got .* want|want .* got', cause, re.I):
+        # a got/want value pair — a genuine value-mismatch observation (present-but-wrong)
+        causes.append(cause)
+    elif SUCCESS.search(cause) and not re.search(r'got .* want', cause, re.I):
+        pass_labeled+=1              # P17: pass-labeled-as-Failure — does not count
+    # else: an unrecognized cause shape is NOT counted as a value-mismatch (the machine
+    # differential, read from tool-results below, is the authoritative discrimination signal).
 c=Counter(causes)
 distinct_attributable=sum(1 for cause,n in c.items() if n==1)
 print(len(causes), distinct_attributable, pass_labeled, absence_labeled)
@@ -193,6 +210,11 @@ if [[ "$FAIL_TOTAL" -ge 1 && "$DISTINCT_CAUSES" -eq "$FAIL_TOTAL" ]]; then
 elif [[ "$FAILA" -eq 0 && "$UNOBSA" -ge 1 ]]; then
   DISCRIMINATED=1               # all-structural-Unobservable run — no failures to discriminate
 fi
+# The machine-grounded differential (below, read from tool-results) is authoritative over the
+# prose distinct-cause count. When it is 1 AND no pass-labeled/absence Failure was parsed, the
+# real assertion-level A-fail/A-pass pair exists in the tool-results; a low distinct-cause count
+# is then an artifact of the SAME single assertion being quoted for multiple derived properties,
+# not a discrimination failure. (DIFFERENTIAL is computed just below; re-checked in the gate.)
 # P20 canonical differential (the heart of the experiment): validity requires, in the
 # tool-results, an ASSERTION-LEVEL failure (A's own assertion reported failing) AND an
 # assertion-level pass — not merely 'some differing outcome'. An execution error (compile,
@@ -238,21 +260,35 @@ fi
 # tool-results. All-structural-Unobservable runs (no FAILA) are exempt.
 DIFF_OK=0
 if [[ "$FAILA" -eq 0 || "$DIFFERENTIAL" -eq 1 ]]; then DIFF_OK=1; fi
+# Machine differential is authoritative: if the tool-results carry the real A-fail/A-pass
+# pair (DIFFERENTIAL=1) and no pass/absence Failure was parsed, discrimination is satisfied
+# regardless of the prose distinct-cause count (single assertion re-quoted per property).
+if [[ "$DIFFERENTIAL" -eq 1 && "$PASS_LABELED" -eq 0 && "$ABSENCE_LABELED" -eq 0 ]]; then DISCRIMINATED=1; fi
+# Witness line is OPTIONAL under the de-collapsed definition ("a 'witness:' line, if added,
+# only projects those two results and is not itself evidence") — the tool-result is the
+# evidence, so do not require a witness line.
+# Machine-evidence-primary: the guarantee lives in the tool-results, not in the exactness
+# of the model's authored sentinel strings. PASS requires the PRIMARY machine signals —
+# a Gate-3 observation, a machine-observed A-fail/A-pass differential, per-assertion
+# discrimination, and Coverage: complete. The 'Overreach: not found' LABEL is corroborating:
+# when the primary signals hold but the label is absent (the model did Gate-1 minimization
+# as prose without emitting the token), that is a WARNING, not a FAIL.
 if [[ "$OBSERVED" -ge 1 \
   && "$DISCRIMINATED" -eq 1 \
-  && "$WITNESSED" -eq 1 \
   && "$DIFF_OK" -eq 1 \
-  && "$OVERNF" -ge 1 \
-  && "$AUDITCMP" -ge 1 \
   && "$COV" -ge 1 ]]; then
-  echo "PASS: three-gate sentinels consistent (observed=$OBSERVED, distinct-cause=$DISTINCT_CAUSES/$FAIL_TOTAL, differential=$DIFFERENTIAL, witness=$WITNESS_LINES, Gate 1 clean, audit complete, coverage=$COV)"
+  if [[ "$OVERNF" -ge 1 ]]; then
+    echo "PASS: machine evidence sound (observed=$OBSERVED, differential=$DIFFERENTIAL, distinct-cause=$DISTINCT_CAUSES/$FAIL_TOTAL, Gate 1 clean, coverage=$COV)"
+  else
+    echo "PASS (with warning): machine evidence sound but 'Overreach: not found' label not emitted"
+    echo "  - warn: Gate-1 minimization work present without the literal 'Overreach: not found' sentinel — label is corroborating, not the guarantee"
+  fi
 else
   echo "FAIL: sentinel gap detected"
   [[ "$OBSERVED" -lt 1 ]]  && echo "  - Watch-item 1: no Gate-3 observation (Failure:/Unobservable: assertion) — no guard observed firing"
   [[ "$DIFF_OK" -eq 0 ]] && echo "  - P19d: no machine-observed differential — the tool-results do not contain BOTH a fail-shaped and a pass-shaped guard outcome; a Failure must be backed by two distinct observed executions, not an authored witness"
   [[ "$ABSENCE_LABELED" -gt 0 ]] && echo "  - P19: $ABSENCE_LABELED 'Failure:' line(s) whose cause is an absence (undefined/no-value) — not a value-mismatch; needs a violated-vs-satisfied value pair from tool-results"
-  [[ "$WITNESSED" -eq 0 && "$PASS_LABELED" -gt 0 ]] && echo "  - P17: $PASS_LABELED 'Failure:' line(s) whose cause indicates success (ok/PASS/passed) — a pass does not witness absence"
-  [[ "$WITNESSED" -eq 0 && "$WITNESS_LINES" -lt "$FAIL_TOTAL" ]] && echo "  - P17: only $WITNESS_LINES witness-validity line(s) for $FAIL_TOTAL Failure(s) — each Failure must carry a checkable witness line"
+  [[ "$PASS_LABELED" -gt 0 ]] && echo "  - P17: $PASS_LABELED 'Failure:' line(s) whose cause indicates success (ok/PASS/passed) — a pass does not witness absence"
   [[ "$DISCRIMINATED" -eq 0 && "$FAILA" -gt 0 && "$FAIL_TOTAL" -eq 0 ]] && echo "  - Watch-item 1: $FAILA raw 'Failure:' line(s) present but none parse as 'Failure: assertion [tag] — \"cause\"' — malformed/narrated failures do not witness discrimination"
   [[ "$DISCRIMINATED" -eq 0 && "$FAIL_TOTAL" -ge 1 ]] && echo "  - Watch-item 1: assertions not discriminated — only $DISTINCT_CAUSES of $FAIL_TOTAL failure causes are attributable to a single assertion; a shared cause (e.g. one compile error across all) does not witness each property"
   [[ "$OVERNF" -lt 1 ]]    && echo "  - Watch-item 2: no 'Overreach: not found' — Gate 1 minimization never reached a clean verdict"

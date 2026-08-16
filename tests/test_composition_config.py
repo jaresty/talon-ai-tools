@@ -159,6 +159,13 @@ def test_ground_falsify_adequacy_unrefuted_not_proven():
     assert "a bare adequacy claim with no executed construction does not satisfy this gate" in prose
 
 
+def test_ground_falsify_adequacy_untested_when_execution_unavailable():
+    """P25 (composition): adequacy is execution-dependent — no execution → 'Adequacy: untested', never unrefuted/adequate."""
+    prose = _get_entry("ground+falsify")
+    assert "Adequacy: untested — execution unavailable" in prose
+    assert "untested is never unrefuted and never adequate" in prose
+
+
 def test_ground_falsify_adequacy_conditional_theorem():
     """P22 (honest boundary): the whole result is machine-grounded conditional on the semantic interpretation of P over S."""
     prose = _get_entry("ground+falsify")

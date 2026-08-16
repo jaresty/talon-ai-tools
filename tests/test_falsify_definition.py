@@ -235,6 +235,28 @@ def test_falsify_p24_unwitnessed_blocks_coverage():
     assert "'Unwitnessed: … — execution unavailable' assertion leaves coverage incomplete" in defn
 
 
+# --- P25: uniform execution-unavailable state at every gate (untested != not-found/false/unobservable) ---
+
+def test_falsify_p25_gate1_overreach_untested():
+    """P25: Gate 1 Overreach is execution-dependent — no execution → 'Overreach: untested', never 'not found'."""
+    defn = _defn()
+    assert "Overreach: untested — execution unavailable" in defn
+    assert "untested is never 'not found'" in defn
+
+
+def test_falsify_p25_coverage_incomplete_terminal_honesty():
+    """P25: no execution → honest terminal state 'Coverage: incomplete — execution unavailable', not a claimed completion."""
+    defn = _defn()
+    assert "Coverage: incomplete — execution unavailable" in defn
+    assert "not a claimed completion" in defn
+
+
+def test_falsify_p25_may_construct_but_not_claim_observed():
+    """P25: without execution the protocol may construct guards/perturbations/expected outcomes but not represent any execution-dependent verdict as observed."""
+    defn = _defn()
+    assert "may not represent any execution-dependent verdict as observed" in defn
+
+
 def test_falsify_p20_structural_bifurcation():
     """P20: a structural assertion is witnessed by Unobservable: structural — the deliberate behavioral/structural fork."""
     defn = _defn()

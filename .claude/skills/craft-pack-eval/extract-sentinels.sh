@@ -134,21 +134,35 @@ echo ""
 # are unique (appear exactly once). A shared cause (e.g. one compile error
 # 'undefined: parseToken' reused across N assertions) collapses to a single
 # unique cause and therefore witnesses at most one assertion, not N.
-read -r FAIL_TOTAL DISTINCT_CAUSES <<< "$(python3 -c "
+read -r FAIL_TOTAL DISTINCT_CAUSES PASS_LABELED <<< "$(python3 -c "
 import re
 from collections import Counter
-causes=[]
+# P17: a cause that indicates success does not count as a Failure.
+SUCCESS = re.compile(r'\b(ok|pass|passed|passes|passing|succeed|succeeded|success)\b', re.I)
+causes=[]; pass_labeled=0
 for l in open('$TRANSCRIPT'):
     # accept an optional property tag '[P1.1]' between 'assertion' and the quoted
     # assertion text, e.g. 'Failure: assertion [P1.1] — \"...\"' or 'Failure: assertion \"...\" — \"...\"'
     m=re.search(r'failure:\s*assertion\s*(?:\[[^\]]*\]\s*)?[—-]*\s*.*?[—-]+\s*[\"\x60](.*?)[\"\x60]', l, re.I)
-    if m: causes.append(m.group(1).strip())
+    if m:
+        cause=m.group(1).strip()
+        if SUCCESS.search(cause):
+            pass_labeled+=1          # P17: pass-labeled-as-Failure — does not count
+        else:
+            causes.append(cause)
 c=Counter(causes)
 distinct_attributable=sum(1 for cause,n in c.items() if n==1)
-print(len(causes), distinct_attributable)
-" 2>/dev/null || echo "0 0")"
+print(len(causes), distinct_attributable, pass_labeled)
+" 2>/dev/null || echo "0 0 0")"
 
-echo "Gate 3 Failure: assertion (parsed): $FAIL_TOTAL"
+# P17 witness line: 'witness: ... present and executes ... property ... violated ...'
+# The agent may name the actual symbol ('function foo is present and executes') rather
+# than the literal word 'symbol', so match on the present-and-executes + violated shape.
+WITNESS_LINES=$(count 'witness:.*(present and executes|symbol present)')
+
+echo "Gate 3 Failure: assertion (parsed, pass-labeled excluded): $FAIL_TOTAL"
+echo "  pass-labeled-as-Failure (P17, rejected): $PASS_LABELED"
+echo "  witness-validity lines (P17): $WITNESS_LINES"
 echo "Gate 3 distinct-cause (attributable): $DISTINCT_CAUSES"
 echo ""
 
@@ -174,15 +188,25 @@ if [[ "$FAIL_TOTAL" -ge 1 && "$DISTINCT_CAUSES" -eq "$FAIL_TOTAL" ]]; then
 elif [[ "$FAILA" -eq 0 && "$UNOBSA" -ge 1 ]]; then
   DISCRIMINATED=1               # all-structural-Unobservable run — no failures to discriminate
 fi
+# P17 witness-validity gate: every parsed Failure must carry a witness line, and no
+# pass-labeled failure may be present. Witnessed iff a witness line exists per parsed
+# Failure (>= FAIL_TOTAL) and no pass-labeled Failure was found.
+WITNESSED=0
+if [[ "$FAIL_TOTAL" -eq 0 || ( "$WITNESS_LINES" -ge "$FAIL_TOTAL" && "$PASS_LABELED" -eq 0 ) ]]; then
+  WITNESSED=1
+fi
 if [[ "$OBSERVED" -ge 1 \
   && "$DISCRIMINATED" -eq 1 \
+  && "$WITNESSED" -eq 1 \
   && "$OVERNF" -ge 1 \
   && "$AUDITCMP" -ge 1 \
   && "$COV" -ge 1 ]]; then
-  echo "PASS: three-gate sentinels consistent (observed=$OBSERVED, distinct-cause=$DISTINCT_CAUSES/$FAIL_TOTAL, Gate 1 clean, audit complete, coverage=$COV)"
+  echo "PASS: three-gate sentinels consistent (observed=$OBSERVED, distinct-cause=$DISTINCT_CAUSES/$FAIL_TOTAL, witness=$WITNESS_LINES, Gate 1 clean, audit complete, coverage=$COV)"
 else
   echo "FAIL: sentinel gap detected"
   [[ "$OBSERVED" -lt 1 ]]  && echo "  - Watch-item 1: no Gate-3 observation (Failure:/Unobservable: assertion) — no guard observed firing"
+  [[ "$WITNESSED" -eq 0 && "$PASS_LABELED" -gt 0 ]] && echo "  - P17: $PASS_LABELED 'Failure:' line(s) whose cause indicates success (ok/PASS/passed) — a pass does not witness absence"
+  [[ "$WITNESSED" -eq 0 && "$WITNESS_LINES" -lt "$FAIL_TOTAL" ]] && echo "  - P17: only $WITNESS_LINES witness-validity line(s) for $FAIL_TOTAL Failure(s) — each Failure must carry a checkable witness line"
   [[ "$DISCRIMINATED" -eq 0 && "$FAILA" -gt 0 && "$FAIL_TOTAL" -eq 0 ]] && echo "  - Watch-item 1: $FAILA raw 'Failure:' line(s) present but none parse as 'Failure: assertion [tag] — \"cause\"' — malformed/narrated failures do not witness discrimination"
   [[ "$DISCRIMINATED" -eq 0 && "$FAIL_TOTAL" -ge 1 ]] && echo "  - Watch-item 1: assertions not discriminated — only $DISTINCT_CAUSES of $FAIL_TOTAL failure causes are attributable to a single assertion; a shared cause (e.g. one compile error across all) does not witness each property"
   [[ "$OVERNF" -lt 1 ]]    && echo "  - Watch-item 2: no 'Overreach: not found' — Gate 1 minimization never reached a clean verdict"

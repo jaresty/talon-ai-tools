@@ -227,6 +227,34 @@ def test_falsify_p12_already_satisfied_temporary_violation():
     assert "then restore" in defn
 
 
+def test_falsify_p12_temp_violation_isolated_to_one_assertion():
+    """P17: the temporary violating modification must violate exactly one assertion's property while the others still pass — not a whole-artifact break."""
+    defn = _defn()
+    assert "must violate exactly one assertion's property while the others still pass" in defn
+
+
+# --- P17: witness-validity gate — the three failure conditions as a checkable filter ---
+
+def test_falsify_p17_witness_validity_line_required():
+    """P17: each Failure must carry a witness-validity line making the three conditions checkable, not merely described."""
+    defn = _defn()
+    assert "witness:" in defn
+    assert "symbol present" in defn
+
+
+def test_falsify_p17_rejects_pass_labeled_as_failure():
+    """P17: a Failure whose observed cause indicates a pass (ok/PASS/passed/succeeded) is not a failure observation."""
+    defn = _defn()
+    assert "an observed outcome that indicates success" in defn
+    assert "does not count as a Failure" in defn
+
+
+def test_falsify_p17_failure_without_witness_uncounted():
+    """P17: a Failure line without a passing witness-validity line does not count toward Coverage."""
+    defn = _defn()
+    assert "A 'Failure:' line without a passing witness line does not count" in defn
+
+
 def test_falsify_p12_per_assertion_outcome_unconditional():
     """P13: the per-assertion outcome is unconditionally required — the tool result must produce an outcome attributable to each assertion alone, regardless of whether the model recognizes any insufficiency."""
     defn = _defn()

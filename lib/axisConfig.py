@@ -4584,7 +4584,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "facilitate",
                 },
                 {
-                    "note": "elicit = static instrument the holder operates; socratic = LLM asks the user questions interactively to surface their thinking",
+                    "note": "elicit = instructions to the holder (ask, listen for, record), whether as a standalone instrument or within a live process; socratic = LLM asks the "
+                    "user questions interactively to surface their thinking",
                     "token": "socratic",
                 },
             ],
@@ -4595,7 +4596,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "user research protocol",
                 "survey with context",
                 "what to ask and listen for",
-                "questions for someone else to administer",
+                "questions for a holder to administer",
             ],
         },
         "facilitate": {

@@ -104,6 +104,25 @@ class TestFrameSpikeSequence(unittest.TestCase):
         self.assertNotIn("form:quiz", tokens,
                          "frame-spike is artifact-output — no quiz step")
 
+    # property [5a]: the co-creation step carries the elicit+dimension token
+    def test_frame_spike_cocreation_step_token(self):
+        seq = self.sequences["frame-spike"]
+        tokens = [s.get("token") for s in seq["steps"]]
+        self.assertIn("make form:elicit method:dimension", tokens,
+                      "frame-spike must have a co-creation step surfacing evaluation "
+                      "axes (method:dimension) as holder instructions (form:elicit)")
+
+    # property [5b]: that co-creation step pauses for the explorer
+    def test_frame_spike_cocreation_step_requires_user_input(self):
+        seq = self.sequences["frame-spike"]
+        cocreate = [s for s in seq["steps"]
+                    if s.get("token") == "make form:elicit method:dimension"]
+        self.assertTrue(cocreate,
+                        "frame-spike co-creation step must exist")
+        self.assertTrue(cocreate[0].get("requires_user_input"),
+                        "frame-spike co-creation step must pause for the explorer "
+                        "(requires_user_input=True)")
+
     # property [6]: domain-agnostic
     def test_frame_spike_domain_agnostic(self):
         seq = self.sequences["frame-spike"]

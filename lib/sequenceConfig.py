@@ -793,10 +793,10 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Each agent receives only the subject and its assigned spike direction. Produce a quick throwaway artifact exploring that direction — deliberately low rigor: no test-first discipline, no experiment cycle, no verification stack. The goal is a rough, discardable artifact that reveals what the direction feels like, not a kept, hardened one. Return the artifact in a labeled block naming the direction it explored.",
             },
             {
-                "type": "action",
+                "token": "make form:elicit method:dimension",
                 "role": "co-creation and review",
                 "requires_user_input": True,
-                "prompt_hint": "Present the throwaway spike artifacts side by side and co-create on them with the explorer — react, combine, and refine directions together. This is a collaborative pause: the explorer's input shapes whether to spin a fresh round of directions or stop. Do not converge yet.",
+                "prompt_hint": "Open by surfacing the dimensions worth evaluating the spikes along (method:dimension) — the analytical axes on which these throwaway artifacts differ and matter (what each makes easy, what it costs, what it forecloses). For each axis, name what to ask, listen for, and record as you review (form:elicit); these are the questions you hold in mind while reviewing, and your answers to them feed the learning-extraction step. Then present the spike artifacts side by side and co-create on them with the explorer against those axes — react, combine, and refine directions together. This is a collaborative pause: the explorer's input shapes whether to spin a fresh round of directions or stop. Do not converge yet.",
             },
             {
                 "token": "make method:converge",

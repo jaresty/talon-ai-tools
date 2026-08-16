@@ -260,10 +260,20 @@ fi
 # tool-results. All-structural-Unobservable runs (no FAILA) are exempt.
 DIFF_OK=0
 if [[ "$FAILA" -eq 0 || "$DIFFERENTIAL" -eq 1 ]]; then DIFF_OK=1; fi
-# Machine differential is authoritative: if the tool-results carry the real A-fail/A-pass
-# pair (DIFFERENTIAL=1) and no pass/absence Failure was parsed, discrimination is satisfied
-# regardless of the prose distinct-cause count (single assertion re-quoted per property).
-if [[ "$DIFFERENTIAL" -eq 1 && "$PASS_LABELED" -eq 0 && "$ABSENCE_LABELED" -eq 0 ]]; then DISCRIMINATED=1; fi
+# Machine differential is AUTHORITATIVE over prose cause-classification. DIFFERENTIAL=1 is
+# computed only from tool_result blocks and already means: an assertion-level A-fail AND an
+# A-pass exist, with execution errors (compile/undefined/panic) excluded from the fail side.
+# So when it is 1, discrimination is established regardless of the prose PASS_LABELED /
+# ABSENCE_LABELED heuristics — those parse the model's authored Failure line and mis-fire on
+# e.g. the substring 'pass' inside an '[A-pass ...]' annotation (scenario E, an absence
+# property), or a value-mismatch quoted with framework noise. The prose heuristics remain as
+# corroborating diagnostics but must not override a machine-confirmed discrimination. They
+# still gate when DIFFERENTIAL=0 (no machine pair) — that is where compile-absence lives.
+if [[ "$DIFFERENTIAL" -eq 1 ]]; then
+  DISCRIMINATED=1
+elif [[ "$PASS_LABELED" -eq 0 && "$ABSENCE_LABELED" -eq 0 && "$FAIL_TOTAL" -ge 1 && "$DISTINCT_CAUSES" -eq "$FAIL_TOTAL" ]]; then
+  DISCRIMINATED=1
+fi
 # Witness line is OPTIONAL under the de-collapsed definition ("a 'witness:' line, if added,
 # only projects those two results and is not itself evidence") — the tool-result is the
 # evidence, so do not require a witness line.

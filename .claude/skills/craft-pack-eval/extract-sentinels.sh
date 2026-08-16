@@ -1,7 +1,17 @@
 #!/usr/bin/env bash
-# extract-sentinels.sh — extract ground+falsify sentinel lines from a transcript
+# extract-sentinels.sh — extract three-gate falsify sentinel lines from a transcript
 # Usage: bash extract-sentinels.sh <scenario-letter>
 # Output: sentinel lines in order, with line numbers, to stdout
+#
+# THREE-GATE CONTRACT (post-redesign 2026-08-15):
+#   falsify is two retrospective gates over established guards, no forced ordering,
+#   no per-property Observing:/Assertion inventory:/witness bookkeeping.
+#   Gate 1 (minimization): Overreach: found / Overreach: not found
+#   Gate 3 (observed failure): Failure: assertion "..." per executable assertion,
+#     or Unobservable: assertion "..." — structural
+#   Gate 2 (composition, ground+falsify): coverage against Retained properties:,
+#     terminating on a no-change pass; gaps emit Audit: implementation gap and re-enter Ground.
+#   Coverage: complete is valid only after Audit: implementation complete.
 set -euo pipefail
 
 SCENARIO="${1:-}"
@@ -31,7 +41,7 @@ print('\n'.join(lines))
   fi
 fi
 
-echo "=== Sentinel extraction: scenario $SCENARIO ==="
+echo "=== Sentinel extraction (three-gate falsify): scenario $SCENARIO ==="
 echo ""
 
 # Ground properties block
@@ -39,143 +49,144 @@ echo "--- Ground properties block ---"
 grep -in "ground properties:" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# All property [N]: lines
-echo "--- Properties ---"
-grep -in "\bproperty \[" "$TRANSCRIPT" || echo "(absent)"
+echo "--- Retained properties ---"
+grep -in "retained properties:" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Interpretation line
-echo "--- Interpretation ---"
-grep -in "interpretation:" "$TRANSCRIPT" || echo "(absent)"
+echo "--- § ground complete ---"
+grep -in "ground complete" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Step (1): Observing
-echo "--- (1) Observing ---"
-grep -in "observing: property \[" "$TRANSCRIPT" || echo "(absent)"
+# Gap observation (opener)
+echo "--- Observing gap ---"
+grep -in "observing gap:" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Step (2): Assertion inventory
-echo "--- (2) Assertion inventory ---"
-grep -in "property \[.*\] assertion \[" "$TRANSCRIPT" || echo "(absent)"
+# Gate 3: per-assertion failure observations (watch-item 1: did every guard fire?)
+echo "--- Gate 3: Failure: assertion ---"
+grep -in "failure: assertion" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Step (2): Assertion inventory complete
-echo "--- (2) Assertion inventory ---"
-grep -in "assertion inventory:" "$TRANSCRIPT" || echo "(absent)"
+echo "--- Gate 3: Unobservable: assertion — structural ---"
+grep -in "unobservable: assertion" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Step (2): Quoted test
-echo "--- (2) Quoted test ---"
-grep -in "quoted test:" "$TRANSCRIPT" || echo "(absent)"
+# Gate 1: minimization / overreach (watch-item 2: did impl do more than guards cover?)
+echo "--- Gate 1: Overreach: found ---"
+grep -in "overreach: found" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Step (3): Test blind-spot
-echo "--- (3) Test blind-spot ---"
-grep -in "test blind-spot:" "$TRANSCRIPT" || echo "(absent)"
+echo "--- Gate 1: Overreach: not found ---"
+grep -in "overreach: not found" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Step (4): Failure or Unobservable
-echo "--- (4) Failure ---"
-grep -in "failure: property \[" "$TRANSCRIPT" || echo "(absent)"
-echo ""
-echo "--- (4) Unobservable ---"
-grep -in "unobservable: property \[" "$TRANSCRIPT" || echo "(absent)"
+# Gate 2 (composition) + audit
+echo "--- Audit: implementation gap ---"
+grep -in "audit: implementation gap" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Step (4): Observation correspondence
-echo "--- (4) Observation correspondence ---"
-grep -in "observation correspondence:" "$TRANSCRIPT" || echo "(absent)"
+echo "--- Audit: implementation complete ---"
+grep -in "audit: implementation complete" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
-# Step (4): Assertion witnesses
-echo "--- (4) Assertion witnesses ---"
-grep -in "assertion witnesses:" "$TRANSCRIPT" || echo "(absent)"
-echo ""
-
-# Step (5): Quoted implementation
-echo "--- (5) Quoted implementation ---"
-grep -in "quoted implementation:" "$TRANSCRIPT" || echo "(absent)"
-echo ""
-
-# Step (6): Implementation overreach
-echo "--- (6) Implementation overreach ---"
-grep -in "implementation overreach:" "$TRANSCRIPT" || echo "(absent)"
-echo ""
-
-# Implementation audit
-echo "--- Audit ---"
-grep -in "audit: implementation" "$TRANSCRIPT" || echo "(absent)"
-echo ""
-
-# Coverage
+# Coverage (watch-item 3: did all properties get met?)
 echo "--- Coverage ---"
-grep -in "coverage: \(complete\|gap\)" "$TRANSCRIPT" || echo "(absent)"
+grep -in "coverage: complete" "$TRANSCRIPT" || echo "(absent)"
 echo ""
 
 # Summary counts
 echo "=== Summary ==="
-PROPS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^[-\s]*\*{0,2}property \[\d+\w*\]:', l.strip(), re.I)))" 2>/dev/null || echo 0)
-OBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^#{0,6}\s*\*{0,2}Observing:?\*{0,2}:? property \[', l, re.I)))" 2>/dev/null || echo 0)
-QTST=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Quoted test:?\*{0,2}:?', l, re.I)))" 2>/dev/null || echo 0)
-TBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Test blind-spot:?\*{0,2}:?', l, re.I)))" 2>/dev/null || echo 0)
-FAIL=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Failure:?\*{0,2}:? property \[', l, re.I)))" 2>/dev/null || echo 0)
-UNOBS=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Unobservable:?\*{0,2}:? property \[', l, re.I)))" 2>/dev/null || echo 0)
-QIMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Quoted implementation:?\*{0,2}:?', l, re.I)))" 2>/dev/null || echo 0)
-IBSP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^\*{0,2}Implementation overreach:?\*{0,2}:?', l, re.I)))" 2>/dev/null || echo 0)
-COV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'^#{0,6}\s*\*{0,2}Coverage:?\*{0,2}:? (complete|gap)', l, re.I)))" 2>/dev/null || echo 0)
-AINV=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'assertion inventory: complete', l, re.I)))" 2>/dev/null || echo 0)
-AWIT=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'assertion witnesses: complete', l, re.I)))" 2>/dev/null || echo 0)
-OBSC=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'observation correspondence:', l, re.I)))" 2>/dev/null || echo 0)
-AUDITCMP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'audit: implementation complete', l, re.I)))" 2>/dev/null || echo 0)
-AUDITGAP=$(python3 -c "import re; lines=open('$TRANSCRIPT').readlines(); print(sum(1 for l in lines if re.search(r'audit: implementation gap', l, re.I)))" 2>/dev/null || echo 0)
+count() { python3 -c "import re,sys; print(sum(1 for l in open('$TRANSCRIPT') if re.search(r'$1', l, re.I)))" 2>/dev/null || echo 0; }
 
-echo "Properties defined:              $PROPS"
-echo "(1) Observing: lines:            $OBS"
-echo "(2) Assertion inventory complete: $AINV"
-echo "(2) Quoted test: lines:          $QTST"
-echo "(3) Test blind-spot: lines:      $TBSP"
-echo "(4) Failure: lines:              $FAIL"
-echo "(4) Unobservable: lines:         $UNOBS"
-echo "(4) Observation correspondence:  $OBSC"
-echo "(4) Assertion witnesses complete: $AWIT"
-echo "(5) Quoted implementation: lines: $QIMP"
-echo "(6) Implementation overreach:    $IBSP"
+RETAINED=$(count 'retained properties:')
+GROUNDCMP=$(count 'ground complete')
+FAILA=$(count 'failure: assertion')
+UNOBSA=$(count 'unobservable: assertion')
+OVERF=$(count 'overreach: found')
+OVERNF=$(count 'overreach: not found')
+SURPLUS=$(count 'audit: implementation surplus')
+# P10/P11: enumerated 'Assertion:' lines and their property tags '[P N.m]'
+ASSERT_LINES=$(count "^\s*\**assertion(\s*\[|:)")
+ASSERT_TAGGED=$(count "assertion\s*\[p\s*\d")
+AUDITGAP=$(count 'audit: implementation gap')
+AUDITCMP=$(count 'audit: implementation complete')
+COV=$(count 'coverage: complete')
+
+echo "Retained properties: lines:      $RETAINED"
+echo "§ ground complete:               $GROUNDCMP"
+echo "Gate 3 Failure: assertion:       $FAILA"
+echo "Gate 3 Unobservable: assertion:  $UNOBSA"
+echo "Gate 1 Overreach: found:         $OVERF"
+echo "Gate 1 Overreach: not found:     $OVERNF"
 echo "Audit: implementation gap:       $AUDITGAP"
+echo "Audit: implementation surplus:   $SURPLUS  (informational — Gate 2 'more' direction)"
+echo "Enumerated Assertion: lines:     $ASSERT_LINES  (P10 — visible per-assertion enumeration)"
+echo "Property-tagged assertions:      $ASSERT_TAGGED  (P11 — assertion↔property map)"
 echo "Audit: implementation complete:  $AUDITCMP"
-echo "Coverage: lines:                 $COV"
+echo "Coverage: complete:              $COV"
 echo ""
 
-# Compliance check — use Observing: count as cycle denominator.
-# Observing: is emitted exactly once per retained property and cannot be inflated
-# by guard iteration (a property may have multiple Quoted test: lines when the
-# blind-spot check triggers guard revision). Quoted test count must be >= Observing
-# count (each property needs at least one guard) but may exceed it.
-# Assertion inventory: complete must precede each Quoted test: (checked by count parity).
-# Assertion witnesses: complete must follow each Failure:/Unobservable: (checked by count parity).
-# Audit: implementation complete must appear before Coverage: complete.
-CYCLES="$OBS"
-RESOLVED=$((FAIL + UNOBS))
-if [[ "$CYCLES" -gt 0 \
-  && "$AINV" -ge "$CYCLES" \
-  && "$QTST" -ge "$CYCLES" \
-  && "$TBSP" -ge "$CYCLES" \
-  && "$RESOLVED" -ge "$CYCLES" \
-  && "$AWIT" -ge "$RESOLVED" \
-  && "$QIMP" -ge "$CYCLES" \
-  && "$IBSP" -ge "$CYCLES" \
+# Per-assertion discrimination (allow-list criterion, P8).
+# An assertion is validly witnessed only when its observed failure cause is
+# ATTRIBUTABLE TO IT ALONE — i.e. distinct from every other assertion's cause.
+# We compute this positively: extract the quoted observed-cause from each
+# 'Failure: assertion "<assertion>" — "<cause>"' line and count how many causes
+# are unique (appear exactly once). A shared cause (e.g. one compile error
+# 'undefined: parseToken' reused across N assertions) collapses to a single
+# unique cause and therefore witnesses at most one assertion, not N.
+read -r FAIL_TOTAL DISTINCT_CAUSES <<< "$(python3 -c "
+import re
+from collections import Counter
+causes=[]
+for l in open('$TRANSCRIPT'):
+    # accept an optional property tag '[P1.1]' between 'assertion' and the quoted
+    # assertion text, e.g. 'Failure: assertion [P1.1] — \"...\"' or 'Failure: assertion \"...\" — \"...\"'
+    m=re.search(r'failure:\s*assertion\s*(?:\[[^\]]*\]\s*)?[—-]*\s*.*?[—-]+\s*[\"\x60](.*?)[\"\x60]', l, re.I)
+    if m: causes.append(m.group(1).strip())
+c=Counter(causes)
+distinct_attributable=sum(1 for cause,n in c.items() if n==1)
+print(len(causes), distinct_attributable)
+" 2>/dev/null || echo "0 0")"
+
+echo "Gate 3 Failure: assertion (parsed): $FAIL_TOTAL"
+echo "Gate 3 distinct-cause (attributable): $DISTINCT_CAUSES"
+echo ""
+
+# Compliance check — three-gate contract.
+# Watch-item 1 (every guard DISTINGUISHED, not merely fired): every parsed
+#   Failure: assertion must have a cause attributable to it alone — DISTINCT_CAUSES
+#   must equal FAIL_TOTAL (no shared cause). Unobservable: structural assertions
+#   are exempt (their justification is the structural subject, not a failure state).
+#   At least one Gate-3 observation must exist overall.
+# Watch-item 2 (no uncovered overreach): Gate 1 reached 'Overreach: not found'.
+# Watch-item 3 (all properties met): Coverage: complete present, preceded by
+#   Audit: implementation complete.
+OBSERVED=$((FAILA + UNOBSA))
+# Discrimination is judged on PARSED failures. There is no vacuous-pass escape:
+# a run must produce at least one parseable, distinctly-attributed Failure
+# observation (or be an all-structural-Unobservable run). If raw Failure: lines
+# exist but none parse (FAIL_TOTAL=0 while FAILA>0), the failures are malformed —
+# that is a FAIL, not a pass. Structural Unobservable-only runs (UNOBSA>0, FAILA=0)
+# are the only way to have zero parsed failures and still pass.
+DISCRIMINATED=0
+if [[ "$FAIL_TOTAL" -ge 1 && "$DISTINCT_CAUSES" -eq "$FAIL_TOTAL" ]]; then
+  DISCRIMINATED=1               # every parsed failure attributable to one assertion
+elif [[ "$FAILA" -eq 0 && "$UNOBSA" -ge 1 ]]; then
+  DISCRIMINATED=1               # all-structural-Unobservable run — no failures to discriminate
+fi
+if [[ "$OBSERVED" -ge 1 \
+  && "$DISCRIMINATED" -eq 1 \
+  && "$OVERNF" -ge 1 \
   && "$AUDITCMP" -ge 1 \
   && "$COV" -ge 1 ]]; then
-  echo "PASS: sentinel counts consistent (cycles=$CYCLES, all 6 steps complete, audit complete, coverage=$COV)"
+  echo "PASS: three-gate sentinels consistent (observed=$OBSERVED, distinct-cause=$DISTINCT_CAUSES/$FAIL_TOTAL, Gate 1 clean, audit complete, coverage=$COV)"
 else
   echo "FAIL: sentinel gap detected"
-  [[ "$CYCLES" -eq 0 ]]           && echo "  - No Observing: lines found — no cycles completed"
-  [[ "$AINV" -lt "$CYCLES" ]]     && echo "  - (2) Missing Assertion inventory: complete lines ($AINV of $CYCLES cycles)"
-  [[ "$QTST" -lt "$CYCLES" ]]     && echo "  - (2) Missing Quoted test: lines ($QTST of $CYCLES cycles)"
-  [[ "$TBSP" -lt "$CYCLES" ]]     && echo "  - (3) Missing Test blind-spot: lines ($TBSP of $CYCLES cycles)"
-  [[ "$RESOLVED" -lt "$CYCLES" ]] && echo "  - (4) Missing Failure:/Unobservable: lines ($RESOLVED of $CYCLES cycles)"
-  [[ "$AWIT" -lt "$RESOLVED" ]]   && echo "  - (4) Missing Assertion witnesses: complete lines ($AWIT of $RESOLVED resolved cycles)"
-  [[ "$QIMP" -lt "$CYCLES" ]]     && echo "  - (5) Missing Quoted implementation: lines ($QIMP of $CYCLES cycles)"
-  [[ "$IBSP" -lt "$CYCLES" ]]     && echo "  - (6) Missing Implementation overreach: lines ($IBSP of $CYCLES cycles)"
-  [[ "$AUDITCMP" -lt 1 ]]         && echo "  - Missing Audit: implementation complete sentinel (required before Coverage: complete)"
-  [[ "$COV" -lt 1 ]]              && echo "  - Missing Coverage: sentinel"
+  [[ "$OBSERVED" -lt 1 ]]  && echo "  - Watch-item 1: no Gate-3 observation (Failure:/Unobservable: assertion) — no guard observed firing"
+  [[ "$DISCRIMINATED" -eq 0 && "$FAILA" -gt 0 && "$FAIL_TOTAL" -eq 0 ]] && echo "  - Watch-item 1: $FAILA raw 'Failure:' line(s) present but none parse as 'Failure: assertion [tag] — \"cause\"' — malformed/narrated failures do not witness discrimination"
+  [[ "$DISCRIMINATED" -eq 0 && "$FAIL_TOTAL" -ge 1 ]] && echo "  - Watch-item 1: assertions not discriminated — only $DISTINCT_CAUSES of $FAIL_TOTAL failure causes are attributable to a single assertion; a shared cause (e.g. one compile error across all) does not witness each property"
+  [[ "$OVERNF" -lt 1 ]]    && echo "  - Watch-item 2: no 'Overreach: not found' — Gate 1 minimization never reached a clean verdict"
+  [[ "$OVERF" -gt 0 && "$OVERNF" -lt 1 ]] && echo "  - Watch-item 2: 'Overreach: found' emitted but never resolved to 'Overreach: not found'"
+  [[ "$AUDITCMP" -lt 1 ]]  && echo "  - Watch-item 3: missing 'Audit: implementation complete' (required before Coverage: complete)"
+  [[ "$COV" -lt 1 ]]       && echo "  - Watch-item 3: missing 'Coverage: complete'"
 fi

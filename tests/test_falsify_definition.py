@@ -1,6 +1,17 @@
-"""Tests for the falsify token definition — spike/craft-token-refactor six-step cycle form."""
+"""Tests for the falsify token definition — three-gate retrospective form.
+
+falsify is now two retrospective gates over established guards:
+  Gate 1 (minimization) and Gate 3 (observed failure by perturbation),
+with no forced per-property ordering and no self-declared count/correspondence
+bookkeeping. The coverage-against-retained-properties gate (Gate 2) lives in the
+ground+falsify composition, not in this token.
+
+Each test asserts a property (P1..P7) of the definition string. They must FAIL
+against the old six-step forward-walk definition and PASS after the redesign.
+"""
 import sys
 import os
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from lib.axisConfig import AXIS_KEY_TO_VALUE
@@ -10,197 +21,248 @@ def _defn():
     return AXIS_KEY_TO_VALUE["method"]["falsify"]
 
 
-# --- Absence tests (old labeling scheme must be gone) ---
+# --- Shared framing ---
 
-def test_falsify_old_file_nonexistence_clause_absent():
-    """Old 'file path as literal string in executor invocation' clause must be absent."""
-    assert "whose file path — the path passed as an argument to the executor invocation" not in _defn()
-
-
-def test_falsify_rationale_opener_starts_with_the_response():
-    """Definition must open with 'The response'."""
-    assert _defn().startswith("The response")
-
-
-# --- Six-step cycle sentinels present ---
-
-def test_falsify_observing_sentinel():
-    """Step (1): Observing: property sentinel must be required."""
-    assert "Observing: property" in _defn()
-
-
-def test_falsify_quoted_test_sentinel():
-    """Step (2): Quoted test: sentinel must be required."""
-    assert "Quoted test:" in _defn()
-
-
-def test_falsify_test_blind_spot_sentinel():
-    """Step (3): Test blind-spot: sentinel must be required."""
-    assert "Test blind-spot:" in _defn()
-
-
-def test_falsify_failure_sentinel():
-    """Step (4): Failure: property sentinel must be required."""
-    assert "Failure: property" in _defn()
-
-
-def test_falsify_unobservable_sentinel():
-    """Step (4): Unobservable: property sentinel as last-resort must be present."""
-    assert "Unobservable: property" in _defn()
-
-
-def test_falsify_quoted_implementation_sentinel():
-    """Step (5): Quoted implementation: sentinel must be required."""
-    assert "Quoted implementation:" in _defn()
-
-
-def test_falsify_quoted_implementation_verbatim_in_preceding_tool_result():
-    """property [1b]: Quoted implementation: content must appear verbatim in the immediately preceding modification tool-result block (post-edit)."""
-    assert "does not appear verbatim as literal artifact text in the immediately preceding modification tool-result block does not satisfy this token" in _defn()
-
-
-def test_falsify_quoted_implementation_rejects_paraphrase():
-    """property [2]: a purpose/effect/plan paraphrase does not satisfy Quoted implementation:."""
-    assert "a description of the change's purpose, effect, or plan" in _defn()
-
-
-def test_falsify_quoted_implementation_must_flip_failure_witness():
-    """property [1] (comment gap): quoted text must be the artifact text whose introduction flips the Failure witness; text whose removal leaves the guard outcome unchanged (e.g. a comment) does not satisfy the token."""
-    assert "text whose removal would leave the outcome of the guard that produced this property's Failure: witness unchanged does not satisfy this token" in _defn()
-
-
-def test_falsify_guard_should_prefer_behavioral_over_static():
-    """property [1] (static-guard drift): step (2) should prefer executing the governed behavior over inspecting its text when the artifact has executable behavior."""
-    assert "should prefer a guard that executes that behavior and derives its assertions from the observed output over a guard that inspects the artifact's source text, structure, or metadata without executing it" in _defn()
-
-
-def test_falsify_guard_static_choice_requires_justification():
-    """property [2] (static-guard drift): choosing a static guard where behavior was executable requires a one-line justification."""
-    assert "emit a one-line justification for why a static guard was chosen" in _defn()
-
-
-def test_falsify_quoted_implementation_after_edit():
-    """property [1a]: Quoted implementation: must appear AFTER the modification tool-result block; a line appearing before the modification tool call does not satisfy the token."""
-    assert "a 'Quoted implementation:' line that appears before the modification tool call does not satisfy this token" in _defn()
-
-
-def test_falsify_quoted_implementation_names_property():
-    """property [2]: the Quoted implementation: sentinel form must identify the property being closed (property [N])."""
-    assert "Quoted implementation: property [N]:" in _defn()
-
-
-def test_falsify_implementation_overreach_sentinel():
-    """Step (6): Implementation overreach: sentinel must be required."""
-    assert "Implementation overreach:" in _defn()
-
-
-def test_falsify_coverage_sentinel():
-    """Coverage: sentinel must be required after all properties complete."""
-    assert "Coverage:" in _defn()
-
-
-# --- Key semantic invariants ---
-
-def test_falsify_regression_guard_required():
-    """A regression guard must be established for each property."""
-    assert "regression guard" in _defn()
-
-
-def test_falsify_governed_artifact_generalized():
-    """Step (5) target is the governed artifact, not specifically the implementation."""
-    assert "governed artifact" in _defn()
-
-
-def test_falsify_temporary_violating_state():
-    """Pre-satisfied properties must construct a temporary violating state."""
-    assert "temporary" in _defn()
-
-
-def test_falsify_unobservable_is_last_resort():
-    """Unobservable: is a last resort, not an easy escape."""
-    assert "last resort" in _defn()
-
-
-def test_falsify_universality_no_exemption():
-    """No property class may abbreviate or skip steps."""
-    assert "without abbreviation" in _defn()
-
-
-# --- Assertion witness classification (step 4 extension) ---
-
-def test_falsify_assertion_witness_sentinel():
-    """Step (4): witness classification sentinel must be present."""
-    assert "Assertion witnesses: complete" in _defn()
-
-
-def test_falsify_assertion_witness_classifications():
-    """Witness classifications Failure, Success, Unobservable must all be named (Unreached replaced by Unobservable)."""
+def test_falsify_rationale_opener():
+    """Definition still opens with the regression-detection rationale."""
     defn = _defn()
-    assert "witness: Failure" in defn
-    assert "witness: Success" in defn
-    assert "witness: Unobservable" in defn
+    assert defn.startswith("The response observes each gap between intent and current state")
+    assert "detect regression without human initiation" in defn
 
 
-def test_falsify_assertion_witness_at_least_one_failure():
-    """At least one Failure witness required — no-failure execution does not satisfy step (4)."""
-    assert "classified Failure does not satisfy step (4)" in _defn()
+# --- P1: no inter-property ordering clause ---
+
+def test_falsify_p1_no_forced_ordering_clause():
+    """P1: the forced 'K < N' inter-property ordering clause must be gone."""
+    assert "where K < N" not in _defn()
 
 
-def test_falsify_assertion_witness_verbatim_attribution():
-    """Failure witness observed text must appear verbatim in the corresponding tool-result block."""
-    assert "not present verbatim in the corresponding tool-result block does not satisfy this token" in _defn()
+def test_falsify_p1_no_may_be_emitted_only_after():
+    """P1: no clause ordering one property's cycle after another's completion."""
+    assert "may be emitted only after every property" not in _defn()
 
 
-def test_falsify_assertion_witness_replays_assertion_text():
-    """Each witness line must quote the verbatim assertion text from the inventory."""
+def test_falsify_p1_any_order_permitted():
+    """P1: test and implementation may be written in any order."""
+    assert "may be written in any order" in _defn()
+
+
+# --- P2: minimization gate ---
+
+def test_falsify_p2_gate_1_minimization_present():
+    """P2: Gate 1 minimization is named."""
     defn = _defn()
-    assert "verbatim assertion text" in defn
-    assert "assertion inventory order" in defn
+    assert "Gate 1" in defn
+    assert "Minimization" in defn
 
 
-def test_falsify_assertion_witness_unreached_requires_reason():
-    """Unobservable witness must be justified by a verbatim tool-result excerpt."""
-    assert "Unobservable is the last resort and must be justified by a verbatim tool-result excerpt" in _defn()
-
-
-def test_falsify_assertion_witness_count_matches_inventory():
-    """Witness count must equal the inventory count."""
-    assert "a witness count that differs from the inventory count does not satisfy this token" in _defn()
-
-
-def test_falsify_assertion_witness_before_step_5():
-    """Witness block must precede step (5)."""
+def test_falsify_p2_overreach_proven_by_perturbation():
+    """P2: overreach must be proven by perturbation observed in a tool-result, not asserted."""
     defn = _defn()
-    assert defn.index("Assertion witnesses: complete") < defn.index("(5) identify the governed artifact")
+    assert "Overreach: found" in defn
+    assert "Overreach: not found" in defn
+    assert "perturbing whatever is necessary" in defn
 
 
-def test_falsify_failure_must_immediately_follow_tool_result():
-    """Failure: line must immediately follow the execution tool-result block — no narrative permitted."""
-    assert "the text immediately following the execution tool-result block must be the Failure: line for property [N]" in _defn()
+# --- P3: observed-failure gate ---
 
-
-def test_falsify_failure_narrative_substitution_forbidden():
-    """Prose explanation, causal argument, or reference to prior failure does not satisfy Failure:."""
-    assert "no narrative, causal argument, prose explanation, reference to a prior failure, or other content may appear between the tool-result block and the Failure: line" in _defn()
-
-
-def test_falsify_failure_not_immediately_following_fails():
-    """A Failure: line not immediately following a tool-result block does not satisfy the token."""
-    assert "a Failure: line that does not immediately follow a tool-result block does not satisfy this token" in _defn()
-
-
-# --- Governed artifact scope (step 5): the artifact the guard governs, never the guard itself ---
-
-def test_falsify_governed_artifact_menu_clause_absent():
-    """The permissive menu-of-artifact-types clause must be gone from step (5)."""
-    assert (
-        "the governed artifact may be the implementation, the regression guard, "
-        "a configuration file, or another explicitly governed artifact"
-    ) not in _defn()
-
-
-def test_falsify_governed_artifact_is_what_guard_governs():
-    """Step (5) must scope the governed artifact to what the established guard governs, never the guard itself."""
+def test_falsify_p3_gate_3_observed_failure_present():
+    """P3: Gate 3 (token) observed-failure is named."""
     defn = _defn()
-    assert "the governed artifact is the artifact that the established regression guard governs" in defn
-    assert "it is never the guard itself" in defn
+    assert "Gate 3" in defn
+    assert "Observed failure" in defn
+
+
+def test_falsify_p3_every_executable_assertion():
+    """P3: every executable assertion must be observed failing against a violating state."""
+    defn = _defn()
+    assert "every executable assertion" in defn
+    assert "Failure: assertion" in defn
+
+
+def test_falsify_p3_blind_spot_constructions_named():
+    """P3: proxy/non-exercising, durability, and ephemeral blind-spot constructions must be checked."""
+    defn = _defn()
+    assert "blind spot" in defn
+    assert "durability" in defn
+    assert "ephemeral" in defn
+
+
+# --- P4: no self-declared count/correspondence bookkeeping ---
+
+def test_falsify_p4_no_assertion_inventory_count_sentinel():
+    """P4: the self-declared inventory count sentinel must be gone."""
+    assert "Assertion inventory: complete" not in _defn()
+
+
+def test_falsify_p4_no_assertion_witnesses_count_sentinel():
+    """P4: the self-declared witness count sentinel must be gone."""
+    assert "Assertion witnesses: complete" not in _defn()
+
+
+def test_falsify_p4_no_observation_correspondence_sentinel():
+    """P4: the observation-correspondence harness sentinel must be gone."""
+    assert "Observation correspondence:" not in _defn()
+
+
+# --- P5: Unobservable gated on structural subject, not a demonstrated negative ---
+
+def test_falsify_p5_unobservable_requires_structural_subject():
+    """P5: Unobservable is admitted only when the guarded property's subject is the artifact's own text/structure."""
+    defn = _defn()
+    assert "Unobservable: assertion" in defn
+    assert "structural" in defn
+    assert "artifact's own text or structure as its primary subject" in defn
+
+
+def test_falsify_p5_unobservable_not_by_demonstrated_negative():
+    """P5: Unobservable must NOT be satisfied merely by having searched for a violating state and found none."""
+    assert "never satisfied by having searched for a violating state and found none" in _defn()
+
+
+# --- P7: Gate 3 failure valid only from a committed, re-runnable guard artifact ---
+
+def test_falsify_p7_guard_must_be_committed_artifact():
+    """P7: a Failure observation is valid only when produced by executing a committed, re-runnable guard artifact."""
+    defn = _defn()
+    assert "committed, re-runnable" in defn
+
+
+def test_falsify_p7_inline_command_not_valid_guard():
+    """P7: an inline/ephemeral command cannot be the guard that produces a valid Failure observation."""
+    assert "never from an inline or ephemeral command" in _defn()
+
+
+# --- P8: Gate 3 must discriminate per assertion — whole-symbol absence does not witness all ---
+
+def test_falsify_p8_positive_discrimination_criterion():
+    """P8 (allow-list): Gate 3 states the positive criterion — symbol present and executes, this property violated, others could hold, cause attributable to this assertion alone."""
+    defn = _defn()
+    assert "the governed symbol is present and executes" in defn
+    assert "every" in defn and "other retained assertion's property could simultaneously hold" in defn
+    assert "attributable to this assertion alone" in defn
+
+
+def test_falsify_p8_stated_as_positive_test_not_denylist():
+    """P8: the criterion is framed as a positive test each assertion must pass, not an enumeration of forbidden failure types."""
+    defn = _defn()
+    assert "This is the positive test each assertion must pass" in defn
+
+
+def test_falsify_p8_shared_cause_falls_outside_by_construction():
+    """P8: a shared failure cause fails the positive test (not attributable to one assertion), so it falls outside without being enumerated as forbidden."""
+    defn = _defn()
+    assert "not attributable to any one of them" in defn
+
+
+# --- P9: verdict-follows-execution — gate verdicts follow a tool-result, not a mental act ---
+
+def test_falsify_p9_verdict_follows_tool_result():
+    """P9: a gate verdict is valid only when it follows a tool-result block that mechanically produces it."""
+    defn = _defn()
+    assert "immediately follows a tool-result block" in defn
+
+
+def test_falsify_p9_verdict_not_from_description_alone():
+    """P9: a verdict emitted from description/analysis alone, not a preceding tool-result, does not satisfy the token."""
+    defn = _defn()
+    assert "from description or analysis alone" in defn
+
+
+def test_falsify_p9_conditioned_on_tool_availability():
+    """P9: the execution requirement is conditioned on tool-call availability (unsatisfiable-in-no-tool-context guard, GAP-4)."""
+    defn = _defn()
+    assert "when tool calls are available" in defn
+
+
+def test_falsify_p9_structural_unobservable_exempt():
+    """P9: P5 structural Unobservable is exempt — text-about-text properties have no execution to anchor to."""
+    defn = _defn()
+    assert "a structural Unobservable assertion is exempt" in defn
+
+
+# --- P10: visible per-assertion enumeration (non-hollow citation, no count sentinel) ---
+
+def test_falsify_p10_enumerate_each_assertion_verbatim():
+    """P10: before Gate 3, emit one verbatim 'Assertion:' line per executable assertion of the guard."""
+    defn = _defn()
+    assert "one 'Assertion:' line for each executable assertion" in defn
+
+
+def test_falsify_p10_assertion_text_verbatim_from_guard():
+    """P10: each enumerated assertion is quoted verbatim from the guard's tool-result, not paraphrased."""
+    defn = _defn()
+    assert "quoted verbatim from the established guard's tool-result" in defn
+
+
+def test_falsify_p10_no_count_sentinel_reintroduced():
+    """P10: enumeration must NOT reintroduce the self-declared count sentinel removed in P4."""
+    defn = _defn()
+    # the enumeration exists but the hollow count tail must stay gone
+    assert "one 'Assertion:' line for each executable assertion" in defn
+    assert "Assertion inventory: complete" not in defn
+
+
+# --- P12: anchor the discriminating construction (recovered from old def) ---
+
+def test_falsify_p12_failure_follows_violating_state_execution():
+    """P12: the Failure observation must follow the tool-result of executing the guard against the constructed present-but-wrong state."""
+    defn = _defn()
+    assert "against the constructed present-but-wrong state" in defn
+
+
+def test_falsify_p12_compile_absence_rejected():
+    """P12: a successful compilation, build output, or whole-symbol/undefined error does not satisfy Gate 3 (token observed-failure)."""
+    defn = _defn()
+    assert "does not satisfy Gate 3" in defn
+    assert "whole-symbol or undefined error" in defn
+
+
+def test_falsify_p12_already_satisfied_temporary_violation():
+    """P12: for an already-satisfied property, construct a temporary violating modification, execute, then restore."""
+    defn = _defn()
+    assert "construct a temporary violating modification" in defn
+    assert "then restore" in defn
+
+
+def test_falsify_p12_per_assertion_outcome_unconditional():
+    """P13: the per-assertion outcome is unconditionally required — the tool result must produce an outcome attributable to each assertion alone, regardless of whether the model recognizes any insufficiency."""
+    defn = _defn()
+    assert "regardless of whether the model recognizes" in defn
+    assert "an outcome attributable to that assertion alone" in defn
+
+
+def test_falsify_p13_evidence_condition_constrains_evidence_not_mechanism():
+    """P13: the requirement constrains the evidence (per-assertion outcome); the harness is only one example mechanism, and a framework that already reports per-assertion results satisfies it directly."""
+    defn = _defn()
+    assert "framework already reports per-assertion results satisfies this directly" in defn
+    assert "any execution mechanism that does" in defn
+    # the old self-assessed trigger phrasing must be gone
+    assert "cannot distinguish which assertion failed" not in defn
+    assert "per-assertion outcomes" in defn
+
+
+# --- P6b: the coverage/retained-property gate does NOT live in the token ---
+
+def test_falsify_p6b_no_retained_property_coverage_gate_in_token():
+    """P6b: the coverage gate / retained-property coverage belongs to the composition, not the falsify token."""
+    defn = _defn()
+    assert "Retained properties:" not in defn
+    assert "Coverage gate" not in defn
+
+
+# --- Old forward-walk machinery must be gone ---
+
+def test_falsify_old_six_step_observing_sentinel_absent():
+    """The old 'Observing: property [N]' six-step opener must be gone."""
+    assert "Observing: property" not in _defn()
+
+
+def test_falsify_old_quoted_test_sentinel_absent():
+    """The old 'Quoted test:' sentinel must be gone."""
+    assert "Quoted test:" not in _defn()
+
+
+def test_falsify_old_implementation_overreach_sentinel_absent():
+    """The old 'Implementation overreach:' sentinel is replaced by Gate 1 'Overreach:'."""
+    assert "Implementation overreach:" not in _defn()

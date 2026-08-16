@@ -205,6 +205,18 @@ def test_falsify_p11_binding_by_verbatim_identity():
     assert "an enumerated assertion with no matching outcome line leaves coverage incomplete" in defn
 
 
+def test_falsify_p18_explicit_witness_loop_transition():
+    """P18: an explicit forward loop — after each outcome, return to the witness step for the NEXT unwitnessed assertion until none remain."""
+    defn = _defn()
+    assert "return to the witness step for the next unwitnessed assertion" in defn
+
+
+def test_falsify_p18_loop_terminates_on_empty_unwitnessed_set():
+    """P18: the loop terminates only when no enumerated assertion lacks a Failure or structural-Unobservable outcome (structural Unobservable is a legitimate terminal outcome)."""
+    defn = _defn()
+    assert "do not leave Gate 2 until every enumerated assertion has a matching outcome" in defn
+
+
 # --- P12: anchor the discriminating construction (recovered from old def) ---
 
 def test_falsify_p12_present_but_wrong_required():

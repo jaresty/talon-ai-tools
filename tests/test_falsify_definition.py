@@ -136,11 +136,20 @@ def test_falsify_p7_inline_command_not_valid_guard():
 
 # --- P20 canonical rule: the guard's own per-assertion pass/fail IS the property state ---
 
-def test_falsify_p20_guard_defines_observable_predicate():
-    """P20 (non-circular): the guard DEFINES the observable predicate — A-pass witnesses property present, A-fail witnesses absent; not 'result is the property'."""
+def test_falsify_p28_decollapse_guard_result_not_property_truth():
+    """P28 (de-collapse R_A/R_P): A-pass/A-fail are the guard's REPORTED results, not claims about property truth; correspondence deferred to adequacy."""
     defn = _defn()
-    assert "The guard defines the observable predicate for A" in defn
-    assert "an A-pass" in defn and "witnesses the property present" in defn
+    assert "an A-pass is the guard's reported pass result for A and an A-fail is the guard's reported failure result for A" in defn
+    assert "not independent claims about the truth of any property" in defn
+
+
+def test_falsify_p28_property_correspondence_is_scope_boundary():
+    """P28: correspondence to the property is a scope boundary (deferred to adequacy), not a caveat, and no property-truth is asserted in the token."""
+    defn = _defn()
+    assert "whether A's result corresponds to the property A is intended to govern is not established by this token" in defn
+    assert "that correspondence is established separately by the adequacy check" in defn
+    # the collapse wording must be gone
+    assert "an A-fail result witnesses it absent" not in defn
 
 
 def test_falsify_p20_failure_is_a_fail_a_pass_pair():
@@ -157,6 +166,14 @@ def test_falsify_p20_classify_observations_not_failure_modes():
     assert "not an observation of A and cannot witness A, regardless of the cause or form of the execution's outcome" in defn
     # the failure-mode enumeration must be gone (classify observations, not failures)
     assert "compilation failure, timeout, panic" not in defn
+
+
+def test_falsify_p27_salient_compile_absence_example():
+    """P27: the abstract rule carries a salient illustrative example (not an allow-list) naming the tempting new-function compile-absence inference and why it fails."""
+    defn = _defn()
+    assert "as an illustration of this rule, not an exhaustive list" in defn
+    assert "it is not an A-fail, because A never ran — the run disqualified itself as an observation of A" in defn
+    assert "A's own assertion executing and reporting failure against a present-but-wrong artifact, which the symbol's absence cannot produce" in defn
 
 
 def test_falsify_p20_producer_is_the_a_fail_execution():

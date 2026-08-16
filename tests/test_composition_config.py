@@ -125,6 +125,14 @@ def test_ground_falsify_adequacy_gap_direction():
     assert "R_P(S) is false while every tagged assertion is A-pass, the guards under-govern P" in prose
 
 
+def test_ground_falsify_p27c_control_test_on_purported_a_fail():
+    """P27c: the overconstraint direction is the control test — an A-fail that recurs while R_P(S) is true doesn't witness P; the check stays R_P≠R_A, not error-reproduction."""
+    prose = _get_entry("ground+falsify")
+    assert "control test on a purported A-fail" in prose
+    assert "an A-fail that recurs in a state where R_P(S) is true is not controlled by P" in prose
+    assert "never the reproduction of a particular error mechanism" in prose
+
+
 def test_ground_falsify_adequacy_overconstraint_direction():
     """P22 (over-govern): R_P true while any tagged A-fail → Adequacy overconstraint → weaken."""
     prose = _get_entry("ground+falsify")

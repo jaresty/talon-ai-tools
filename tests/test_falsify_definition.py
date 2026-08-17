@@ -384,3 +384,31 @@ def test_falsify_old_quoted_test_sentinel_absent():
 def test_falsify_old_implementation_overreach_sentinel_absent():
     """The old 'Implementation overreach:' sentinel is replaced by Gate 1 'Overreach:'."""
     assert "Implementation overreach:" not in _defn()
+
+
+# --- Fix 2 (assertion-binding): a guard observation must evaluate the enumerated
+# assertion and produce that assertion's own result. Retrieving a fact is not
+# witnessing. This restores the falsify/verify/ground orthogonality boundary that
+# the software medium enforced implicitly and the domain-agnostic genus dropped. ---
+
+def test_falsify_assertion_binding_procedure_evaluates_assertion():
+    """A witness requires the procedure to evaluate the enumerated assertion and produce its own result."""
+    defn = _defn()
+    assert "evaluates that assertion and produces an assertion-specific result" in defn
+    assert "Information merely retrieved, inferred, or cited by the procedure is not itself the assertion's result" in defn
+
+
+def test_falsify_assertion_binding_boundary_sentence_verbatim():
+    """The retrieve-vs-witness boundary sentence must appear verbatim so examples cannot blur research into witnessing."""
+    assert "Retrieving evidence for an assertion is not the same operation as witnessing the assertion" in _defn()
+
+
+# --- Fix 1 (provenance discovery): 'observation unavailable' is valid only as the
+# residue of inspecting the available observation records — not a first-move
+# declaration. Generalized past 'transcript' (records store is domain-agnostic). ---
+
+def test_falsify_provenance_discovery_inspect_before_unavailable():
+    """Before declaring observation unavailable, inspect the available observation records for a qualifying one."""
+    defn = _defn()
+    assert "inspect the available observation records for a qualifying record" in defn
+    assert "only when no qualifying record is found may the unavailable state be emitted" in defn

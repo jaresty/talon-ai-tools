@@ -150,16 +150,16 @@ func TestFalsifyDefinition_ObservesGap(t *testing.T) {
 func TestFalsifyDefinition_RegressionGuard(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "regression guard") {
-		t.Error("falsify definition must require a regression guard mechanism")
+	if !strings.Contains(def, "detect regression without human initiation") {
+		t.Error("falsify definition must require a mechanism that detects regression without human initiation")
 	}
 }
 
-func TestFalsifyDefinition_SixStepCycle(t *testing.T) {
+func TestFalsifyDefinition_ObservingGapSentinel(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["falsify"]
-	if !strings.Contains(def, "Observing: property") {
-		t.Error("falsify definition must require the Observing: property sentinel for the per-property cycle")
+	if !strings.Contains(def, "Observing gap:") {
+		t.Error("falsify definition must require the 'Observing gap:' sentinel to open the shrinking cycle")
 	}
 }
 

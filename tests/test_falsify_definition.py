@@ -411,7 +411,7 @@ def test_falsify_provenance_discovery_inspect_before_unavailable():
     """Before declaring observation unavailable, inspect the available observation records for a qualifying one."""
     defn = _defn()
     assert "inspect the available observation records for a qualifying record" in defn
-    assert "only when no qualifying record is found may the unavailable state be emitted" in defn
+    assert "only when no qualifying record is found and no applicable guard remains may the unavailable state be emitted" in defn
 
 
 # --- Fix 3 (counterfactual-independence): what makes an observation a witness is
@@ -437,3 +437,33 @@ def test_falsify_persistence_is_a_separable_capability():
     defn = _defn()
     assert "Regression-persistence is a separable capability that may be present or absent" in defn
     assert "a one-time application that is assertion-bound and counterfactually independent still witnesses its assertion" in defn
+
+
+# --- Fix 5 (capability-relative observation / Unobserved vs Unwitnessable): the
+# definition made observation implicitly TOOL-relative, so an inspection the model
+# can perform right now on an in-hand artifact did not register as an available
+# observation procedure — and the model emitted 'observation unavailable' (the
+# honest-stop state) where the truth was 'applicable guard not yet applied' (a
+# do-the-work state). Witnessed on the shipped c05be462 definition by a non-software
+# (travel-plan) derivation that emitted five false unavailables against an
+# inspection guard over an available itinerary. Observation is capability-relative:
+# when the committed guard is an inspection/derivation over the available artifact
+# itself, applying it IS in-capability, so the honest stop is unavailable. ---
+
+def test_falsify_observation_is_capability_relative_not_tool_relative():
+    """Applicability is capability-relative: an inspection/derivation over the available artifact is an applicable guard that must be applied."""
+    defn = _defn()
+    assert "capability-relative" in defn
+    assert "an inspection or derivation over the available artifact is itself an applicable observation procedure" in defn
+
+
+def test_falsify_unobserved_is_not_unavailable():
+    """A guard that is applicable-but-not-yet-applied is not the same as unavailable; not-yet-applied must be applied, not declared unavailable."""
+    defn = _defn()
+    assert "A guard that is applicable but not yet applied is not unavailable" in defn
+
+
+def test_falsify_inspection_over_broadening_guard():
+    """Inspection counts as observation only when it is the qualifying procedure producing an assertion-specific result — not because content was read or noticed."""
+    defn = _defn()
+    assert "produces an assertion-specific result, not because content was read or noticed" in defn

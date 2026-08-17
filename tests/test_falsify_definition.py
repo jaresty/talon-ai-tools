@@ -123,15 +123,15 @@ def test_falsify_p5_unobservable_not_by_demonstrated_negative():
 
 # --- P7: Gate 3 failure valid only from a committed, re-runnable guard artifact ---
 
-def test_falsify_p7_guard_must_be_committed_artifact():
-    """P7: a Failure observation is valid only when produced by executing a committed, re-runnable guard artifact."""
+def test_falsify_p7_standing_regression_guard_must_be_committed():
+    """P7: a Failure intended as a standing regression guard must be produced by a committed, persisted procedure."""
     defn = _defn()
-    assert "committed, re-runnable" in defn
+    assert "committed procedure persisted to a location that re-applies without human initiation" in defn
 
 
-def test_falsify_p7_inline_command_not_valid_guard():
-    """P7: an inline/ephemeral command cannot be the guard that produces a valid Failure observation."""
-    assert "never from an inline or ephemeral one-off" in _defn()
+def test_falsify_p7_inline_one_off_not_a_standing_guard():
+    """P7: an inline/ephemeral one-off cannot serve as the standing regression guard (persistence is required for that claim)."""
+    assert "not an inline or ephemeral one-off" in _defn()
 
 
 # --- P20 canonical rule: the guard's own per-assertion pass/fail IS the property state ---
@@ -412,3 +412,28 @@ def test_falsify_provenance_discovery_inspect_before_unavailable():
     defn = _defn()
     assert "inspect the available observation records for a qualifying record" in defn
     assert "only when no qualifying record is found may the unavailable state be emitted" in defn
+
+
+# --- Fix 3 (counterfactual-independence): what makes an observation a witness is
+# that the procedure could have produced the violating result — operationally shown
+# by perturbing the relevant state and observing the result flip, not asserted. The
+# software "committed re-runnable artifact" encoded this only implicitly. ---
+
+def test_falsify_counterfactual_independence_is_the_witness_property():
+    """A witness requires the procedure could have produced the violating result — shown by the perturbation flip."""
+    defn = _defn()
+    assert "could have produced the violating result" in defn
+    assert "not constructed from the conclusion it is meant to evaluate" in defn
+
+
+# --- Fix 4 (persistence is a separable capability): regression-persistence
+# (re-application without human initiation) may be present or absent. A one-time
+# assertion-bound, counterfactually-independent observation is a valid witness NOW;
+# only the regression-detection claim depends on persistence. This prevents the
+# definition from being read as "witness == persisted software artifact". ---
+
+def test_falsify_persistence_is_a_separable_capability():
+    """Persistence is separable: a one-time observation still witnesses; only regression detection needs persistence."""
+    defn = _defn()
+    assert "Regression-persistence is a separable capability that may be present or absent" in defn
+    assert "a one-time application that is assertion-bound and counterfactually independent still witnesses its assertion" in defn

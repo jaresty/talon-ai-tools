@@ -163,6 +163,33 @@ func TestFalsifyDefinition_ObservingGapSentinel(t *testing.T) {
 	}
 }
 
+// Fix 7: constructing the violating state is a mandatory transition, not an
+// optional conditional. For a behavioral assertion with an A-pass but no A-fail,
+// the absence of an A-fail must trigger construction of an admissible minimal
+// perturbation (A alone fails, others pass); artifact ambiguity must be resolved
+// by constructing a definite violating state rather than routed to
+// 'observation unavailable'; and the construction must preserve orthogonality.
+func TestFalsifyDefinition_MandatoryViolatingStateConstruction(t *testing.T) {
+	g := loadCompletionGrammar(t)
+	def := g.Axes.Definitions["method"]["falsify"]
+	// property [1]: absence of an A-fail triggers construction, not a terminal state.
+	if !strings.Contains(def, "the absence of an A-fail does not terminate the branch; it triggers construction") {
+		t.Error("falsify definition must make the absence of an A-fail trigger construction of the violating state (mandatory transition), not terminate as Unwitnessed")
+	}
+	// property [2]: the construction inherits the minimal / A-alone-fails constraint.
+	if !strings.Contains(def, "an admissible minimal perturbation") {
+		t.Error("falsify definition must require the constructed violating state to be an admissible minimal perturbation (A alone fails, every other assertion passes)")
+	}
+	// property [3]: artifact ambiguity is not a route to observation unavailable.
+	if !strings.Contains(def, "ambiguity in the satisfying artifact is resolved by constructing a definite violating state, not cited as observation unavailable") {
+		t.Error("falsify definition must forbid converting satisfying-artifact ambiguity into 'observation unavailable' for a perturbable behavioral assertion")
+	}
+	// property [4]: orthogonality firewall on the new construction obligation.
+	if !strings.Contains(def, "Constructing this violating state does not select which assertion is required or judge its adequacy") {
+		t.Error("falsify definition must keep violating-state construction orthogonal to property origination (ground) and adequacy judgment (verify)")
+	}
+}
+
 func TestGateDefinition_HardBlockingCheckpoint(t *testing.T) {
 	g := loadCompletionGrammar(t)
 	def := g.Axes.Definitions["method"]["gate"]

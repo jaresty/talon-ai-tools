@@ -195,6 +195,44 @@ def test_falsify_p20_temp_modification_isolates_one_assertion():
     assert "makes A alone fail while every other assertion still passes" in defn
 
 
+def test_falsify_fix7_violating_state_construction_is_mandatory_transition():
+    """Fix 7 property [1]: absence of an A-fail for a present, perturbable behavioral
+    assertion must trigger construction of the violating state, not terminate the branch."""
+    defn = _defn()
+    assert (
+        "the absence of an A-fail does not terminate the branch; it triggers construction"
+        in defn
+    )
+
+
+def test_falsify_fix7_construction_is_admissible_minimal_perturbation():
+    """Fix 7 property [2]: the constructed violating state must be an admissible minimal
+    perturbation that makes A alone fail while every other assertion still passes."""
+    defn = _defn()
+    assert "an admissible minimal perturbation" in defn
+    assert "makes A alone fail while every other assertion still passes" in defn
+
+
+def test_falsify_fix7_artifact_ambiguity_not_observation_unavailable():
+    """Fix 7 property [3]: satisfying-artifact ambiguity is resolved by constructing a
+    definite violating state, not routed to 'observation unavailable'."""
+    defn = _defn()
+    assert (
+        "ambiguity in the satisfying artifact is resolved by constructing a definite "
+        "violating state, not cited as observation unavailable" in defn
+    )
+
+
+def test_falsify_fix7_construction_preserves_orthogonality():
+    """Fix 7 property [4]: constructing the violating state must not select which
+    assertion is required (ground) or judge its adequacy (verify)."""
+    defn = _defn()
+    assert (
+        "Constructing this violating state does not select which assertion is required "
+        "or judge its adequacy" in defn
+    )
+
+
 def test_falsify_p20_witness_line_is_projection_only():
     """P20: a 'witness:' line only projects the two results and is not itself evidence."""
     defn = _defn()

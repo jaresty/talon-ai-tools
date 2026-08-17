@@ -467,3 +467,27 @@ def test_falsify_inspection_over_broadening_guard():
     """Inspection counts as observation only when it is the qualifying procedure producing an assertion-specific result — not because content was read or noticed."""
     defn = _defn()
     assert "produces an assertion-specific result, not because content was read or noticed" in defn
+
+
+# --- Fix 6 (construction transition): the definition names the terminal state
+# (observation unavailable) but omitted the transition that must be attempted
+# FIRST at the construction stage. A model bailed one stage earlier than the
+# Fix 5 application defect — treating an UNSUPPLIED guard/artifact as
+# unconstructible ("no guard was present in the supplied material, therefore I
+# cannot manufacture the records") and emitting a first-move Unwitnessed without
+# enumerating properties, constructing an artifact, or committing a guard. A
+# constructible prerequisite is a construction state, not a terminal excuse. The
+# orthogonality firewall keeps falsify from originating property semantics
+# (ground) or artifact meaning (make). ---
+
+def test_falsify_construction_transition_absent_prerequisite_must_be_established():
+    """A required guard/artifact absent-but-constructible must be established before declaring observation unavailable."""
+    defn = _defn()
+    assert "if a required guard or artifact is absent but constructible from the already-established intent, properties, and constraints, establish it before declaring any observation unavailable" in defn
+    assert "absence of a supplied guard or artifact is not itself evidence of unavailability" in defn
+
+
+def test_falsify_construction_transition_orthogonality_firewall():
+    """The construction transition must NOT let falsify originate property semantics (ground) or judge adequacy (adequacy check)."""
+    defn = _defn()
+    assert "does not determine or revise which properties are required or whether the guard is adequate" in defn

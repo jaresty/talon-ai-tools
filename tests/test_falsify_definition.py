@@ -43,8 +43,8 @@ def test_falsify_p1_no_may_be_emitted_only_after():
 
 
 def test_falsify_p1_any_order_permitted():
-    """P1: test and implementation may be written in any order."""
-    assert "may be written in any order" in _defn()
+    """P1: guard and artifact may be established in any order."""
+    assert "may be established in any order" in _defn()
 
 
 # --- P2: minimization gate ---
@@ -53,7 +53,7 @@ def test_falsify_p2_gate_1_minimization_present():
     """P2: Gate 1 (shrink implementation to guard) is named."""
     defn = _defn()
     assert "Gate 1" in defn
-    assert "Shrink the implementation to the guard" in defn
+    assert "Shrink the artifact to the guard" in defn
 
 
 def test_falsify_p2_overreach_requires_executed_attempt():
@@ -61,7 +61,7 @@ def test_falsify_p2_overreach_requires_executed_attempt():
     defn = _defn()
     assert "Overreach: found" in defn
     assert "Overreach: not found" in defn
-    assert "Always attempt the simpler implementation" in defn
+    assert "Always attempt the simpler artifact" in defn
     assert "A bare 'Overreach: not found' with no" in defn
 
 
@@ -118,7 +118,7 @@ def test_falsify_p5_unobservable_requires_structural_subject():
 
 def test_falsify_p5_unobservable_not_by_demonstrated_negative():
     """P5: Unobservable must NOT be satisfied merely by having searched for a failing execution and found none."""
-    assert "never satisfied by having searched for a failing execution and found none" in _defn()
+    assert "never satisfied by having searched for a failing application and found none" in _defn()
 
 
 # --- P7: Gate 3 failure valid only from a committed, re-runnable guard artifact ---
@@ -131,7 +131,7 @@ def test_falsify_p7_guard_must_be_committed_artifact():
 
 def test_falsify_p7_inline_command_not_valid_guard():
     """P7: an inline/ephemeral command cannot be the guard that produces a valid Failure observation."""
-    assert "never from an inline or ephemeral command" in _defn()
+    assert "never from an inline or ephemeral one-off" in _defn()
 
 
 # --- P20 canonical rule: the guard's own per-assertion pass/fail IS the property state ---
@@ -162,8 +162,8 @@ def test_falsify_p20_failure_is_a_fail_a_pass_pair():
 def test_falsify_p20_classify_observations_not_failure_modes():
     """P20 (general, not an enumeration): any execution not producing an A result is not an observation of A — regardless of cause or form."""
     defn = _defn()
-    assert "An A-observation is an execution of the committed guard in which assertion A is evaluated and produces its own guard-defined result" in defn
-    assert "not an observation of A and cannot witness A, regardless of the cause or form of the execution's outcome" in defn
+    assert "An A-observation is an application of the committed guard in which assertion A is evaluated and produces its own guard-defined result" in defn
+    assert "not an observation of A and cannot witness A, regardless of the cause or form of the application's outcome" in defn
     # the failure-mode enumeration must be gone (classify observations, not failures)
     assert "compilation failure, timeout, panic" not in defn
 
@@ -172,15 +172,15 @@ def test_falsify_p27_salient_compile_absence_example():
     """P27: the abstract rule carries a salient illustrative example (not an allow-list) naming the tempting new-function compile-absence inference and why it fails."""
     defn = _defn()
     assert "as an illustration of this rule, not an exhaustive list" in defn
-    assert "it is not an A-fail, because A never ran — the run disqualified itself as an observation of A" in defn
-    assert "A's own assertion executing and reporting failure against a present-but-wrong artifact, which the symbol's absence cannot produce" in defn
+    assert "it is not an A-fail, because A never ran — the application disqualified itself as an observation of A" in defn
+    assert "A's own assertion applied and reporting failure against a present-but-wrong artifact, which the subject's absence cannot produce" in defn
 
 
 def test_falsify_p20_producer_is_the_a_fail_execution():
     """P20 (provenance): the A-fail execution immediately precedes Failure:; the A-pass execution is contrast evidence elsewhere."""
     defn = _defn()
-    assert "execution must immediately precede the" in defn
-    assert "execution is the contrast evidence" in defn
+    assert "application must immediately precede the" in defn
+    assert "application is the contrast evidence" in defn
 
 
 def test_falsify_p20_identity_carried_by_guard_output():
@@ -201,55 +201,55 @@ def test_falsify_p20_witness_line_is_projection_only():
     assert "only projects those two results and is not itself evidence" in defn
 
 
-# --- P23: provenance closure — every evidentiary reference quotes its qualifying execution record ---
+# --- P23: provenance closure — every evidentiary reference quotes its qualifying observation record ---
 
 def test_falsify_p23_provenance_closure_general_rule():
-    """P23: identity + A-fail + A-pass must quote verbatim the qualifying execution record; one general rule, not per-artifact cases."""
+    """P23: identity + A-fail + A-pass must quote verbatim the qualifying observation record; one general rule, not per-artifact cases."""
     defn = _defn()
     assert "Provenance closure" in defn
-    assert "must quote verbatim the text of the qualifying execution record that establishes it" in defn
+    assert "must quote verbatim the text of the qualifying observation record that establishes it" in defn
 
 
 def test_falsify_p23_authored_prose_is_not_evidence():
-    """P23: a result or identity typed as prose not verbatim in a cited qualifying execution record is not evidence."""
+    """P23: a result or identity typed as prose not verbatim in a cited qualifying observation record is not evidence."""
     defn = _defn()
-    assert "typed as prose that does not appear verbatim in a cited qualifying execution record is not evidence" in defn
+    assert "typed as prose that does not appear verbatim in a cited qualifying observation record is not evidence" in defn
 
 
-# --- P24: capability is not evidence — qualifying execution record + Unwitnessed third state ---
+# --- P24: capability is not evidence — qualifying observation record + Unwitnessed third state ---
 
 def test_falsify_p24_capability_is_not_evidence():
-    """P24: what witnesses is an available qualifying execution record, not whether a tool call occurred this turn."""
+    """P24: what witnesses is an available qualifying observation record, not whether a tool call occurred this turn."""
     defn = _defn()
     assert "Capability is not evidence" in defn
-    assert "available qualifying execution record" in defn
+    assert "available qualifying observation record" in defn
 
 
 def test_falsify_p24_qualifying_record_defined():
-    """P24: a qualifying execution record is guard-produced, carries guard+assertion identity + A-result, transcript-present; prose is never one."""
+    """P24: a qualifying observation record is guard-produced, carries guard+assertion identity + A-result, transcript-present; prose is never one."""
     defn = _defn()
-    assert "A qualifying execution record is a transcript-present record produced by the committed guard artifact" in defn
+    assert "A qualifying observation record is a transcript-present record produced by the committed guard artifact" in defn
     assert "model prose is never one" in defn
 
 
 def test_falsify_p24_prior_record_usable_without_tools():
     """P24: when tools are unavailable, may cite qualifying records already present but must not synthesize/infer/narrate."""
     defn = _defn()
-    assert "when they are unavailable it may cite qualifying execution records already present but must not synthesize, infer, or narrate an execution result" in defn
+    assert "when it is unavailable it may cite qualifying observation records already present but must not synthesize, infer, or narrate an observation" in defn
 
 
 def test_falsify_p24_unwitnessed_third_state():
     """P24: a behavioral assertion with no qualifying record is Unwitnessed (not structural Unobservable), and blocks Coverage."""
     defn = _defn()
     assert "Unwitnessed: assertion" in defn
-    assert "execution unavailable" in defn
+    assert "observation unavailable" in defn
     assert "neither Failure nor structural Unobservable" in defn
 
 
 def test_falsify_p24_unwitnessed_blocks_coverage():
     """P24: an Unwitnessed assertion leaves coverage incomplete."""
     defn = _defn()
-    assert "'Unwitnessed: … — execution unavailable' assertion leaves coverage incomplete" in defn
+    assert "'Unwitnessed: … — observation unavailable' assertion leaves coverage incomplete" in defn
 
 
 # --- P25: uniform execution-unavailable state at every gate (untested != not-found/false/unobservable) ---
@@ -257,21 +257,21 @@ def test_falsify_p24_unwitnessed_blocks_coverage():
 def test_falsify_p25_gate1_overreach_untested():
     """P25: Gate 1 Overreach is execution-dependent — no execution → 'Overreach: untested', never 'not found'."""
     defn = _defn()
-    assert "Overreach: untested — execution unavailable" in defn
+    assert "Overreach: untested — observation unavailable" in defn
     assert "untested is never 'not found'" in defn
 
 
 def test_falsify_p25_coverage_incomplete_terminal_honesty():
-    """P25: no execution → honest terminal state 'Coverage: incomplete — execution unavailable', not a claimed completion."""
+    """P25: no execution → honest terminal state 'Coverage: incomplete — observation unavailable', not a claimed completion."""
     defn = _defn()
-    assert "Coverage: incomplete — execution unavailable" in defn
+    assert "Coverage: incomplete — observation unavailable" in defn
     assert "not a claimed completion" in defn
 
 
 def test_falsify_p25_may_construct_but_not_claim_observed():
     """P25: without execution the protocol may construct guards/perturbations/expected outcomes but not represent any execution-dependent verdict as observed."""
     defn = _defn()
-    assert "may not represent any execution-dependent verdict as observed" in defn
+    assert "may not represent any observation-dependent verdict as observed" in defn
 
 
 def test_falsify_p20_structural_bifurcation():
@@ -286,7 +286,7 @@ def test_falsify_p20_structural_bifurcation():
 def test_falsify_p9_verdict_follows_tool_result():
     """P9: a gate verdict is valid only when it follows a tool-result block that mechanically produces it."""
     defn = _defn()
-    assert "immediately follows a tool-result block" in defn
+    assert "immediately follows a result record" in defn
 
 
 def test_falsify_p9_verdict_not_from_description_alone():
@@ -298,7 +298,7 @@ def test_falsify_p9_verdict_not_from_description_alone():
 def test_falsify_p9_conditioned_on_tool_availability():
     """P9: the execution requirement is conditioned on tool-call availability (unsatisfiable-in-no-tool-context guard, GAP-4)."""
     defn = _defn()
-    assert "when tool calls are available" in defn
+    assert "when the observation capability is available" in defn
 
 
 def test_falsify_p9_structural_unobservable_exempt():
@@ -312,20 +312,20 @@ def test_falsify_p9_structural_unobservable_exempt():
 def test_falsify_p10_enumerate_each_assertion_verbatim():
     """P10: in Gate 2, emit one verbatim 'Assertion:' line per executable assertion of the guard."""
     defn = _defn()
-    assert "one 'Assertion: <verbatim assertion text>' line for each executable assertion" in defn
+    assert "one 'Assertion: <verbatim assertion text>' line for each assertion" in defn
 
 
 def test_falsify_p10_assertion_text_verbatim_from_guard():
     """P10: each enumerated assertion is quoted verbatim from the guard's tool-result, not paraphrased."""
     defn = _defn()
-    assert "quoted verbatim from the guard's tool-result" in defn
+    assert "quoted verbatim from the guard's result record" in defn
 
 
 def test_falsify_p10_no_count_sentinel_reintroduced():
     """P10: enumeration must NOT reintroduce the self-declared count sentinel removed in P4."""
     defn = _defn()
     # the enumeration exists but the hollow count tail must stay gone
-    assert "one 'Assertion: <verbatim assertion text>' line for each executable assertion" in defn
+    assert "one 'Assertion: <verbatim assertion text>' line for each assertion" in defn
     assert "Assertion inventory: complete" not in defn
 
 

@@ -64,16 +64,48 @@ const dispatchSeq: Sequence = {
 describe('buildCopyPrompt', () => {
 	it('assembles parts for a non-pause sequence', () => {
 		const result = buildCopyPrompt(nonPauseSeq, 'my subject', stubGrammar, 'my-seq');
-		expect(result).toContain('=== SEQUENCE: my-seq');
-		expect(result).toContain('Step 1/2');
-		expect(result).toContain('Step 2/2');
-		expect(result).toContain('You must complete all 2 steps in sequence');
+		expect(result).toContain('sequence: my-seq');
+		expect(result).toContain('Step 1 of 2');
+		expect(result).toContain('Step 2 of 2');
+		expect(result).toContain('work through all 2 steps in order');
 	});
 
 	it('uses pause preamble when sequence has requires_user_input', () => {
 		const result = buildCopyPrompt(pauseSeq, 'subject', stubGrammar, 'pause-seq');
-		expect(result).toContain('AWAITING INPUT');
-		expect(result).toContain('your response must end there');
+		expect(result).toContain('stop here and wait for my reply');
+		expect(result).toContain("don't move on to the next step until I've answered");
+	});
+
+	// Regression guard: the copy-as-prompt output must read as plain user voice so
+	// Claude does not classify it as a prompt-injection attempt. These strings are the
+	// envelope-wrapping / self-assertion / control-demand "tells" that triggered that
+	// reaction (mirrors the earlier bar metaprompt REQUEST/FORMAT rewrite). If any
+	// reappear, the injection-avoidance treatment has regressed.
+	it('does not emit prompt-injection tells (plain user voice)', () => {
+		const seqs = [
+			buildCopyPrompt(nonPauseSeq, 's', stubGrammar, 'k'),
+			buildCopyPrompt(pauseSeq, 's', stubGrammar, 'k'),
+			buildCopyPrompt(actionSeq, 's', stubGrammar, 'k'),
+			buildCopyPrompt(dispatchSeq, 's', stubGrammar, 'k')
+		];
+		const tells = [
+			'=== SEQUENCE',
+			'=== Step',
+			'--- AWAITING INPUT ---',
+			'👤 YOUR ACTION',
+			'[dispatch protocol — required]',
+			'[DISPATCH GATE]',
+			'initiated by the user',
+			'You are the orchestrator',
+			'You must complete all',
+			'An evaluator determines',
+			'does not satisfy this'
+		];
+		for (const output of seqs) {
+			for (const tell of tells) {
+				expect(output).not.toContain(tell);
+			}
+		}
 	});
 
 	it('requires sequence name in ## Agent Configuration block spec', () => {
@@ -87,12 +119,13 @@ describe('buildCopyPrompt', () => {
 
 	it('renders sequence key provenance in dispatch steps', () => {
 		const result = buildCopyPrompt(dispatchSeq, 'subject', stubGrammar, 'dispatch-seq');
-		expect(result).toContain('dispatch step of the dispatch-seq sequence');
+		expect(result).toContain('dispatch-seq sequence');
 	});
 
-	it('renders [DISPATCH GATE] for dispatch steps', () => {
+	it('renders the dispatch instruction (spawn one agent per item)', () => {
 		const result = buildCopyPrompt(dispatchSeq, 'subject', stubGrammar, 'dispatch-seq');
-		expect(result).toContain('[DISPATCH GATE]');
+		expect(result).toContain('Dispatching N agents:');
+		expect(result).toContain('one Agent tool call per item');
 	});
 
 	it('renders fan_out value for dispatch steps', () => {
@@ -129,13 +162,13 @@ describe('buildCopyPrompt', () => {
 	it('renders ## Derivation count-verification clause for dispatch steps', () => {
 		const result = buildCopyPrompt(dispatchSeq, 'subject', stubGrammar, 'dispatch-seq');
 		expect(result).toContain('## Derivation');
-		expect(result).toContain('count equals the number of agents');
+		expect(result).toContain('one ## Derivation block per agent');
 	});
 
 	it('dispatch step without during_dispatch does not trigger pause preamble', () => {
 		const result = buildCopyPrompt(dispatchSeq, 'subject', stubGrammar, 'dispatch-seq');
-		expect(result).toContain('You must complete all 2 steps in sequence');
-		expect(result).not.toContain('your response must end there');
+		expect(result).toContain('work through all 2 steps in order');
+		expect(result).not.toContain('wait for my reply');
 	});
 
 	it('dispatch step with during_dispatch triggers pause preamble', () => {
@@ -154,7 +187,7 @@ describe('buildCopyPrompt', () => {
 			]
 		};
 		const result = buildCopyPrompt(dispatchWithDuring, 'subject', stubGrammar, 'dd-seq');
-		expect(result).toContain('your response must end there');
+		expect(result).toContain('wait for my reply');
 	});
 
 	it('renders ## During-dispatch task section when during_dispatch is set', () => {
@@ -176,9 +209,9 @@ describe('buildCopyPrompt', () => {
 		expect(result).toContain('## During-dispatch task');
 	});
 
-	it('renders action steps with YOUR ACTION label', () => {
+	it('renders action steps with a plain-voice action label', () => {
 		const result = buildCopyPrompt(actionSeq, 'subject', stubGrammar, 'action-seq');
-		expect(result).toContain('👤 YOUR ACTION');
+		expect(result).toContain('This step is my turn to act');
 		expect(result).toContain('Do the thing');
 	});
 
@@ -189,8 +222,8 @@ describe('buildCopyPrompt', () => {
 
 	it('does not include chain instruction for first step', () => {
 		const result = buildCopyPrompt(nonPauseSeq, 'subject', stubGrammar, 'my-seq');
-		const firstStepEnd = result.indexOf('Step 1/2');
-		const secondStepStart = result.indexOf('Step 2/2');
+		const firstStepEnd = result.indexOf('Step 1 of 2');
+		const secondStepStart = result.indexOf('Step 2 of 2');
 		const firstPart = result.slice(firstStepEnd, secondStepStart);
 		expect(firstPart).not.toContain('Your subject for this step');
 	});

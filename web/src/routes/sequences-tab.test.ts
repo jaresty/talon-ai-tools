@@ -205,7 +205,7 @@ describe('Page — Sequences mode', () => {
 		expect(text).toContain('⏸');
 	});
 
-	it('copied prompt injects AWAITING INPUT terminal string after requires_user_input steps', async () => {
+	it('copied prompt injects wait-for-reply terminal string after requires_user_input steps', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
@@ -232,7 +232,7 @@ describe('Page — Sequences mode', () => {
 
 		const textarea = container.querySelector('.seq-modal-textarea') as HTMLTextAreaElement;
 		expect(textarea).toBeTruthy();
-		expect(textarea.value).toContain('--- AWAITING INPUT ---');
+		expect(textarea.value).toContain('Please stop here and wait for my reply before continuing.');
 	});
 
 	it('copied prompt with requires_user_input steps instructs LLM to pause for input', async () => {
@@ -263,7 +263,7 @@ describe('Page — Sequences mode', () => {
 		const textarea = container.querySelector('.seq-modal-textarea') as HTMLTextAreaElement;
 		expect(textarea).toBeTruthy();
 		// pause-mode preamble: instructs stop-and-wait, not complete-all
-		expect(textarea.value).toContain('--- AWAITING INPUT ---');
+		expect(textarea.value).toContain('Please work through these steps in order. When a step asks me to reply before continuing');
 		expect(textarea.value).not.toContain('complete all');
 	});
 
@@ -294,8 +294,9 @@ describe('Page — Sequences mode', () => {
 
 		const textarea = container.querySelector('.seq-modal-textarea') as HTMLTextAreaElement;
 		expect(textarea).toBeTruthy();
-		expect(textarea.value).toContain('complete all');
-		expect(textarea.value).not.toContain('stop and wait');
+		expect(textarea.value).toContain('Please work through all');
+		expect(textarea.value).toContain('moving on to the next step as soon as you finish one');
+		expect(textarea.value).not.toContain('wait for my reply');
 	});
 
 	it('top-level subject input is hidden when Sequences mode is active', async () => {
@@ -359,7 +360,7 @@ describe('Page — Sequences mode', () => {
 		expect(text).toContain('👤');
 	});
 
-	it('action step in copied prompt renders as YOUR ACTION block with AWAITING INPUT', async () => {
+	it('action step in copied prompt renders as my-turn-to-act block with wait-for-reply', async () => {
 		const { default: Page } = await import('../routes/+page.svelte');
 		mount(Page, { target: container });
 		await new Promise(r => setTimeout(r, 100));
@@ -386,9 +387,9 @@ describe('Page — Sequences mode', () => {
 
 		const textarea = container.querySelector('.seq-modal-textarea') as HTMLTextAreaElement;
 		expect(textarea).toBeTruthy();
-		expect(textarea.value).toContain('YOUR ACTION');
+		expect(textarea.value).toContain('This step is my turn to act:');
 		expect(textarea.value).toContain('Run the experiment.');
-		expect(textarea.value).toContain('--- AWAITING INPUT ---');
+		expect(textarea.value).toContain('Please stop here and wait for my reply before continuing.');
 	});
 
 	it('review panel (selected token chips) is hidden when Sequences mode is active', async () => {

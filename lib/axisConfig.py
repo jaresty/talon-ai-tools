@@ -887,7 +887,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
         "visual": "The response enhances the task by placing concepts in named positions relative to each other — in a spatial arrangement, diagram, or map — such that each concept's position "
         "encodes at least one named relationship to the others.",
-        "worth": "The response, before recommending or committing to a course of action, reduces each candidate to the smallest form that still changes the decision it serves, then selects among "
+        "worth": "The response reduces each candidate to the smallest form that still changes the decision it serves before recommending or committing to a course of action, then selects among "
         "the reduced candidates the one whose expected decision-value is greatest relative to its total cost, where total cost includes production effort, ongoing maintenance, the cost "
         "of gathering the evidence the candidate depends on, and the value of the best forgone alternative. A candidate is not evaluated at the size in which it was first proposed; it "
         "is first resized to its smallest decision-preserving form, and only the resized candidates are compared. When no candidate's expected value exceeds its total cost, the response "

@@ -892,6 +892,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "unknowns",
         "verify",
         "visual",
+        "worth",
         "yield",
     }
 

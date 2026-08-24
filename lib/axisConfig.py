@@ -887,6 +887,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
         "visual": "The response enhances the task by placing concepts in named positions relative to each other — in a spatial arrangement, diagram, or map — such that each concept's position "
         "encodes at least one named relationship to the others.",
+        "worth": "The response, before recommending or committing to a course of action, reduces each candidate to the smallest form that still changes the decision it serves, then selects among "
+        "the reduced candidates the one whose expected decision-value is greatest relative to its total cost, where total cost includes production effort, ongoing maintenance, the cost "
+        "of gathering the evidence the candidate depends on, and the value of the best forgone alternative. A candidate is not evaluated at the size in which it was first proposed; it "
+        "is first resized to its smallest decision-preserving form, and only the resized candidates are compared. When no candidate's expected value exceeds its total cost, the response "
+        "selects taking no action.",
         "yield": "The response advances the task by naming the specific minimal intervention taken, naming the specific dynamic or structure that resolves the remaining tension after that "
         "intervention, and attributing resolution to those named system dynamics rather than to additional interventions — any content beyond this names conditions under which the named "
         "dynamic operates, not further interventions.",
@@ -1186,6 +1191,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Falsification pressure",
         "visual": "Spatial/positional framing",
+        "worth": "Select by value relative to total cost",
         "yield": "Minimal action, allow natural resolution",
     },
     "scope": {
@@ -1450,6 +1456,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "unknowns": "未",
         "verify": "証",
         "visual": "絵",
+        "worth": "稱",
         "yield": "任",
     },
     "persona": {
@@ -1666,6 +1673,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
         "visual": "Generative",
+        "worth": "Comparative",
         "yield": "Conduct",
     }
 }
@@ -1919,6 +1927,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "unknowns": "Unknown unknowns",
         "verify": "Falsification pressure",
         "visual": "Spatial/positional framing",
+        "worth": "Value-of-information selection — resize candidates, then pick the greatest decision-value per unit total cost",
         "yield": "Minimal intervention / natural resolution",
     },
     "scope": {
@@ -7718,6 +7727,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "diagram the dependencies",
                 "lay out the state machine",
                 "where does X sit relative to Y",
+            ],
+        },
+        "worth": {
+            "distinctions": [
+                {
+                    "note": "pick = select among fixed given candidates; worth = resize each candidate first, then select by value-over-cost (may select 'no action')",
+                    "token": "pick",
+                },
+                {
+                    "note": "collapse = minimize the response's form; worth = minimize the candidate work under decision before comparing",
+                    "token": "collapse",
+                },
+                {
+                    "note": "atomic = one observable change per execution step; worth = a selection-time gate on which whole candidate to pursue",
+                    "token": "atomic",
+                },
+            ],
+            "heuristics": [
+                "is this worth doing",
+                "resize before deciding",
+                "smallest version that still changes the decision",
+                "is more evidence worth gathering",
+                "compare value against total cost",
+                "avoid over-investing",
             ],
         },
         "yield": {

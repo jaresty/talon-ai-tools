@@ -92,11 +92,18 @@ lookups for that iteration are complete.
      the goal statement and the loop restarts at step 1 **without executing** anything.
    - **"End navigation"** — the only way the loop exits.
 
-   Use the `AskUserQuestion` tool when available so the options render as a real
-   picker (the "Other" affordance covers the steer option's free text). **Fallback:
-   a numbered text menu** — each option a short label + its literal `` `bar build` ``
-   / `` `bar sequence show` `` string + one sentence on what it emphasizes,
-   ending with `[1 / 2 / ... / steer / end]`.
+   **AskUserQuestion path (preferred):** render the substantive options plus an
+   explicit **"End navigation"** option. On this path the **Steer free-text is
+   served by the tool's built-in "Other" box** — do not add a separate Steer
+   option, since Other already lets the user type a steer. **"End navigation"
+   must still be an explicit listed option**, because the tool has no built-in
+   for it and End is the loop's only exit.
+
+   **Fallback — numbered text menu:** when `AskUserQuestion` is unavailable, list
+   **both "Steer with my own text" and "End navigation" explicitly** (the text
+   menu has no built-in Other box). Each option is a short label + its literal
+   `` `bar build` `` / `` `bar sequence show` `` string + one sentence on what it
+   emphasizes, ending with `[1 / 2 / ... / steer / end]`.
 
 5. **Act on the choice:**
    - **Single command** → execute it directly, follow the bar-generated prompt.

@@ -1,15 +1,15 @@
 ---
-name: bar-navigate
+name: bar-steer
 description: Use when the user wants to drive through a space of bar options step-by-step — a modal loop that re-frames the current goal, offers choices, executes one, and repeats until the user ends it.
 ---
 
-# Bar Navigate Skill
+# Bar Steer Skill
 
 ## Purpose and Preconditions
 
 This skill puts Claude into a **modal driving loop**. Unlike bar-autopilot (which
 picks silently once) and bar-suggest (which refines to a single menu and stops),
-bar-navigate **never converges on its own**. It maintains a running goal
+bar-steer **never converges on its own**. It maintains a running goal
 statement, re-frames it, offers the user a choice, executes it, then loops back
 to the choice — staying in the mode until the user explicitly ends it.
 
@@ -27,12 +27,12 @@ Assumes:
 
 - **bar-autopilot** — single obvious framing → Claude decides and executes, once.
 - **bar-suggest** — ambiguous, converge once → refinement dialogue → one menu → one execution.
-- **bar-navigate** (this skill) — user wants to drive step-by-step → persistent loop of choices until an explicit End.
+- **bar-steer** (this skill) — user wants to drive step-by-step → persistent loop of choices until an explicit End.
 - **bar-workflow** — a known multi-step sequence → executes staged output.
 
 **Decision logic:** If the user wants to *keep choosing* — exploring, then
 executing, then choosing again from what the last step produced — use
-bar-navigate. If they want a single answer, use autopilot or suggest.
+bar-steer. If they want a single answer, use autopilot or suggest.
 
 ## The Maintained State: A Running Goal Statement
 
@@ -46,7 +46,7 @@ Want: <what the user is trying to reach>
 
 - The user does **not** edit the goal statement directly.
 - The goal statement is shown at the top of every picker so the user can review
-  the frame Claude is navigating from.
+  the frame Claude is steering from.
 - The user amends it only by choosing the **"Steer with my own text"** picker
   option (see below); that free text is folded into the goal statement.
 - After each executed step, Claude updates the goal statement from the step's
@@ -90,17 +90,17 @@ lookups for that iteration are complete.
 4. **Present the picker** — always include, in addition to the substantive options:
    - **"Steer with my own text"** — freeform entry; the user's text is folded into
      the goal statement and the loop restarts at step 1 **without executing** anything.
-   - **"End navigation"** — the only way the loop exits.
+   - **"End steering"** — the only way the loop exits.
 
    **AskUserQuestion path (preferred):** render the substantive options plus an
-   explicit **"End navigation"** option. On this path the **Steer free-text is
+   explicit **"End steering"** option. On this path the **Steer free-text is
    served by the tool's built-in "Other" box** — do not add a separate Steer
-   option, since Other already lets the user type a steer. **"End navigation"
+   option, since Other already lets the user type a steer. **"End steering"
    must still be an explicit listed option**, because the tool has no built-in
    for it and End is the loop's only exit.
 
    **Fallback — numbered text menu:** when `AskUserQuestion` is unavailable, list
-   **both "Steer with my own text" and "End navigation" explicitly** (the text
+   **both "Steer with my own text" and "End steering" explicitly** (the text
    menu has no built-in Other box). Each option is a short label + its literal
    `` `bar build` `` / `` `bar sequence show` `` string + one sentence on what it
    emphasizes, ending with `[1 / 2 / ... / steer / end]`.
@@ -110,14 +110,14 @@ lookups for that iteration are complete.
    - **Sequence** → hand the step list to bar-workflow.
    - **Steer** → fold the free text into the goal statement; re-loop from step 1;
      do not execute anything this iteration.
-   - **End** → stop the loop and summarize where the navigation landed.
+   - **End** → stop the loop and summarize where the steering landed.
 
 6. **Update and loop** — unless End was chosen, update the goal statement from the
    step's output and return to step 1.
 
 ## Skill Behavior Rules
 
-- **The loop exits only on the explicit "End navigation" option.** bar-navigate
+- **The loop exits only on the explicit "End steering" option.** bar-steer
   never auto-converges and never stops because it judges the goal "reached" —
   only the user's End selection ends it. A response that stops the loop without a
   user End selection does not satisfy this requirement.

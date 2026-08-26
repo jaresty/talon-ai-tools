@@ -87,23 +87,41 @@ lookups for that iteration are complete.
      of numbered `bar build` steps.
    Every option command must include a task token and must omit `method:prism`.
 
+   **Carry each option's provenance.** For every substantive option, record the
+   **prism frame it came from** (from step 1) **and one short reason that frame
+   fits the current goal statement** — not merely *which* frame, but *why that
+   lens is worth a move given where the user is now*. Keep this to frame-origin
+   relevance ("the risk frame, because the plan hasn't been stress-tested against
+   failure yet"), not persuasive advocacy for choosing the option — the "what it
+   emphasizes" sentence already covers the move itself; this line covers why the
+   lens is on the table. Because each prism frame reaches a conclusion no other
+   frame reaches, the frame tag is high-signal: it lets the user steer at the
+   frame level (drop a whole lens) rather than only picking blindly.
+
 4. **Present the picker** — always include, in addition to the substantive options:
    - **"Steer with my own text"** — freeform entry; the user's text is folded into
      the goal statement and the loop restarts at step 1 **without executing** anything.
    - **"End steering"** — the only way the loop exits.
 
+   Every substantive option — on either path below — must show four things: a
+   short label, its literal `` `bar build` `` / `` `bar sequence show` `` command,
+   one sentence on what it emphasizes, and **its frame-and-fit line** (the prism
+   frame it came from plus why that frame fits the current goal, per step 3).
+
    **AskUserQuestion path (preferred):** render the substantive options plus an
-   explicit **"End steering"** option. On this path the **Steer free-text is
-   served by the tool's built-in "Other" box** — do not add a separate Steer
-   option, since Other already lets the user type a steer. **"End steering"
-   must still be an explicit listed option**, because the tool has no built-in
-   for it and End is the loop's only exit.
+   explicit **"End steering"** option. Put the emphasis sentence **and the
+   frame-and-fit line** in each option's `description` field so the short label
+   stays clean. On this path the **Steer free-text is served by the tool's
+   built-in "Other" box** — do not add a separate Steer option, since Other
+   already lets the user type a steer. **"End steering" must still be an explicit
+   listed option**, because the tool has no built-in for it and End is the loop's
+   only exit.
 
    **Fallback — numbered text menu:** when `AskUserQuestion` is unavailable, list
    **both "Steer with my own text" and "End steering" explicitly** (the text
    menu has no built-in Other box). Each option is a short label + its literal
    `` `bar build` `` / `` `bar sequence show` `` string + one sentence on what it
-   emphasizes, ending with `[1 / 2 / ... / steer / end]`.
+   emphasizes + **its frame-and-fit line**, ending with `[1 / 2 / ... / steer / end]`.
 
 5. **Act on the choice:**
    - **Single command** → execute it directly, follow the bar-generated prompt.

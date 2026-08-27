@@ -857,6 +857,23 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "through explicit, controlled interfaces.",
         "shear": "The response enhances the task by outlining steps to separate or realign coupled domains, reducing the seam to an explicit, controlled interface.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
+        "shoshin": "The response enhances the task by adopting a beginner's mind toward its own inherited context — treating that context as a variable rather than a constant, and deciding "
+        "deliberately which prior conclusions, framings, and interpretations are admissible to a given reasoning pass. This is not applied at every step and is never automatic: it is "
+        "a move the response chooses to invoke only at a point where a reasoner working from different admissible context would plausibly reach a materially different conclusion. Each "
+        "invocation emits its four labeled parts under a single numbered header of the form '## shoshin pass N' (N incrementing from 1); the four parts of one invocation are exactly "
+        "those appearing under one such header, and no part may appear outside a shoshin-pass header — this makes the boundary, count, and attachment of each invocation decidable from "
+        "the transcript alone. (1) Trigger: names the specific interpretation-sensitivity at this point — a claim that a differently-contextualized reasoner would plausibly diverge "
+        "here; if no such claim can be named, the trigger is not met and no further parts are emitted. (2) Inadmissible: lists the specific prior conclusions or framings withheld for "
+        "this pass; this line must appear at an earlier transcript position than the pass it governs. (3) A fresh-pass block reasons about the subject using only context not listed in "
+        "Inadmissible — most often withholding inherited interpretation to reason as if encountering the problem fresh, or equally injecting a normally-excluded context (adversarial, "
+        "outsider, or alternative-ontology framing). (4) Reconcile: compares the fresh-pass result against the context-rich view and either quotes a specific claim that differs "
+        "between them or states no claim differs. Before Reconcile, a leak check runs: for each conclusion in the fresh-pass block, attempt to identify an item named in Inadmissible "
+        "that the conclusion depended on; emit 'Leak: found' with the item and redo the pass excluding that item, or 'Leak: not found'; iteration terminates when Leak: not found. The "
+        "withheld context is not erased — it is declared inadmissible, and a fresh-pass conclusion that reuses an Inadmissible item without a resolved leak check does not satisfy this "
+        "token. The admissibility change may be enforced by an isolating topology when available (a separate window or subprocess that genuinely cannot see the withheld context), in "
+        "which case Leak: not found is guaranteed by construction rather than checked. This move is re-entrant: it may be invoked any number of times in a single response, each "
+        "invocation self-contained with its own four parts. A response in which no point meets the trigger emits no invocations and is compliant; excluding context never licenses "
+        "contradicting an established fact.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
         "snag": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean separation.",
@@ -1178,6 +1195,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "sever": "Enforce domain separations",
         "shear": "Separate coupled domains",
         "shift": "Rotate through distinct perspectives",
+        "shoshin": "Reason with fresh eyes; set aside inherited context, then reconcile",
         "simulation": "Thought experiments and scenario walkthroughs",
         "snag": "Surface coupling seams",
         "split": "Decompose into parts or components",
@@ -1443,6 +1461,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "sever": "断",
         "shear": "剪",
         "shift": "転",
+        "shoshin": "素",
         "simulation": "象",
         "snag": "絡",
         "split": "分",
@@ -1505,7 +1524,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
             "as enthusiast": "熱",
             "as facilitator": "介",
             "as future historian": "史",
-            "as junior engineer": "初",
+            "as junior engineer": "駆",
             "as mathematician": "数",
             "as pirate": "海",
             "as plainspeak": "簡",
@@ -1660,6 +1679,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "sever": "Structural",
         "shear": "Structural",
         "shift": "Generative",
+        "shoshin": "Reasoning",
         "simulation": "Temporal/Dynamic",
         "snag": "Diagnostic",
         "split": "Exploration",
@@ -1914,6 +1934,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "sever": "Enforce domain separation",
         "shear": "Coupling mitigation",
         "shift": "Rotate perspectives",
+        "shoshin": "Beginner's mind — withhold inherited context, reason fresh, reconcile",
         "simulation": "Scenario walkthrough",
         "snag": "Coupling detection",
         "split": "Decompose in isolation",
@@ -7416,6 +7437,34 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "consider multiple viewpoints",
                 "look at this architecture from the perspective of the on-call engineer",
                 "rotate through the developer, operator, and user perspectives on this design",
+            ],
+        },
+        "shoshin": {
+            "distinctions": [
+                {
+                    "note": "lateral = resist the first framing of the problem; shoshin = declare specific inherited context inadmissible for a pass, then run a leak check and "
+                    "reconcile the divergence. lateral changes the entry angle; shoshin changes what prior context is admissible and audits leakage.",
+                    "token": "lateral",
+                },
+                {
+                    "note": "shift = rotate through lenses on the same fixed facts and context; shoshin = withhold admitted context so the pass genuinely cannot see it, then "
+                    "report the divergence as a finding. shift re-views everything; a shoshin pass deliberately does not.",
+                    "token": "shift",
+                },
+                {
+                    "note": "prism = enumerate N vantage frames and apply each; shoshin = a single re-entrant admissibility change (withhold or inject context) guarded by a "
+                    "leak check. prism multiplies lenses; shoshin controls the input set and audits reuse.",
+                    "token": "prism",
+                },
+            ],
+            "heuristics": [
+                "beginner's mind",
+                "reason with fresh eyes",
+                "set aside our assumptions",
+                "what would someone new to this conclude",
+                "outsider perspective",
+                "withhold prior context and reason fresh",
+                "check whether our accumulated framing is load-bearing here",
             ],
         },
         "simulation": {

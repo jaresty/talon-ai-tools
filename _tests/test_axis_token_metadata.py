@@ -879,6 +879,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "sever",
         "shear",
         "shift",
+        "shoshin",
         "simulation",
         "snag",
         "split",

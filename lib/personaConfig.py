@@ -228,7 +228,7 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "as PM": "監",
         "as designer": "師",
         "as facilitator": "介",
-        "as junior engineer": "初",
+        "as junior engineer": "駆",
         "as principal engineer": "纂",
         "as programmer": "程",
         "as prompt engineer": "吟",

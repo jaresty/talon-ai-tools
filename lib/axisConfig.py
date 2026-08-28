@@ -857,33 +857,30 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "through explicit, controlled interfaces.",
         "shear": "The response enhances the task by outlining steps to separate or realign coupled domains, reducing the seam to an explicit, controlled interface.",
         "shift": "The response enhances the task by deliberately rotating through distinct perspectives or cognitive modes, contrasting how each frame interprets the same facts.",
-        "shoshin": "The response enhances the task by adopting a beginner's mind toward its own inherited context — treating that context as a variable rather than a constant, and deciding "
-        "deliberately which prior conclusions, framings, and interpretations are admissible to a given reasoning pass. It is selective and never automatic: invoke it only where a "
-        "reasoner working from different admissible context would plausibly reach a materially different conclusion. It is re-entrant: it may be invoked any number of times in one "
-        "response, each invocation emitting its four labeled parts under a single numbered header '## shoshin pass N' (N incrementing from 1); the four parts of one invocation are "
-        "exactly those under one such header and none appears outside one, making each invocation's boundary, count, and attachment decidable from the transcript alone. A response in "
-        "which no point meets the trigger emits no invocations and is compliant; excluding context never licenses contradicting an established fact.  (1) Trigger: names the specific "
-        "interpretation-sensitivity at this point — a claim that a differently-contextualized reasoner would plausibly diverge here; if none can be named, the trigger is not met and "
-        "no further parts are emitted. This judgment is subject to a paradox: it is made by the same context-rich reasoning shoshin exists to escape, so an ambient frame can make its "
-        "own alternatives look too implausible to trigger. Resolve it by routing to an action, not by checking pre-existing transcript state. Preferred: invoke a subagent-spawning "
-        "tool now to run trigger detection and the fresh pass in a context that does not inherit this reasoning's accumulated frame — the invocation appears as a tool-use block and "
-        "the reconcile step cites the result block it returns (a frame the delegate never received cannot veto its own alternatives; the delegate still carries its own priors, so this "
-        "is the strongest available lever, not a completeness guarantee). Otherwise, enumerate the answer-shaping frames the analysis assumes, naming each as 'Assumed frame: <frame>', "
-        "and apply the divergence test to each. Which branch applies is decided by separability: state the task in its minimal form and check whether the suspected frame still appears "
-        "in it — if the minimal statement omits the frame the context is separable (accumulated reasoning that can be left unforwarded) and delegation is preferred; if it still "
-        "contains the frame, briefing the delegate would re-import it, so in-thread enumeration is used. When delegating, first declare what enters the delegate's prompt: emit one "
-        "'Forwarded: <item> — [requirement | inherited-framing]' line per item, classifying each as a genuine task requirement or an interpretation inherited from accumulated context. "
-        "The delegate's prompt is the subagent tool-use block's input; an inherited-framing item must either be absent from that input or appear there only as an explicit question, "
-        "and an inherited-framing item appearing declaratively is passed as an assumption. A delegation with no 'Forwarded:' declaration, or a shoshin-eligible response with neither a "
-        "delegation tool-use block nor an 'Assumed frame:' enumeration, has not established that no trigger was missed.  (2) Inadmissible: lists the specific prior conclusions or "
-        "framings withheld for this pass; this line must appear at an earlier transcript position than the pass it governs.  (3) A fresh-pass block reasons about the subject using "
-        "only context not listed in Inadmissible — most often withholding inherited interpretation to reason as if encountering the problem fresh, or equally injecting a "
-        "normally-excluded context (adversarial, outsider, or alternative-ontology framing).  (4) Reconcile: compares the fresh-pass result against the context-rich view and either "
-        "quotes a specific claim that differs or states no claim differs. Before Reconcile, run the leak check against both lists: for each fresh-pass conclusion, identify any item it "
-        "depended on that is named in 'Inadmissible:' or any 'inherited-framing' item passed as an assumption in the delegate's tool-use input; emit 'Leak: found' with the item and "
-        "redo the pass excluding it, or 'Leak: not found'; iteration terminates at 'Leak: not found'. A fresh-pass conclusion that reuses a withheld item without a resolved leak check "
-        "does not satisfy this token. When the fresh pass ran in a genuinely isolating subagent, 'Leak: not found' for Inadmissible items is guaranteed by construction rather than "
-        "checked.",
+        "shoshin": "The response enhances the task by treating the frames through which it reasons — inherited conclusions, interpretations, ontologies, and vantage points — as things it selects "
+        "deliberately rather than inherits by default. It is selective and never automatic: invoke it only where a reasoner working from a different frame set would plausibly reach a "
+        "materially different conclusion. It is re-entrant: it may be invoked any number of times in one response, each invocation emitting its labeled parts under a single numbered "
+        "header '## shoshin pass N' (N incrementing from 1); the parts of one invocation are exactly those under one such header, making its boundary, count, and attachment decidable "
+        "from the transcript alone. A response in which no point meets the trigger emits no invocations and is compliant; frame selection never licenses contradicting an established "
+        "fact.  (1) Trigger: names the specific interpretation-sensitivity — a claim that a reasoner working from a different frame set would plausibly diverge here; if none can be "
+        "named, no further parts are emitted. This judgment is made from within the current frame set, which can make its own alternatives look too implausible to trigger; mitigate by "
+        "drawing candidate frames from sources outside that judgment (named in the request, or implied by other active tokens) rather than self-detection alone.  (2) Pool and sort: "
+        "enumerate the candidate frames in play and, for each, emit one line '- <frame> — [self | supplied | derived] — [inadmissible | admit | default]' carrying its source and its "
+        "disposition. Source: self = surfaced by this reasoning (paradox-limited); supplied = named in the request; derived = implied by another active token. Disposition: "
+        "inadmissible = an inherited frame withheld for this pass; admit = a frame deliberately brought in that would not otherwise be present (adversarial, outsider, "
+        "alternative-ontology); default = a frame in play that is neither withheld nor specially imported and simply rides along. Beginner's mind is the case where every inherited "
+        "frame is marked inadmissible and none is marked admit; the empty admit set is never expressed as admitting a 'fresh eyes' or 'beginner's mind' frame. The task's own question "
+        "is not a candidate frame; it is the ground the sort sits on.  Selection may be enforced by delegation: when the inadmissible frames are separable from the minimal statement "
+        "of the task — accumulated reasoning that can be left unforwarded — invoke a subagent-spawning tool now to reason under the disposition in a context that never received the "
+        "inadmissible frames; the invocation appears as a tool-use block and the reconcile step cites its result block. Decide separability by stating the task minimally and checking "
+        "whether an inadmissible frame still appears: if omitted, separable, delegate; if still present, briefing the delegate re-imports it, so reason in-thread. When delegating, "
+        "emit one 'Forwarded: <item> — [requirement | inadmissible-frame]' line per item entering the delegate's prompt; an inadmissible-frame item must be absent from that input or "
+        "appear only as an explicit question, and one appearing declaratively is passed as an assumption.  (3) Reason: reason about the subject using the default and admit frames, "
+        "excluding the inadmissible frames.  (4) Reconcile: compare the selected-frame result against the current-frame view and either quote a specific differing claim or state no "
+        "claim differs. Before Reconcile, run the leak check: for each conclusion, identify any inadmissible frame it relied on — reused in-thread or passed as an assumption in a "
+        "delegate's tool-use input; emit 'Leak: found' with the frame and redo excluding it, or 'Leak: not found'; iteration terminates at 'Leak: not found'. When the pass ran in a "
+        "genuinely isolating subagent that never received the inadmissible frames, 'Leak: not found' for those is guaranteed by construction. A shoshin-eligible response that produced "
+        "no disposition lines and no delegation tool-use block has not established that its frame set was chosen rather than inherited.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
         "snag": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean separation.",
@@ -1205,7 +1202,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "sever": "Enforce domain separations",
         "shear": "Separate coupled domains",
         "shift": "Rotate through distinct perspectives",
-        "shoshin": "Reason with fresh eyes; set aside inherited context, then reconcile",
+        "shoshin": "Select which frames to admit, exclude, or carry; reason under the selection; reconcile",
         "simulation": "Thought experiments and scenario walkthroughs",
         "snag": "Surface coupling seams",
         "split": "Decompose into parts or components",
@@ -1944,7 +1941,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "sever": "Enforce domain separation",
         "shear": "Coupling mitigation",
         "shift": "Rotate perspectives",
-        "shoshin": "Beginner's mind — withhold inherited context, reason fresh, reconcile",
+        "shoshin": "Deliberate frame selection — admit/exclude/carry frames, reason under the selection, reconcile (beginner's mind = exclude all inherited frames)",
         "simulation": "Scenario walkthrough",
         "snag": "Coupling detection",
         "split": "Decompose in isolation",
@@ -7452,18 +7449,21 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "shoshin": {
             "distinctions": [
                 {
-                    "note": "lateral = resist the first framing of the problem; shoshin = declare specific inherited context inadmissible for a pass, then run a leak check and "
-                    "reconcile the divergence. lateral changes the entry angle; shoshin changes what prior context is admissible and audits leakage.",
+                    "note": "lateral = resist the first framing of the problem; shoshin = sort the frames in play into admit/exclude/default for a pass, reason under that "
+                    "selection, then run a leak check and reconcile the divergence. lateral changes the entry angle; shoshin changes which frames are admissible and "
+                    "audits leakage.",
                     "token": "lateral",
                 },
                 {
-                    "note": "shift = rotate through lenses on the same fixed facts and context; shoshin = withhold admitted context so the pass genuinely cannot see it, then "
-                    "report the divergence as a finding. shift re-views everything; a shoshin pass deliberately does not.",
+                    "note": "shift = rotate through lenses on the same fixed facts and context; shoshin = exclude some frames so the pass genuinely cannot reason under them and "
+                    "admit others deliberately, then report the divergence as a finding. shift re-views everything; a shoshin pass deliberately reasons under a selected "
+                    "subset.",
                     "token": "shift",
                 },
                 {
-                    "note": "prism = enumerate N vantage frames and apply each; shoshin = a single re-entrant admissibility change (withhold or inject context) guarded by a "
-                    "leak check. prism multiplies lenses; shoshin controls the input set and audits reuse.",
+                    "note": "prism = enumerate N vantage frames and apply each in parallel; shoshin = sort the frames in play into admit/exclude/default and reason under one "
+                    "selection guarded by a leak check. prism multiplies lenses and keeps them all; shoshin removes and imports frames deliberately and audits reuse of "
+                    "excluded ones.",
                     "token": "prism",
                 },
             ],
@@ -7473,7 +7473,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "set aside our assumptions",
                 "what would someone new to this conclude",
                 "outsider perspective",
-                "withhold prior context and reason fresh",
+                "reason through these specific frames",
+                "exclude our inherited framing and admit a fresh one",
                 "check whether our accumulated framing is load-bearing here",
             ],
         },

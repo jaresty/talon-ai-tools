@@ -1350,7 +1350,7 @@ func renderTokenSelectionHeuristics(w io.Writer, grammar *Grammar, compact bool)
 	fmt.Fprintf(w, "- **Extraction tasks** (`pull`, `sort`, `diff`): any completeness level works; match to how much of the source you want covered.\n")
 	fmt.Fprintf(w, "- **Action tasks** (`fix`, `make`, `plan`): `full` or `deep` for thorough output; `skim` or `gist` for quick drafts.\n")
 	fmt.Fprintf(w, "- **Compound directionals** with `gist`/`skim`: see \"Choosing Directional\" — this combination is also score-reducing.\n")
-	fmt.Fprintf(w, "- **Stakes-proportionate depth** → `triage` (allocate depth by consequence × uncertainty; high-stakes areas get full coverage, low-stakes areas get minimal)\n\n")
+	fmt.Fprintf(w, "- **Allocate depth by a named score** → `ration` (spend coverage depth in proportion to a situational score you name — e.g. stakes = consequence × uncertainty, or subject contour; deepest where the score is highest, minimal on the low-scoring tail)\n\n")
 
 	// Choosing Scope — rendered dynamically from AXIS_KEY_TO_ROUTING_CONCEPT (ADR-0146 Phase 2)
 	renderRoutingConceptSection(w, "Choosing Scope", grammar.Axes.RoutingConcept["scope"])

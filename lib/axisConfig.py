@@ -160,11 +160,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "prime": "The response ranks the subject's concepts by learning leverage — the ratio of understanding unlocked to learning effort required — naming this ranking criterion before "
         "covering any concept. It covers only the highest-leverage subset. After naming that subset, it writes a closure statement declaring coverage complete at the functional "
         "competence threshold: the point at which the reader can operate without having mastered the full domain.",
+        "ration": "The response allocates coverage depth across the parts of the subject in proportion to a situational score that the response must name — full depth where the score is "
+        "highest, minimal or no depth where it is lowest. For each part left at minimal or zero depth, the response names its low score as the reason it was left shallow. The "
+        "score is not drawn from a fixed list: for example, allocation by subject contour (deeper where structure is dense, contracting where resolution emerges), by stakes "
+        "(consequence × uncertainty, deepest where both are high), or by any other situational measure the subject warrants.",
         "skim": "The response performs only a very light pass, addressing the most obvious or critical issues without aiming for completeness.",
-        "taper": "The response adjusts coverage depth by following the contour of the subject — expanding in high-complexity regions where analysis demands depth, contracting where "
-        "resolution emerges. Like a derivative: the rate of change matters more than the total span. Accelerates toward dense regions, decelerates near resolution.",
-        "triage": "The response allocates analytical depth by consequence × uncertainty: areas where both are high receive full coverage; areas where both are low receive minimal or no "
-        "coverage. The coverage allocation is stakes-proportionate rather than uniform.",
         "zoom": "The response covers the full range of the subject by treating it as exponentially-spaced buckets from smallest natural unit to largest. Each bucket receives substantive "
         "coverage — the response addresses the subject at every level, not merely names or lists the scale. Both ends must appear as explicit anchors: do not begin at an "
         "intermediate level or leave either end implicit. Bucket sizes scale exponentially with span magnitude: each order of magnitude in span produces roughly one step up in "
@@ -914,11 +914,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
         "visual": "The response enhances the task by placing concepts in named positions relative to each other — in a spatial arrangement, diagram, or map — such that each concept's position "
         "encodes at least one named relationship to the others.",
-        "worth": "The response reduces each candidate to the smallest form that still changes the decision it serves before recommending or committing to a course of action, then selects among "
-        "the reduced candidates the one whose expected decision-value is greatest relative to its total cost, where total cost includes production effort, ongoing maintenance, the cost "
-        "of gathering the evidence the candidate depends on, and the value of the best forgone alternative. A candidate is not evaluated at the size in which it was first proposed; it "
-        "is first resized to its smallest decision-preserving form, and only the resized candidates are compared. When no candidate's expected value exceeds its total cost, the response "
-        "selects taking no action.",
+        "winnow": "The response first resizes each candidate to the smallest form that still changes the decision it serves, then selects among the resized candidates by a value-over-cost score "
+        "that the response must name — keeping the candidate whose expected decision-value is greatest relative to its total cost and dropping the rest — where total cost includes "
+        "production effort, ongoing maintenance, the cost of gathering the evidence the candidate depends on, and the value of the best forgone alternative. Taking no action is always "
+        "among the candidates: when no candidate's expected value exceeds its total cost, the response selects taking no action.",
         "yield": "The response advances the task by naming the specific minimal intervention taken, naming the specific dynamic or structure that resolves the remaining tension after that "
         "intervention, and attributing resolution to those named system dynamics rather than to additional interventions — any content beyond this names conditions under which the named "
         "dynamic operates, not further interventions.",
@@ -1036,9 +1035,8 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "minimal": "Smallest satisfying answer only",
         "narrow": "Restricted to a very small slice",
         "prime": "Highest-leverage concepts only, stop at functional grounding",
+        "ration": "Allocate depth by a named score",
         "skim": "Light pass, obvious issues only",
-        "taper": "Coverage follows subject contour",
-        "triage": "Stakes-weighted coverage depth",
         "zoom": "Full-range coverage at adaptive granularity",
     },
     "directional": {
@@ -1219,7 +1217,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Falsification pressure",
         "visual": "Spatial/positional framing",
-        "worth": "Select by value relative to total cost",
+        "winnow": "Resize, then keep the best value-over-cost",
         "yield": "Minimal action, allow natural resolution",
     },
     "scope": {
@@ -1302,9 +1300,8 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "minimal": "小",
         "narrow": "狭",
         "prime": "要",
+        "ration": "配",
         "skim": "略",
-        "taper": "曲",
-        "triage": "険",
         "zoom": "比",
     },
     "directional": {
@@ -1485,7 +1482,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "unknowns": "未",
         "verify": "証",
         "visual": "絵",
-        "worth": "稱",
+        "winnow": "淘",
         "yield": "任",
     },
     "persona": {
@@ -1703,7 +1700,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "unknowns": "Diagnostic",
         "verify": "Reasoning",
         "visual": "Generative",
-        "worth": "Comparative",
+        "winnow": "Comparative",
         "yield": "Conduct",
     }
 }
@@ -1775,9 +1772,8 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "minimal": "Briefest valid response",
         "narrow": "Focused depth on a specific slice",
         "prime": "Highest-leverage concepts first, stop at functional grounding",
+        "ration": "Allocate coverage depth by a named situational score",
         "skim": "Surface-level coverage",
-        "taper": "Follow subject contour",
-        "triage": "Stakes-proportionate coverage depth",
         "zoom": "Full-range coverage at adaptive granularity",
     },
     "directional": {
@@ -1958,7 +1954,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "unknowns": "Unknown unknowns",
         "verify": "Falsification pressure",
         "visual": "Spatial/positional framing",
-        "worth": "Value-of-information selection — resize candidates, then pick the greatest decision-value per unit total cost",
+        "winnow": "Resize candidates, then keep the greatest decision-value per unit total cost",
         "yield": "Minimal intervention / natural resolution",
     },
     "scope": {
@@ -3851,8 +3847,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "prime": {
             "distinctions": [
                 {
-                    "note": "prime = ranks by learning leverage, stops at functional competence; triage = ranks by consequence × uncertainty (risk)",
-                    "token": "triage",
+                    "note": "prime = ranks by learning leverage, stops at functional competence; ration = allocates coverage depth by a named situational score (e.g. stakes "
+                    "= consequence × uncertainty)",
+                    "token": "ration",
                 },
                 {
                     "note": "prime = selects highest-leverage subset and writes closure statement; gist = brief summary of everything",
@@ -3881,6 +3878,34 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "functional grounding",
             ],
         },
+        "ration": {
+            "distinctions": [
+                {
+                    "note": "ration = allocate coverage depth by a named situational score (subject contour, stakes, or any other); zoom = fixed exponential buckets",
+                    "token": "zoom",
+                },
+                {
+                    "note": "ration = allocate depth by a named score, leaving the low-scoring tail at minimal depth; grow = expand only where analysis explicitly demands "
+                    "it",
+                    "token": "grow",
+                },
+                {
+                    "note": "ration = depth proportionate to a named score, minimal on the tail; full = uniform thorough coverage across all aspects",
+                    "token": "full",
+                },
+            ],
+            "heuristics": [
+                "allocate depth by a named score",
+                "follow the contour",
+                "where it's dense, go deep",
+                "focus on the high-risk areas",
+                "risk-proportionate depth",
+                "where are the stakes highest",
+                "consequence-weighted review",
+                "spend depth where it matters, skim the rest",
+                "what deserves the most scrutiny",
+            ],
+        },
         "skim": {
             "distinctions": [
                 {
@@ -3896,48 +3921,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "surface-level look",
                 "sanity check",
                 "quick skim",
-            ],
-        },
-        "taper": {
-            "distinctions": [
-                {
-                    "note": "taper = rate of change (derivative); zoom = fixed exponential buckets",
-                    "token": "zoom",
-                },
-                {
-                    "note": "taper = adapts to subject density; grow = expands on demand",
-                    "token": "grow",
-                },
-            ],
-            "heuristics": [
-                "follow the contour",
-                "where it's dense, go deep",
-                "contract toward resolution",
-                "go deeper where it warrants",
-                "shallow where it's resolved",
-            ],
-        },
-        "triage": {
-            "distinctions": [
-                {
-                    "note": "triage = allocate depth by consequence × uncertainty stakes; grow = expand only where analysis explicitly demands it",
-                    "token": "grow",
-                },
-                {
-                    "note": "triage = stakes-proportionate, leaving low-stakes areas at minimal depth; full = uniform thorough coverage across all aspects",
-                    "token": "full",
-                },
-            ],
-            "heuristics": [
-                "focus on the high-risk areas",
-                "triage by impact and uncertainty",
-                "risk-proportionate depth",
-                "where are the stakes highest",
-                "most dangerous parts first",
-                "consequence-weighted review",
-                "allocate attention by risk",
-                "what deserves the most scrutiny",
-                "protect the high-stakes areas",
             ],
         },
         "zoom": {
@@ -7792,18 +7775,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "where does X sit relative to Y",
             ],
         },
-        "worth": {
+        "winnow": {
             "distinctions": [
                 {
-                    "note": "pick = select among fixed given candidates; worth = resize each candidate first, then select by value-over-cost (may select 'no action')",
+                    "note": "pick = select among fixed given candidates; winnow = resize each candidate first, then select by a named value-over-cost score (may select 'no "
+                    "action')",
                     "token": "pick",
                 },
                 {
-                    "note": "collapse = minimize the response's form; worth = minimize the candidate work under decision before comparing",
+                    "note": "collapse = minimize the response's form; winnow = minimize the candidate work under decision before comparing",
                     "token": "collapse",
                 },
                 {
-                    "note": "atomic = one observable change per execution step; worth = a selection-time gate on which whole candidate to pursue",
+                    "note": "atomic = one observable change per execution step; winnow = a selection-time gate on which whole candidate to pursue",
                     "token": "atomic",
                 },
             ],
@@ -7814,6 +7798,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "is more evidence worth gathering",
                 "compare value against total cost",
                 "avoid over-investing",
+                "keep the best, drop the rest",
             ],
         },
         "yield": {

@@ -558,7 +558,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 },
             },
             {
-                "token": "probe method:converge completeness:triage",
+                "token": "probe method:converge completeness:ration",
                 "role": "ranked eval suite",
                 "prompt_hint": "Synthesize the escape routes and test cases from all frames into a ranked eval suite. Order by consequence × uncertainty — high-stakes behavioral gaps first. For each eval case: name the frame, the escape route, the specific string the gate checks, and the pass/fail criterion. Omit low-stakes gaps where the consequence of missing the behavior is negligible.",
             },

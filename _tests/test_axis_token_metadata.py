@@ -12,7 +12,7 @@ _AXIS_TOKEN_METADATA = _axis_token_metadata()
 
 
 class CompletenessAxisMetadataTests(unittest.TestCase):
-    """ADR-0155 T-3: completeness axis has structured metadata for all 9 tokens (triage moved from method)."""
+    """ADR-0155 T-3: completeness axis has structured metadata for all tokens (taper+triage generalized to ration)."""
 
     AXIS = "completeness"
     EXPECTED_TOKENS = {
@@ -24,9 +24,8 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
         "minimal",
         "narrow",
         "prime",
+        "ration",
         "skim",
-        "taper",
-        "triage",
         "zoom",
     }
 
@@ -90,35 +89,35 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
             "deep", distinction_tokens, "full distinctions must reference deep"
         )
 
-    def test_triage_in_completeness_not_method(self):
-        """triage must be a completeness token, not a method token (moved in ADR-0163)."""
+    def test_ration_in_completeness_not_method(self):
+        """ration must be a completeness token, not a method token."""
         from lib.axisConfig import AXIS_KEY_TO_VALUE
 
         self.assertIn(
-            "triage",
+            "ration",
             AXIS_KEY_TO_VALUE.get("completeness", {}),
-            "triage must be in completeness AXIS_KEY_TO_VALUE",
+            "ration must be in completeness AXIS_KEY_TO_VALUE",
         )
         self.assertNotIn(
-            "triage",
+            "ration",
             AXIS_KEY_TO_VALUE.get("method", {}),
-            "triage must NOT be in method AXIS_KEY_TO_VALUE",
+            "ration must NOT be in method AXIS_KEY_TO_VALUE",
         )
 
-    def test_triage_distinguishes_from_grow(self):
-        """triage must distinguish from grow (triage=stakes-weighted depth; grow=demand-driven depth)."""
-        triage = self.meta.get("triage", {})
-        distinction_tokens = [d["token"] for d in triage.get("distinctions", [])]
+    def test_ration_distinguishes_from_grow(self):
+        """ration must distinguish from grow (ration=score-weighted depth; grow=demand-driven depth)."""
+        ration = self.meta.get("ration", {})
+        distinction_tokens = [d["token"] for d in ration.get("distinctions", [])]
         self.assertIn(
-            "grow", distinction_tokens, "triage distinctions must reference grow"
+            "grow", distinction_tokens, "ration distinctions must reference grow"
         )
 
-    def test_prime_distinguishes_from_triage_and_gist(self):
-        """prime must distinguish from triage (different ranking axis) and gist (subset vs summary)."""
+    def test_prime_distinguishes_from_ration_and_gist(self):
+        """prime must distinguish from ration (different ranking axis) and gist (subset vs summary)."""
         prime = self.meta.get("prime", {})
         distinction_tokens = [d["token"] for d in prime.get("distinctions", [])]
         self.assertIn(
-            "triage", distinction_tokens, "prime distinctions must reference triage"
+            "ration", distinction_tokens, "prime distinctions must reference ration"
         )
         self.assertIn(
             "gist", distinction_tokens, "prime distinctions must reference gist"
@@ -893,7 +892,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "unknowns",
         "verify",
         "visual",
-        "worth",
+        "winnow",
         "yield",
     }
 

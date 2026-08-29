@@ -106,7 +106,7 @@ STARTER_PACKS: list[StarterPack] = [
     StarterPack(
         name="assay",
         framing="Behavioral eval suite from a prompt or instruction",
-        command="bar build make method:hollow method:prism form:test completeness:triage",
+        command="bar build make method:hollow method:prism form:test completeness:ration",
         heuristics=("write evals for this", "generate eval cases", "evaluate this prompt", "behavioral coverage", "what evals should I write", "test this prompt", "prompt audit", "generate test cases for this instruction", "eval suite", "how do I know this prompt works"),
     ),
 ]

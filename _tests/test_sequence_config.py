@@ -159,7 +159,7 @@ class TestSequenceConfigStructure(unittest.TestCase):
             tokens,
             [
                 "task:probe intent:orient method:navigate method:mapping method:flow method:control",
-                "task:probe scope:fail method:inversion method:robust method:control as-future-historian fly-ong",
+                "task:probe scope:fail method:inversion method:robust method:control shoshin as-future-historian fly-ong",
                 "task:show method:survive directional:dig method:sweep",
                 "task:plan method:grain method:control method:verify",
             ],
@@ -175,7 +175,7 @@ class TestSequenceConfigStructure(unittest.TestCase):
         fail_step = seq["steps"][1]
         self.assertEqual(
             fail_step.get("token"),
-            "task:probe scope:fail method:inversion method:robust method:control as-future-historian fly-ong",
+            "task:probe scope:fail method:inversion method:robust method:control shoshin as-future-historian fly-ong",
             "fail step must precede evidence and carry method:inversion (start from disaster) "
             "so engagement-level failure is projected before any seam is salient",
         )

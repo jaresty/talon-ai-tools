@@ -697,9 +697,9 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "mode": "autonomous",
         "steps": [
             {
-                "token": "show method:unknowns",
+                "token": "show method:unknowns shoshin",
                 "role": "blind spot inventory",
-                "prompt_hint": "Name the categories of what hasn't been considered in the current approach — each category must be nameable as a type (e.g. unstated dependency, unexamined assumption, external condition not accounted for). For each category, name at least one specific unknown found in the subject and at least one question that would need to be answered to resolve it.",
+                "prompt_hint": "Name the categories of what hasn't been considered in the current approach — each category must be nameable as a type (e.g. unstated dependency, unexamined assumption, external condition not accounted for). For each category, name at least one specific unknown found in the subject and at least one question that would need to be answered to resolve it. Before inventorying, apply shoshin: the current approach is itself a frame that hides the blind spots it created — name the inherited framing as inadmissible and reason about what is missing without it, so genuinely-absent categories surface rather than only those the current frame already admits.",
             },
             {
                 "token": "method:models",
@@ -727,9 +727,9 @@ SEQUENCES: dict[str, dict[str, Any]] = {
         "mode": "linear",
         "steps": [
             {
-                "token": "show method:split method:clash",
+                "token": "show method:split method:clash shoshin",
                 "role": "structural decomposition and conflict identification",
-                "prompt_hint": "Decompose the subject into its structural parts (modules, interfaces, invariants, lifecycle, ownership boundaries). For each part, name its structural commitment — the constraint it places on the rest of the system. Then identify where two or more parts have commitments that are locally valid but globally inconsistent: name both sides of each conflict and the condition under which each side breaks the other.",
+                "prompt_hint": "Decompose the subject into its structural parts (modules, interfaces, invariants, lifecycle, ownership boundaries). For each part, name its structural commitment — the constraint it places on the rest of the system. Then identify where two or more parts have commitments that are locally valid but globally inconsistent: name both sides of each conflict and the condition under which each side breaks the other. Before decomposing, apply shoshin: the subject's own description of its parts is an inherited frame that can hide tensions it does not name as parts — mark that self-description inadmissible and decompose from the structure as it actually behaves, so conflicts invisible to the design's self-account surface.",
             },
             {
                 "token": "show method:mu method:operations",
@@ -756,9 +756,9 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "prompt_hint": "Use this step to establish the destination first, locate the current position relative to it, map the related nodes and their relationships, and trace the relevant flow. Distinguish what is within agency from what is outside it, and bound the reachable topics accordingly. Do not nominate a seam or select work merely because it is adjacent — anchor on the destination.",
             },
             {
-                "token": "task:probe scope:fail method:inversion method:robust method:control as-future-historian fly-ong",
+                "token": "task:probe scope:fail method:inversion method:robust method:control shoshin as-future-historian fly-ong",
                 "role": "engagement-level failure projection",
-                "prompt_hint": "Use this step to project how the overall engagement could fail, before any technical seam is salient. Do not ask how a specific seam breaks — reason from at least one named engagement-level failure state back to what would produce or amplify it and at least one intervention that blocks that path (inversion). From a future historian's vantage, treat the current plan as already-settled record and name how it will be remembered to have failed, anchoring on general failure patterns rather than a chosen seam. Rank each failure across futures — name a scenario in which each candidate mitigation fails and one in which an alternative succeeds (robust) — and mark which failures are even reachable within agency, so unactionable risks do not attract candidate moves (control).",
+                "prompt_hint": "Use this step to project how the overall engagement could fail, before any technical seam is salient. Do not ask how a specific seam breaks — reason from at least one named engagement-level failure state back to what would produce or amplify it and at least one intervention that blocks that path (inversion). From a future historian's vantage, treat the current plan as already-settled record and name how it will be remembered to have failed, anchoring on general failure patterns rather than a chosen seam. Rank each failure across futures — name a scenario in which each candidate mitigation fails and one in which an alternative succeeds (robust) — and mark which failures are even reachable within agency, so unactionable risks do not attract candidate moves (control). Apply shoshin to the projection itself: the current plan is the frame least able to see its own failure modes — mark the plan's own framing inadmissible and project failure from outside it, so failures the plan's optimism conceals are named rather than only those consistent with believing the plan works.",
             },
             {
                 "token": "task:show method:survive directional:dig method:sweep",

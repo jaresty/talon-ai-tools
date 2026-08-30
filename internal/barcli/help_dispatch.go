@@ -76,6 +76,7 @@ func writeDispatchStepBlock(w io.Writer, step SequenceStep, _ int, _ *Grammar) {
 	}
 	if step.Isolation {
 		fmt.Fprintf(w, "          3. isolation: true — each agent receives only %s; no shared history\n", isolationContext)
+		fmt.Fprintf(w, "             isolation withholds sibling context, but the assigned item still carries whatever inherited framing shaped it. Add `shoshin` to the step 0a bar build so its disposition + Forwarded: audit fires while building the agent config: declare which inherited frames are inadmissible for these agents, and confirm no inadmissible frame rides along in the assigned item or the `## Agent Configuration` block (present it as an open question, not an assumption). This audits the parent→agent handoff, the boundary isolation alone does not cover.\n")
 	} else {
 		fmt.Fprintf(w, "          3. isolation: false — agents share conversation context\n")
 	}

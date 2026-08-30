@@ -1940,7 +1940,8 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "sever": "Enforce domain separation",
         "shear": "Coupling mitigation",
         "shift": "Rotate perspectives",
-        "shoshin": "Deliberate frame selection — admit/exclude/carry frames, reason under the selection, reconcile (beginner's mind = exclude all inherited frames)",
+        "shoshin": "Deliberate frame selection — admit/exclude/carry frames, reason under the selection, reconcile; dynamically partition reasoning by choosing which frames govern a pass "
+        "(beginner's mind = exclude all inherited frames)",
         "simulation": "Scenario walkthrough",
         "snag": "Coupling detection",
         "split": "Decompose in isolation",
@@ -7462,6 +7463,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "reason through these specific frames",
                 "exclude our inherited framing and admit a fresh one",
                 "check whether our accumulated framing is load-bearing here",
+                "partition my reasoning by which frames govern",
+                "reason about different parts under different frames",
+                "dynamically choose which frames apply to this pass",
             ],
         },
         "simulation": {

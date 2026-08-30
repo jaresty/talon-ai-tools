@@ -124,7 +124,13 @@ lookups for that iteration are complete.
    emphasizes + **its frame-and-fit line**, ending with `[1 / 2 / ... / steer / end]`.
 
 5. **Act on the choice:**
-   - **Single command** → execute it directly, follow the bar-generated prompt.
+   - **Single command** → **actually run the chosen `bar build` command as a Bash
+     tool call now**, then follow the bar-generated prompt it returns. The command
+     must execute — a Bash tool-call result containing that `bar build` invocation
+     must appear in the transcript before you produce the step's output. Describing,
+     quoting, or paraphrasing the command instead of running it does not satisfy this
+     step; if the picked option's command has not appeared as an executed tool-call
+     result, you have not acted on the choice.
    - **Sequence** → hand the step list to bar-workflow.
    - **Steer** → fold the free text into the goal statement; re-loop from step 1;
      do not execute anything this iteration.
@@ -153,8 +159,15 @@ lookups for that iteration are complete.
 - **Show commands in options.** Each substantive option must contain a literal
   `` `bar build ` `` or `` `bar sequence show ` `` string, and each `` `bar build` ``
   command must include a task token.
-- **Be transparent.** When executing a chosen command, state:
-  "You chose <option>; I ran `bar build [tokens]` — [token]: [reason], ...".
+- **Execute, don't narrate.** Picking an option is not acting on it — the chosen
+  `bar build` / `bar sequence show` command must run as a Bash tool call every time
+  a substantive option is picked. A response that reports what command it *would*
+  run, or states it ran one without a corresponding tool-call result in the
+  transcript, does not satisfy this skill.
+- **Be transparent.** *After* the command has actually run (its tool-call result is
+  in the transcript), state: "You chose <option>; I ran `bar build [tokens]` —
+  [token]: [reason], ...". This sentence accompanies the executed call; it never
+  stands in for it.
 
 ## Discovery Workflow
 

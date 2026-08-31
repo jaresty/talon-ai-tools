@@ -418,6 +418,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "stated, the structural representation claimed to enforce it, and a reachable state of that representation where the conclusion does not hold.",
         "effects": "The response enhances the task by naming effects whose causes are themselves named as effects in the same response, tracing at least two causal steps from the initial named "
         "cause.",
+        "eliminate": "The response enhances the task by enumerating a closed set of competing candidate claims, each introduced as a labeled item, with N stated as a numeral equal to the item "
+        "count. Within each candidate's item, the response either strikes it — naming a specific defeater (the evidence or argument that removes it) and labeling that defeater "
+        "rebutting, undermining, or undercutting — or marks it surviving with the reason no defeater applies. The response then reports eliminated and surviving counts, where the "
+        "eliminated count equals the number of items bearing a typed defeater and eliminated plus surviving equals N. The response closes with either 'exhaustive:' followed by the "
+        "argument the set admits no further rivals, or 'non-exhaustive:' followed by at least one named rival class not yet enumerated. For each candidate marked surviving, the "
+        "response attempts to construct a defeater that would strike it: if one is found, the candidate is re-struck and the counts revised; if none is found for any surviving "
+        "candidate, the elimination is complete. A candidate lacking its own labeled item, a defeater without one of the three type labels, a count not matching the item tally, or a "
+        "surviving candidate with no attempted-defeater check does not satisfy this requirement.",
         "enforce": "The response identifies requirements that name an action to perform without naming the artifact whose presence in the transcript marks the action complete, and converts them "
         "to structural dependencies — when a requirement can be met by describing what to do rather than actually doing it, the response restructures it as a precondition that gates "
         "subsequent steps, requiring actual output as a predecessor for the next step. Each step cannot proceed without the real artifact.",
@@ -1164,6 +1172,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
         "effects": "Trace second and third-order effects",
+        "eliminate": "Rule out rivals by defeater",
         "enforce": "Convert procedural to structural dependencies",
         "enter": "Enter the argument's direction and redirect from within",
         "experimental": "Propose concrete experiments",
@@ -1429,6 +1438,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "domains": "領",
         "drift": "漂",
         "effects": "効",
+        "eliminate": "除",
         "enforce": "拘",
         "enter": "入",
         "experimental": "実",
@@ -1648,6 +1658,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "domains": "Exploration",
         "drift": "Diagnostic",
         "effects": "Temporal/Dynamic",
+        "eliminate": "Reasoning",
         "enforce": "Structural",
         "enter": "Structural",
         "experimental": "Exploration",
@@ -1901,6 +1912,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
         "effects": "Second-order effects",
+        "eliminate": "Rule out rivals by defeater",
         "enforce": "Convert procedural to structural dependencies",
         "enter": "Step into a frame or perspective",
         "experimental": "Design experiments",
@@ -6090,6 +6102,38 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what follows downstream",
                 "what are the downstream effects of changing this interface",
                 "trace the second-order effects of this refactor",
+            ],
+        },
+        "eliminate": {
+            "distinctions": [
+                {
+                    "note": "abduce = generate and compare rival explanations, then stop; eliminate = strike rivals from a closed enumerated set until a survivor tally "
+                    "remains",
+                    "token": "abduce",
+                },
+                {
+                    "note": "diagnose = narrow to a single root cause via evidence, scoped to causes; eliminate = domain-agnostic elimination over any competing claims with a "
+                    "counted survivor tally and exhaustiveness flag",
+                    "token": "diagnose",
+                },
+                {
+                    "note": "verify = specify one claim's falsification conditions; eliminate = operate over a set, striking each member with a typed defeater and reporting "
+                    "survivors",
+                    "token": "verify",
+                },
+                {
+                    "note": "prism = enumerate complementary vantage frames and keep all N; eliminate = enumerate competing rivals and collapse toward the survivors",
+                    "token": "prism",
+                },
+            ],
+            "heuristics": [
+                "rule out rival hypotheses",
+                "eliminative induction",
+                "narrow down the possibilities by elimination",
+                "which explanations can we rule out",
+                "strike the candidates that fail",
+                "how many rivals survive the evidence",
+                "process of elimination over competing claims",
             ],
         },
         "enforce": {

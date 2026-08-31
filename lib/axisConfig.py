@@ -5379,6 +5379,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "induce = generalize a rule from examples; abduce = hypothesize from evidence",
                     "token": "induce",
                 },
+                {
+                    "note": "abduce = generate and compare rival explanations, then stop; eliminate = strike rivals from a closed enumerated set until a survivor tally remains",
+                    "token": "eliminate",
+                },
             ],
             "heuristics": [
                 "what's the best explanation for",

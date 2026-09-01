@@ -82,6 +82,45 @@ func TestRenderPlainTextSections(t *testing.T) {
 	}
 }
 
+// TestRenderPlainTextNoLateralSeedWhenEmpty specifies that when no lateral seed
+// words are present the LATERAL SEED section is absent (Ground P1: N=0 unchanged).
+func TestRenderPlainTextNoLateralSeedWhenEmpty(t *testing.T) {
+	result := &BuildResult{Task: "make something"}
+	output := RenderPlainText(result)
+	if strings.Contains(output, "LATERAL SEED") {
+		t.Fatalf("LATERAL SEED section must be absent when no seed words, got:\n%s", output)
+	}
+}
+
+// TestRenderPlainTextLateralSeedPresent specifies that when lateral seed words
+// are present the section appears and lists every word (Ground P2a + P2b).
+func TestRenderPlainTextLateralSeedPresent(t *testing.T) {
+	words := []string{"lighthouse", "kettle", "anchor"}
+	result := &BuildResult{Task: "make something", LateralSeed: words}
+	output := RenderPlainText(result)
+	if !strings.Contains(output, "=== LATERAL SEED 種 ===") {
+		t.Fatalf("expected LATERAL SEED section header, got:\n%s", output)
+	}
+	for _, w := range words {
+		if !strings.Contains(output, w) {
+			t.Fatalf("expected seed word %q in output, got:\n%s", w, output)
+		}
+	}
+}
+
+// TestRenderPlainTextLateralSeedSingularPlural specifies the framing wording
+// differs between one word and several (the interplay matters only for many).
+func TestRenderPlainTextLateralSeedSingularPlural(t *testing.T) {
+	single := RenderPlainText(&BuildResult{Task: "x", LateralSeed: []string{"kettle"}})
+	multi := RenderPlainText(&BuildResult{Task: "x", LateralSeed: []string{"kettle", "anchor"}})
+	if !strings.Contains(single, "this word") {
+		t.Fatalf("single-word framing should say 'this word', got:\n%s", single)
+	}
+	if !strings.Contains(multi, "these words") {
+		t.Fatalf("multi-word framing should say 'these words', got:\n%s", multi)
+	}
+}
+
 // TestRenderPlainTextNoReferenceKeyBlock specifies that RenderPlainText no
 // longer emits a standalone === REFERENCE KEY === block (ADR-0176).
 func TestRenderPlainTextNoReferenceKeyBlock(t *testing.T) {

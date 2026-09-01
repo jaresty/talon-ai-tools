@@ -39,6 +39,35 @@ class PromptGrammarPayloadTests(unittest.TestCase):
         checksum = payload["checksums"]["axes"]
         self.assertEqual(len(checksum), 64)
 
+    @unittest.skipIf(
+        bootstrap is None, "Test harness unavailable outside unittest runs"
+    )
+    def test_payload_contains_lateral_seed_words(self) -> None:
+        from talon_user.lib import promptGrammar
+
+        payload = promptGrammar.prompt_grammar_payload()
+
+        self.assertIn(
+            "lateral_seed_words",
+            payload,
+            "payload must expose a lateral_seed_words list for the lateral-seed section",
+        )
+        words = payload["lateral_seed_words"]
+        self.assertIsInstance(words, list)
+        self.assertGreaterEqual(
+            len(words), 200,
+            "lateral_seed_words should contain a substantial curated noun list",
+        )
+        # Every entry is a lowercase single-token alphabetic common noun.
+        for w in words:
+            self.assertIsInstance(w, str)
+            self.assertTrue(w.isalpha(), f"seed word not purely alphabetic: {w!r}")
+            self.assertEqual(w, w.lower(), f"seed word not lowercase: {w!r}")
+        # No duplicates — a curated list should be a set.
+        self.assertEqual(len(words), len(set(words)), "lateral_seed_words has duplicates")
+        # lateral_seed_words participates in the checksum section set.
+        self.assertIn("lateral_seed_words", payload["checksums"])
+
 
 class PromptGrammarCliTests(unittest.TestCase):
     @unittest.skipIf(

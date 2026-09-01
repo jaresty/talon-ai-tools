@@ -41,6 +41,10 @@ type Config struct {
 	Exclude []string
 	Fill    float64
 
+	// SeedWords is the number of lateral-seed words injected by `bar build`
+	// (0 = off, the default). Reuses Seed for reproducibility.
+	SeedWords int
+
 	// install-skills specific flags
 	Location string
 	DryRun   bool
@@ -252,6 +256,23 @@ func Parse(args []string) (*Config, error) {
 				return nil, fmt.Errorf("--seed requires an integer: %v", err)
 			}
 			cfg.Seed = seed
+		case arg == "--seed-words":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--seed-words requires a value")
+			}
+			n, err := strconv.Atoi(args[i])
+			if err != nil {
+				return nil, fmt.Errorf("--seed-words requires an integer: %v", err)
+			}
+			cfg.SeedWords = n
+		case strings.HasPrefix(arg, "--seed-words="):
+			value := strings.TrimPrefix(arg, "--seed-words=")
+			n, err := strconv.Atoi(value)
+			if err != nil {
+				return nil, fmt.Errorf("--seed-words requires an integer: %v", err)
+			}
+			cfg.SeedWords = n
 		case arg == "--include":
 			i++
 			if i >= len(args) {

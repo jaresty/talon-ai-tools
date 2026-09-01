@@ -30,6 +30,37 @@ func runBuildCLI(t *testing.T, args []string, stdin *os.File) buildRunResult {
 	return buildRunResult{Stdout: stdout.String(), Stderr: stderr.String(), Exit: exit}
 }
 
+// TestRunBuildSeedWordsInjectsSection specifies that --seed-words N adds the
+// LATERAL SEED section to stdout and echoes the resolved seed to stderr (P2a, P5),
+// and that identical (seed, N) inputs are reproducible (P3).
+func TestRunBuildSeedWordsInjectsSection(t *testing.T) {
+	a := runBuildCLI(t, []string{"build", "make", "--seed-words", "2", "--seed", "42"}, nil)
+	if a.Exit != 0 {
+		t.Fatalf("expected exit 0, got %d with stderr: %s", a.Exit, a.Stderr)
+	}
+	if !strings.Contains(a.Stdout, "=== LATERAL SEED 種 ===") {
+		t.Fatalf("expected LATERAL SEED section in stdout, got:\n%s", a.Stdout)
+	}
+	if !strings.Contains(a.Stderr, "42") || !strings.Contains(strings.ToLower(a.Stderr), "seed") {
+		t.Fatalf("expected resolved seed echoed to stderr, got: %q", a.Stderr)
+	}
+
+	// Reproducible: same seed + N yields identical stdout.
+	b := runBuildCLI(t, []string{"build", "make", "--seed-words", "2", "--seed", "42"}, nil)
+	if a.Stdout != b.Stdout {
+		t.Fatalf("same seed produced different stdout:\n--- A ---\n%s\n--- B ---\n%s", a.Stdout, b.Stdout)
+	}
+}
+
+// TestRunBuildNoSeedWordsNoSection specifies that without --seed-words the
+// output contains no LATERAL SEED section (Ground P1: N=0 unchanged).
+func TestRunBuildNoSeedWordsNoSection(t *testing.T) {
+	r := runBuildCLI(t, []string{"build", "make"}, nil)
+	if strings.Contains(r.Stdout, "LATERAL SEED") {
+		t.Fatalf("expected no LATERAL SEED section without --seed-words, got:\n%s", r.Stdout)
+	}
+}
+
 func TestRunBuildWithInputFile(t *testing.T) {
 	t.Setenv(disableStateEnv, "1")
 	subjectDir := t.TempDir()

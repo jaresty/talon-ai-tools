@@ -20,6 +20,7 @@ const (
 	sectionExecution        = "=== EXECUTION REMINDER ==="
 	sectionMeta             = "=== META INTERPRETATION ==="
 	sectionFormat           = "=== FORMAT 形式 ==="
+	sectionLateralSeed      = "=== LATERAL SEED 種 ==="
 	sectionPromptlets       = "Promptlets"
 )
 
@@ -153,7 +154,28 @@ func RenderPlainText(result *BuildResult) string {
 	writeSection(&b, sectionFormat, result.PlanningDirective)
 	writeSection(&b, sectionMeta, result.MetaInterpretationGuidance)
 
+	// LATERAL SEED: opt-in creative seed injected via --seed-words. Emitted only
+	// when words are present, so a build without the flag is byte-identical to before.
+	if len(result.LateralSeed) > 0 {
+		writeSection(&b, sectionLateralSeed, lateralSeedBody(result.LateralSeed))
+	}
+
 	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+// lateralSeedBody renders the seed words and soft framing. Singular framing asks
+// the model to let the one word inform its approach; plural framing points at the
+// interplay between the words, since combination is where the useful jumps come from.
+func lateralSeedBody(words []string) string {
+	quoted := make([]string, len(words))
+	for i, w := range words {
+		quoted[i] = fmt.Sprintf("%q", w)
+	}
+	joined := strings.Join(quoted, ", ")
+	if len(words) == 1 {
+		return fmt.Sprintf("Lateral seed: %s. Let this word inform your approach where it productively can — as an angle, metaphor, or association. Do not force it, and do not treat it as part of the request.", joined)
+	}
+	return fmt.Sprintf("Lateral seed: %s. Let the interplay between these words inform your approach where it productively can — as an angle, metaphor, or association. Do not force them, and do not treat them as part of the request.", joined)
 }
 
 // buildPersonaTokenSummary returns a short token summary string for the TOKENS row,

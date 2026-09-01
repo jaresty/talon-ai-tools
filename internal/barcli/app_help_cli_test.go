@@ -7,6 +7,46 @@ import (
 	"testing"
 )
 
+// TestHelpDocumentsSeedWords specifies that `bar help` documents the --seed-words
+// build flag so it is discoverable (Ground P6).
+func TestHelpDocumentsSeedWords(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	if exit := Run([]string{"help"}, os.Stdin, stdout, stderr); exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "--seed-words") {
+		t.Fatalf("expected `bar help` to document --seed-words, got:\n%s", stdout.String())
+	}
+}
+
+// TestHelpLLMDocumentsSeedWords specifies the LLM-facing help surface documents
+// --seed-words in the advanced-features section — the same altitude as other
+// opt-in build flags (e.g. shuffle), not the thin navigation guide (P6).
+func TestHelpLLMDocumentsSeedWords(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	if exit := Run([]string{"help", "llm", "--section", "advanced"}, os.Stdin, stdout, stderr); exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "--seed-words") {
+		t.Fatalf("expected `bar help llm --section advanced` to document --seed-words, got:\n%s", stdout.String())
+	}
+}
+
+// TestHelpLLMNavigationGuideOmitsSeedWords specifies the navigation guide stays a
+// thin index and does NOT carry a --seed-words block (altitude discipline).
+func TestHelpLLMNavigationGuideOmitsSeedWords(t *testing.T) {
+	stdout := &bytes.Buffer{}
+	stderr := &bytes.Buffer{}
+	if exit := Run([]string{"help", "llm"}, os.Stdin, stdout, stderr); exit != 0 {
+		t.Fatalf("expected exit 0, got %d: %s", exit, stderr.String())
+	}
+	if strings.Contains(stdout.String(), "--seed-words") {
+		t.Fatalf("navigation guide should not document --seed-words; keep it in --section advanced")
+	}
+}
+
 // TestAxisLabelAccessorReturnsNonEmpty specifies that Grammar.AxisLabel returns a
 // non-empty short label for tokens that have labels defined (ADR-0109 D1+D2).
 func TestAxisLabelAccessorReturnsNonEmpty(t *testing.T) {

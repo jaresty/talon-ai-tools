@@ -51,6 +51,7 @@ type Grammar struct {
 	StarterPacks    []StarterPack
 	Compositions    []Composition // ADR-0227
 	Guides          []GuideEntry  // ADR-0237
+	LateralSeedWords []string     // curated concrete nouns for `bar build --seed-words`
 	axisTokens      map[string]map[string]struct{}
 	axisDocs        map[string]map[string]string
 	axisPriority    []string
@@ -193,6 +194,7 @@ type rawGrammar struct {
 	StarterPacks  []StarterPack       `json:"starter_packs"`
 	Compositions  []Composition       `json:"compositions"` // ADR-0227
 	Guidebook     []GuideEntry        `json:"guidebook"`    // ADR-0237
+	LateralSeedWords []string         `json:"lateral_seed_words"`
 }
 
 type rawAxisSection struct {
@@ -308,6 +310,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 		StarterPacks:  raw.StarterPacks,
 		Compositions:  raw.Compositions,
 		Guides:        raw.Guidebook,
+		LateralSeedWords: raw.LateralSeedWords,
 		Axes: AxisSection{
 			Definitions:    raw.Axes.Definitions,
 			ListTokens:     raw.Axes.ListTokens,

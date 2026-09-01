@@ -23,6 +23,25 @@ func TestLoadGrammarDefaultsToEmbedded(t *testing.T) {
 	}
 }
 
+// TestLoadGrammarHasLateralSeedWords specifies that the embedded grammar maps the
+// lateral_seed_words JSON key into Grammar.LateralSeedWords for the --seed-words feature.
+func TestLoadGrammarHasLateralSeedWords(t *testing.T) {
+	t.Setenv(envGrammarPath, "")
+
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load embedded grammar: %v", err)
+	}
+	if len(grammar.LateralSeedWords) < 200 {
+		t.Fatalf("expected embedded grammar to include a substantial lateral seed word list, got %d", len(grammar.LateralSeedWords))
+	}
+	for _, w := range grammar.LateralSeedWords {
+		if strings.TrimSpace(w) == "" {
+			t.Fatalf("lateral seed word list contains an empty entry")
+		}
+	}
+}
+
 // TestLoadGrammarHasReferenceKey specifies that the embedded grammar provides a
 // non-empty ReferenceKey field (ADR-0131). This is the specifying validation for
 // Loop 2: Grammar struct must map the reference_key JSON field.

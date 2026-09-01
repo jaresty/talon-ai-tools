@@ -765,16 +765,18 @@ var (
 	completionCommands = []string{"build", "tui", "help", "completion", "preset"}
 	helpTopics         = []string{"tokens"}
 	completionShells   = []string{"bash", "zsh", "fish"}
-	buildFlags         = []string{"--subject", "--addendum", "--input", "--output", "--json", "--grammar"}
+	buildFlags         = []string{"--subject", "--addendum", "--input", "--output", "--json", "--grammar", "--seed-words", "--seed"}
 	tuiFlags           = []string{"--grammar", "--fixture", "--no-alt-screen", "--no-clipboard", "--env"}
 	flagExpectingValue = map[string]struct{}{
 		"--subject":  {},
 		"--addendum": {},
 		"--input":    {},
 		"--output":  {},
-		"--grammar": {},
-		"--fixture": {},
-		"--env":     {},
+		"--grammar":    {},
+		"--fixture":    {},
+		"--env":        {},
+		"--seed-words": {},
+		"--seed":       {},
 	}
 
 	presetSubcommands = []string{"save", "list", "show", "use", "delete"}

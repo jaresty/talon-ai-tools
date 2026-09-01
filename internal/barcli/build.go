@@ -38,6 +38,7 @@ type BuildResult struct {
 	HydratedPersona     []HydratedPromptlet `json:"hydrated_persona,omitempty"`
 	Tokens              []string            `json:"tokens,omitempty"`
 	ActiveCompositions  []Composition       `json:"active_compositions,omitempty"` // ADR-0227
+	LateralSeed         []string            `json:"lateral_seed,omitempty"`        // curated random nouns injected via --seed-words
 	PlainText           string              `json:"-"`
 }
 

@@ -534,6 +534,9 @@ def prompt_grammar_payload() -> dict[str, Any]:
     from talon_user.lib.guidebookConfig import GUIDEBOOK
     guidebook_section = list(GUIDEBOOK)
 
+    from talon_user.lib.lateralSeedConfig import LATERAL_SEED_WORDS
+    lateral_seed_words_section = list(LATERAL_SEED_WORDS)
+
     sections: dict[str, Any] = {
         "axes": axis_section,
         "tasks": static_section,
@@ -545,6 +548,7 @@ def prompt_grammar_payload() -> dict[str, Any]:
         "sequences": sequences_section,
         "compositions": compositions_section,
         "guidebook": guidebook_section,
+        "lateral_seed_words": lateral_seed_words_section,
     }
 
     checksums = {name: _compute_checksum(content) for name, content in sections.items()}

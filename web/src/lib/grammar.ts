@@ -132,6 +132,7 @@ export interface Grammar {
 	starter_packs?: StarterPack[]; // ADR-0144 Phase 2
 	compositions?: GrammarComposition[]; // ADR-0227
 	guidebook?: GuideEntry[]; // ADR-0237
+	lateral_seed_words?: string[]; // curated concrete nouns for the --seed-words lateral creative seed
 	reference_key: {
 		task: string;
 		addendum: string;

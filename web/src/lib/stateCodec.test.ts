@@ -21,6 +21,18 @@ describe('stateCodec', () => {
 		expect(decodeState(encodeState(state))).toEqual(state);
 	});
 
+	it('round-trips lateral seed-words state (count + seed) for shareable reproducibility', () => {
+		const state = {
+			subject: 's',
+			addendum: '',
+			selected: {},
+			persona: {},
+			seedWordsCount: 3,
+			seedWordsSeed: 42,
+		};
+		expect(decodeState(encodeState(state))).toEqual(state);
+	});
+
 	it('decodeState returns null for malformed input', () => {
 		expect(decodeState('!!!not-valid-base64!!!')).toBeNull();
 	});

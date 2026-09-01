@@ -14,7 +14,7 @@
 	import { encodeState, decodeState } from '$lib/stateCodec.js';
 	import { bm25Score } from '$lib/bm25.js';
 	import { createEmbedder } from '$lib/embedder.js';
-	import { selected, persona, subject, addendum, grammar as grammarStore, conflicts as conflictsStore } from '$lib/stores.js';
+	import { selected, persona, subject, addendum, seedWordsCount, seedWordsSeed, grammar as grammarStore, conflicts as conflictsStore } from '$lib/stores.js';
 
 	const embedder = createEmbedder();
 
@@ -45,7 +45,14 @@
 
 	// Serialize/deserialize prompt state
 	function serialize(): string {
-		return encodeState({ selected: $selected, subject: $subject, addendum: $addendum, persona: $persona });
+		return encodeState({
+			selected: $selected,
+			subject: $subject,
+			addendum: $addendum,
+			persona: $persona,
+			seedWordsCount: $seedWordsCount,
+			seedWordsSeed: $seedWordsSeed
+		});
 	}
 
 	function deserialize(raw: string): void {
@@ -58,6 +65,8 @@
 			if (p.persona && typeof p.persona === 'object') {
 				$persona = { preset: '', voice: '', audience: '', tone: '', ...(p.persona as PersonaState) };
 			}
+			if (typeof p.seedWordsCount === 'number') $seedWordsCount = p.seedWordsCount;
+			if (typeof p.seedWordsSeed === 'number') $seedWordsSeed = p.seedWordsSeed;
 		}
 	}
 
@@ -167,7 +176,18 @@
 	// Keep conflicts store in sync
 	$effect(() => { $conflictsStore = $grammarStore ? findConflicts($grammarStore, $selected) : []; });
 
-	let promptText = $derived($grammarStore ? renderPrompt($grammarStore, $selected, $subject, $addendum, $persona) : '');
+	// Lateral seed: when the user turns it on (count > 0) without a seed, generate
+	// one and persist it so the selection is stable and shareable (displayed in the UI).
+	$effect(() => {
+		if ($seedWordsCount > 0 && $seedWordsSeed === null) {
+			$seedWordsSeed = Math.floor(Math.random() * 1_000_000);
+		}
+	});
+	let seedOpts = $derived(
+		$seedWordsCount > 0 ? { count: $seedWordsCount, seed: $seedWordsSeed ?? 0 } : undefined
+	);
+
+	let promptText = $derived($grammarStore ? renderPrompt($grammarStore, $selected, $subject, $addendum, $persona, seedOpts) : '');
 
 	// ADR-0233: BM25 suggestion scores — derived from subject + addendum to dim irrelevant chips
 	let suggestionScores = $derived.by(() => {
@@ -197,6 +217,10 @@
 		let cmd = tokens.length === 0 ? 'bar build' : `bar build ${tokens.join(' ')}`;
 		if ($subject.trim()) cmd += ` --subject "${$subject.trim().replace(/"/g, '\\"')}"`;
 		if ($addendum.trim()) cmd += ` --addendum "${$addendum.trim().replace(/"/g, '\\"')}"`;
+		if ($seedWordsCount > 0) {
+			cmd += ` --seed-words ${$seedWordsCount}`;
+			if ($seedWordsSeed !== null) cmd += ` --seed ${$seedWordsSeed}`;
+		}
 		return cmd;
 	});
 
@@ -253,7 +277,7 @@
 
 	function copyPrompt() {
 		if (!$grammarStore) return;
-		const text = renderPrompt($grammarStore, $selected, $subject, $addendum, $persona);
+		const text = renderPrompt($grammarStore, $selected, $subject, $addendum, $persona, seedOpts);
 		navigator.clipboard.writeText(text);
 		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'copy-prompt', subject_preview: $subject.slice(0, 80), command_preview: command });
 		refreshHistory();
@@ -289,7 +313,7 @@
 
 	async function sharePromptNative() {
 		if (!$grammarStore) return;
-		const text = renderPrompt($grammarStore, $selected, $subject, $addendum, $persona);
+		const text = renderPrompt($grammarStore, $selected, $subject, $addendum, $persona, seedOpts);
 		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'share-prompt', subject_preview: $subject.slice(0, 80), command_preview: command });
 		refreshHistory();
 		if (navigator.share) {

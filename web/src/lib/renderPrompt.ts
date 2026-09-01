@@ -31,6 +31,53 @@ export interface PersonaState {
 	intent: string;
 }
 
+export interface SeedWordsOptions {
+	count: number;
+	seed?: number;
+}
+
+// mulberry32: a small, fast, seedable PRNG. Used so a given seed replays the
+// same word selection within the SPA (web-only reproducibility — this does not
+// match Go's math/rand sequence, by design).
+function mulberry32(seed: number): () => number {
+	let a = seed >>> 0;
+	return function () {
+		a |= 0;
+		a = (a + 0x6d2b79f5) | 0;
+		let t = Math.imul(a ^ (a >>> 15), 1 | a);
+		t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+		return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+	};
+}
+
+/**
+ * Select n words sampled without replacement from words, deterministically from
+ * seed (partial Fisher-Yates). Mirrors deriveLateralSeed() in lateral_seed.go in
+ * shape and guarantees (count = min(n, list); no repeats; deterministic in inputs),
+ * but not in exact word choice — the SPA uses its own PRNG.
+ */
+export function deriveSeedWords(words: string[], seed: number, n: number): string[] {
+	if (n <= 0 || words.length === 0) return [];
+	const take = Math.min(n, words.length);
+	const rng = mulberry32(seed);
+	const pool = [...words];
+	for (let i = 0; i < take; i++) {
+		const j = i + Math.floor(rng() * (pool.length - i));
+		[pool[i], pool[j]] = [pool[j], pool[i]];
+	}
+	return pool.slice(0, take);
+}
+
+// lateralSeedBody mirrors lateralSeedBody() in render.go: soft framing, singular
+// vs plural wording (the interplay matters only for multiple words).
+function lateralSeedBody(words: string[]): string {
+	const joined = words.map((w) => `"${w}"`).join(', ');
+	if (words.length === 1) {
+		return `Lateral seed: ${joined}. Let this word inform your approach where it productively can — as an angle, metaphor, or association. Do not force it, and do not treat it as part of the request.`;
+	}
+	return `Lateral seed: ${joined}. Let the interplay between these words inform your approach where it productively can — as an angle, metaphor, or association. Do not force them, and do not treat them as part of the request.`;
+}
+
 /**
  * Render the full structured prompt — mirrors RenderPlainText() from render.go.
  */
@@ -39,7 +86,8 @@ export function renderPrompt(
 	selected: Record<string, string[]>,
 	subject: string,
 	addendum: string,
-	persona?: PersonaState
+	persona?: PersonaState,
+	seedWords?: SeedWordsOptions
 ): string {
 	const parts: string[] = [];
 
@@ -181,6 +229,19 @@ export function renderPrompt(
 	// META INTERPRETATION section.
 	if (grammar.meta_interpretation_guidance?.trim()) {
 		parts.push(writeSection('=== META INTERPRETATION ===', grammar.meta_interpretation_guidance));
+	}
+
+	// LATERAL SEED: opt-in creative seed. Emitted last (mirrors render.go), only
+	// when count > 0, so a render without it is unchanged.
+	if (seedWords && seedWords.count > 0) {
+		const words = deriveSeedWords(
+			grammar.lateral_seed_words ?? [],
+			seedWords.seed ?? 0,
+			seedWords.count
+		);
+		if (words.length > 0) {
+			parts.push(writeSection('=== LATERAL SEED 種 ===', lateralSeedBody(words)));
+		}
 	}
 
 	return parts.join('').trimEnd() + '\n';

@@ -602,3 +602,51 @@ describe('renderPrompt — AXES/TOKENS/TOKEN DEFINITIONS/FORMAT redesign', () =>
 		expect(requestBlock).toContain('my subject text');
 	});
 });
+
+describe('renderPrompt — lateral seed (--seed-words)', () => {
+	const seedGrammar: Grammar = {
+		...grammar,
+		lateral_seed_words: ['lighthouse', 'anchor', 'kettle', 'lantern', 'compass', 'harbor'],
+	};
+
+	it('N=0 (or omitted) renders no LATERAL SEED section — Ground W1', () => {
+		const omitted = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '');
+		expect(omitted).not.toContain('LATERAL SEED');
+		const zero = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '', undefined, { count: 0, seed: 1 });
+		expect(zero).not.toContain('LATERAL SEED');
+	});
+
+	it('N>0 renders the section with exactly N words — Ground W2a/W2b', () => {
+		const out = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '', undefined, { count: 3, seed: 42 });
+		expect(out).toContain('=== LATERAL SEED 種 ===');
+		const seedList = seedGrammar.lateral_seed_words!;
+		const present = seedList.filter((w) => out.includes(w));
+		expect(present.length).toBe(3);
+	});
+
+	it('same seed is reproducible within the SPA — Ground W3', () => {
+		const a = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '', undefined, { count: 3, seed: 42 });
+		const b = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '', undefined, { count: 3, seed: 42 });
+		expect(a).toBe(b);
+	});
+
+	it('different seeds generally differ', () => {
+		const a = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '', undefined, { count: 3, seed: 1 });
+		const b = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '', undefined, { count: 3, seed: 999 });
+		expect(a).not.toBe(b);
+	});
+
+	it('singular vs plural framing', () => {
+		const one = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '', undefined, { count: 1, seed: 3 });
+		const many = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '', undefined, { count: 2, seed: 3 });
+		expect(one).toContain('this word');
+		expect(many).toContain('these words');
+	});
+
+	it('N greater than the list size is capped at the list size', () => {
+		const out = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '', undefined, { count: 100, seed: 5 });
+		const seedList = seedGrammar.lateral_seed_words!;
+		const present = seedList.filter((w) => out.includes(w));
+		expect(present.length).toBe(seedList.length);
+	});
+});

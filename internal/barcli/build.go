@@ -903,9 +903,11 @@ func (s *buildState) finalise() *CLIError {
 		msg.WriteString("The task defines WHAT to do and must come FIRST in your token sequence,\n")
 		msg.WriteString("before any completeness, scope, method, or form tokens.\n\n")
 
-		// Build contextual example if user provided other tokens
+		// Build contextual example if user provided other tokens. Only include
+		// completeness when the user set it explicitly — the default (full) must not
+		// be reported as user-provided.
 		var userTokens []string
-		if s.completeness != "" {
+		if s.completeness != "" && s.completenessExplicit {
 			userTokens = append(userTokens, s.completeness)
 		}
 		userTokens = append(userTokens, s.scope...)

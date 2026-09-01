@@ -30,6 +30,50 @@ func runBuildCLI(t *testing.T, args []string, stdin *os.File) buildRunResult {
 	return buildRunResult{Stdout: stdout.String(), Stderr: stderr.String(), Exit: exit}
 }
 
+// TestRunBuildHelpShowsUsage covers Ground H1a/H1b: `bar build --help` and `-h`
+// print build usage and do not emit the "task is required" error.
+func TestRunBuildHelpShowsUsage(t *testing.T) {
+	for _, flag := range []string{"--help", "-h"} {
+		r := runBuildCLI(t, []string{"build", flag}, nil)
+		if r.Exit != 0 {
+			t.Fatalf("%s: expected exit 0, got %d (stderr: %s)", flag, r.Exit, r.Stderr)
+		}
+		combined := r.Stdout + r.Stderr
+		if strings.Contains(combined, "task is required") {
+			t.Fatalf("%s: help must not emit 'task is required', got:\n%s", flag, combined)
+		}
+		if !strings.Contains(combined, "bar build") || !strings.Contains(combined, "--subject") {
+			t.Fatalf("%s: expected build usage text (bar build ... --subject), got:\n%s", flag, combined)
+		}
+	}
+}
+
+// TestRunBuildTaskRequiredErrorOmitsDefaultCompleteness covers Ground E1: a bare
+// `bar build` (no explicit completeness) must not claim "You provided: full".
+func TestRunBuildTaskRequiredErrorOmitsDefaultCompleteness(t *testing.T) {
+	r := runBuildCLI(t, []string{"build", "bullets"}, nil) // "bullets" is a form token, no task, no explicit completeness
+	combined := r.Stdout + r.Stderr
+	if !strings.Contains(combined, "task is required") {
+		t.Fatalf("expected task-required error, got:\n%s", combined)
+	}
+	if strings.Contains(combined, "You provided: full") {
+		t.Fatalf("error must not report the default 'full' completeness as user-provided, got:\n%s", combined)
+	}
+}
+
+// TestRunBuildTaskRequiredErrorKeepsExplicitCompleteness covers Ground E2: an
+// explicitly-typed completeness token still appears in "You provided:".
+func TestRunBuildTaskRequiredErrorKeepsExplicitCompleteness(t *testing.T) {
+	r := runBuildCLI(t, []string{"build", "deep"}, nil) // "deep" is an explicit completeness token, still no task
+	combined := r.Stdout + r.Stderr
+	if !strings.Contains(combined, "task is required") {
+		t.Fatalf("expected task-required error, got:\n%s", combined)
+	}
+	if !strings.Contains(combined, "You provided: deep") {
+		t.Fatalf("explicit completeness 'deep' should appear in You-provided, got:\n%s", combined)
+	}
+}
+
 // TestRunBuildSeedWordsInjectsSection specifies that --seed-words N adds the
 // LATERAL SEED section to stdout and echoes the resolved seed to stderr (P2a, P5),
 // and that identical (seed, N) inputs are reproducible (P3).

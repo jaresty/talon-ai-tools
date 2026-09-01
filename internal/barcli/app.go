@@ -19,8 +19,35 @@ import (
 )
 
 const (
-	buildUsage = "usage: bar build [tokens...] [options]"
-	topUsage   = "usage: bar [build|shuffle|help|completion|preset|starter|sequence|tui|skills|install-skills|install-hooks]"
+	topUsage = "usage: bar [build|shuffle|help|completion|preset|starter|sequence|tui|skills|install-skills|install-hooks]"
+
+	buildHelpText = `usage: bar build <tokens>... [options]
+
+Construct a structured prompt from shorthand tokens. A task token is required and
+must come first (e.g. make, show, diff, plan) — the rest are optional axis tokens
+(completeness, scope, method, form, channel, directional) and persona tokens.
+
+Options:
+  --subject TEXT        Content for the LLM to act on (or pipe via STDIN, or --input FILE).
+  --input FILE          Read the subject from a file.
+  --addendum TEXT       Task clarification applied alongside the subject.
+  --seed-words N        Inject N random concrete nouns as a lateral creative seed (default 0 = off).
+  --seed S              Seed for a reproducible --seed-words selection (echoed to stderr).
+  --output FILE         Write the prompt to a file instead of stdout.
+  --json                Emit the structured build result as JSON.
+  --grammar FILE        Use an alternate grammar JSON.
+  --help, -h            Show this message.
+
+Examples:
+  bar build make full --subject "Fix onboarding"
+  bar build diff branch --subject "Redis vs Postgres"
+  bar build make --seed-words 2 --seed 42 --subject "Redesign the flow"
+
+Discover tokens:
+  bar lookup "<intent>"     Find tokens, packs, sequences, and flags by goal.
+  bar help tokens           List all tasks, axes, and tokens.
+  bar help llm              LLM-facing reference (sections via --section <name>).
+`
 )
 
 // barVersion holds the current version of bar, set by main package
@@ -304,6 +331,12 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 	if options.Command != "build" {
 		writeError(stderr, topUsage)
 		return 1
+	}
+
+	// `bar build --help` / `-h`: show build usage instead of parsing --help as a token.
+	if options.Help {
+		fmt.Fprint(stdout, buildHelpText)
+		return 0
 	}
 
 	grammar, loadErr := LoadGrammar(options.GrammarPath)

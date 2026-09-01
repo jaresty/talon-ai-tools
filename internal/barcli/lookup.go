@@ -10,8 +10,8 @@ type LookupResult struct {
 	Axis         string
 	Token        string
 	Label        string
-	Kind         string  // "token", "pack", or "sequence"
-	Command      string  // populated for Kind="pack": the suggested bar build command
+	Kind         string  // "token", "pack", "sequence", or "flag"
+	Command      string  // populated for Kind="pack" and Kind="flag": the suggested bar build command
 	Tier         int     // 0–3 = tier match; -1 = BM25-only result (ADR-0232)
 	Score        float64 // BM25 score; 0 for tier-matched results
 	MatchedField string  // "token", "heuristics", "distinctions", "definition", or "bm25"
@@ -81,6 +81,10 @@ func LookupTokensWithContext(query string, g *Grammar, axisFilter, subject, adde
 				if seq, ok := g.Sequences[name]; ok {
 					res.Label = seq.Description
 				}
+			case "flag":
+				res.Kind = "flag"
+				res.Label = lateralSeedFlagLabel
+				res.Command = lateralSeedFlagCommand
 			default:
 				res.Kind = "token"
 				res.Label = labelForToken(g, prefix, name)
@@ -335,6 +339,8 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		for name, seq := range g.Sequences {
 			tryToken("sequence", name, seq.Description, seq.Description, seq.Heuristics, nil)
 		}
+		// Surface the --seed-words build flag on creative intent (Kind="flag").
+		tryToken("flag", lateralSeedFlagToken, lateralSeedFlagLabel, lateralSeedFlagLabel, lateralSeedFlagHeuristics, nil)
 	}
 
 	// Deduplicate tier candidates: keep highest-tier match per axis:token
@@ -438,6 +444,9 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 			}
 		case "sequence":
 			r.Kind = "sequence"
+		case "flag":
+			r.Kind = "flag"
+			r.Command = lateralSeedFlagCommand
 		default:
 			r.Kind = "token"
 			r.Sequences = g.SequencesForToken(c.axis + ":" + c.token)
@@ -479,6 +488,11 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 			if seq, ok := g.Sequences[name]; ok {
 				r.Label = seq.Description
 			}
+		case "flag":
+			r.Kind = "flag"
+			r.Axis = "flag"
+			r.Label = lateralSeedFlagLabel
+			r.Command = lateralSeedFlagCommand
 		default:
 			r.Kind = "token"
 			r.Axis = prefix

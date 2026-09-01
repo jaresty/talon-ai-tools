@@ -532,6 +532,10 @@ func runLookup(opts *cli.Config, stdout, stderr io.Writer) int {
 			if seq, ok := grammar.Sequences[r.Token]; ok {
 				line += fmt.Sprintf("  [%d steps → bar sequence show %s]", len(seq.Steps), r.Token)
 			}
+		case "flag":
+			if r.Command != "" {
+				line += "  → " + r.Command
+			}
 		}
 		if r.HasGuide {
 			line += "  [guide]"

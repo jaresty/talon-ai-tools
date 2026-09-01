@@ -33,10 +33,12 @@ Each step is a required gate. Do not advance to the next step until the current 
 1. **Analyze request** and decide on the number of steps and progression strategy
 2. **Load navigation guide** via `bar help llm` (no args), then load sections on demand
 3. **Explore tokens, packs, and sequences** — use `bar lookup` to find candidate tokens,
-   starter packs, and sequences for each planned step. `bar lookup` now returns all three kinds
+   starter packs, and sequences for each planned step. `bar lookup` returns four kinds
    in one ranked list: `kind=token` (append to `bar build`), `kind=pack` (runnable `bar build`
    command shown inline — use it directly), `kind=sequence` (shows step count and
-   `bar sequence show <name>`). When a result shows `[guide]`, run `bar guide <token>` before
+   `bar sequence show <name>`), and `kind=flag` (a `bar build` flag surfaced on matching intent —
+   e.g. `flag:seed-words` on creative queries — with its runnable command shown inline; append the
+   flag to a step's build). When a result shows `[guide]`, run `bar guide <token>` before
    committing — it provides near-neighbor disambiguation that may change the token choice.
    A step plan must name at least one token candidate and the
    intent it serves before proceeding. A transcript that reaches step 4 without naming token

@@ -3,7 +3,7 @@
 	import TokenSelector from '$lib/TokenSelector.svelte';
 	import PatternsLibrary from '$lib/PatternsLibrary.svelte';
 	import { parseCommand } from '$lib/parseCommand.js';
-	import { selected, persona, subject, addendum, seedWordsCount, seedWordsSeed, grammar as grammarStore } from '$lib/stores.js';
+	import { selected, persona, subject, addendum, grammar as grammarStore } from '$lib/stores.js';
 	let {
 		patterns,
 		starterPacks,
@@ -360,23 +360,6 @@
 				bind:value={$addendum}
 			></textarea>
 		</label>
-		<div class="input-group seed-words-group">
-			<span class="input-label">--seed-words <span class="input-hint">lateral creative seed (0 = off)</span></span>
-			<div class="seed-words-row">
-				<input
-					class="input-field seed-count"
-					type="number"
-					min="0"
-					max="5"
-					data-field="seed-words"
-					bind:value={$seedWordsCount}
-				/>
-				{#if $seedWordsCount > 0}
-					<span class="seed-value">seed {$seedWordsSeed ?? '—'}</span>
-					<button type="button" class="seed-reroll" onclick={() => ($seedWordsSeed = Math.floor(Math.random() * 1_000_000))}>reroll</button>
-				{/if}
-			</div>
-		</div>
 		</div>
 		{/if}
 		{#each AXES as axis (axis)}

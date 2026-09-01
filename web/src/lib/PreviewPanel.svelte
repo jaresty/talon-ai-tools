@@ -4,6 +4,15 @@
 	import PresetsPanel from '$lib/PresetsPanel.svelte';
 	import HistoryPanel from '$lib/HistoryPanel.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
+	import { seedWordsCount, seedWordsSeed } from '$lib/stores.js';
+
+	// Lateral seed: setting a non-zero count generates a seed on demand; changing
+	// count to 0 turns it off. Selecting a count re-rolls the seed so each pick
+	// is a fresh draw (the seed is still shown for reproducibility/sharing).
+	function setSeedCount(n: number) {
+		$seedWordsCount = n;
+		$seedWordsSeed = n > 0 ? Math.floor(Math.random() * 1_000_000) : null;
+	}
 
 	let {
 		command,
@@ -79,6 +88,23 @@
 			<button class="share-link-btn" onclick={onShareLink}>{shared ? '✓ Link copied' : 'Share link'}</button>
 			<button class="copy-link-btn" onclick={onCopyLink} title="Copy link (⌘⇧L / Ctrl+Shift+L)">{linkCopied ? '✓ Link copied' : 'Copy link'}</button>
 			<button class="clear-btn" onclick={onClear}>Clear</button>
+		</div>
+		<div class="seed-words-row" title="Inject N random concrete nouns as a lateral creative seed">
+			<span class="seed-words-label">Lateral seed</span>
+			<div class="seed-seg" role="group" aria-label="Lateral seed word count">
+				{#each [0, 1, 2, 3] as n (n)}
+					<button
+						type="button"
+						class="seed-seg-btn"
+						class:active={$seedWordsCount === n}
+						aria-pressed={$seedWordsCount === n}
+						onclick={() => setSeedCount(n)}
+					>{n === 0 ? 'Off' : n}</button>
+				{/each}
+			</div>
+			{#if $seedWordsCount > 0}
+				<button type="button" class="seed-reroll" onclick={() => ($seedWordsSeed = Math.floor(Math.random() * 1_000_000))} title="Draw new words">↻ seed {$seedWordsSeed}</button>
+			{/if}
 		</div>
 	</div>
 
@@ -165,6 +191,54 @@
 		gap: 0.5rem;
 		flex-wrap: wrap;
 	}
+
+	.seed-words-row {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.5rem;
+		flex-wrap: wrap;
+	}
+
+	.seed-words-label {
+		font-size: 0.75rem;
+		color: var(--color-text-muted, var(--color-text));
+		opacity: 0.75;
+	}
+
+	.seed-seg {
+		display: inline-flex;
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius);
+		overflow: hidden;
+	}
+
+	.seed-seg-btn {
+		padding: 0.2rem 0.55rem;
+		background: transparent;
+		border: none;
+		border-right: 1px solid var(--color-accent);
+		color: var(--color-text);
+		cursor: pointer;
+		font-size: 0.78rem;
+		line-height: 1.4;
+	}
+
+	.seed-seg-btn:last-child { border-right: none; }
+	.seed-seg-btn:hover { background: var(--color-accent-muted); }
+	.seed-seg-btn.active { background: var(--color-accent); color: var(--color-bg); }
+
+	.seed-reroll {
+		padding: 0.2rem 0.55rem;
+		background: var(--color-accent-muted);
+		border: 1px solid var(--color-accent);
+		border-radius: var(--radius);
+		color: var(--color-text);
+		cursor: pointer;
+		font-size: 0.72rem;
+		font-variant-numeric: tabular-nums;
+	}
+	.seed-reroll:hover { background: var(--color-accent); color: var(--color-bg); }
 
 	.copy-btn, .copy-prompt-btn, .share-prompt-btn, .share-link-btn, .copy-link-btn, .clear-btn {
 		padding: 0.3rem 0.75rem;

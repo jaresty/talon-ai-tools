@@ -133753,6 +133753,14 @@
       "prose": "pick + cocreate: cocreate scaffolds an open-ended iterative co-creation process; pick commits to one final answer. These are in mild tension: the co-creation form implies ongoing iteration and dialogue, while pick asks for a committed selection. Resolution: structure the cocreate scaffold toward a decision point — the collaborative process converges to the pick output rather than remaining open-ended. The final cocreate turn must name the picked option explicitly. A cocreate scaffold that never commits to a selection does not satisfy pick."
     },
     {
+      "name": "depends+atomic",
+      "tokens": [
+        "depends",
+        "atomic"
+      ],
+      "prose": "depends + atomic: atomic makes each step's result independently observable; depends orders steps by prerequisite. Together they govern what happens when a step's result does not confirm its intended change. When atomic's step result — read from a qualifying observation record at an earlier transcript position than any verdict about it — shows the intended change did not take, the response does not proceed to a further step on top of that unconfirmed state. It emits 'Known-good: <the prior step's last-confirmed state, quoted from the observation record that confirmed it>' and 'Blocked: <the unconfirmed result, quoted from the step's observation record>', then names the prerequisite that result reveals as 'Prerequisite: <the condition the blocked result entails as absent>' — the prerequisite must be entailed by the quoted blocked result, not asserted independently. Prerequisite blind-spot: attempt to name a Prerequisite the quoted Blocked record does not entail as absent; emit 'Prerequisite unsupported: found — <condition>' or 'Prerequisite unsupported: not found'; if found, replace Prerequisite with a condition the record entails and repeat this check; terminate on 'not found'. depends then orders that prerequisite ahead of the original step: the prerequisite becomes its own atomic step and must reach a confirming observation record before the original step is re-attempted. Before re-attempting, the response restores the known-good state and emits 'Restored: <observation record showing the current state matches the Known-good record>', or 'Restored: unobserved' when no such record can be produced — 'Restored: unobserved' requires the restoration be performed and observed and does not satisfy this composition on its own. A further step emitted while 'Restored: unobserved' stands, or an original step re-attempted before its 'Prerequisite:' step reaches a confirming record, does not satisfy this composition."
+    },
+    {
       "name": "reset+good",
       "tokens": [
         "reset",
@@ -134854,7 +134862,7 @@
     "patterns": "d92b9ebcf977149c480880b9f19f11035150377186da41ec26c46130950eeb78",
     "starter_packs": "2f00f9f30b9ff4f023085ebe493cd9c874c345e173928f889248605e8641bb20",
     "sequences": "4914cfc40ef2dc17d4e4a36b81b3a84814903814f2f6d90ffecea943b81871b2",
-    "compositions": "7d684232469675a28d12813e85119e78f2deb6b953cb51f28999b09884639f69",
+    "compositions": "63aa17f18eae3675908583cfbf58cf2f0b122b15bfe096720f6a0f3eac3610ed",
     "guidebook": "a0202bc93ba485e0fa4bcd278f016f3924cf2b68f386450f0967d259cfd4aa7a",
     "lateral_seed_words": "02059b803deb1294ee139b3e9d5217aad99959d6add559c071fbcb5201a31c98"
   }

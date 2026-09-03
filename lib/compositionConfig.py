@@ -233,6 +233,35 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "depends+atomic",
+        "tokens": ["depends", "atomic"],
+        "prose": (
+            "depends + atomic: atomic makes each step's result independently observable; depends "
+            "orders steps by prerequisite. Together they govern what happens when a step's result "
+            "does not confirm its intended change. When atomic's step result — read from a "
+            "qualifying observation record at an earlier transcript position than any verdict about "
+            "it — shows the intended change did not take, the response does not proceed to a further "
+            "step on top of that unconfirmed state. It emits 'Known-good: <the prior step's "
+            "last-confirmed state, quoted from the observation record that confirmed it>' and "
+            "'Blocked: <the unconfirmed result, quoted from the step's observation record>', then "
+            "names the prerequisite that result reveals as 'Prerequisite: <the condition the blocked "
+            "result entails as absent>' — the prerequisite must be entailed by the quoted blocked "
+            "result, not asserted independently. Prerequisite blind-spot: attempt to name a "
+            "Prerequisite the quoted Blocked record does not entail as absent; emit 'Prerequisite "
+            "unsupported: found — <condition>' or 'Prerequisite unsupported: not found'; if found, "
+            "replace Prerequisite with a condition the record entails and repeat this check; "
+            "terminate on 'not found'. depends then orders that prerequisite ahead of the original "
+            "step: the prerequisite becomes its own atomic step and must reach a confirming "
+            "observation record before the original step is re-attempted. Before re-attempting, the "
+            "response restores the known-good state and emits 'Restored: <observation record showing "
+            "the current state matches the Known-good record>', or 'Restored: unobserved' when no "
+            "such record can be produced — 'Restored: unobserved' requires the restoration be "
+            "performed and observed and does not satisfy this composition on its own. A further step "
+            "emitted while 'Restored: unobserved' stands, or an original step re-attempted before "
+            "its 'Prerequisite:' step reaches a confirming record, does not satisfy this composition."
+        ),
+    },
+    {
         "name": "reset+good",
         "tokens": ["reset", "good"],
         "prose": (

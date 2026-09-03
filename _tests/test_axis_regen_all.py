@@ -7,6 +7,25 @@ import json
 
 from .helpers_axis_artifacts import axisconfig_is_dirty, cleanup_axis_regen_outputs
 
+
+def _regen_python() -> str:
+    """Interpreter used to run the regen script in subprocesses.
+
+    The regen script imports project modules that use 3.10+ typing syntax
+    (PEP 604 unions), so it must run under the project's Python — the .venv
+    interpreter (3.10+) when present — rather than whatever interprets this
+    test (which may be an older system python3). Mirrors the Makefile's
+    PYTHON resolution.
+    """
+    repo_root = Path(__file__).resolve().parents[1]
+    venv_python = repo_root / ".venv" / "bin" / "python"
+    if venv_python.exists():
+        return str(venv_python)
+    return sys.executable
+
+
+REGEN_PYTHON = _regen_python()
+
 # Sync-check tests gate commits, not development. They run only in CI
 # (where CI env var is set) to avoid blocking local development workflows.
 # In CI: set CI=1 or CI=true. Locally: run `make check-sync` instead.
@@ -35,7 +54,7 @@ class AxisRegenAllTests(unittest.TestCase):
                 except FileNotFoundError:
                     pass
         subprocess.check_call(
-            [sys.executable, "scripts/tools/axis_regen_all.py"],
+            [REGEN_PYTHON, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
         )
         outputs = [
@@ -63,7 +82,7 @@ class AxisRegenContentTests(unittest.TestCase):
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
-            [sys.executable, "scripts/tools/axis_regen_all.py"],
+            [REGEN_PYTHON, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
         )
         axis_config = (tmp_dir / "axisConfig.generated.py").read_text(encoding="utf-8")
@@ -77,7 +96,7 @@ class AxisRegenContentTests(unittest.TestCase):
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
-            [sys.executable, "scripts/tools/axis_regen_all.py"],
+            [REGEN_PYTHON, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
         )
         generated = (tmp_dir / "axisConfig.generated.py").read_text(encoding="utf-8")
@@ -90,7 +109,7 @@ class AxisRegenContentTests(unittest.TestCase):
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
-            [sys.executable, "scripts/tools/axis_regen_all.py"],
+            [REGEN_PYTHON, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
         )
         catalog = json.loads((tmp_dir / "axisCatalog.json").read_text(encoding="utf-8"))
@@ -118,7 +137,7 @@ class AxisRegenContentTests(unittest.TestCase):
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         tmp_dir = repo_root / "tmp"
         subprocess.check_call(
-            [sys.executable, "scripts/tools/axis_regen_all.py"],
+            [REGEN_PYTHON, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
         )
         docs = (tmp_dir / "static-prompt-docs.md").read_text(encoding="utf-8")
@@ -132,7 +151,7 @@ class AxisRegenContentTests(unittest.TestCase):
         cleanup_axis_regen_outputs(repo_root)
         self.addCleanup(cleanup_axis_regen_outputs, repo_root)
         output = subprocess.check_output(
-            [sys.executable, "scripts/tools/axis_regen_all.py"],
+            [REGEN_PYTHON, "scripts/tools/axis_regen_all.py"],
             cwd=repo_root,
             text=True,
         )

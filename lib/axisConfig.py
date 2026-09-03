@@ -214,9 +214,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "clearrecommendation that addresses objections and constraints.",
         "chart": "The response is a data visualization in which quantities or categories are encoded using position, size, color, or motion — when motion is used, it encodes a data variable such "
         "as time — with all data values embedded in the artifact. Prose labels, legends, and titles within the artifact are permitted as navigational aids.",
-        "cheatsheet": "The response is structured as a quick-reference where each entry is a single line: a label of 2–5 words, followed by exactly one ' — ' or ': ', followed by the explanation. "
-        "Each entry line is immediately followed by the next entry line or a heading. When the response contains more than 8 entries, entries are grouped under headings; a heading is "
-        "a line containing no ' — ' or ': ' delimiter.",
         "checklist": "The response organizes ideas as an actionable checklist whose items are clear imperative tasks rather than descriptive prose.",
         "cocreate": "The response structures itself as a collaborative process — small moves, explicit decision points, and alignment checks rather than a one-shot answer. Each turn produces the "
         "channel output (code, html, diagram, etc.) in its current state — not chat text. Questions are asked within the channel format (comments, placeholders, or UI hints). With "
@@ -297,6 +294,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "reel": "The response is an animated scene specification: each scene record names an ordinal, a scene name, a duration (a number and time unit such as 2s or 400ms), and a narrative label "
         "as the final field; each motion entry names an element identifier, a state — absent, entering, holding, or exiting — and, when entering or exiting, a curve token; each scene "
         "record must have at least one motion entry. At least two scene records must be present.",
+        "reference": "The response is arranged for direct retrieval: each unit of content is introduced by a short label naming what that unit covers, and the units are ordered or grouped so a "
+        "reader can locate a specific one without reading the others in sequence. The medium of each unit is unconstrained — a unit may be a line, a short paragraph, a table row, or a "
+        "diagram — provided its label makes it independently findable.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
         "where first-principles exposition contradicts assumed expertise.",
@@ -1104,7 +1104,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "cards": "Discrete cards with headings",
         "case": "Build the case before the conclusion",
         "chart": "Data visualization with spatial encoding",
-        "cheatsheet": "Scannable single-line quick-reference",
         "checklist": "Actionable checklist",
         "cocreate": "Collaborative small-move process",
         "commit": "Conventional commit message",
@@ -1127,6 +1126,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "quiz": "Quiz structure, questions before answers",
         "recipe": "Recipe with ingredients and steps",
         "reel": "Animated scene specification with ordered scenes, element motion entries, and curve tokens",
+        "reference": "Arranged for direct lookup",
         "scaffold": "First-principles scaffolded explanation",
         "scorecard": "KPI scorecard with targets and RAG status",
         "slides": "Sequence of titled slide units with bounded bodies",
@@ -1370,7 +1370,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "cards": "卡",
         "case": "策",
         "chart": "棒",
-        "cheatsheet": "覧",
         "checklist": "検",
         "cocreate": "共",
         "commit": "提",
@@ -1393,6 +1392,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "quiz": "試",
         "recipe": "法",
         "reel": "巻",
+        "reference": "覧",
         "scaffold": "足",
         "scorecard": "績",
         "slides": "映",
@@ -1844,7 +1844,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "cards": "Cards/items",
         "case": "Decision documentation",
         "chart": "Data visualization",
-        "cheatsheet": "Quick-reference lookup",
         "checklist": "Actionable next steps",
         "cocreate": "Collaborative process",
         "commit": "Commit message",
@@ -1867,6 +1866,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "quiz": "Quiz structure",
         "recipe": "Step-by-step with custom notation",
         "reel": "Animated scene sequence specification",
+        "reference": "Retrieval-oriented lookup",
         "scaffold": "Building understanding",
         "scorecard": "KPI metrics with targets and status",
         "slides": "Presentation slide deck",
@@ -4468,30 +4468,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "visualize the relationships between these numbers",
             ],
         },
-        "cheatsheet": {
-            "distinctions": [
-                {
-                    "note": "bullets = unstructured list items, may be multi-line; cheatsheet = strict single-line label — delimiter — explanation, optimized for lookup not "
-                    "reading",
-                    "token": "bullets",
-                },
-                {
-                    "note": "cards = discrete units with headings and prose body; cheatsheet = single-line entries only, no prose body permitted",
-                    "token": "cards",
-                },
-            ],
-            "heuristics": [
-                "cheatsheet",
-                "quick reference",
-                "quick-reference",
-                "reference card",
-                "scannable list",
-                "lookup table",
-                "at a glance",
-                "reference sheet",
-                "crib sheet",
-            ],
-        },
         "checklist": {
             "distinctions": [
                 {
@@ -4922,6 +4898,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "storyboard with motion curves",
                 "animated alternative to a presentation",
                 "produce a motion spec for",
+            ],
+        },
+        "reference": {
+            "distinctions": [
+                {
+                    "note": "bullets = list items read in sequence; reference = each unit carries a lookup label so a reader can jump to one without reading the others",
+                    "token": "bullets",
+                },
+                {
+                    "note": "cards = discrete units chosen for presentation; reference = units arranged specifically for direct retrieval, ordered or grouped so a specific one "
+                    "is findable by its label",
+                    "token": "cards",
+                },
+            ],
+            "heuristics": [
+                "reference",
+                "quick reference",
+                "quick-reference",
+                "reference card",
+                "look this up",
+                "lookup table",
+                "at a glance",
+                "reference sheet",
+                "handbook",
             ],
         },
         "scaffold": {

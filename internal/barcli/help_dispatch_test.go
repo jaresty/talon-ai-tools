@@ -202,3 +202,50 @@ func TestDispatchStep0cPermitsCapabilityRequirements(t *testing.T) {
 		t.Errorf("step 0c must include 'Bash tool call access' as a concrete capability example:\n%s", out)
 	}
 }
+
+// TestDispatchHelpGateDoesNotTargetRendererHeading verifies that no dispatch-help
+// step gates completion on the renderer heading string "=== TASK 任務 (DO THIS) ===".
+// That heading is bar-format vocabulary owned by render.go; the build path emits
+// "=== REQUEST 依頼 ===" instead, so gating on it silently targets a string the
+// renderer no longer produces (self-containment principle: gate clauses must not
+// reference bar-format vocabulary). The gate must instead bind to the presence of a
+// bar build tool-call result. Covers both the during_dispatch path and the
+// inner-step gate path.
+func TestDispatchHelpGateDoesNotTargetRendererHeading(t *testing.T) {
+	g := &Grammar{
+		Sequences: map[string]Sequence{
+			"gate-probe": {
+				Description: "test sequence exercising during_dispatch and inner-step gates",
+				Steps: []SequenceStep{
+					{
+						Type:           "dispatch",
+						FanOut:         "enumerate",
+						Join:           "all",
+						Role:           "fan-out with during_dispatch and inner",
+						DuringDispatch: "build task:check",
+						Inner: &InnerSequence{
+							Mode: "autonomous",
+							Steps: []SequenceStep{
+								{Token: "make witness", Role: "inner craft"},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+	var buf strings.Builder
+	if err := renderDispatchHelp(&buf, g, "gate-probe"); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	out := buf.String()
+	// property [1]: the stale renderer heading must not appear anywhere in the help.
+	if strings.Contains(out, "=== TASK 任務 (DO THIS) ===") {
+		t.Errorf("dispatch help must not target the renderer heading '=== TASK 任務 (DO THIS) ===' (stale bar-format vocabulary; build path emits '=== REQUEST 依頼 ==='):\n%s", out)
+	}
+	// property [2]: the inner-step completion gate must bind to a bar build
+	// tool-call result being present, not to a heading string.
+	if !strings.Contains(out, "bar build tool-call result") && !strings.Contains(out, "bar build tool call result") {
+		t.Errorf("inner-step gate must bind completion to the presence of a bar build tool-call result, not a heading string:\n%s", out)
+	}
+}

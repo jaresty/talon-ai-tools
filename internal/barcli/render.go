@@ -9,7 +9,6 @@ import (
 const (
 	subjectPlaceholder      = "(none provided)"
 	sectionReference        = "=== REFERENCE KEY ==="
-	sectionTask             = "=== TASK 任務 (DO THIS) ==="
 	sectionAddendum         = "=== ADDENDUM 追加 (CLARIFICATION) ==="
 	sectionAxes             = "=== AXES 軸 (token types — each governs a different dimension) ==="
 	sectionTokens           = "=== TOKENS 役割 ==="

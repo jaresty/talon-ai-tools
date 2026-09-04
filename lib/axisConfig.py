@@ -359,7 +359,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "specific organizing principle such as spatial layout, dependency chains, groupings, hierarchies, historical causation, or governing criteria.",
         "argue": "The response enhances the task by structuring reasoning as an explicit argument, identifying claims, premises, warrants, and rebuttals — for each premise, naming the specific "
         "claim it supports and at least one condition under which it would not support that claim.",
-        "atomic": "The response makes one observable change per step.",
+        "atomic": "The response makes one observable change per step, where a step is a single unit of change — not an assistant turn. Continue through steps within one response; do not return "
+        "control to the user between steps unless a step requires user input.",
         "automate": "The response enhances the task by modeling what can be expressed as automatic, repeatable operations and preferring those over manual, human-dependent steps — identifying "
         "where human intervention can be eliminated or reduced, and expressing solutions in terms of what the system can do without human involvement.",
         "balance": "The response describes the equilibrium state of a system — the balance point between opposing forces — naming the tolerances within which balance holds and naming at least "

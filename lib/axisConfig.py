@@ -5991,6 +5991,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "logically entails",
                 "given these type constraints, what follows about valid inputs",
                 "what can I deduce about this function's behavior from its signature",
+                "derive the required change from a stated property",
             ],
         },
         "depends": {
@@ -6247,6 +6248,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "chain = each step cites its predecessor; falsify = the artifact firing is the predecessor that implementation steps must cite. falsify produces the "
                     "chain predecessor; chain requires it to be reproduced.",
                     "token": "chain",
+                },
+                {
+                    "note": "falsify is a process discipline (witness the gap before closing it), not an inference form; for the deductive or inductive shape of a conclusion "
+                    "see deduce and induce",
+                    "token": "deduce",
                 },
             ],
             "heuristics": [
@@ -6522,7 +6528,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "abduce = generate competing hypotheses to explain evidence; induce = generalize a rule or pattern from a set of examples",
                     "token": "abduce",
-                }
+                },
+                {
+                    "note": "generalizing a structure or dependency map from accumulated failed attempts is induction — the failures are the observation set; deduce derives what "
+                    "must follow from a stated premise instead",
+                    "token": "deduce",
+                },
             ],
             "heuristics": [
                 "what general principle can I draw from these",
@@ -6534,6 +6545,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "extrapolate from these examples",
                 "what general pattern can I extract from these three failing tests",
                 "what rule do these similar bugs suggest",
+                "generalize a rule or model from a set of observed outcomes",
             ],
         },
         "inversion": {

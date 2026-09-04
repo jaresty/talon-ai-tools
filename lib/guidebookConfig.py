@@ -13,6 +13,37 @@ from typing import Any
 
 GUIDEBOOK: list[dict[str, Any]] = [
 
+    # ── Inference form vs process discipline ─────────────────────────────────
+
+    {
+        "id": "induce-vs-deduce",
+        "title": "induce vs deduce (and the process methods that embody them)",
+        "tokens": ["induce", "deduce", "falsify", "depends", "atomic"],
+        "body": (
+            "**induce** — generalize a rule, pattern, or structure from specific "
+            "observations. The observations come first; the general claim is built "
+            "up from them.\n\n"
+            "**deduce** — derive what must follow from stated premises. The general "
+            "claim comes first; specific conclusions are entailed from it.\n\n"
+            "These are *inference forms* — the logical shape of a conclusion. Some "
+            "*process* methods embody one form or the other, but along a different "
+            "axis (how a system is changed, not how a claim is justified), so the "
+            "relationship is analogy, not identity:\n\n"
+            "- A property-first discipline (state the required property, then derive "
+            "the minimal change that satisfies it) leans **deductive**: the change "
+            "is entailed by the property.\n"
+            "- A discovery-by-resistance discipline (attempt, observe what resists, "
+            "generalize the accumulated failures into a dependency map) leans "
+            "**inductive**: the map is generalized from observations.\n\n"
+            "Caveat — the labels can invert depending on which loop you read: a "
+            "property-first method *accumulates* confirmations (looks inductive) yet "
+            "*derives* each change (is deductive); a discovery method *entails* the "
+            "next probe from the goal (looks deductive) yet *builds* its map from "
+            "observed failures (is inductive). Read the artifact-derivation "
+            "direction, not the feedback loop, to classify."
+        ),
+    },
+
     # ── Form axis experiment cluster ─────────────────────────────────────────
 
     {

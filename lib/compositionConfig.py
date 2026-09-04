@@ -258,7 +258,10 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "such record can be produced — 'Restored: unobserved' requires the restoration be "
             "performed and observed and does not satisfy this composition on its own. A further step "
             "emitted while 'Restored: unobserved' stands, or an original step re-attempted before "
-            "its 'Prerequisite:' step reaches a confirming record, does not satisfy this composition."
+            "its 'Prerequisite:' step reaches a confirming record, does not satisfy this composition. "
+            "This is a process discipline (order work by prerequisite, revert on resistance), not an "
+            "inference form; generalizing the dependency map from observed resistance is inductive — "
+            "see the induce and deduce tokens for the inference-form counterparts."
         ),
     },
     {

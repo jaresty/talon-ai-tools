@@ -537,6 +537,24 @@ func TestSequenceShowDispatch0bGatesOnAgentConfigBlock(t *testing.T) {
 	}
 }
 
+// The linear-step completion gate must bind to the presence of a bar build
+// tool-call result, not to the renderer heading "=== TASK 任務 (DO THIS) ===".
+// That heading was dropped when TASK merged into REQUEST (ADR-0227); the build
+// path emits "=== REQUEST 依頼 ===". Gating on it silently targets a string the
+// renderer no longer produces (gate-clause self-containment principle).
+func TestSequenceShowStepGateDoesNotTargetRendererHeading(t *testing.T) {
+	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
+	if code != 0 {
+		t.Fatalf("bar sequence show experiment-cycle exited %d: %s", code, stderr)
+	}
+	if strings.Contains(out, "=== TASK 任務 (DO THIS) ===") {
+		t.Errorf("linear step gate must not target the renderer heading '=== TASK 任務 (DO THIS) ===' (stale bar-format vocabulary; build path emits '=== REQUEST 依頼 ==='):\n%s", out)
+	}
+	if !strings.Contains(out, "bar build tool-call result") {
+		t.Errorf("linear step gate must bind completion to the presence of a bar build tool-call result, not a heading string:\n%s", out)
+	}
+}
+
 // Dim-0c: dispatch protocol 0c must state allow-list (what block may contain) and
 // must not require persona/approach/goal (those come from agent's own bar invocations).
 func TestSequenceShowDispatch0cNamesThreeLabeledFields(t *testing.T) {

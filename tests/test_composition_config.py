@@ -24,9 +24,12 @@ def test_gate_falsify_entry_absent():
     assert _get_entry("gate+falsify") is None
 
 
-def test_gate_atomic_entry_absent():
-    """gate+atomic composition entry was removed (absorbed by atomic definition)."""
-    assert _get_entry("gate+atomic") is None
+# gate+atomic is NOT absorbed into the atomic token: the durable-boundary rule
+# only activates when a gate separates two atomic steps, so it is an irreducible
+# gate x atomic interaction. Folding it into atomic would smuggle gate-dependence
+# into a token scoped to divisibility alone, breaking atomic/gate orthogonality.
+# See 20260802205744-4436 (craft refactor) -- this one entry is exempt from the
+# blanket absorption plan; it is tested as a present entry below.
 
 
 def test_falsify_atomic_entry_absent():
@@ -83,6 +86,40 @@ def test_ground_falsify_gate_2_less_strengthens_guard():
     """P6a': when the implementation does LESS than a property, strengthen the guard and re-run Gate 1."""
     prose = _get_entry("ground+falsify")
     assert "strengthen the guard" in prose
+
+
+def test_gate_atomic_entry_present():
+    """gate+atomic entry must exist: an irreducible gate x atomic interaction, not absorbed into atomic."""
+    prose = _get_entry("gate+atomic")
+    assert prose is not None, "gate+atomic entry not found"
+    assert len(prose) > 0
+
+
+def test_gate_atomic_carries_boundary_marker():
+    """gate+atomic must require a durable, addressable 'Boundary:' receipt at each gate crossing."""
+    prose = _get_entry("gate+atomic")
+    assert "Boundary:" in prose
+    assert "durable" in prose
+
+
+def test_gate_atomic_requires_write_confirming_result():
+    """The Boundary write must be confirmed by a qualifying prior-executed result (shoshin fix), not merely asserted."""
+    prose = _get_entry("gate+atomic")
+    assert "qualifying prior-executed result" in prose
+    assert "write-confirming result" in prose
+
+
+def test_gate_atomic_carries_boundary_blind_spot():
+    """gate+atomic must carry a corrective protocol (Boundary blind-spot) that terminates on 'not found'."""
+    prose = _get_entry("gate+atomic")
+    assert "Boundary blind-spot" in prose
+    assert "Boundary unresolvable: not" in prose
+
+
+def test_gate_atomic_distinct_from_depends_atomic():
+    """gate+atomic must name its distinction from depends+atomic to preserve orthogonality."""
+    prose = _get_entry("gate+atomic")
+    assert "depends+atomic" in prose
 
 
 def test_ground_falsify_gate_2_more_surfaces_surplus():

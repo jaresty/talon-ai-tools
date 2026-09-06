@@ -435,9 +435,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "redirected outcome — the redirection is derived from a named premise of the incoming structure, not introduced externally.",
         "experimental": "The response enhances the task by proposing concrete experiments or tests, outlining how each would run, describing expected outcomes, and explaining how results would "
         "update the hypotheses.",
-        "falsify": "The response observes each gap between intent and current state before it is closed, and leaves a mechanism that will detect regression without human initiation. falsify "
+        "falsify": "The response obtains an attributable observation of each gap between intent and current state, and leaves a mechanism that will detect regression without human initiation. falsify "
         "shrinks three things into agreement: the artifact shrinks to exactly what the guards require, the guards shrink or expand to exactly the properties, and each assertion is "
-        "witnessed failing when its property is absent. Guard and artifact may be established in any order, but establishment is an obligation, not merely a permission: if a required "
+        "witnessed failing when its property is absent. The relative order of observation, guard establishment, and artifact implementation does not affect whether the assertion is witnessed. Guard and artifact may be established in any order, but establishment is an obligation, not merely a permission: if a required "
         "guard or artifact is absent but constructible from the already-established intent, properties, and constraints, establish it before declaring any observation unavailable; "
         "absence of a supplied guard or artifact is not itself evidence of unavailability, and a missing-but-constructible prerequisite is a construction state, not a terminal excuse. "
         "This establishment does not determine or revise which properties are required or whether the guard is adequate to them — property semantics remain the work of ground and "
@@ -461,19 +461,19 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "treated as reproducible on demand. Capability is not evidence: what witnesses a behavioral observation is an available qualifying observation record, not the mere fact that "
         "an act did or did not occur this turn. A qualifying observation record is a transcript-present record produced by the committed guard artifact that carries the guard's "
         "procedure identity, the assertion's identity, and the relevant A-result. A fresh application of the guard produces one; a prior result record already present in the "
-        "transcript is one; model prose is never one. Observation availability is capability-relative, not tool-relative: whether the observation capability is available depends on "
+        "transcript is one; model prose is never one. A qualifying observation record may originate in the current execution or an addressable parent, child, or sibling execution; "
+        "its validity depends on retained procedure, assertion, result, and execution provenance, not its position relative to implementation. Observation availability is capability-relative, not tool-relative: whether the observation capability is available depends on "
         "whether the committed guard can be applied with the acting party's current capabilities, not on whether an external tool is involved — an inspection or derivation over the "
         "available artifact is itself an applicable observation procedure, and applying it is producing the observation. It counts as an observation only when that inspection or "
         "derivation is the assertion's qualifying procedure and produces an assertion-specific result, not because content was read or noticed: reading the artifact and finding text "
-        "that resembles the property is not an observation until the guard evaluates the assertion against it. When the observation capability is available the response must apply the "
-        "committed guard to obtain new observations; when it is unavailable it may cite qualifying observation records already present but must not synthesize, infer, or narrate an "
-        "observation. A guard that is applicable but not yet applied is not unavailable — it is unobserved, and unobserved is a do-the-work state that requires application, not the "
+        "that resembles the property is not an observation until the guard evaluates the assertion against it. A qualifying observation record already present may be cited whether or not the observation capability is currently available. When no qualifying record exists and the observation "
+        "capability is available, the response must apply the committed guard to obtain new observations; it must never synthesize, infer, or narrate an observation. A guard that is applicable but not yet applied is not unavailable — it is unobserved, and unobserved is a do-the-work state that requires application, not the "
         "honest terminal 'observation unavailable' state; 'observation unavailable' is reserved for the case where no qualifying guard can be applied with current capabilities, never "
         "for a guard that is merely unapplied. Before declaring an observation unavailable, inspect the available observation records for a qualifying record and confirm no applicable "
         "guard remains unapplied; only when no qualifying record is found and no applicable guard remains may the unavailable state be emitted — the unavailable state is the residue "
         "of that inspection, not a first-move declaration. A behavioral assertion for which no qualifying observation record exists is neither Failure nor structural Unobservable — "
         "emit 'Unwitnessed: assertion \"<verbatim assertion>\" — observation unavailable'; it does not contribute to 'Coverage: complete', and it is a witnessing gap, not a "
-        "structural exemption. Before acting, observe the gap: emit 'Observing gap: <what is currently absent or failing>'. Shrink the artifact to the guard (Gate 1). Always attempt "
+        "structural exemption. Record the observed gap: emit 'Observing gap: <what is currently absent or failing>'. Shrink the artifact to the guard (Gate 1). Always attempt "
         "the simpler artifact: construct a smaller modification to the artifact and apply the guards to it. 'Overreach: not found' is a claim that no such reduction exists, so it is "
         "valid only after an attempted reduction — a qualifying observation record showing a smaller artifact that the guards reject (or a smaller artifact they accept, which you then "
         "keep). If a reduction the guards still accept exists, or a path through the artifact is not exercised or distinguished by any guard, emit 'Overreach: found — <modification or "
@@ -491,8 +491,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "is the guard's reported pass result for A and an A-fail is the guard's reported failure result for A. These results are observations of the guard, not independent claims "
         "about the truth of any property — whether A's result corresponds to the property A is intended to govern is not established by this token; that correspondence is established "
         "separately by the adequacy check. What this token establishes is only that A distinguishes its own two results: an application in which A is evaluated and reports failure, "
-        "and one in which A is evaluated and reports pass. The failure (A-fail) application must immediately precede the 'Failure:' line (it is the producer); the passing (A-pass) "
-        "application is the contrast evidence and may appear elsewhere in the transcript. Any application that does not produce an A result is not an observation of A and cannot "
+        "and one in which A is evaluated and reports pass. The failure (A-fail) and passing (A-pass) applications may appear anywhere in the addressable execution lineage; the 'Failure:' line must cite both qualifying result records by execution "
+        "identity and quote their assertion-specific results verbatim. Any application that does not produce an A result is not an observation of A and cannot "
         "witness A, regardless of the cause or form of the application's outcome — this covers procedure errors, unrelated assertions failing, a guard that returns without reporting "
         "A, and any other application in which A itself was not evaluated; only an A-fail result can supply the violating observation, and only an A-pass result the satisfying "
         "contrast. In particular — as an illustration of this rule, not an exhaustive list — when the subject the assertion governs does not yet exist, an error that halts before A is "
@@ -516,9 +516,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "structural'; Unobservable is never satisfied by having searched for a failing application and found none. An assertion that is behavioral yet no admissible modification can "
         "make fail is a guard defect: strengthen the guard and repeat. A guard is a blind spot whenever an admissible state exists in which its pass-or-fail outcome is not equivalent "
         "to whether the property holds — check three: (a) proxy or non-exercising guard checking a surrogate; (b) durability — a guard gone at the moment it would need to fire; (c) "
-        "ephemeral guard not committed to a location that re-applies. Verdict-follows-observation governs both gates: when the observation capability is available, every 'Overreach:' "
-        "verdict and every 'Failure:' observation is valid only when it immediately follows a result record that mechanically produces it; a verdict emitted from description or "
-        "analysis alone does not satisfy this token. A structural Unobservable assertion is exempt, having no application to anchor to. 'Coverage: complete' is valid only when every "
+        "ephemeral guard not committed to a location that re-applies. Provenance-bound verdicts govern both gates: every 'Overreach:' verdict and every 'Failure:' observation is valid only when it cites a qualifying result record that mechanically produces "
+        "it by execution identity and quotes its result verbatim; a verdict emitted from description or analysis alone does not satisfy this token. A structural Unobservable assertion is exempt, having no application to anchor to. 'Coverage: complete' is valid only when every "
         "enumerated assertion has either a 'Failure:' line backed by its A-fail/A-pass application pair or an 'Unobservable: … — structural' line, and no 'Overreach: found' remains "
         "open; an 'Unwitnessed: … — observation unavailable' assertion leaves coverage incomplete and does not satisfy this token. When qualifying observation is unavailable for one "
         "or more behavioral assertions, the honest terminal state is 'Coverage: incomplete — observation unavailable', not a claimed completion; the protocol may construct guards, "
@@ -1189,7 +1188,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "enforce": "Convert procedural to structural dependencies",
         "enter": "Enter the argument's direction and redirect from within",
         "experimental": "Propose concrete experiments",
-        "falsify": "Falsifiable artifact before implementation",
+        "falsify": "Attributable falsification witness",
         "field": "Model interaction as a shared structured medium",
         "flow": "Linear stage sequencing",
         "fourfold": "Exhaust logical stance space before closure",
@@ -1929,7 +1928,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "enforce": "Convert procedural to structural dependencies",
         "enter": "Step into a frame or perspective",
         "experimental": "Design experiments",
-        "falsify": "Falsifiable artifact fires against absent behavior before implementation",
+        "falsify": "Attributable failing and passing observations",
         "field": "Structural field effects",
         "flow": "Step-by-step flow",
         "fourfold": "Exhaust stance space",
@@ -2899,7 +2898,7 @@ USAGE_PATTERNS: list[dict] = [
         "title": "TDD Enforcement (ground + gate + falsify + atomic)",
         "command": 'bar build make ground gate falsify atomic --subject "..."',
         "example": 'bar build make ground gate falsify atomic --subject "Add token_version field through grammar export, Go struct, and SPA layers"',
-        "desc": "Full TDD enforcement composition. ground derives the governing goal and enforcement process from an observed system state; gate blocks each step until its condition is met; falsify requires every governing artifact to have fired against the absent behavior before implementation begins; atomic enforces one observable change per step. Use when correctness must be verified at each stage before proceeding — spec-first implementation where each assertion must fire against the wrong state, then each implementation change is exercised individually before the next begins.",
+        "desc": "Use for test-first implementation with attributable failing and passing observations, blocking checkpoints, and one observable change per step.",
         "tokens": {"method": ["ground", "gate", "falsify", "atomic"], "task": ["make"]},
     },
     {
@@ -6157,8 +6156,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "enforce": {
             "distinctions": [
                 {
-                    "note": "enforce = convert procedural to structural dependencies; gate = hard-blocking checkpoint; falsify = falsifiable artifact must fire before "
-                    "implementation",
+                    "note": "enforce converts procedural requirements into structural dependencies; gate blocks action on unmet conditions; falsify requires attributable failing and passing observations",
                     "token": "gate",
                 },
                 {
@@ -6230,47 +6228,33 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "falsify": {
             "distinctions": [
                 {
-                    "note": "falsify = the artifact must have fired against the absent behavior before implementation; gate = the next action is blocked until a condition is "
-                    "met. falsify specifies what kind of evidence satisfies a gate; gate specifies the blocking structure. use falsify + gate together for full TDD "
-                    "enforcement.",
+                    "note": "falsify requires attributable observations that distinguish an assertion's violating and satisfying states; gate constrains whether later action is blocked on a condition.",
                     "token": "gate",
                 },
                 {
-                    "note": "verify = apply falsification pressure to claims regardless of timing; falsify = the artifact must fire against the absent behavior before "
-                    "implementation begins. falsify adds the temporal and minimal-wrong-state requirements that verify does not.",
+                    "note": "verify applies falsification pressure to claims; falsify requires assertion-bound, mechanically observed failing and passing results with retained provenance.",
                     "token": "verify",
                 },
                 {
-                    "note": "ground = derive an enforcement process before acting; falsify = the specific constraint that every governing artifact must be falsifiable and have "
-                    "fired against the absent behavior. falsify is one thing ground might derive.",
+                    "note": "ground derives the governing properties and enforcement process; falsify obtains discriminating observations for already-established assertions.",
                     "token": "ground",
                 },
                 {
-                    "note": "chain = each step cites its predecessor; falsify = the artifact firing is the predecessor that implementation steps must cite. falsify produces the "
-                    "chain predecessor; chain requires it to be reproduced.",
+                    "note": "chain preserves predecessor relationships between steps; falsify accepts any attributable observation record in the addressable execution lineage.",
                     "token": "chain",
                 },
                 {
-                    "note": "falsify is a process discipline (witness the gap before closing it), not an inference form; for the deductive or inductive shape of a conclusion "
-                    "see deduce and induce",
+                    "note": "falsify is an observation discipline, not an inference form; deduce and induce shape how conclusions are inferred.",
                     "token": "deduce",
                 },
             ],
             "heuristics": [
-                "write the test first",
-                "TDD",
-                "test-driven development",
-                "define success criteria before building",
-                "evaluation before implementation",
-                "write the rubric before grading",
-                "what does passing look like before you start",
-                "declare acceptance criteria first",
-                "no implementation without a prior test",
-                "write the spec before the code",
-                "define what good looks like before producing it",
                 "what check would reject a bad version",
-                "prove the test can fail before implementing",
-                "see it fail before you make it pass",
+                "show both the violating and satisfying result",
+                "cite the failure witness",
+                "retain observation provenance",
+                "assertion-specific failure",
+                "counterfactual discrimination",
                 "minimal wrong state",
                 "falsifiable assertion",
             ],
@@ -6360,8 +6344,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "gate": {
             "distinctions": [
                 {
-                    "note": "RENAMED: the old 'gate' token (TDD enforcement — assertion must fire against absent behavior before implementation) is now called 'falsify'. The new "
-                    "'gate' is the general hard-blocking checkpoint concept. For TDD enforcement use 'gate + falsify' together.",
+                    "note": "gate is a general hard-blocking checkpoint; falsify requires attributable observations distinguishing violating and satisfying states. Their composition can enforce test-first work when the blocking condition requires that evidence.",
                     "token": "falsify",
                 },
                 {
@@ -6442,9 +6425,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "ground": {
             "distinctions": [
                 {
-                    "note": "gate = hard-blocking checkpoint (next action blocked until condition met); falsify = falsifiable artifact must fire before implementation; ground = "
-                    "recursive protocol that first resolves ambiguity then divides the request into independent parts. use gate/falsify when you know the constraints; "
-                    "use ground when you need to derive the unambiguous request before acting.",
+                    "note": "gate blocks the next action until a condition is met; falsify requires attributable discriminating observations; ground recursively derives an unambiguous request and its governing properties.",
                     "token": "gate",
                 },
                 {
@@ -7806,9 +7787,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "verify": {
             "distinctions": [
                 {
-                    "note": "gate = hard-blocking checkpoint (next action blocked until condition met); falsify = falsifiable artifact must fire against absent behavior before "
-                    "implementation; verify = falsification pressure on claims regardless of timing. falsify adds timing and minimal-wrong-state requirements that verify "
-                    "does not.",
+                    "note": "gate blocks action until a condition is met; falsify requires assertion-bound failing and passing observations; verify applies falsification pressure to claims without requiring an observation pair.",
                     "token": "gate",
                 },
                 {

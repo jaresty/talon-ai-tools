@@ -24,9 +24,9 @@ def _defn():
 # --- Shared framing ---
 
 def test_falsify_rationale_opener():
-    """Definition still opens with the regression-detection rationale."""
+    """Definition opens with attributable observation and regression detection."""
     defn = _defn()
-    assert defn.startswith("The response observes each gap between intent and current state")
+    assert defn.startswith("The response obtains an attributable observation of each gap between intent and current state")
     assert "detect regression without human initiation" in defn
 
 
@@ -176,11 +176,12 @@ def test_falsify_p27_salient_compile_absence_example():
     assert "A's own assertion applied and reporting failure against a present-but-wrong artifact, which the subject's absence cannot produce" in defn
 
 
-def test_falsify_p20_producer_is_the_a_fail_execution():
-    """P20 (provenance): the A-fail execution immediately precedes Failure:; the A-pass execution is contrast evidence elsewhere."""
+def test_falsify_p20_results_are_provenance_bound_not_adjacent():
+    """P20: A-fail and A-pass records may occur anywhere in addressable lineage when cited by identity."""
     defn = _defn()
-    assert "application must immediately precede the" in defn
-    assert "application is the contrast evidence" in defn
+    assert "may appear anywhere in the addressable execution lineage" in defn
+    assert "must cite both qualifying result records by execution identity" in defn
+    assert "must immediately precede" not in defn
 
 
 def test_falsify_p20_identity_carried_by_guard_output():
@@ -270,10 +271,11 @@ def test_falsify_p24_qualifying_record_defined():
     assert "model prose is never one" in defn
 
 
-def test_falsify_p24_prior_record_usable_without_tools():
-    """P24: when tools are unavailable, may cite qualifying records already present but must not synthesize/infer/narrate."""
+def test_falsify_p24_prior_record_usable_regardless_of_current_capability():
+    """P24: an existing qualifying record remains usable regardless of current observation capability."""
     defn = _defn()
-    assert "when it is unavailable it may cite qualifying observation records already present but must not synthesize, infer, or narrate an observation" in defn
+    assert "A qualifying observation record already present may be cited whether or not the observation capability is currently available" in defn
+    assert "must never synthesize, infer, or narrate an observation" in defn
 
 
 def test_falsify_p24_unwitnessed_third_state():
@@ -319,12 +321,14 @@ def test_falsify_p20_structural_bifurcation():
     assert "Unobservable: assertion" in defn
 
 
-# --- P9: verdict-follows-execution — gate verdicts follow a tool-result, not a mental act ---
+# --- P9: verdicts cite mechanical result records rather than mental acts ---
 
-def test_falsify_p9_verdict_follows_tool_result():
-    """P9: a gate verdict is valid only when it follows a tool-result block that mechanically produces it."""
+def test_falsify_p9_verdict_cites_tool_result():
+    """P9: an observation verdict cites a result record that mechanically produces it."""
     defn = _defn()
-    assert "immediately follows a result record" in defn
+    assert "Provenance-bound verdicts" in defn
+    assert "cites a qualifying result record that mechanically produces" in defn
+    assert "by execution identity and quotes its result verbatim" in defn
 
 
 def test_falsify_p9_verdict_not_from_description_alone():
@@ -333,10 +337,10 @@ def test_falsify_p9_verdict_not_from_description_alone():
     assert "from description or analysis alone" in defn
 
 
-def test_falsify_p9_conditioned_on_tool_availability():
-    """P9: the execution requirement is conditioned on tool-call availability (unsatisfiable-in-no-tool-context guard, GAP-4)."""
+def test_falsify_p9_fresh_execution_conditioned_on_record_absence_and_capability():
+    """P9: fresh execution is required only when no qualifying record exists and observation is available."""
     defn = _defn()
-    assert "when the observation capability is available" in defn
+    assert "When no qualifying record exists and the observation capability is available" in defn
 
 
 def test_falsify_p9_structural_unobservable_exempt():

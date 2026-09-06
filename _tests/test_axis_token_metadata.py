@@ -944,6 +944,46 @@ class MethodAxisMetadataTests(unittest.TestCase):
             "converge", distinction_tokens, "compare must distinguish from converge"
         )
 
+    def test_falsify_witness_is_order_independent(self):
+        """falsify witness validity must not depend on implementation order."""
+        falsify = self.meta.get("falsify", {})
+        definition = falsify.get("definition", "")
+        self.assertIn(
+            "The relative order of observation, guard establishment, and artifact implementation does not affect whether the assertion is witnessed.",
+            definition,
+        )
+        self.assertNotIn("before it is closed", definition)
+        self.assertNotIn("before implementation", definition)
+        self.assertNotIn("must immediately precede", definition)
+
+    def test_falsify_accepts_attributable_prior_observation_records(self):
+        """A witness may come from another worker when its provenance is retained."""
+        definition = self.meta.get("falsify", {}).get("definition", "")
+        self.assertIn(
+            "A qualifying observation record may originate in the current execution or an addressable parent, child, or sibling execution",
+            definition,
+        )
+
+    def test_falsify_metadata_does_not_claim_test_first_ordering(self):
+        """falsify routing metadata must describe evidence rather than timing."""
+        falsify = self.meta.get("falsify", {})
+        temporal_heuristics = {
+            "write the test first",
+            "TDD",
+            "test-driven development",
+            "evaluation before implementation",
+            "no implementation without a prior test",
+            "prove the test can fail before implementing",
+            "see it fail before you make it pass",
+        }
+        self.assertTrue(temporal_heuristics.isdisjoint(falsify.get("heuristics", [])))
+        self.assertIn("cite the failure witness", falsify.get("heuristics", []))
+
+    def test_falsify_definition_does_not_name_other_tokens(self):
+        """The canonical description must remain semantically self-contained."""
+        definition = self.meta.get("falsify", {}).get("definition", "").lower()
+        self.assertNotIn("temporal blocking belongs to gate", definition)
+
     def test_ground_definition_states_governing_principle(self):
         """Ground definition must require evidence before claiming completion."""
         ground = self.meta.get("ground", {})

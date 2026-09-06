@@ -122,6 +122,39 @@ def test_gate_atomic_distinct_from_depends_atomic():
     assert "depends+atomic" in prose
 
 
+def test_gate_atomic_carries_authorization_allow_list():
+    """A gated action must be permitted via an allow-list 'Authorized by:' marker, not a deny-list."""
+    prose = _get_entry("gate+atomic")
+    assert "Authorization allow-list" in prose
+    assert "Authorized by:" in prose
+
+
+def test_gate_atomic_authorization_requires_prior_result():
+    """The 'Authorized by:' result must precede the authorizing line: the verdict cannot be co-emitted with the action it licenses (bug 2)."""
+    prose = _get_entry("gate+atomic")
+    # the permitting condition names that the satisfying result already exists before authorization
+    assert "already exists in the transcript before the action is authorized" in prose
+
+
+def test_gate_atomic_forbids_self_authorizing_conditional():
+    """A license contingent on evidence the same instruction undertakes to produce is not permitted (the self-authorization escape)."""
+    prose = _get_entry("gate+atomic")
+    assert "contingent on evidence it also" in prose
+
+
+def test_gate_atomic_carries_license_blind_spot():
+    """gate+atomic must carry a License blind-spot corrective protocol terminating on 'not found'."""
+    prose = _get_entry("gate+atomic")
+    assert "License blind-spot" in prose
+    assert "License unsupported: not found" in prose
+
+
+def test_gate_atomic_gate_not_assumed_satisfied():
+    """The reframe: the gate is NOT assumed satisfied but must be shown satisfied by a prior result before authorization."""
+    prose = _get_entry("gate+atomic")
+    assert "not assumed satisfied but must be shown satisfied" in prose
+
+
 def test_ground_falsify_gate_2_more_surfaces_surplus():
     """P6a': when the implementation does MORE than the properties, emit Audit: implementation surplus and classify."""
     prose = _get_entry("ground+falsify")

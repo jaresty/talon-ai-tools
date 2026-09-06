@@ -278,6 +278,44 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "preserved strengths does not satisfy good."
         ),
     },
+    {
+        "name": "gate+atomic",
+        "tokens": ["gate", "atomic"],
+        "prose": (
+            "gate + atomic: atomic makes each step's result independently observable; gate "
+            "hard-blocks a step until a named string appears in a qualifying prior-executed "
+            "result. Together they govern the case where a 'Gate condition:' block is followed, "
+            "in the same response, by a further governed action — the atomic step after the "
+            "gate. In that case, before that further governed action, the response emits a "
+            "'Boundary:' line — a line whose first token is the literal 'Boundary:' — naming a "
+            "durable, independently-addressable location (an addressable path or identifier) "
+            "holding the gate-satisfying result. The 'Boundary:' line is emitted only after a "
+            "qualifying prior-executed result — a tool-call result produced by executing a "
+            "command, running a test suite, or invoking an endpoint; a file read, write, edit, "
+            "or search result does not qualify — confirming the gate-satisfying evidence at "
+            "that location appears at an earlier transcript position than the 'Boundary:' line; "
+            "this write-confirming result must be a distinct result from the one that satisfied "
+            "the gate. The 'Boundary:' line must also appear at a later transcript position than "
+            "the 'Gate condition:' block it follows and at an earlier transcript position than "
+            "the further governed action. A further governed action preceded by a 'Gate "
+            "condition:' block with no intervening 'Boundary:' line, or with a 'Boundary:' line "
+            "for which no qualifying write-confirming result appears at an earlier transcript "
+            "position, names an intended rather than an accomplished durable boundary and does "
+            "not satisfy this composition. Boundary blind-spot: attempt to point the 'Boundary:' "
+            "line at a location whose address no later context could resolve, or whose write no "
+            "qualifying prior-executed result confirms; emit 'Boundary unresolvable: found — "
+            "<the unaddressable or unconfirmed reference>' or 'Boundary unresolvable: not "
+            "found'; if found, write the evidence to a resolvable location, produce the "
+            "confirming result, and repeat this check; terminate on 'not found'. This "
+            "composition enforces from the transcript only that the durable boundary was "
+            "addressed and its write confirmed; whether the location's contents remain correct "
+            "when a later context reads them is an off-transcript claim this composition does "
+            "not verify. It is distinct from depends+atomic, which governs reverting when a "
+            "step's result does not confirm — here the gate is assumed satisfied and the "
+            "question is whether its evidence survives independently of the context that "
+            "produced it."
+        ),
+    },
 ]
 
 

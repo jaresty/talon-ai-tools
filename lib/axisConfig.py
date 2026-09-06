@@ -6255,6 +6255,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "retain observation provenance",
                 "assertion-specific failure",
                 "counterfactual discrimination",
+                "falsifiability",
                 "minimal wrong state",
                 "falsifiable assertion",
             ],

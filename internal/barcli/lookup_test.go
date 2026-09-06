@@ -14,8 +14,8 @@ func TestLookupExactHeuristicMatchTier3(t *testing.T) {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
 
-	// "TDD" is an exact heuristic for method:falsify (renamed from gate; ADR-0224 + 2026-04-25 split)
-	results := LookupTokens("TDD", grammar, "")
+	// This is an exact heuristic for method:falsify.
+	results := LookupTokens("falsifiability", grammar, "")
 	if len(results) == 0 {
 		t.Fatal("expected results for 'TDD', got none")
 	}
@@ -27,7 +27,7 @@ func TestLookupExactHeuristicMatchTier3(t *testing.T) {
 		}
 	}
 	if found == nil {
-		t.Fatalf("expected method:falsify in results for 'TDD', got %v", results)
+		t.Fatalf("expected method:falsify in results for 'falsifiability', got %v", results)
 	}
 	if found.Tier != 3 {
 		t.Errorf("expected tier 3 for exact heuristic match, got %d", found.Tier)

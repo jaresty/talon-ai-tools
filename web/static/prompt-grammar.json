@@ -61900,6 +61900,7 @@
             "retain observation provenance",
             "assertion-specific failure",
             "counterfactual discrimination",
+            "falsifiability",
             "minimal wrong state",
             "falsifiable assertion"
           ],
@@ -134868,7 +134869,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "cf6cacb7cc6c2dd892a3d75cccac83d07c981cccdcd728772cf1360804757ac4",
+    "axes": "59d6fcd83024612bf409f3b256a81d9f5e423cae70ff6ca2826375278edbfc89",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",

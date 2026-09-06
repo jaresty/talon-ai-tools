@@ -95,8 +95,8 @@ func TestLookupTokenResultsUnaffectedByFlag(t *testing.T) {
 	if err != nil {
 		t.Fatalf("load embedded grammar: %v", err)
 	}
-	// "TDD" is an exact heuristic for method:falsify — must still be present.
-	results := LookupTokens("TDD", grammar, "")
+	// This is an exact heuristic for method:falsify — must still be present.
+	results := LookupTokens("cite the failure witness", grammar, "")
 	found := false
 	for _, r := range results {
 		if r.Axis == "method" && r.Token == "falsify" {
@@ -105,6 +105,6 @@ func TestLookupTokenResultsUnaffectedByFlag(t *testing.T) {
 		}
 	}
 	if !found {
-		t.Fatalf("method:falsify must still surface for 'TDD' after adding the flag kind")
+		t.Fatalf("method:falsify must still surface for 'cite the failure witness' after adding the flag kind")
 	}
 }

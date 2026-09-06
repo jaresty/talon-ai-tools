@@ -2900,10 +2900,10 @@ USAGE_PATTERNS: list[dict] = [
         },
     },
     {
-        "title": "TDD Enforcement (ground + gate + falsify + atomic)",
+        "title": "Attributable Coverage (ground + gate + falsify + atomic)",
         "command": 'bar build make ground gate falsify atomic --subject "..."',
         "example": 'bar build make ground gate falsify atomic --subject "Add token_version field through grammar export, Go struct, and SPA layers"',
-        "desc": "Use for test-first implementation with attributable failing and passing observations, blocking checkpoints, and one observable change per step.",
+        "desc": "Use for implementation with attributable coverage — each assertion witnessed by its own failing and passing observations — plus blocking checkpoints and one observable change per step. When the assertions, perturbations, and expected results of a falsification sequence are already established, drive the observe→perturb→observe→restore→observe cycle from a single script so all its results return in one execution rather than one round-trip per step; the resulting records witness their assertions the same as any addressable execution.",
         "tokens": {"method": ["ground", "gate", "falsify", "atomic"], "task": ["make"]},
     },
     {
@@ -6354,7 +6354,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "distinctions": [
                 {
                     "note": "gate is a general hard-blocking checkpoint; falsify requires attributable observations distinguishing violating and satisfying states. Their "
-                    "composition can enforce test-first work when the blocking condition requires that evidence.",
+                    "composition can enforce that attributable evidence exists before the governed action when the blocking condition requires that evidence.",
                     "token": "falsify",
                 },
                 {

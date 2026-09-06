@@ -63925,7 +63925,7 @@
         "gate": {
           "distinctions": [
             {
-              "note": "gate is a general hard-blocking checkpoint; falsify requires attributable observations distinguishing violating and satisfying states. Their composition can enforce test-first work when the blocking condition requires that evidence.",
+              "note": "gate is a general hard-blocking checkpoint; falsify requires attributable observations distinguishing violating and satisfying states. Their composition can enforce that attributable evidence exists before the governed action when the blocking condition requires that evidence.",
               "token": "falsify"
             },
             {
@@ -132004,10 +132004,10 @@
       }
     },
     {
-      "title": "TDD Enforcement (ground + gate + falsify + atomic)",
+      "title": "Attributable Coverage (ground + gate + falsify + atomic)",
       "command": "bar build make ground gate falsify atomic --subject \"...\"",
       "example": "bar build make ground gate falsify atomic --subject \"Add token_version field through grammar export, Go struct, and SPA layers\"",
-      "desc": "Use for test-first implementation with attributable failing and passing observations, blocking checkpoints, and one observable change per step.",
+      "desc": "Use for implementation with attributable coverage — each assertion witnessed by its own failing and passing observations — plus blocking checkpoints and one observable change per step. When the assertions, perturbations, and expected results of a falsification sequence are already established, drive the observe→perturb→observe→restore→observe cycle from a single script so all its results return in one execution rather than one round-trip per step; the resulting records witness their assertions the same as any addressable execution.",
       "tokens": {
         "method": [
           "ground",
@@ -134877,12 +134877,12 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "59d6fcd83024612bf409f3b256a81d9f5e423cae70ff6ca2826375278edbfc89",
+    "axes": "f0b09a24e9cd2b503f9d1ed0b22ba5d85714a49dc894e81bf766ad8572ec94bd",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",
     "slugs": "17c65e515dfedf0fc0d52c7e5c710c88ad300ea6065947abb846dbc7c3ff916e",
-    "patterns": "794566678f6aaef28e91a522ed0f9658bde43d156dd3efe2e3ea22b8dd93901c",
+    "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
     "starter_packs": "2f00f9f30b9ff4f023085ebe493cd9c874c345e173928f889248605e8641bb20",
     "sequences": "4914cfc40ef2dc17d4e4a36b81b3a84814903814f2f6d90ffecea943b81871b2",
     "compositions": "b1e09b8fc0e858f62bc72c32545b87d2db380eee96c07382e7b0dedc94f4a4d4",

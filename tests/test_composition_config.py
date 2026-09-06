@@ -32,9 +32,27 @@ def test_gate_falsify_entry_absent():
 # blanket absorption plan; it is tested as a present entry below.
 
 
-def test_falsify_atomic_entry_absent():
-    """falsify+atomic composition entry was removed (absorbed by falsify/atomic definitions)."""
-    assert _get_entry("falsify+atomic") is None
+def test_falsify_atomic_entry_present():
+    """falsify+atomic entry was re-introduced (reversing the craft-refactor absorption of
+    20260802205744-4436): it carries the round-trip-economy guidance — an established
+    perturb/restore falsification sequence may be driven from a single script so its
+    observations return in one execution rather than one harness-imposed turn per step."""
+    prose = _get_entry("falsify+atomic")
+    assert prose is not None, "falsify+atomic entry not found"
+    assert len(prose) > 0
+
+
+def test_falsify_atomic_carries_round_trip_economy():
+    """falsify+atomic must name the round-trip economy without aggregating per-assertion observations."""
+    prose = _get_entry("falsify+atomic")
+    assert "one round-trip per step" in prose
+    assert "does not aggregate the observations" in prose
+
+
+def test_falsify_atomic_is_economy_not_skip_licence():
+    """The economy must not read as a licence to skip constructing an unestablished sequence."""
+    prose = _get_entry("falsify+atomic")
+    assert "not a licence to skip constructing the sequence" in prose
 
 
 def test_atomic_ground_entry_absent():

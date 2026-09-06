@@ -43,6 +43,22 @@ COMPOSITIONS: list[dict[str, Any]] = [
         "A 'Coverage: complete' sentinel that is not immediately preceded by 'Audit: implementation complete' does not satisfy this composition.",
     },
     {
+        "name": "falsify+atomic",
+        "tokens": ["falsify", "atomic"],
+        "prose": (
+            "falsify + atomic: when a falsification sequence's assertions, perturbations, and "
+            "expected discriminating results are already established, the "
+            "observe → perturb → observe → restore → observe cycle for a given assertion may be "
+            "driven from a single committed script so all its results return in one execution "
+            "rather than one round-trip per step. Each perturb/restore pair still witnesses its "
+            "own assertion — a script does not aggregate the observations, it only collapses the "
+            "round-trips — and the resulting records witness the same as any addressable "
+            "execution. This is an economy for an already-established sequence, not a licence to "
+            "skip constructing the sequence: when the assertions or their perturbations are not "
+            "yet established, construct them one observable step at a time as usual."
+        ),
+    },
+    {
         "name": "falsify+chain",
         "tokens": ["falsify", "chain"],
         "prose": (

@@ -674,6 +674,20 @@ func formatUnrecognizedError(g *Grammar, axis, token string, recognized map[stri
 	msg.WriteString(token)
 	msg.WriteString("\"")
 
+	// If the token is the name of a starter pack, the user likely meant to run
+	// the pack rather than pass it as an axis token. Surface that hint. (Clean
+	// pack expansion is handled earlier in app.go; this path is reached only
+	// when the surrounding build still fails.)
+	for _, p := range g.StarterPacks {
+		if p.Name == token {
+			msg.WriteString("\n\n\"")
+			msg.WriteString(token)
+			msg.WriteString("\" is a starter pack, not a token. Did you mean to run the pack?\n  bar starter ")
+			msg.WriteString(token)
+			break
+		}
+	}
+
 	// Get candidates for fuzzy matching
 	var candidates []string
 	var helpCommand string

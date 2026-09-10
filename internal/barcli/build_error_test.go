@@ -334,6 +334,52 @@ func TestInlineLookupResultsInBuildError(t *testing.T) {
 	}
 }
 
+// TestUnrecognizedTokenMatchingPackNameSuggestsPack verifies that when an
+// unrecognized token is exactly the name of a defined starter pack, the error
+// message suggests the user may have meant to run that pack.
+func TestUnrecognizedTokenMatchingPackNameSuggestsPack(t *testing.T) {
+	tests := []struct {
+		name              string
+		args              []string
+		expectInMessage   []string
+		unexpectInMessage []string
+	}{
+		{
+			// `debug` is a starter pack; combined with `make` its expansion
+			// fails to build (conflicting task token), so the unrecognized-token
+			// error surfaces `debug` and should hint at running the pack.
+			name: "pack name in failing build suggests running the pack",
+			args: []string{"build", "debug", "make"},
+			expectInMessage: []string{
+				"debug",
+				"bar starter debug",
+			},
+		},
+		{
+			name: "non-pack unknown token does not suggest a pack",
+			args: []string{"build", "xyz123"},
+			unexpectInMessage: []string{
+				"bar starter xyz123",
+			},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := runBuildCLI(t, tt.args, nil)
+			for _, expected := range tt.expectInMessage {
+				if !strings.Contains(result.Stderr, expected) {
+					t.Errorf("expected stderr to contain %q\nGot:\n%s", expected, result.Stderr)
+				}
+			}
+			for _, unexpected := range tt.unexpectInMessage {
+				if strings.Contains(result.Stderr, unexpected) {
+					t.Errorf("expected stderr NOT to contain %q\nGot:\n%s", unexpected, result.Stderr)
+				}
+			}
+		})
+	}
+}
+
 // TestMultipleUnrecognizedTokensAccumulated verifies that Build() continues past
 // the first unrecognized token and surfaces all bad tokens in a single combined error.
 func TestMultipleUnrecognizedTokensAccumulated(t *testing.T) {

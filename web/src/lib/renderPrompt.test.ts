@@ -667,6 +667,14 @@ describe('renderPrompt — mutation (--mutate)', () => {
 		expect(out).toContain('Mutation (locus:');
 	});
 
+	it('mutation instruction targets the definition and reports a diff — P1/P3/P4', () => {
+		const out = renderPrompt(grammar, sel, 'x', '', undefined, undefined, { enabled: true, seed: 42 });
+		expect(out).toContain('restate its definition'); // P1: definition is the mutation object
+		expect(out).not.toContain('its stance'); // P1: not stance
+		expect(out).toContain('Changed:'); // P3: diff report line
+		expect(out).toContain('not limited to them'); // P4: open example set
+	});
+
 	it('locus is an active non-task token — SP3a/SP3b', () => {
 		for (let seed = 0; seed < 100; seed++) {
 			const locus = deriveMutationLocus(sel, seed);

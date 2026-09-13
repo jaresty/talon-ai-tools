@@ -170,10 +170,12 @@ func RenderPlainText(result *BuildResult) string {
 }
 
 // mutationBody renders the mutation instruction naming the locus token. It asks
-// the model to apply that one token in a deliberately varied form and to name
-// how it varied it, so variants stay comparable for selection.
+// the model to alter that token's DEFINITION before applying it, then report the
+// alteration as a diff — so the mutate→select loop discovers definition variants,
+// not just stance variations. Kept byte-mirrored with mutationBody() in
+// web/src/lib/renderPrompt.ts.
 func mutationBody(locus string) string {
-	return fmt.Sprintf("Mutation (locus: %q): apply the %q token as written, but push its stance into a deliberate variation — take one defensible reading that differs from the default and follow it through. Name how you varied it, so the variation is inspectable and comparable against other variants. Do not vary any other token.", locus, locus)
+	return fmt.Sprintf("Mutation (locus: %q): before applying the %q token, restate its definition with one deliberate alteration — for example strengthening or weakening a clause, adding or dropping a constraint, rewording its core criterion, or shifting its scope or target (these are examples, not limited to them). Apply this altered definition throughout the rest of your response in place of the original. Do not alter any other token, and do not reinterpret the request as the mutation. Report the alteration as a single line of the form: Changed: <before> → <after>", locus, locus)
 }
 
 // lateralSeedBody renders the seed words and soft framing. Singular framing asks

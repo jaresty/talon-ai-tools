@@ -98,10 +98,11 @@ export function deriveMutationLocus(
 	return candidates[Math.floor(roll * candidates.length)];
 }
 
-// mutationBody mirrors mutationBody() in render.go: name the locus token and ask
-// for a deliberate variation of that one token's stance.
+// mutationBody mirrors mutationBody() in render.go: alter the locus token's
+// DEFINITION before applying it, then report the alteration as a diff — so the
+// mutate→select loop discovers definition variants, not just stance variations.
 function mutationBody(locus: string): string {
-	return `Mutation (locus: "${locus}"): apply the "${locus}" token as written, but push its stance into a deliberate variation — take one defensible reading that differs from the default and follow it through. Name how you varied it, so the variation is inspectable and comparable against other variants. Do not vary any other token.`;
+	return `Mutation (locus: "${locus}"): before applying the "${locus}" token, restate its definition with one deliberate alteration — for example strengthening or weakening a clause, adding or dropping a constraint, rewording its core criterion, or shifting its scope or target (these are examples, not limited to them). Apply this altered definition throughout the rest of your response in place of the original. Do not alter any other token, and do not reinterpret the request as the mutation. Report the alteration as a single line of the form: Changed: <before> → <after>`;
 }
 
 // lateralSeedBody mirrors lateralSeedBody() in render.go: soft framing, singular

@@ -20,6 +20,7 @@ const (
 	sectionMeta             = "=== META INTERPRETATION ==="
 	sectionFormat           = "=== FORMAT 形式 ==="
 	sectionLateralSeed      = "=== LATERAL SEED 種 ==="
+	sectionMutation         = "=== MUTATION 変 ==="
 	sectionPromptlets       = "Promptlets"
 )
 
@@ -159,7 +160,20 @@ func RenderPlainText(result *BuildResult) string {
 		writeSection(&b, sectionLateralSeed, lateralSeedBody(result.LateralSeed))
 	}
 
+	// MUTATION: opt-in stance perturbation injected via --mutate. Emitted only
+	// when a locus is present, so a build without the flag is byte-identical to before.
+	if result.Mutation != "" {
+		writeSection(&b, sectionMutation, mutationBody(result.Mutation))
+	}
+
 	return strings.TrimRight(b.String(), "\n") + "\n"
+}
+
+// mutationBody renders the mutation instruction naming the locus token. It asks
+// the model to apply that one token in a deliberately varied form and to name
+// how it varied it, so variants stay comparable for selection.
+func mutationBody(locus string) string {
+	return fmt.Sprintf("Mutation (locus: %q): apply the %q token as written, but push its stance into a deliberate variation — take one defensible reading that differs from the default and follow it through. Name how you varied it, so the variation is inspectable and comparable against other variants. Do not vary any other token.", locus, locus)
 }
 
 // lateralSeedBody renders the seed words and soft framing. Singular framing asks

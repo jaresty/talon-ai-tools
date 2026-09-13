@@ -39,6 +39,7 @@ type BuildResult struct {
 	Tokens              []string            `json:"tokens,omitempty"`
 	ActiveCompositions  []Composition       `json:"active_compositions,omitempty"` // ADR-0227
 	LateralSeed         []string            `json:"lateral_seed,omitempty"`        // curated random nouns injected via --seed-words
+	Mutation            string              `json:"mutation,omitempty"`            // locus token perturbed via --mutate
 	PlainText           string              `json:"-"`
 }
 

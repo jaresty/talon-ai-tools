@@ -83,8 +83,8 @@ func LookupTokensWithContext(query string, g *Grammar, axisFilter, subject, adde
 				}
 			case "flag":
 				res.Kind = "flag"
-				res.Label = lateralSeedFlagLabel
-				res.Command = lateralSeedFlagCommand
+				res.Label = flagLabelFor(name)
+				res.Command = flagCommandFor(name)
 			default:
 				res.Kind = "token"
 				res.Label = labelForToken(g, prefix, name)
@@ -341,6 +341,8 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		}
 		// Surface the --seed-words build flag on creative intent (Kind="flag").
 		tryToken("flag", lateralSeedFlagToken, lateralSeedFlagLabel, lateralSeedFlagLabel, lateralSeedFlagHeuristics, nil)
+		// Surface the --mutate build flag on variation/selection intent (Kind="flag").
+		tryToken("flag", mutateFlagToken, mutateFlagLabel, mutateFlagLabel, mutateFlagHeuristics, nil)
 	}
 
 	// Deduplicate tier candidates: keep highest-tier match per axis:token
@@ -446,7 +448,7 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 			r.Kind = "sequence"
 		case "flag":
 			r.Kind = "flag"
-			r.Command = lateralSeedFlagCommand
+			r.Command = flagCommandFor(c.token)
 		default:
 			r.Kind = "token"
 			r.Sequences = g.SequencesForToken(c.axis + ":" + c.token)
@@ -491,8 +493,8 @@ func LookupTokens(query string, g *Grammar, axisFilter string) []LookupResult {
 		case "flag":
 			r.Kind = "flag"
 			r.Axis = "flag"
-			r.Label = lateralSeedFlagLabel
-			r.Command = lateralSeedFlagCommand
+			r.Label = flagLabelFor(name)
+			r.Command = flagCommandFor(name)
 		default:
 			r.Kind = "token"
 			r.Axis = prefix

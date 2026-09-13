@@ -45,6 +45,11 @@ type Config struct {
 	// (0 = off, the default). Reuses Seed for reproducibility.
 	SeedWords int
 
+	// Mutate, when true, injects a mutation instruction into a `bar build`
+	// prompt that perturbs one randomly-chosen active non-task token's stance.
+	// Reuses Seed for reproducibility.
+	Mutate bool
+
 	// install-skills specific flags
 	Location string
 	DryRun   bool
@@ -273,6 +278,8 @@ func Parse(args []string) (*Config, error) {
 				return nil, fmt.Errorf("--seed-words requires an integer: %v", err)
 			}
 			cfg.SeedWords = n
+		case arg == "--mutate":
+			cfg.Mutate = true
 		case arg == "--include":
 			i++
 			if i >= len(args) {

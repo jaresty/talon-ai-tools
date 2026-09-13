@@ -32,7 +32,8 @@ Options:
   --input FILE          Read the subject from a file.
   --addendum TEXT       Task clarification applied alongside the subject.
   --seed-words N        Inject N random concrete nouns as a lateral creative seed (default 0 = off).
-  --seed S              Seed for a reproducible --seed-words selection (echoed to stderr).
+  --mutate              Perturb one random active non-task token's stance to generate a variant (off by default).
+  --seed S              Seed for a reproducible --seed-words / --mutate selection (echoed to stderr).
   --output FILE         Write the prompt to a file instead of stdout.
   --json                Emit the structured build result as JSON.
   --grammar FILE        Use an alternate grammar JSON.
@@ -415,6 +416,30 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		result.LateralSeed = deriveLateralSeed(grammar.LateralSeedWords, seed, options.SeedWords)
 		if len(result.LateralSeed) > 0 {
 			fmt.Fprintf(stderr, "lateral seed: %d (%s)\n", seed, strings.Join(result.LateralSeed, ", "))
+		}
+	}
+
+	// Mutation (opt-in via --mutate): perturb one randomly-chosen active
+	// non-task token's stance. Resolve the seed so an auto-generated run is
+	// echoed and thus replayable.
+	if options.Mutate {
+		seed := options.Seed
+		if seed == 0 {
+			seed = time.Now().UnixNano()
+		}
+		isTask := func(tok string) bool {
+			if tok == "" {
+				return false
+			}
+			if _, ok := grammar.Static.Profiles[tok]; ok {
+				return true
+			}
+			_, ok := grammar.Static.Descriptions[tok]
+			return ok
+		}
+		result.Mutation = deriveMutationLocus(result.Tokens, isTask, seed)
+		if result.Mutation != "" {
+			fmt.Fprintf(stderr, "mutation: %d (%s)\n", seed, result.Mutation)
 		}
 	}
 

@@ -8,7 +8,7 @@ from typing import Any, Iterable, Mapping
 
 from .axisCatalog import axis_catalog
 from .axisMappings import DEFAULT_COMPLETENESS_TOKEN
-from .metaPromptConfig import AXIS_INTERACTION, META_INTERPRETATION_GUIDANCE, MUTATION_INSTRUCTION, PLANNING_DIRECTIVE, PREAMBLE, PROMPT_REFERENCE_KEY, SUBJECT_FRAMING
+from .metaPromptConfig import AXIS_INTERACTION, LATERAL_SEED_BODY_PLURAL, LATERAL_SEED_BODY_SINGULAR, META_INTERPRETATION_GUIDANCE, MUTATION_INSTRUCTION, PLANNING_DIRECTIVE, PREAMBLE, PROMPT_REFERENCE_KEY, SUBJECT_FRAMING
 from .personaCatalog import get_persona_intent_catalog
 from .personaConfig import (
     persona_token_metadata_map,
@@ -562,6 +562,8 @@ def prompt_grammar_payload() -> dict[str, Any]:
         "subject_framing": SUBJECT_FRAMING,
         "meta_interpretation_guidance": META_INTERPRETATION_GUIDANCE,
         "mutation_instruction": MUTATION_INSTRUCTION,
+        "lateral_seed_body_singular": LATERAL_SEED_BODY_SINGULAR,
+        "lateral_seed_body_plural": LATERAL_SEED_BODY_PLURAL,
         **sections,
         "checksums": checksums,
     }

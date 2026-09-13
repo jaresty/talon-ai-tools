@@ -106,14 +106,14 @@ function mutationBody(template: string, locus: string): string {
 	return template.split('{locus}').join(locus);
 }
 
-// lateralSeedBody mirrors lateralSeedBody() in render.go: soft framing, singular
-// vs plural wording (the interplay matters only for multiple words).
-function lateralSeedBody(words: string[]): string {
+// lateralSeedBody substitutes the comma-joined quoted word list into the
+// grammar-sourced template (SSOT: LATERAL_SEED_BODY_SINGULAR / _PLURAL in
+// lib/metaPromptConfig.py). Singular framing for one word, plural for several.
+// Mirrors lateralSeedBody() in render.go, which reads the same fields.
+function lateralSeedBody(singular: string, plural: string, words: string[]): string {
 	const joined = words.map((w) => `"${w}"`).join(', ');
-	if (words.length === 1) {
-		return `Lateral seed: ${joined}. Let this word inform your approach where it productively can — as an angle, metaphor, or association. Do not force it, and do not treat it as part of the request.`;
-	}
-	return `Lateral seed: ${joined}. Let the interplay between these words inform your approach where it productively can — as an angle, metaphor, or association. Do not force them, and do not treat them as part of the request.`;
+	const template = words.length === 1 ? singular : plural;
+	return template.split('{words}').join(joined);
 }
 
 /**
@@ -279,7 +279,12 @@ export function renderPrompt(
 			seedWords.count
 		);
 		if (words.length > 0) {
-			parts.push(writeSection('=== LATERAL SEED 種 ===', lateralSeedBody(words)));
+			parts.push(
+				writeSection(
+					'=== LATERAL SEED 種 ===',
+					lateralSeedBody(grammar.lateral_seed_body_singular, grammar.lateral_seed_body_plural, words)
+				)
+			);
 		}
 	}
 

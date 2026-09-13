@@ -83,7 +83,11 @@ const grammar: Grammar = {
 	planning_directive: 'PLANNING DIRECTIVE TEXT',
 	meta_interpretation_guidance: 'META INTERPRETATION GUIDANCE TEXT',
 	mutation_instruction:
-		'Mutation (locus: "{locus}"): before applying the "{locus}" token, restate its definition with one deliberate alteration — for example strengthening or weakening a clause (not limited to them). Report the alteration as a single line of the form: Changed: <before> → <after>'
+		'Mutation (locus: "{locus}"): before applying the "{locus}" token, restate its definition with one deliberate alteration — for example strengthening or weakening a clause (not limited to them). Report the alteration as a single line of the form: Changed: <before> → <after>',
+	lateral_seed_body_singular:
+		'Lateral seed: {words}. Let this word inform your approach where it productively can — as an angle, metaphor, or association. Do not force it, and do not treat it as part of the request.',
+	lateral_seed_body_plural:
+		'Lateral seed: {words}. Let the interplay between these words inform your approach where it productively can — as an angle, metaphor, or association. Do not force them, and do not treat them as part of the request.'
 };
 
 describe('renderPrompt', () => {

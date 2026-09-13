@@ -278,6 +278,23 @@ MUTATION_INSTRUCTION: str = (
 )
 
 
+# LATERAL_SEED_BODY_* are the single source of truth for the --seed-words injected
+# body. Both the Go renderer (render.go) and the SPA renderer (renderPrompt.ts)
+# read them from the generated grammar and replace "{words}" with the comma-joined
+# quoted word list — so the two runtimes cannot drift. Singular framing lets the
+# one word inform the approach; plural framing points at the interplay between words.
+LATERAL_SEED_BODY_SINGULAR: str = (
+    "Lateral seed: {words}. Let this word inform your approach where it productively "
+    "can — as an angle, metaphor, or association. Do not force it, and do not treat it "
+    "as part of the request."
+)
+LATERAL_SEED_BODY_PLURAL: str = (
+    "Lateral seed: {words}. Let the interplay between these words inform your approach "
+    "where it productively can — as an angle, metaphor, or association. Do not force "
+    "them, and do not treat them as part of the request."
+)
+
+
 from typing import List, Optional
 
 

@@ -26,7 +26,9 @@ type BuildResult struct {
 	AxisInteraction            string              `json:"axis_interaction,omitempty"`
 	PlanningDirective          string              `json:"planning_directive,omitempty"`
 	MetaInterpretationGuidance string              `json:"meta_interpretation_guidance,omitempty"`
-	MutationInstruction        string              `json:"mutation_instruction,omitempty"` // --mutate template ({locus} placeholder)
+	MutationInstruction        string              `json:"mutation_instruction,omitempty"`         // --mutate template ({locus} placeholder)
+	LateralSeedBodySingular    string              `json:"lateral_seed_body_singular,omitempty"`   // --seed-words template, one word ({words})
+	LateralSeedBodyPlural      string              `json:"lateral_seed_body_plural,omitempty"`     // --seed-words template, many words ({words})
 	SubjectFraming             string              `json:"subject_framing,omitempty"`
 	Subject             string              `json:"subject"`
 	Addendum            string              `json:"addendum,omitempty"`
@@ -1143,6 +1145,8 @@ func (s *buildState) toResult() *BuildResult {
 		PlanningDirective:          s.grammar.PlanningDirective,
 		MetaInterpretationGuidance: s.grammar.MetaInterpretationGuidance,
 		MutationInstruction:        s.grammar.MutationInstruction,
+		LateralSeedBodySingular:    s.grammar.LateralSeedBodySingular,
+		LateralSeedBodyPlural:      s.grammar.LateralSeedBodyPlural,
 		SubjectFraming:             s.grammar.SubjectFraming,
 		Task:          task,
 		Constraints:   constraints,

@@ -41,6 +41,8 @@ type Grammar struct {
 	PlanningDirective          string
 	MetaInterpretationGuidance string
 	MutationInstruction        string
+	LateralSeedBodySingular    string
+	LateralSeedBodyPlural      string
 	SubjectFraming             string
 	Axes              AxisSection
 	Static        StaticSection
@@ -185,6 +187,8 @@ type rawGrammar struct {
 	PlanningDirective          string           `json:"planning_directive"`
 	MetaInterpretationGuidance string           `json:"meta_interpretation_guidance"`
 	MutationInstruction        string           `json:"mutation_instruction"`
+	LateralSeedBodySingular    string           `json:"lateral_seed_body_singular"`
+	LateralSeedBodyPlural      string           `json:"lateral_seed_body_plural"`
 	SubjectFraming             string           `json:"subject_framing"`
 	Axes              rawAxisSection   `json:"axes"`
 	Static        rawStatic        `json:"tasks"`
@@ -307,6 +311,8 @@ func LoadGrammar(path string) (*Grammar, error) {
 		PlanningDirective:          raw.PlanningDirective,
 		MetaInterpretationGuidance: raw.MetaInterpretationGuidance,
 		MutationInstruction:        raw.MutationInstruction,
+		LateralSeedBodySingular:    raw.LateralSeedBodySingular,
+		LateralSeedBodyPlural:      raw.LateralSeedBodyPlural,
 		SubjectFraming:             raw.SubjectFraming,
 		Sequences:     raw.Sequences,
 		Patterns:          raw.Patterns,

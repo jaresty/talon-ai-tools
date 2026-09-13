@@ -6,6 +6,14 @@ import (
 	"testing"
 )
 
+// lateralSeed*Fixture mirror the grammar SSOT templates (LATERAL_SEED_BODY_* in
+// lib/metaPromptConfig.py) for tests that build a BuildResult directly rather
+// than loading the real grammar.
+const (
+	lateralSeedSingularFixture = "Lateral seed: {words}. Let this word inform your approach where it productively can — as an angle, metaphor, or association. Do not force it, and do not treat it as part of the request."
+	lateralSeedPluralFixture   = "Lateral seed: {words}. Let the interplay between these words inform your approach where it productively can — as an angle, metaphor, or association. Do not force them, and do not treat them as part of the request."
+)
+
 func TestTokensInstructionRootCriterionPhrase(t *testing.T) {
 	b, err := os.ReadFile("render.go")
 	if err != nil {
@@ -96,7 +104,12 @@ func TestRenderPlainTextNoLateralSeedWhenEmpty(t *testing.T) {
 // are present the section appears and lists every word (Ground P2a + P2b).
 func TestRenderPlainTextLateralSeedPresent(t *testing.T) {
 	words := []string{"lighthouse", "kettle", "anchor"}
-	result := &BuildResult{Task: "make something", LateralSeed: words}
+	result := &BuildResult{
+		Task:                    "make something",
+		LateralSeed:             words,
+		LateralSeedBodySingular: lateralSeedSingularFixture,
+		LateralSeedBodyPlural:   lateralSeedPluralFixture,
+	}
 	output := RenderPlainText(result)
 	if !strings.Contains(output, "=== LATERAL SEED 種 ===") {
 		t.Fatalf("expected LATERAL SEED section header, got:\n%s", output)
@@ -111,8 +124,18 @@ func TestRenderPlainTextLateralSeedPresent(t *testing.T) {
 // TestRenderPlainTextLateralSeedSingularPlural specifies the framing wording
 // differs between one word and several (the interplay matters only for many).
 func TestRenderPlainTextLateralSeedSingularPlural(t *testing.T) {
-	single := RenderPlainText(&BuildResult{Task: "x", LateralSeed: []string{"kettle"}})
-	multi := RenderPlainText(&BuildResult{Task: "x", LateralSeed: []string{"kettle", "anchor"}})
+	single := RenderPlainText(&BuildResult{
+		Task:                    "x",
+		LateralSeed:             []string{"kettle"},
+		LateralSeedBodySingular: lateralSeedSingularFixture,
+		LateralSeedBodyPlural:   lateralSeedPluralFixture,
+	})
+	multi := RenderPlainText(&BuildResult{
+		Task:                    "x",
+		LateralSeed:             []string{"kettle", "anchor"},
+		LateralSeedBodySingular: lateralSeedSingularFixture,
+		LateralSeedBodyPlural:   lateralSeedPluralFixture,
+	})
 	if !strings.Contains(single, "this word") {
 		t.Fatalf("single-word framing should say 'this word', got:\n%s", single)
 	}

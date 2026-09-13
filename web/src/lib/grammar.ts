@@ -146,6 +146,8 @@ export interface Grammar {
 	planning_directive: string;
 	meta_interpretation_guidance: string;
 	mutation_instruction: string;
+	lateral_seed_body_singular: string;
+	lateral_seed_body_plural: string;
 	subject_framing: string;
 }
 

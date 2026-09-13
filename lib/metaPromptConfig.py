@@ -263,6 +263,21 @@ META_INTERPRETATION_GUIDANCE: str = (
 )
 
 
+# MUTATION_INSTRUCTION is the single source of truth for the --mutate injected
+# instruction. Both the Go renderer (render.go) and the SPA renderer
+# (renderPrompt.ts) read it from the generated grammar and replace every
+# "{locus}" with the chosen locus token name — so the two runtimes cannot drift.
+MUTATION_INSTRUCTION: str = (
+    'Mutation (locus: "{locus}"): before applying the "{locus}" token, restate its '
+    "definition with one deliberate alteration — for example strengthening or weakening "
+    "a clause, adding or dropping a constraint, rewording its core criterion, or shifting "
+    "its scope or target (these are examples, not limited to them). Apply this altered "
+    "definition throughout the rest of your response in place of the original. Do not alter "
+    "any other token, and do not reinterpret the request as the mutation. Report the "
+    "alteration as a single line of the form: Changed: <before> → <after>"
+)
+
+
 from typing import List, Optional
 
 

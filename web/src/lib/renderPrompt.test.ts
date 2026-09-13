@@ -81,7 +81,9 @@ const grammar: Grammar = {
 	},
 	execution_reminder: 'EXECUTION REMINDER TEXT',
 	planning_directive: 'PLANNING DIRECTIVE TEXT',
-	meta_interpretation_guidance: 'META INTERPRETATION GUIDANCE TEXT'
+	meta_interpretation_guidance: 'META INTERPRETATION GUIDANCE TEXT',
+	mutation_instruction:
+		'Mutation (locus: "{locus}"): before applying the "{locus}" token, restate its definition with one deliberate alteration — for example strengthening or weakening a clause (not limited to them). Report the alteration as a single line of the form: Changed: <before> → <after>'
 };
 
 describe('renderPrompt', () => {

@@ -26,6 +26,7 @@ type BuildResult struct {
 	AxisInteraction            string              `json:"axis_interaction,omitempty"`
 	PlanningDirective          string              `json:"planning_directive,omitempty"`
 	MetaInterpretationGuidance string              `json:"meta_interpretation_guidance,omitempty"`
+	MutationInstruction        string              `json:"mutation_instruction,omitempty"` // --mutate template ({locus} placeholder)
 	SubjectFraming             string              `json:"subject_framing,omitempty"`
 	Subject             string              `json:"subject"`
 	Addendum            string              `json:"addendum,omitempty"`
@@ -1141,6 +1142,7 @@ func (s *buildState) toResult() *BuildResult {
 		AxisInteraction:            s.grammar.AxisInteraction,
 		PlanningDirective:          s.grammar.PlanningDirective,
 		MetaInterpretationGuidance: s.grammar.MetaInterpretationGuidance,
+		MutationInstruction:        s.grammar.MutationInstruction,
 		SubjectFraming:             s.grammar.SubjectFraming,
 		Task:          task,
 		Constraints:   constraints,

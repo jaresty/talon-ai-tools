@@ -163,19 +163,18 @@ func RenderPlainText(result *BuildResult) string {
 	// MUTATION: opt-in stance perturbation injected via --mutate. Emitted only
 	// when a locus is present, so a build without the flag is byte-identical to before.
 	if result.Mutation != "" {
-		writeSection(&b, sectionMutation, mutationBody(result.Mutation))
+		writeSection(&b, sectionMutation, mutationBody(result.MutationInstruction, result.Mutation))
 	}
 
 	return strings.TrimRight(b.String(), "\n") + "\n"
 }
 
-// mutationBody renders the mutation instruction naming the locus token. It asks
-// the model to alter that token's DEFINITION before applying it, then report the
-// alteration as a diff — so the mutate→select loop discovers definition variants,
-// not just stance variations. Kept byte-mirrored with mutationBody() in
-// web/src/lib/renderPrompt.ts.
-func mutationBody(locus string) string {
-	return fmt.Sprintf("Mutation (locus: %q): before applying the %q token, restate its definition with one deliberate alteration — for example strengthening or weakening a clause, adding or dropping a constraint, rewording its core criterion, or shifting its scope or target (these are examples, not limited to them). Apply this altered definition throughout the rest of your response in place of the original. Do not alter any other token, and do not reinterpret the request as the mutation. Report the alteration as a single line of the form: Changed: <before> → <after>", locus, locus)
+// mutationBody renders the mutation instruction by substituting the locus token
+// name into the grammar-sourced template (SSOT: MUTATION_INSTRUCTION in
+// lib/metaPromptConfig.py). Every "{locus}" placeholder is replaced. Mirrored by
+// mutationBody() in web/src/lib/renderPrompt.ts, which reads the same field.
+func mutationBody(template, locus string) string {
+	return strings.ReplaceAll(template, "{locus}", locus)
 }
 
 // lateralSeedBody renders the seed words and soft framing. Singular framing asks

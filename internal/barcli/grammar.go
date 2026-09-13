@@ -40,6 +40,7 @@ type Grammar struct {
 	AxisInteraction            string
 	PlanningDirective          string
 	MetaInterpretationGuidance string
+	MutationInstruction        string
 	SubjectFraming             string
 	Axes              AxisSection
 	Static        StaticSection
@@ -183,6 +184,7 @@ type rawGrammar struct {
 	AxisInteraction            string           `json:"axis_interaction"`
 	PlanningDirective          string           `json:"planning_directive"`
 	MetaInterpretationGuidance string           `json:"meta_interpretation_guidance"`
+	MutationInstruction        string           `json:"mutation_instruction"`
 	SubjectFraming             string           `json:"subject_framing"`
 	Axes              rawAxisSection   `json:"axes"`
 	Static        rawStatic        `json:"tasks"`
@@ -304,6 +306,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 		AxisInteraction:            raw.AxisInteraction,
 		PlanningDirective:          raw.PlanningDirective,
 		MetaInterpretationGuidance: raw.MetaInterpretationGuidance,
+		MutationInstruction:        raw.MutationInstruction,
 		SubjectFraming:             raw.SubjectFraming,
 		Sequences:     raw.Sequences,
 		Patterns:          raw.Patterns,

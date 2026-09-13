@@ -98,11 +98,12 @@ export function deriveMutationLocus(
 	return candidates[Math.floor(roll * candidates.length)];
 }
 
-// mutationBody mirrors mutationBody() in render.go: alter the locus token's
-// DEFINITION before applying it, then report the alteration as a diff — so the
-// mutate→select loop discovers definition variants, not just stance variations.
-function mutationBody(locus: string): string {
-	return `Mutation (locus: "${locus}"): before applying the "${locus}" token, restate its definition with one deliberate alteration — for example strengthening or weakening a clause, adding or dropping a constraint, rewording its core criterion, or shifting its scope or target (these are examples, not limited to them). Apply this altered definition throughout the rest of your response in place of the original. Do not alter any other token, and do not reinterpret the request as the mutation. Report the alteration as a single line of the form: Changed: <before> → <after>`;
+// mutationBody substitutes the locus token name into the grammar-sourced
+// template (SSOT: MUTATION_INSTRUCTION in lib/metaPromptConfig.py). Mirrors
+// mutationBody() in render.go, which reads the same field — so the two runtimes
+// cannot drift.
+function mutationBody(template: string, locus: string): string {
+	return template.split('{locus}').join(locus);
 }
 
 // lateralSeedBody mirrors lateralSeedBody() in render.go: soft framing, singular
@@ -287,7 +288,7 @@ export function renderPrompt(
 	if (mutate?.enabled) {
 		const locus = deriveMutationLocus(selected, mutate.seed);
 		if (locus) {
-			parts.push(writeSection('=== MUTATION 変 ===', mutationBody(locus)));
+			parts.push(writeSection('=== MUTATION 変 ===', mutationBody(grammar.mutation_instruction, locus)));
 		}
 	}
 

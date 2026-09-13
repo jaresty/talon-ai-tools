@@ -145,6 +145,7 @@ export interface Grammar {
 	axis_interaction?: string;
 	planning_directive: string;
 	meta_interpretation_guidance: string;
+	mutation_instruction: string;
 	subject_framing: string;
 }
 

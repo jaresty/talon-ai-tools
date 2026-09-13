@@ -10,7 +10,23 @@ import (
 // definition (P2), requires a "Changed:" diff line (P3a/P3b), and lists example
 // operations framed as an open set (P4a/P4b).
 func TestMutationBodyMutatesDefinition(t *testing.T) {
-	body := mutationBody("ground")
+	// Load the template from the embedded grammar (SSOT), not a literal — this
+	// also witnesses P2 (renderer sources the template from grammar).
+	grammar, err := LoadGrammar("")
+	if err != nil {
+		t.Fatalf("load grammar: %v", err)
+	}
+	if grammar.MutationInstruction == "" {
+		t.Fatal("P4a: grammar payload must expose mutation_instruction")
+	}
+	body := mutationBody(grammar.MutationInstruction, "ground")
+	// P3: every {locus} placeholder is substituted.
+	if strings.Contains(body, "{locus}") {
+		t.Errorf("P3: unsubstituted {locus} placeholder remains; got: %s", body)
+	}
+	if !strings.Contains(body, "ground") {
+		t.Errorf("P3: locus name not substituted in; got: %s", body)
+	}
 	// P1: the mutation object is the definition, not stance/interpretation.
 	if !strings.Contains(body, "definition") {
 		t.Errorf("P1: body must direct altering the token's definition; got: %s", body)

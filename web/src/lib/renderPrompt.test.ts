@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { renderPrompt } from './renderPrompt.js';
+import { renderPrompt, deriveMutationLocus } from './renderPrompt.js';
 import type { Grammar } from './grammar.js';
 
 // ADR-0236: CONSTRAINT_AXES in renderPrompt.ts must include topology so
@@ -648,5 +648,44 @@ describe('renderPrompt — lateral seed (--seed-words)', () => {
 		const seedList = seedGrammar.lateral_seed_words!;
 		const present = seedList.filter((w) => out.includes(w));
 		expect(present.length).toBe(seedList.length);
+	});
+});
+
+describe('renderPrompt — mutation (--mutate)', () => {
+	const sel = { task: ['make'], completeness: ['full'], form: ['bullets'] };
+
+	it('disabled (or omitted) renders no MUTATION section — SP1', () => {
+		const omitted = renderPrompt(grammar, sel, 'x', '');
+		expect(omitted).not.toContain('MUTATION');
+		const off = renderPrompt(grammar, sel, 'x', '', undefined, undefined, { enabled: false });
+		expect(off).not.toContain('MUTATION');
+	});
+
+	it('enabled renders the MUTATION section naming a locus — SP2', () => {
+		const out = renderPrompt(grammar, sel, 'x', '', undefined, undefined, { enabled: true, seed: 42 });
+		expect(out).toContain('=== MUTATION 変 ===');
+		expect(out).toContain('Mutation (locus:');
+	});
+
+	it('locus is an active non-task token — SP3a/SP3b', () => {
+		for (let seed = 0; seed < 100; seed++) {
+			const locus = deriveMutationLocus(sel, seed);
+			expect(['full', 'bullets']).toContain(locus);
+			expect(locus).not.toBe('make');
+		}
+	});
+
+	it('same seed is reproducible within the SPA', () => {
+		const a = renderPrompt(grammar, sel, 'x', '', undefined, undefined, { enabled: true, seed: 7 });
+		const b = renderPrompt(grammar, sel, 'x', '', undefined, undefined, { enabled: true, seed: 7 });
+		expect(a).toBe(b);
+	});
+
+	it('no non-task token yields no section', () => {
+		const out = renderPrompt(grammar, { task: ['make'] }, 'x', '', undefined, undefined, {
+			enabled: true,
+			seed: 1,
+		});
+		expect(out).not.toContain('MUTATION');
 	});
 });

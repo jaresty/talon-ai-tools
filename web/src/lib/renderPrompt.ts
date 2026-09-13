@@ -36,6 +36,13 @@ export interface SeedWordsOptions {
 	seed?: number;
 }
 
+export interface MutateOptions {
+	enabled: boolean;
+	// seed is optional: when provided the locus choice is reproducible (used by
+	// tests); when omitted the SPA re-rolls a fresh random locus each render.
+	seed?: number;
+}
+
 // mulberry32: a small, fast, seedable PRNG. Used so a given seed replays the
 // same word selection within the SPA (web-only reproducibility — this does not
 // match Go's math/rand sequence, by design).
@@ -68,6 +75,35 @@ export function deriveSeedWords(words: string[], seed: number, n: number): strin
 	return pool.slice(0, take);
 }
 
+/**
+ * Select one active non-task token to perturb ("mutate"). Mirrors
+ * deriveMutationLocus() in mutate.go in shape and guarantees (locus is an active
+ * non-task token; "" when none exists), but not in exact choice — the SPA uses
+ * its own PRNG, and re-rolls each render when seed is undefined.
+ */
+export function deriveMutationLocus(
+	selected: Record<string, string[]>,
+	seed?: number
+): string {
+	const taskTokens = new Set(selected.task ?? []);
+	const candidates: string[] = [];
+	for (const [axis, tokens] of Object.entries(selected)) {
+		if (axis === 'task') continue;
+		for (const tok of tokens) {
+			if (tok && !taskTokens.has(tok)) candidates.push(tok);
+		}
+	}
+	if (candidates.length === 0) return '';
+	const roll = seed === undefined ? Math.random() : mulberry32(seed)();
+	return candidates[Math.floor(roll * candidates.length)];
+}
+
+// mutationBody mirrors mutationBody() in render.go: name the locus token and ask
+// for a deliberate variation of that one token's stance.
+function mutationBody(locus: string): string {
+	return `Mutation (locus: "${locus}"): apply the "${locus}" token as written, but push its stance into a deliberate variation — take one defensible reading that differs from the default and follow it through. Name how you varied it, so the variation is inspectable and comparable against other variants. Do not vary any other token.`;
+}
+
 // lateralSeedBody mirrors lateralSeedBody() in render.go: soft framing, singular
 // vs plural wording (the interplay matters only for multiple words).
 function lateralSeedBody(words: string[]): string {
@@ -87,7 +123,8 @@ export function renderPrompt(
 	subject: string,
 	addendum: string,
 	persona?: PersonaState,
-	seedWords?: SeedWordsOptions
+	seedWords?: SeedWordsOptions,
+	mutate?: MutateOptions
 ): string {
 	const parts: string[] = [];
 
@@ -241,6 +278,15 @@ export function renderPrompt(
 		);
 		if (words.length > 0) {
 			parts.push(writeSection('=== LATERAL SEED 種 ===', lateralSeedBody(words)));
+		}
+	}
+
+	// MUTATION: opt-in stance perturbation. Emitted last (mirrors render.go), only
+	// when a locus is present, so a render without it is unchanged.
+	if (mutate?.enabled) {
+		const locus = deriveMutationLocus(selected, mutate.seed);
+		if (locus) {
+			parts.push(writeSection('=== MUTATION 変 ===', mutationBody(locus)));
 		}
 	}
 

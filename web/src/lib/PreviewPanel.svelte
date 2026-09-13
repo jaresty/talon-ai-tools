@@ -4,7 +4,7 @@
 	import PresetsPanel from '$lib/PresetsPanel.svelte';
 	import HistoryPanel from '$lib/HistoryPanel.svelte';
 	import LLMPanel from '$lib/LLMPanel.svelte';
-	import { seedWordsCount, seedWordsSeed } from '$lib/stores.js';
+	import { seedWordsCount, seedWordsSeed, mutateEnabled } from '$lib/stores.js';
 
 	// Lateral seed: setting a non-zero count generates a seed on demand; changing
 	// count to 0 turns it off. Selecting a count re-rolls the seed so each pick
@@ -105,6 +105,25 @@
 			{#if $seedWordsCount > 0}
 				<button type="button" class="seed-reroll" onclick={() => ($seedWordsSeed = Math.floor(Math.random() * 1_000_000))} title="Draw new words">↻ seed {$seedWordsSeed}</button>
 			{/if}
+		</div>
+		<div class="seed-words-row" title="Perturb one random active non-task token's stance to generate a variant (--mutate)">
+			<span class="seed-words-label">Mutate</span>
+			<div class="seed-seg" role="group" aria-label="Mutate toggle">
+				<button
+					type="button"
+					class="seed-seg-btn"
+					class:active={!$mutateEnabled}
+					aria-pressed={!$mutateEnabled}
+					onclick={() => ($mutateEnabled = false)}
+				>Off</button>
+				<button
+					type="button"
+					class="seed-seg-btn"
+					class:active={$mutateEnabled}
+					aria-pressed={$mutateEnabled}
+					onclick={() => ($mutateEnabled = true)}
+				>On</button>
+			</div>
 		</div>
 	</div>
 

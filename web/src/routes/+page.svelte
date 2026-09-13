@@ -14,7 +14,7 @@
 	import { encodeState, decodeState } from '$lib/stateCodec.js';
 	import { bm25Score } from '$lib/bm25.js';
 	import { createEmbedder } from '$lib/embedder.js';
-	import { selected, persona, subject, addendum, seedWordsCount, seedWordsSeed, grammar as grammarStore, conflicts as conflictsStore } from '$lib/stores.js';
+	import { selected, persona, subject, addendum, seedWordsCount, seedWordsSeed, mutateEnabled, grammar as grammarStore, conflicts as conflictsStore } from '$lib/stores.js';
 
 	const embedder = createEmbedder();
 
@@ -51,7 +51,8 @@
 			addendum: $addendum,
 			persona: $persona,
 			seedWordsCount: $seedWordsCount,
-			seedWordsSeed: $seedWordsSeed
+			seedWordsSeed: $seedWordsSeed,
+			mutateEnabled: $mutateEnabled
 		});
 	}
 
@@ -67,6 +68,7 @@
 			}
 			if (typeof p.seedWordsCount === 'number') $seedWordsCount = p.seedWordsCount;
 			if (typeof p.seedWordsSeed === 'number') $seedWordsSeed = p.seedWordsSeed;
+			if (typeof p.mutateEnabled === 'boolean') $mutateEnabled = p.mutateEnabled;
 		}
 	}
 
@@ -186,8 +188,10 @@
 	let seedOpts = $derived(
 		$seedWordsCount > 0 ? { count: $seedWordsCount, seed: $seedWordsSeed ?? 0 } : undefined
 	);
+	// Mutation re-rolls its locus on each render, so no seed is passed (Math.random).
+	let mutateOpts = $derived($mutateEnabled ? { enabled: true } : undefined);
 
-	let promptText = $derived($grammarStore ? renderPrompt($grammarStore, $selected, $subject, $addendum, $persona, seedOpts) : '');
+	let promptText = $derived($grammarStore ? renderPrompt($grammarStore, $selected, $subject, $addendum, $persona, seedOpts, mutateOpts) : '');
 
 	// ADR-0233: BM25 suggestion scores — derived from subject + addendum to dim irrelevant chips
 	let suggestionScores = $derived.by(() => {
@@ -221,6 +225,7 @@
 			cmd += ` --seed-words ${$seedWordsCount}`;
 			if ($seedWordsSeed !== null) cmd += ` --seed ${$seedWordsSeed}`;
 		}
+		if ($mutateEnabled) cmd += ' --mutate';
 		return cmd;
 	});
 
@@ -277,7 +282,7 @@
 
 	function copyPrompt() {
 		if (!$grammarStore) return;
-		const text = renderPrompt($grammarStore, $selected, $subject, $addendum, $persona, seedOpts);
+		const text = renderPrompt($grammarStore, $selected, $subject, $addendum, $persona, seedOpts, mutateOpts);
 		navigator.clipboard.writeText(text);
 		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'copy-prompt', subject_preview: $subject.slice(0, 80), command_preview: command });
 		refreshHistory();
@@ -313,7 +318,7 @@
 
 	async function sharePromptNative() {
 		if (!$grammarStore) return;
-		const text = renderPrompt($grammarStore, $selected, $subject, $addendum, $persona, seedOpts);
+		const text = renderPrompt($grammarStore, $selected, $subject, $addendum, $persona, seedOpts, mutateOpts);
 		addHistoryEntry(localStorage, { hash: serialize(), trigger: 'share-prompt', subject_preview: $subject.slice(0, 80), command_preview: command });
 		refreshHistory();
 		if (navigator.share) {

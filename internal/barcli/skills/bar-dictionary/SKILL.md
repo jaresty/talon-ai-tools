@@ -38,7 +38,7 @@ Results include four kinds, distinguished by the `kind` field:
 - `kind=token` — a single grammar token to append to `bar build`
 - `kind=pack` — a starter pack; the runnable `bar build` command appears inline in text output and in the `command` field in JSON
 - `kind=sequence` — a named multi-step workflow; step count and `bar sequence show <name>` appear inline
-- `kind=flag` — a `bar build` flag surfaced on matching intent (e.g. `flag:seed-words` on creative/brainstorming queries); the runnable `bar build ... --<flag>` command appears inline (text) and in the `command` field (JSON) — append the flag to your build. Not shown under an `--axis` filter.
+- `kind=flag` — a `bar build` flag surfaced on matching intent (e.g. `flag:seed-words` on creative/brainstorming queries, or `flag:mutate` on variation/"explore alternatives" queries); the runnable `bar build ... --<flag>` command appears inline (text) and in the `command` field (JSON) — append the flag to your build. Not shown under an `--axis` filter.
 
 ```bash
 bar lookup "<phrase>"               # search across all axes (tokens + packs + sequences)

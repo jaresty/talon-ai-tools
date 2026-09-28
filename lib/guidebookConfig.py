@@ -44,6 +44,31 @@ GUIDEBOOK: list[dict[str, Any]] = [
         ),
     },
 
+    # ── template pairs weakly with depth and directional tokens ──────────────
+
+    {
+        "id": "template-with-depth-and-directional",
+        "title": "template + depth/directional tokens",
+        "tokens": ["template"],
+        "body": (
+            "**template** produces an artifact of empty labeled slots — no slot is pre-filled, "
+            "and no prose appears outside slot positions. Because the slots carry no content, "
+            "tokens that shape *content depth* or *content orientation* have little to act on:\n\n"
+            "- **Depth tokens** (deep, grow, ration, max, full): these allocate or expand "
+            "coverage *within content*. Over an empty template they can only shape which slots "
+            "exist and how they are labeled, not how deeply any slot is developed — the depth "
+            "instruction is largely inert.\n"
+            "- **Directional tokens** (the compass modifiers): these orient *content* toward "
+            "abstract/concrete or reflect/act. With no filled content to orient, they at most "
+            "influence slot selection.\n\n"
+            "This is not a conflict to avoid — template is doing exactly its job (a reusable "
+            "blank form). Just choose it deliberately: if you want a *filled* result at a given "
+            "depth or orientation, template is the wrong form; if you want the reusable blank "
+            "artifact, expect the depth/directional token to shape only the slot structure, not "
+            "the (absent) content."
+        ),
+    },
+
     # ── Form axis experiment cluster ─────────────────────────────────────────
 
     {

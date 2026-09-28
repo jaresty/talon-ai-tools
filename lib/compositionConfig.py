@@ -448,6 +448,54 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "svg with no adjacent context block does not satisfy contextualise."
         ),
     },
+    {
+        "name": "contextualise+gherkin",
+        "tokens": ["contextualise", "gherkin"],
+        "prose": (
+            "contextualise + gherkin: gherkin emits Given/When/Then scenario syntax with no "
+            "slot for explanatory prose; contextualise enriches the content with the "
+            "background, assumptions, constraints, and framing a downstream consumer would need. "
+            "Same mechanism as contextualise+sketch and contextualise+svg: a prose-bearing form "
+            "meets a DSL-only channel. Resolution: keep the Gherkin scenarios pure, and place "
+            "contextualise's enrichment in a separate prose block before or after the scenarios "
+            "— not inside the steps. Embedding the contextualizing prose inside Given/When/Then "
+            "steps does not satisfy contextualise's requirement for a usable downstream context "
+            "block and does not satisfy this composition; scenarios with no adjacent context "
+            "block do not satisfy contextualise."
+        ),
+    },
+    {
+        "name": "contextualise+shellscript",
+        "tokens": ["contextualise", "shellscript"],
+        "prose": (
+            "contextualise + shellscript: shellscript emits an output-only shell format that "
+            "cannot accommodate explanatory prose as content; contextualise enriches the "
+            "content with the background, assumptions, constraints, and framing a downstream "
+            "consumer would need. Same mechanism as contextualise+sketch and contextualise+svg: "
+            "a prose-bearing form meets a channel with no prose slot. Resolution: keep the "
+            "script executable, and place contextualise's enrichment in a separate prose block "
+            "before or after the script — not as inline commentary standing in for the context "
+            "block. Reducing contextualise's enrichment to script comments does not satisfy its "
+            "requirement for a usable downstream context block and does not satisfy this "
+            "composition; a script with no adjacent context block does not satisfy contextualise."
+        ),
+    },
+    {
+        "name": "contextualise+codetour",
+        "tokens": ["contextualise", "codetour"],
+        "prose": (
+            "contextualise + codetour: codetour emits a JSON tour structure with no "
+            "prose-explanation slot for standalone context; contextualise enriches the content "
+            "with the background, assumptions, constraints, and framing a downstream consumer "
+            "would need. Same mechanism as contextualise+sketch and contextualise+svg: a "
+            "prose-bearing form meets a DSL-only channel. Resolution: keep the CodeTour JSON "
+            "valid, and place contextualise's enrichment in a separate prose block before or "
+            "after the tour — not squeezed into step descriptions in place of a context block. "
+            "Folding contextualise's enrichment into tour step text does not satisfy its "
+            "requirement for a usable downstream context block and does not satisfy this "
+            "composition; a tour with no adjacent context block does not satisfy contextualise."
+        ),
+    },
 ]
 
 

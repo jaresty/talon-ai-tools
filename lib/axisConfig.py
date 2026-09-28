@@ -2295,6 +2295,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             },
         },
+        "ledger": {"task": {"natural": ["pick", "plan"]}},
         "codetour": {
             "task": {
                 "natural": ["make", "fix", "show", "pull"],
@@ -2423,17 +2424,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             }
         },
-        "contextualise": {
-            "channel": {
-                "natural": ["plain", "sync", "jira", "slack"],
-                "cautionary": {
-                    "gherkin": "contextualise adds explanatory prose; Gherkin syntax has no slot for contextualizing prose; use plain or no channel",
-                    "shellscript": "contextualise renders explanatory prose alongside content; output-only shell format cannot accommodate that; use plain or no "
-                    "channel",
-                    "codetour": "contextualise adds explanatory context; CodeTour JSON has no prose-explanation slot; use plain or no channel",
-                },
-            }
-        },
+        "contextualise": {"channel": {"natural": ["plain", "sync", "jira", "slack"]}},
         "faq": {
             "channel": {
                 "natural": ["plain", "slack", "jira"],

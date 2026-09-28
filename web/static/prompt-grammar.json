@@ -100964,6 +100964,14 @@
             }
           }
         },
+        "ledger": {
+          "task": {
+            "natural": [
+              "pick",
+              "plan"
+            ]
+          }
+        },
         "codetour": {
           "task": {
             "natural": [
@@ -101141,12 +101149,7 @@
               "sync",
               "jira",
               "slack"
-            ],
-            "cautionary": {
-              "gherkin": "contextualise adds explanatory prose; Gherkin syntax has no slot for contextualizing prose; use plain or no channel",
-              "shellscript": "contextualise renders explanatory prose alongside content; output-only shell format cannot accommodate that; use plain or no channel",
-              "codetour": "contextualise adds explanatory context; CodeTour JSON has no prose-explanation slot; use plain or no channel"
-            }
+            ]
           }
         },
         "faq": {
@@ -133839,6 +133842,30 @@
         "svg"
       ],
       "prose": "contextualise + svg: svg emits markup-only output with no prose slot; contextualise enriches the content with the background, assumptions, constraints, and framing a downstream consumer would need. Same mechanism as ghost+svg and twin+svg: a prose-bearing form meets a markup-only channel. Resolution: keep the svg artifact as pure markup, and place contextualise's enrichment in a separate prose block before or after the artifact — not inside the markup. Embedding the contextualizing prose inside the svg does not satisfy contextualise's requirement for a usable downstream context block and does not satisfy this composition; an svg with no adjacent context block does not satisfy contextualise."
+    },
+    {
+      "name": "contextualise+gherkin",
+      "tokens": [
+        "contextualise",
+        "gherkin"
+      ],
+      "prose": "contextualise + gherkin: gherkin emits Given/When/Then scenario syntax with no slot for explanatory prose; contextualise enriches the content with the background, assumptions, constraints, and framing a downstream consumer would need. Same mechanism as contextualise+sketch and contextualise+svg: a prose-bearing form meets a DSL-only channel. Resolution: keep the Gherkin scenarios pure, and place contextualise's enrichment in a separate prose block before or after the scenarios — not inside the steps. Embedding the contextualizing prose inside Given/When/Then steps does not satisfy contextualise's requirement for a usable downstream context block and does not satisfy this composition; scenarios with no adjacent context block do not satisfy contextualise."
+    },
+    {
+      "name": "contextualise+shellscript",
+      "tokens": [
+        "contextualise",
+        "shellscript"
+      ],
+      "prose": "contextualise + shellscript: shellscript emits an output-only shell format that cannot accommodate explanatory prose as content; contextualise enriches the content with the background, assumptions, constraints, and framing a downstream consumer would need. Same mechanism as contextualise+sketch and contextualise+svg: a prose-bearing form meets a channel with no prose slot. Resolution: keep the script executable, and place contextualise's enrichment in a separate prose block before or after the script — not as inline commentary standing in for the context block. Reducing contextualise's enrichment to script comments does not satisfy its requirement for a usable downstream context block and does not satisfy this composition; a script with no adjacent context block does not satisfy contextualise."
+    },
+    {
+      "name": "contextualise+codetour",
+      "tokens": [
+        "contextualise",
+        "codetour"
+      ],
+      "prose": "contextualise + codetour: codetour emits a JSON tour structure with no prose-explanation slot for standalone context; contextualise enriches the content with the background, assumptions, constraints, and framing a downstream consumer would need. Same mechanism as contextualise+sketch and contextualise+svg: a prose-bearing form meets a DSL-only channel. Resolution: keep the CodeTour JSON valid, and place contextualise's enrichment in a separate prose block before or after the tour — not squeezed into step descriptions in place of a context block. Folding contextualise's enrichment into tour step text does not satisfy its requirement for a usable downstream context block and does not satisfy this composition; a tour with no adjacent context block does not satisfy contextualise."
     }
   ],
   "guidebook": [
@@ -133853,6 +133880,14 @@
         "atomic"
       ],
       "body": "**induce** — generalize a rule, pattern, or structure from specific observations. The observations come first; the general claim is built up from them.\n\n**deduce** — derive what must follow from stated premises. The general claim comes first; specific conclusions are entailed from it.\n\nThese are *inference forms* — the logical shape of a conclusion. Some *process* methods embody one form or the other, but along a different axis (how a system is changed, not how a claim is justified), so the relationship is analogy, not identity:\n\n- A property-first discipline (state the required property, then derive the minimal change that satisfies it) leans **deductive**: the change is entailed by the property.\n- A discovery-by-resistance discipline (attempt, observe what resists, generalize the accumulated failures into a dependency map) leans **inductive**: the map is generalized from observations.\n\nCaveat — the labels can invert depending on which loop you read: a property-first method *accumulates* confirmations (looks inductive) yet *derives* each change (is deductive); a discovery method *entails* the next probe from the goal (looks deductive) yet *builds* its map from observed failures (is inductive). Read the artifact-derivation direction, not the feedback loop, to classify."
+    },
+    {
+      "id": "template-with-depth-and-directional",
+      "title": "template + depth/directional tokens",
+      "tokens": [
+        "template"
+      ],
+      "body": "**template** produces an artifact of empty labeled slots — no slot is pre-filled, and no prose appears outside slot positions. Because the slots carry no content, tokens that shape *content depth* or *content orientation* have little to act on:\n\n- **Depth tokens** (deep, grow, ration, max, full): these allocate or expand coverage *within content*. Over an empty template they can only shape which slots exist and how they are labeled, not how deeply any slot is developed — the depth instruction is largely inert.\n- **Directional tokens** (the compass modifiers): these orient *content* toward abstract/concrete or reflect/act. With no filled content to orient, they at most influence slot selection.\n\nThis is not a conflict to avoid — template is doing exactly its job (a reusable blank form). Just choose it deliberately: if you want a *filled* result at a given depth or orientation, template is the wrong form; if you want the reusable blank artifact, expect the depth/directional token to shape only the slot structure, not the (absent) content."
     },
     {
       "id": "prep-vs-vet",
@@ -134938,7 +134973,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "793a14c156fb0e8eeb74a5662efe73728db9a88ed892d61213ece7ac997782db",
+    "axes": "3ce7cc25f8ffbc6abbccb4987a35fe176aeca1d89108da3629d65dd48f348afa",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",
@@ -134946,8 +134981,8 @@
     "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
     "starter_packs": "2f00f9f30b9ff4f023085ebe493cd9c874c345e173928f889248605e8641bb20",
     "sequences": "4914cfc40ef2dc17d4e4a36b81b3a84814903814f2f6d90ffecea943b81871b2",
-    "compositions": "790212cf13535c4eb7c44e00ff23b7c3a3ca72fd941e5ea6ee83f8c6253ab5e6",
-    "guidebook": "19e0b0eaa627af0fdfbcf9e85630e423427ecf82358eac301681c18980dc587b",
+    "compositions": "0963b91954caa724fdf42abd5d2406d70c285efd3749fbfd9527548ca5ae8d53",
+    "guidebook": "6dffedf1b0da52d43ac579f53b48618db10426238bcab0f7a01739c2847a29fd",
     "lateral_seed_words": "02059b803deb1294ee139b3e9d5217aad99959d6add559c071fbcb5201a31c98"
   }
 }

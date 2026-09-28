@@ -16,3 +16,4 @@ GPT/lists/*.talon-list
 .grepai/
 ground.txt
 build/models/
+bin/bar.bin

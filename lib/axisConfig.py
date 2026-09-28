@@ -2283,7 +2283,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         },
         "adr": {
             "task": {
-                "natural": ["plan", "probe", "make"],
+                "natural": ["plan", "probe", "make", "pick"],
                 "cautionary": {
                     "sim": "tends to be incoherent — scenario playback is narrative; ADR is a decision artifact with no room for simulation output"
                 },

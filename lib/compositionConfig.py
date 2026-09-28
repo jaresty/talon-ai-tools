@@ -356,6 +356,66 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "evidence survives independently of the context that produced it."
         ),
     },
+    {
+        "name": "pull+deep",
+        "tokens": ["pull", "deep"],
+        "prose": (
+            "pull + deep: pull selects a subset of the given material without altering its "
+            "substance; deep asks for substantial depth. When both are active, deep governs "
+            "how much of the selected subset to carry across — which items and how many of "
+            "their sub-parts to retain — not a licence to unpack, elaborate, or add reasoning "
+            "beyond what the source states. The depth is depth of selection, not depth of "
+            "expansion. A response that introduces analysis, inference, or content not present "
+            "in the source in order to satisfy deep does not satisfy pull, and does not satisfy "
+            "this composition."
+        ),
+    },
+    {
+        "name": "browse+pull",
+        "tokens": ["browse", "pull"],
+        "prose": (
+            "browse + pull: pull extracts a subset from source material that is already "
+            "present; browse obtains material by driving an external target rather than "
+            "operating on given input. When both are active they sequence: browse first "
+            "produces the material, then pull extracts its subset from that produced result. "
+            "The extracted subset must trace to content browse actually returned in a prior "
+            "result, not to assumed or recalled content. A pull whose subset is drawn from "
+            "material no prior browse result produced does not satisfy this composition."
+        ),
+    },
+    {
+        "name": "paradox+fix",
+        "tokens": ["paradox", "fix"],
+        "prose": (
+            "paradox + fix: fix transforms the presentation of given content while keeping "
+            "its intended meaning; paradox holds the subject's unresolved tension without "
+            "resolving it. When both are active, the tension present in the source is part "
+            "of the meaning fix must preserve. The combined instruction is: change the form "
+            "or arrangement of the content so that its unresolved tension is preserved and "
+            "made legible in the new form — not smoothed over, reconciled, or explained away "
+            "by the reformatting. A reformat that resolves, harmonizes, or hides a tension "
+            "the source holds has altered the meaning and does not satisfy fix; a reformat "
+            "that adds synthesis or a resolving conclusion does not satisfy paradox. A "
+            "response satisfying both keeps the same tension the source carried, now visible "
+            "in the transformed presentation."
+        ),
+    },
+    {
+        "name": "mu+fix",
+        "tokens": ["mu", "fix"],
+        "prose": (
+            "mu + fix: fix transforms the presentation of given content while keeping its "
+            "intended meaning; mu enacts irresolution structurally so the reader cannot "
+            "escape it, rather than naming it. When both are active, the combined "
+            "instruction is: choose the transformed form itself so that the reader "
+            "encountering it cannot settle the source's tension — the structure of the new "
+            "presentation withholds resolution rather than a statement about it doing so. "
+            "A reformat whose new structure resolves the tension, or whose structure allows "
+            "the reader to resolve it, does not satisfy mu; a reformat that merely describes "
+            "the tension instead of enacting it structurally satisfies neither mu nor fix's "
+            "requirement to preserve the source's meaning in the form."
+        ),
+    },
 ]
 
 

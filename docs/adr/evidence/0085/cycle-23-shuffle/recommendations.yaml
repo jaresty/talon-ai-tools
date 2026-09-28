@@ -1,0 +1,131 @@
+# ADR-0085 Cycle 23 recommendations + outcomes (seeds 0201-0206)
+# Date: 2026-09-28 | single-evaluator | binary: dev @ 4f635162
+# Mean cycle score: 3.0/5
+#
+# STATUS: IMPLEMENTED. This file records both the original diagnosis and what
+# actually landed after the `make witness ground gate falsify atomic` craft chain
+# reclassified several recs. Two recs (R2, R3) were BLOCKED by the orthogonality
+# property and dropped. One (R5) was reframed from a warning into a defined
+# combined meaning. Tests: go ./internal/barcli/... OK; make test Ran 1482 OK.
+
+outcomes:
+
+  # ---- R1: adr natural task list — add pick (seed 201) ---- LANDED as-is
+  - id: R1
+    status: implemented
+    action: edit
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[channel][adr][task].natural
+    change: "[plan, probe, make] -> [plan, probe, make, pick]"
+    reason: >
+      adr's Description says "Best suited for decision-making tasks"; pick IS a decision
+      task. Seed 201 (pick+adr+struct+full) scored 4/5 with adr+pick as the coherent core.
+    evidence: [seed_201]
+    verified: "bar help llm --section heuristics shows adr natural task: plan, probe, make, pick"
+
+  # ---- R6: pull + deep operational tension (seed 203) ---- LANDED as composition
+  # Originally filed as a description edit (confidence low). Reclassified: the tension
+  # is co-presence interaction, not a defect in either token's definition -> composition.
+  - id: R6
+    status: implemented
+    action: composition-add
+    file: lib/compositionConfig.py
+    entry: pull+deep
+    rule: >
+      deep governs how much of the selected subset to carry across, NOT a licence to
+      unpack/elaborate/add reasoning beyond the source. Depth of selection, not depth of
+      expansion. Gate clause: a response that introduces analysis or content not present
+      in the source to satisfy deep does not satisfy pull, and does not satisfy this
+      composition.
+    evidence: [seed_203]
+    verified: "activates on `bar build pull deep`; bar help composition pull+deep renders"
+
+  # ---- R4: browse (fetch channel) + pull given-material task (seed 203) ---- LANDED as composition
+  # Originally filed as a cautionary entry (confidence low). Reclassified: the ordering
+  # dependency (fetch-then-extract) is non-derivable from the universal rule -> composition.
+  - id: R4
+    status: implemented
+    action: composition-add
+    file: lib/compositionConfig.py
+    entry: browse+pull
+    rule: >
+      Sequencing: browse first produces the material, then pull extracts its subset from
+      that produced result. Gate clause: a pull whose subset is drawn from material no
+      prior browse result produced does not satisfy this composition.
+    evidence: [seed_203]
+    verified: "bar help composition browse+pull renders with gate clause"
+
+  # ---- R5: paradox/mu + transformation tasks (seed 206) ---- REFRAMED then LANDED as composition
+  # Original diagnosis: skill-update warning ("do not route tension methods to
+  # transformation tasks"). First implemented in help_llm.go (WRONG LAYER: a selection
+  # warning in a taxonomy section), then moved to guidebookConfig.py (a warning).
+  # FINAL (user direction): the pairing is NOT irreconcilable. Defined the coherent
+  # combined meaning as composition rules and dropped the warning entirely.
+  - id: R5
+    status: implemented
+    action: composition-add
+    file: lib/compositionConfig.py
+    entries: [paradox+fix, mu+fix]
+    rule: >
+      fix transforms the presentation while keeping intended meaning; the source's
+      unresolved tension IS part of that meaning. Combined: change the form so the tension
+      is preserved and made legible (paradox) / enacted structurally so the reader cannot
+      settle it (mu). Gate clause: a reformat that resolves/harmonizes/hides the tension
+      has altered the meaning and does not satisfy fix; a reformat that adds synthesis does
+      not satisfy paradox.
+    not_added:
+      - "paradox+make / mu+make: NO entry — creating tension-holding content is native to
+         paradox/mu; an interaction rule would restate the solo token (orthogonality)."
+    superseded:
+      - "help_llm.go Tension-class methods note (added then reverted — wrong layer)"
+      - "guidebookConfig.py tension-methods-vs-convergent-tasks entry (added then reverted —
+         reframed from warning to defined meaning)"
+    evidence: [seed_206]
+    compare-mode: distinguishable   # see distinction-check.md
+    verified: "activates on `bar build fix paradox`; bar help composition paradox+fix, mu+fix render"
+
+blocked:
+
+  # ---- R2: template + generative task (seed 202) ---- BLOCKED by orthogonality
+  - id: R2
+    status: dropped
+    original_action: cautionary-entry
+    block_reason: >
+      Fails orthogonality property [1]. template's Description ALONE mandates empty labeled
+      slots ("no slot is pre-filled ... prose content outside slot positions is not
+      [permitted]") regardless of task. "template + generative task -> empty form" is just
+      template doing its job — a composition/cautionary entry would restate template's solo
+      definition. The seed-202 low score was an evaluator-calibration miss (template
+      legitimately produces a blank form), not a missing interaction rule.
+    disposition: "Calibration note only. No config change."
+    evidence: [seed_202]
+
+  # ---- R3: constructor channel (agent) + analysis task (seed 204) ---- BLOCKED by orthogonality
+  - id: R3
+    status: dropped
+    original_action: cautionary-entry
+    block_reason: >
+      Fails orthogonality property [1]. The universal channel rule already covers it:
+      metaPromptConfig.py:57 "Delivery format; takes precedence over form ... Task becomes
+      a content lens." For agent+diff this generically resolves to "produce an agent spec
+      (channel wins); the comparison becomes the agent's described behavior." A dedicated
+      entry would restate an existing general rule. axisConfig.py:2071 confirms only
+      NON-derivable entries belong in the cross-axis layer.
+    disposition: >
+      Useful residue captured as the three-way channel taxonomy (format / delivery-mechanism
+      / constructor) in nn note 20260717011133-2169 — candidate for a future help-llm
+      Choosing Channel clarification, not a config entry.
+    evidence: [seed_204]
+
+retained:
+  - token: witness
+    reason: "Seed 205 (plan+full+witness) scored 5/5 — clean baseline, high-value pairing."
+  - token: paradox
+    reason: "Distinguishable and non-redundant (distinction-check.md). Not retired; R5 defines its combination with fix."
+
+# ---------------------------------------------------------------------------
+# Craft-chain note: deriving the ground property set before editing caught R2 and R3
+# as over-applications (orthogonality violations) that would otherwise have shipped, and
+# surfaced that R5 was definable rather than irreconcilable. This is the intended function
+# of `make witness ground gate falsify atomic` — the derivation is not ceremony.
+# ---------------------------------------------------------------------------

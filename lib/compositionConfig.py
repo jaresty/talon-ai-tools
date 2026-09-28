@@ -416,6 +416,38 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "requirement to preserve the source's meaning in the form."
         ),
     },
+    {
+        "name": "contextualise+sketch",
+        "tokens": ["contextualise", "sketch"],
+        "prose": (
+            "contextualise + sketch: sketch emits pure diagram source as the complete output "
+            "with no surrounding natural language; contextualise enriches the content with the "
+            "background, assumptions, constraints, and framing a downstream consumer would need. "
+            "Same mechanism as ghost+svg, prep+svg, twin+svg: a prose-bearing form meets a "
+            "DSL-only channel that has no slot for prose. Resolution: keep the diagram source "
+            "pure, and place contextualise's enrichment in a separate prose block before or "
+            "after the diagram artifact — not inside it. Embedding the contextualizing prose as "
+            "comments or text nodes within the diagram source does not satisfy contextualise's "
+            "requirement for a usable downstream context block and does not satisfy this "
+            "composition; a diagram with no adjacent context block does not satisfy "
+            "contextualise."
+        ),
+    },
+    {
+        "name": "contextualise+svg",
+        "tokens": ["contextualise", "svg"],
+        "prose": (
+            "contextualise + svg: svg emits markup-only output with no prose slot; "
+            "contextualise enriches the content with the background, assumptions, constraints, "
+            "and framing a downstream consumer would need. Same mechanism as ghost+svg and "
+            "twin+svg: a prose-bearing form meets a markup-only channel. Resolution: keep the "
+            "svg artifact as pure markup, and place contextualise's enrichment in a separate "
+            "prose block before or after the artifact — not inside the markup. Embedding the "
+            "contextualizing prose inside the svg does not satisfy contextualise's requirement "
+            "for a usable downstream context block and does not satisfy this composition; an "
+            "svg with no adjacent context block does not satisfy contextualise."
+        ),
+    },
 ]
 
 

@@ -1,0 +1,114 @@
+# ADR-0085 Cycle 24 recommendations (seeds 0207-0212)
+# Date: 2026-09-28 | single-evaluator | binary: dev @ e36b327a (post cycle-23)
+# Mean 3.0/5 (all 6); 3.2/5 excluding flagged cautionary seed 211.
+#
+# Both actionable recs EXTEND an existing cautionary family following its established
+# pattern — the lowest-risk, orthogonality-safe edit class (extends a family, does not
+# restate a solo token or a general rule). Confidence higher than cycle-23's per-pair recs.
+
+recommendations:
+
+  # ---- R1 (c24): contextualise + sketch/svg — RESOLVED AS COMPOSITION (not cautionary) ----
+  # Originally proposed as a cautionary (matching contextualise's existing gherkin/codetour
+  # cautions). Reclassified on review: there IS a coherent combined output — the DSL artifact
+  # stays pure and contextualise's enrichment goes in an ADJACENT prose block. This is exactly
+  # the pattern the shipped ghost+svg / prep+svg / twin+svg composition entries use, so the
+  # resolution belongs in the composition layer, not a "use plain or no channel" warning.
+  - id: c24-R1
+    status: implemented
+    action: composition-add
+    file: lib/compositionConfig.py
+    entries: [contextualise+sketch, contextualise+svg]
+    rule: >
+      Keep the DSL/markup artifact pure; place contextualise's enrichment (background,
+      assumptions, constraints, framing) in a separate prose block before/after the artifact,
+      not inside it. Gate clause: prose embedded in the artifact does not satisfy contextualise;
+      an artifact with no adjacent context block does not satisfy contextualise either.
+    reason: >
+      Same prose-form-meets-DSL-only-channel mechanism as ghost+svg, prep+svg, twin+svg — which
+      are compositions, not warnings. contextualise simply wasn't wired into that family. A
+      coherent coexisting output exists (artifact + adjacent block), so composition beats
+      cautionary.
+    evidence: [seed_208]
+    confidence: high
+    verified: "bar help composition contextualise+sketch, contextualise+svg render; activates on co-presence"
+    note: >
+      Bonus observation (NOT acted on this cycle): contextualise's EXISTING gherkin/shellscript/
+      codetour cautionary entries are arguably mis-layered for the same reason — they could
+      become compositions (prose block adjacent) too. Recorded as c24-O4 for a future cycle;
+      re-opening shipped decisions is out of scope here.
+
+  # ---- R2 (c24): skim + orbit — cautionary (correct layer: no combined output exists) ----
+  # Confirmed cautionary, NOT composition: honoring orbit's multi-trajectory minimum starves
+  # skim's light pass — there is no coexisting output (unlike contextualise+sketch, where two
+  # artifacts sit adjacent; here it's the same output pulled to incompatible depths). Matches
+  # the shipped skim+rigor cautionary.
+  - id: c24-R2
+    status: implemented
+    action: cautionary-entry
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[completeness][skim][method].cautionary
+    add:
+      orbit: >
+        skim constrains response volume; orbit requires multiple distinct trajectories
+        with differing named initial conditions to establish an attractor —
+        the light pass cannot accommodate that evidentiary minimum; expect score-3 output
+    verified: "renders in bar help llm --section heuristics under orbit"
+    reason: >
+      skim ALREADY cautions `rigor` with the same reasoning ("the light pass cannot
+      accommodate rigorous reasoning; expect score-3 output"). orbit has a structural
+      minimum (multiple trajectories with distinct named initial conditions) that a skim
+      light pass cannot meet — the identical completeness-floor-vs-method-minimum mechanism.
+      Seed 210 (fix+skim+orbit+store+ong) scored 2/5.
+    evidence: [seed_210]
+    confidence: high   # extends an existing, identical-mechanism cautionary (skim+rigor)
+    compare-mode: see distinction-check.md
+
+  # ---- R3 (c24): ledger natural task list — pick/plan (parallels cycle-23 R1 adr+pick) ----
+  - id: c24-R3
+    action: edit
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[channel][ledger]
+    note: >
+      ledger currently has NO cross-axis entry. Seed 212 (pick+ledger) scored 4/5 — pick
+      writes naturally to ledger's "Decisions" heading (same pattern as cycle-23's adr+pick).
+      Candidate: add a ledger entry with natural task = [pick, plan] (decisions + plans map
+      to Decisions/Constraints headings). Deferred: creating a brand-new cross-axis entry is
+      a larger step than extending one; corroborate with one more ledger seed before adding.
+    evidence: [seed_212]
+    confidence: low-medium   # single seed; new-entry creation, not extension
+
+# ---------------------------------------------------------------------------
+# Observations (no config change)
+# ---------------------------------------------------------------------------
+observations:
+
+  - id: c24-O1
+    topic: "template attenuates depth/directional tokens (corroborates cycle-23)"
+    detail: >
+      Seed 209 (show+template+ration+fig) is the SECOND seed (after cycle-23 seed 202) where
+      template + a generative task + a depth/directional token scores 3/5 because template's
+      empty slots carry no content for depth (ration) or directional (fig) to shape. This is
+      NOT a composition defect (template legitimately produces a blank form — cycle-23 lesson).
+      Candidate GUIDEBOOK note (discovery layer, not co-presence): "template pairs weakly with
+      depth (ration/deep/grow) and directional tokens — empty slots carry no depth to allocate;
+      template governs slot structure, not content depth." Deferred pending a third corroborating
+      seed.
+
+  - id: c24-O2
+    topic: "orbit + fix — analysis method on transformation task (cycle-23 paradox+fix family)"
+    detail: >
+      Seed 210 also showed orbit (needs trajectories) forced onto fix (reformat). Same shape as
+      cycle-23 paradox+fix — but UNLIKE paradox+fix, there is no coherent combined meaning to
+      define (a reformat has no trajectories/initial-conditions for orbit to vary). So this is a
+      warning, not a definable composition. Overlaps c24-R2 (skim+orbit) as evidence that orbit
+      is a heavy-evidence method mis-selected onto light/convergent contexts.
+
+  - id: c24-O3
+    topic: "sim + code cautionary confirmed working"
+    detail: >
+      Seed 211 hit the documented code-cautions-sim pairing; the warning held empirically.
+      Cross-axis check working as designed. No action.
+
+retained:
+  - "cite+pull (seed 207), pick+ledger (seed 212): clean natural pairings, no action."

@@ -101322,7 +101322,8 @@
           },
           "method": {
             "cautionary": {
-              "rigor": "skim constrains response volume; rigor demands disciplined depth — the light pass cannot accommodate rigorous reasoning; expect score-3 output"
+              "rigor": "skim constrains response volume; rigor demands disciplined depth — the light pass cannot accommodate rigorous reasoning; expect score-3 output",
+              "orbit": "skim constrains response volume; orbit requires multiple distinct trajectories with differing named initial conditions to establish an attractor — the light pass cannot accommodate that evidentiary minimum; expect score-3 output"
             }
           }
         }
@@ -133822,6 +133823,22 @@
         "fix"
       ],
       "prose": "mu + fix: fix transforms the presentation of given content while keeping its intended meaning; mu enacts irresolution structurally so the reader cannot escape it, rather than naming it. When both are active, the combined instruction is: choose the transformed form itself so that the reader encountering it cannot settle the source's tension — the structure of the new presentation withholds resolution rather than a statement about it doing so. A reformat whose new structure resolves the tension, or whose structure allows the reader to resolve it, does not satisfy mu; a reformat that merely describes the tension instead of enacting it structurally satisfies neither mu nor fix's requirement to preserve the source's meaning in the form."
+    },
+    {
+      "name": "contextualise+sketch",
+      "tokens": [
+        "contextualise",
+        "sketch"
+      ],
+      "prose": "contextualise + sketch: sketch emits pure diagram source as the complete output with no surrounding natural language; contextualise enriches the content with the background, assumptions, constraints, and framing a downstream consumer would need. Same mechanism as ghost+svg, prep+svg, twin+svg: a prose-bearing form meets a DSL-only channel that has no slot for prose. Resolution: keep the diagram source pure, and place contextualise's enrichment in a separate prose block before or after the diagram artifact — not inside it. Embedding the contextualizing prose as comments or text nodes within the diagram source does not satisfy contextualise's requirement for a usable downstream context block and does not satisfy this composition; a diagram with no adjacent context block does not satisfy contextualise."
+    },
+    {
+      "name": "contextualise+svg",
+      "tokens": [
+        "contextualise",
+        "svg"
+      ],
+      "prose": "contextualise + svg: svg emits markup-only output with no prose slot; contextualise enriches the content with the background, assumptions, constraints, and framing a downstream consumer would need. Same mechanism as ghost+svg and twin+svg: a prose-bearing form meets a markup-only channel. Resolution: keep the svg artifact as pure markup, and place contextualise's enrichment in a separate prose block before or after the artifact — not inside the markup. Embedding the contextualizing prose inside the svg does not satisfy contextualise's requirement for a usable downstream context block and does not satisfy this composition; an svg with no adjacent context block does not satisfy contextualise."
     }
   ],
   "guidebook": [
@@ -134921,7 +134938,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "ec59f8920a3d2feb980a07983a479a604a7edcc9a9fe1398eafcf553c9e6266e",
+    "axes": "793a14c156fb0e8eeb74a5662efe73728db9a88ed892d61213ece7ac997782db",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",
@@ -134929,7 +134946,7 @@
     "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
     "starter_packs": "2f00f9f30b9ff4f023085ebe493cd9c874c345e173928f889248605e8641bb20",
     "sequences": "4914cfc40ef2dc17d4e4a36b81b3a84814903814f2f6d90ffecea943b81871b2",
-    "compositions": "ad1fb80d29c21f94673f0eed468185d9851ce4a88fa036660d1b4bfe173d9f30",
+    "compositions": "790212cf13535c4eb7c44e00ff23b7c3a3ca72fd941e5ea6ee83f8c6253ab5e6",
     "guidebook": "19e0b0eaa627af0fdfbcf9e85630e423427ecf82358eac301681c18980dc587b",
     "lateral_seed_words": "02059b803deb1294ee139b3e9d5217aad99959d6add559c071fbcb5201a31c98"
   }

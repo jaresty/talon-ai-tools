@@ -2583,7 +2583,9 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "method": {
                 "cautionary": {
                     "rigor": "skim constrains response volume; rigor demands disciplined depth — the light pass cannot accommodate rigorous reasoning; expect score-3 "
-                    "output"
+                    "output",
+                    "orbit": "skim constrains response volume; orbit requires multiple distinct trajectories with differing named initial conditions to establish an "
+                    "attractor — the light pass cannot accommodate that evidentiary minimum; expect score-3 output",
                 }
             },
         },

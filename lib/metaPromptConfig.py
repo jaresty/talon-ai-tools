@@ -239,7 +239,11 @@ PLANNING_DIRECTIVE: str = (
     "of the form 'without [token-name], this response would [specific change in content, reasoning, or structure]'. "
     "Write 'Derived stance complete.' to close the derivation span. "
     "No tool call result blocks appear between 'Token derivations:' and 'Derived stance complete.' — "
-    "a tool call result block in that span renders the derivation non-compliant."
+    "a tool call result block in that span renders the derivation non-compliant. "
+    "Each active token's stated effect must hold in the structure you generate, not be added to a "
+    "default structure afterward: before emitting, check whether the drafted response already exhibits "
+    "that effect, and if it does not, restructure the response so the effect holds and re-derive from "
+    "that structure rather than annotating or appending labels to a structure built without it."
 )
 
 META_INTERPRETATION_GUIDANCE: str = (

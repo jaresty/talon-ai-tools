@@ -224,7 +224,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it "
         "without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
         "coupling": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is. Pairs "
-        "naturally with snag/mesh methods and diagram/sketch channels.",
+        "naturally with snag/mesh methods.",
         "dialogue": "The response formats content as a dialogue between named speakers. Before writing turns: name each speaker and their register (formal/casual/expert/naive). Write each turn as "
         "`Speaker: their words`, maintaining the register committed above. Where the subject has a scene boundary or tonal shift, add a narration line in [square brackets] before the "
         "relevant turn.",
@@ -332,7 +332,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "tight": "The response is as small and dense as it can be while still fully serving the request — no filler, padding, or redundant elaboration — governing volume and density within "
         "whatever format the other tokens set, not the format itself.",
         "timeline": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each occurs. Pairs "
-        "naturally with trace/flow methods and diagram/sketch channels.",
+        "naturally with trace/flow methods.",
         "twin": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when "
         "helpful while avoiding near-duplicate alternatives.",
@@ -2448,6 +2448,8 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             }
         },
+        "coupling": {"channel": {"natural": ["diagram", "sketch", "svg"]}},
+        "timeline": {"channel": {"natural": ["diagram", "sketch", "svg"]}},
         "ghost": {
             "channel": {
                 "cautionary": {

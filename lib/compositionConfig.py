@@ -569,6 +569,135 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "scheme, does not satisfy sort and does not satisfy this composition."
         ),
     },
+    {
+        "name": "faq+code",
+        "tokens": ["faq", "code"],
+        "prose": (
+            "faq + code: faq organizes content as separated question headings with concise answers beneath each; "
+            "code emits only code or markup with no prose slot. The question/answer pairs are content the "
+            "artifact cannot carry. Resolution: keep the artifact pure, and place the question/answer pairs in a "
+            "separate block before or after it. Folding that content into the artifact — as comments, step text, "
+            "or embedded strings — in place of the adjacent block does not satisfy faq, and an artifact with no "
+            "adjacent block does not satisfy it either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "faq+codetour",
+        "tokens": ["faq", "codetour"],
+        "prose": (
+            "faq + codetour: faq organizes content as separated question headings with concise answers; a "
+            "CodeTour is a JSON sequence of navigable steps through existing code, with no slot for standalone "
+            "question/answer pairs. Resolution: keep the artifact pure, and place the question/answer pairs in a "
+            "separate block before or after it. Folding that content into the artifact — as comments, step text, "
+            "or embedded strings — in place of the adjacent block does not satisfy faq, and an artifact with no "
+            "adjacent block does not satisfy it either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "faq+shellscript",
+        "tokens": ["faq", "shellscript"],
+        "prose": (
+            "faq + shellscript: faq organizes content as separated question headings with concise answers; "
+            "shellscript emits an output-only executable script with no prose slot. Resolution: keep the artifact "
+            "pure, and place the question/answer pairs in a separate block before or after it. Folding that "
+            "content into the artifact — as comments, step text, or embedded strings — in place of the adjacent "
+            "block does not satisfy faq, and an artifact with no adjacent block does not satisfy it either; "
+            "neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "log+codetour",
+        "tokens": ["log", "codetour"],
+        "prose": (
+            "log + codetour: log reads as dated or time-marked short updates with enough context for later "
+            "reference; a CodeTour is a JSON sequence of navigable code steps with no slot for a running log. "
+            "Resolution: keep the artifact pure, and place the log entries in a separate block before or after "
+            "it. Folding that content into the artifact — as comments, step text, or embedded strings — in place "
+            "of the adjacent block does not satisfy log, and an artifact with no adjacent block does not satisfy "
+            "it either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "spike+codetour",
+        "tokens": ["spike", "codetour"],
+        "prose": (
+            "spike + codetour: spike formats a research item — a problem or decision statement followed by the "
+            "key questions to answer, staying on questions rather than implementation; a CodeTour is a JSON "
+            "sequence of navigable code steps with no slot for an open research document. Resolution: keep the "
+            "artifact pure, and place the spike write-up in a separate block before or after it. Folding that "
+            "content into the artifact — as comments, step text, or embedded strings — in place of the adjacent "
+            "block does not satisfy spike, and an artifact with no adjacent block does not satisfy it either; "
+            "neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "questions+gherkin",
+        "tokens": ["questions", "gherkin"],
+        "prose": (
+            "questions + gherkin: questions presents the answer as a series of probing or clarifying questions; "
+            "gherkin emits Given/When/Then scenario syntax, which asserts behavior rather than asking. The token "
+            "already adapts to a structured channel when combined with diagram, where its output becomes a "
+            "question tree; apply the same principle here. Resolution: keep the artifact pure, and place the "
+            "question series in a separate block before or after it. Folding that content into the artifact — as "
+            "comments, step text, or embedded strings — in place of the adjacent block does not satisfy "
+            "questions, and an artifact with no adjacent block does not satisfy it either; neither satisfies this "
+            "composition. "
+        ),
+    },
+    {
+        "name": "questions+shellscript",
+        "tokens": ["questions", "shellscript"],
+        "prose": (
+            "questions + shellscript: questions presents the answer as a series of probing or clarifying "
+            "questions; shellscript emits an output-only executable script with no prose slot. The token already "
+            "adapts to a structured channel when combined with diagram, where its output becomes a question tree; "
+            "apply the same principle here. Resolution: keep the artifact pure, and place the question series in "
+            "a separate block before or after it. Folding that content into the artifact — as comments, step "
+            "text, or embedded strings — in place of the adjacent block does not satisfy questions, and an "
+            "artifact with no adjacent block does not satisfy it either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "case+gherkin",
+        "tokens": ["case", "gherkin"],
+        "prose": (
+            "case + gherkin: case builds reasoning toward a conclusion — background, evidence, "
+            "trade-offs, and alternatives before converging on a recommendation that addresses "
+            "objections; gherkin emits Given/When/Then scenario syntax, which asserts behavior "
+            "rather than arguing for it. Same mechanism as faq+gherkin-class pairings: a "
+            "content-bearing form meets a DSL-only channel. Resolution: keep the scenarios pure, "
+            "and place the case in a separate block before or after them, with the recommendation "
+            "it converges on stated there. Folding the argument into step text in place of that "
+            "block does not satisfy case, and scenarios with no adjacent case do not satisfy it "
+            "either; neither satisfies this composition."
+        ),
+    },
+    {
+        "name": "case+codetour",
+        "tokens": ["case", "codetour"],
+        "prose": (
+            "case + codetour: case builds reasoning toward a conclusion — background, evidence, "
+            "trade-offs, and alternatives before converging on a recommendation; a CodeTour is a "
+            "JSON sequence of navigable steps through existing code, with no slot for a standalone "
+            "argument. Resolution: keep the tour valid, and place the case in a separate block "
+            "before or after it, with the recommendation stated there. Folding the argument into "
+            "step descriptions in place of that block does not satisfy case, and a tour with no "
+            "adjacent case does not satisfy it either; neither satisfies this composition."
+        ),
+    },
+    {
+        "name": "case+shellscript",
+        "tokens": ["case", "shellscript"],
+        "prose": (
+            "case + shellscript: case builds reasoning toward a conclusion — background, evidence, "
+            "trade-offs, and alternatives before converging on a recommendation; shellscript emits "
+            "an output-only executable script with no prose slot. Resolution: keep the script "
+            "executable, and place the case in a separate block before or after it. Reducing the "
+            "argument to script comments in place of that block does not satisfy case, and a "
+            "script with no adjacent case does not satisfy it either; neither satisfies this "
+            "composition."
+        ),
+    },
 ]
 
 

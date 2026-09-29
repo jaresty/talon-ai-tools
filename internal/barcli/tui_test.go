@@ -200,7 +200,8 @@ func TestHarnessCautionRealGrammarFormAxis(t *testing.T) {
 // browsing the form axis and the focused form token has a caution against an active
 // channel token (form→channel caution pair, ADR-0148 Direction A extension).
 //
-// form.faq → channel: caution=[shellscript, code, codetour], natural=[plain, slack, jira]
+// form.template → channel: caution=[shellscript, codetour, gherkin], natural=[plain, slack, html]
+// (faq no longer cautions shellscript — that pairing is now the faq+shellscript composition)
 func TestHarnessCautionFormToChannel(t *testing.T) {
 	grammar, err := LoadGrammar("")
 	if err != nil {
@@ -229,33 +230,33 @@ func TestHarnessCautionFormToChannel(t *testing.T) {
 			InitialTokens:           initialTokens,
 			CrossAxisCompositionFor: crossAxisFor,
 			InitialWidth:            80,
-			// Height 90: form list has ~40 tokens; faq is at position ~13,
+			// Height 90: form list has ~40 tokens; template is deep in the list,
 			// requiring more pane space than shallower tokens like commit.
 			InitialHeight:           90,
 		})
 	}
 
-	// Case 1: shellscript channel active + faq focused → caution must appear.
+	// Case 1: shellscript channel active + template focused → caution must appear.
 	h := newH([]string{"make", "shellscript"})
 	if err := h.Act(bartui2.HarnessAction{Type: "nav", Target: "form"}); err != nil {
 		t.Fatalf("nav to form: %v", err)
 	}
-	if err := h.Act(bartui2.HarnessAction{Type: "focus", Target: "faq"}); err != nil {
-		t.Fatalf("focus faq: %v", err)
+	if err := h.Act(bartui2.HarnessAction{Type: "focus", Target: "template"}); err != nil {
+		t.Fatalf("focus template: %v", err)
 	}
 	view := h.ObserveView()
 	// Check for detail-panel caution text, not just chip-column ⚠.
 	if !strings.Contains(view, "⚠ Caution: shellscript") {
-		t.Errorf("form→channel: detail-panel caution must appear when shellscript active + faq focused; got:\n%s", view)
+		t.Errorf("form→channel: detail-panel caution must appear when shellscript active + template focused; got:\n%s", view)
 	}
 
-	// Case 2: plain channel active (natural for faq, not cautionary) → no caution.
+	// Case 2: plain channel active (natural for template, not cautionary) → no caution.
 	h2 := newH([]string{"make", "plain"})
 	if err := h2.Act(bartui2.HarnessAction{Type: "nav", Target: "form"}); err != nil {
 		t.Fatalf("nav to form: %v", err)
 	}
-	if err := h2.Act(bartui2.HarnessAction{Type: "focus", Target: "faq"}); err != nil {
-		t.Fatalf("focus faq (plain active): %v", err)
+	if err := h2.Act(bartui2.HarnessAction{Type: "focus", Target: "template"}); err != nil {
+		t.Fatalf("focus template (plain active): %v", err)
 	}
 	view2 := h2.ObserveView()
 	if strings.Contains(view2, "⚠ Caution: plain") {
@@ -300,8 +301,9 @@ func TestHarnessCautionChannelToForm(t *testing.T) {
 		})
 	}
 
-	// Case 1: case form active + gherkin channel focused → caution must appear.
-	h := newH([]string{"make", "case"})
+	// Case 1: log form active + gherkin channel focused → caution must appear.
+	// (case no longer cautions gherkin — that pairing is now the case+gherkin composition)
+	h := newH([]string{"make", "log"})
 	if err := h.Act(bartui2.HarnessAction{Type: "nav", Target: "channel"}); err != nil {
 		t.Fatalf("nav to channel: %v", err)
 	}
@@ -310,8 +312,8 @@ func TestHarnessCautionChannelToForm(t *testing.T) {
 	}
 	view := h.ObserveView()
 	// Check for detail-panel caution text, not just chip-column ⚠.
-	if !strings.Contains(view, "⚠ Caution: case") {
-		t.Errorf("channel→form: detail-panel caution must appear when case form active + gherkin focused; got:\n%s", view)
+	if !strings.Contains(view, "⚠ Caution: log") {
+		t.Errorf("channel→form: detail-panel caution must appear when log form active + gherkin focused; got:\n%s", view)
 	}
 
 	// Case 2: story form active (natural for gherkin, not cautionary) → no caution.

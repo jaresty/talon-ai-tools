@@ -2275,10 +2275,9 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "form": {
                 "natural": ["story"],
                 "cautionary": {
-                    "case": "case-building requires prose structure incompatible with Gherkin Given/When/Then syntax; use plain or no channel",
                     "log": "log entries are prose-text; Gherkin cannot render date markers and bullet updates; use plain or no channel",
-                    "questions": "open-ended questions cannot be expressed as Given/When/Then behavioral assertions; use plain or diagram channel",
-                    "recipe": "recipe prose steps cannot be expressed as Gherkin behavioral assertions; use plain or no channel",
+                    "recipe": "recipe defines a custom notation and a key for reading it; Gherkin's fixed Given/When/Then vocabulary cannot introduce a new notation or "
+                    "its key; use plain or code",
                 },
             },
         },
@@ -2378,8 +2377,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "completeness": {
                 "natural": ["gist", "minimal"],
                 "cautionary": {
-                    "max": "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
-                    "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead",
+                    "max": "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead"
                 },
             },
             "directional": {
@@ -2417,30 +2415,17 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "channel": {
                 "natural": ["plain", "slack", "jira", "sync"],
                 "cautionary": {
-                    "gherkin": "case builds layered argument; Gherkin requires Given/When/Then — format conflict; use plain or no channel",
-                    "codetour": "case-building requires prose; CodeTour JSON has no room for argument prose; use plain or no channel",
-                    "shellscript": "case-building requires prose; shell script cannot accommodate layered argument; use plain or no channel",
-                    "html": "case-building requires prose flow; pure HTML output loses the argumentative structure; use plain or jira instead",
+                    "html": "case-building requires prose flow; pure HTML output loses the argumentative structure; use plain or jira instead"
                 },
             }
         },
         "contextualise": {"channel": {"natural": ["plain", "sync", "jira", "slack"]}},
-        "faq": {
-            "channel": {
-                "natural": ["plain", "slack", "jira"],
-                "cautionary": {
-                    "shellscript": "output format mismatch — Q&A prose cannot be rendered as executable shell code; use plain or no channel",
-                    "code": "output format mismatch — Q&A prose cannot be rendered as code-only output; use plain or no channel",
-                    "codetour": "output format mismatch — Q&A prose cannot be rendered as a CodeTour JSON; use plain or no channel",
-                },
-            }
-        },
+        "faq": {"channel": {"natural": ["plain", "slack", "jira"], "cautionary": {}}},
         "log": {
             "channel": {
                 "natural": ["plain", "jira", "slack", "sync"],
                 "cautionary": {
                     "svg": "log entries are prose-text — SVG cannot render date markers and bullet updates; use plain or no channel",
-                    "codetour": "log entries are prose-text — CodeTour JSON has no slot for prose log structure; use plain or jira",
                     "gherkin": "log entries are prose-text — Gherkin syntax is incompatible with log format; use plain or no channel",
                     "shellscript": "log entries are prose-text — shell script cannot accommodate a research log; use plain or no channel",
                     "html": "log entries are prose-text — pure HTML output loses the temporal/bullet structure; use jira or plain instead",
@@ -2455,22 +2440,8 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "channel": {"natural": ["diagram", "sketch", "svg"]},
             "method": {"natural": ["trace", "flow"]},
         },
-        "ghost": {
-            "channel": {
-                "cautionary": {
-                    "svg": "ghost form produces a step/result execution trace in prose — SVG markup has no slot for sequential prose workflow output; use plain or no "
-                    "channel"
-                }
-            }
-        },
         "questions": {
-            "channel": {
-                "natural": ["plain", "slack", "diagram"],
-                "cautionary": {
-                    "gherkin": "open-ended questions cannot be expressed as Given/When/Then behavioral assertions; use plain or diagram channel",
-                    "shellscript": "questions form produces reflective or probing prose — cannot be rendered as executable shell code; use plain or no channel",
-                },
-            }
+            "channel": {"natural": ["plain", "slack", "diagram"], "cautionary": {}}
         },
         "recipe": {
             "channel": {
@@ -2509,7 +2480,6 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "channel": {
                 "natural": ["plain", "slack", "jira"],
                 "cautionary": {
-                    "codetour": "spike is a prose research question-document; CodeTour JSON has no slot for open-ended research; use plain or no channel",
                     "shellscript": "spike produces prose — shell script cannot accommodate a research document; use plain or no channel",
                     "svg": "spike produces prose — SVG cannot accommodate a research question document; use plain or no channel",
                     "html": "spike produces prose questions — pure HTML has no semantic slot for open-ended research; use plain or jira",

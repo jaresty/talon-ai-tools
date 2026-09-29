@@ -100935,10 +100935,8 @@
               "story"
             ],
             "cautionary": {
-              "case": "case-building requires prose structure incompatible with Gherkin Given/When/Then syntax; use plain or no channel",
               "log": "log entries are prose-text; Gherkin cannot render date markers and bullet updates; use plain or no channel",
-              "questions": "open-ended questions cannot be expressed as Given/When/Then behavioral assertions; use plain or diagram channel",
-              "recipe": "recipe prose steps cannot be expressed as Gherkin behavioral assertions; use plain or no channel"
+              "recipe": "recipe defines a custom notation and a key for reading it; Gherkin's fixed Given/When/Then vocabulary cannot introduce a new notation or its key; use plain or code"
             }
           }
         },
@@ -101090,8 +101088,7 @@
               "minimal"
             ],
             "cautionary": {
-              "max": "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead",
-              "deep": "same constraint as max — the format cannot accommodate deep analysis; use gist or minimal instead"
+              "max": "tends to produce truncated or overloaded messages — commit format has no room for depth; use gist or minimal instead"
             }
           },
           "directional": {
@@ -101134,9 +101131,6 @@
               "sync"
             ],
             "cautionary": {
-              "gherkin": "case builds layered argument; Gherkin requires Given/When/Then — format conflict; use plain or no channel",
-              "codetour": "case-building requires prose; CodeTour JSON has no room for argument prose; use plain or no channel",
-              "shellscript": "case-building requires prose; shell script cannot accommodate layered argument; use plain or no channel",
               "html": "case-building requires prose flow; pure HTML output loses the argumentative structure; use plain or jira instead"
             }
           }
@@ -101158,11 +101152,7 @@
               "slack",
               "jira"
             ],
-            "cautionary": {
-              "shellscript": "output format mismatch — Q&A prose cannot be rendered as executable shell code; use plain or no channel",
-              "code": "output format mismatch — Q&A prose cannot be rendered as code-only output; use plain or no channel",
-              "codetour": "output format mismatch — Q&A prose cannot be rendered as a CodeTour JSON; use plain or no channel"
-            }
+            "cautionary": {}
           }
         },
         "log": {
@@ -101175,7 +101165,6 @@
             ],
             "cautionary": {
               "svg": "log entries are prose-text — SVG cannot render date markers and bullet updates; use plain or no channel",
-              "codetour": "log entries are prose-text — CodeTour JSON has no slot for prose log structure; use plain or jira",
               "gherkin": "log entries are prose-text — Gherkin syntax is incompatible with log format; use plain or no channel",
               "shellscript": "log entries are prose-text — shell script cannot accommodate a research log; use plain or no channel",
               "html": "log entries are prose-text — pure HTML output loses the temporal/bullet structure; use jira or plain instead"
@@ -101212,13 +101201,6 @@
             ]
           }
         },
-        "ghost": {
-          "channel": {
-            "cautionary": {
-              "svg": "ghost form produces a step/result execution trace in prose — SVG markup has no slot for sequential prose workflow output; use plain or no channel"
-            }
-          }
-        },
         "questions": {
           "channel": {
             "natural": [
@@ -101226,10 +101208,7 @@
               "slack",
               "diagram"
             ],
-            "cautionary": {
-              "gherkin": "open-ended questions cannot be expressed as Given/When/Then behavioral assertions; use plain or diagram channel",
-              "shellscript": "questions form produces reflective or probing prose — cannot be rendered as executable shell code; use plain or no channel"
-            }
+            "cautionary": {}
           }
         },
         "recipe": {
@@ -101282,7 +101261,6 @@
               "jira"
             ],
             "cautionary": {
-              "codetour": "spike is a prose research question-document; CodeTour JSON has no slot for open-ended research; use plain or no channel",
               "shellscript": "spike produces prose — shell script cannot accommodate a research document; use plain or no channel",
               "svg": "spike produces prose — SVG cannot accommodate a research question document; use plain or no channel",
               "html": "spike produces prose questions — pure HTML has no semantic slot for open-ended research; use plain or jira",
@@ -133943,6 +133921,86 @@
         "sort"
       ],
       "prose": "codetour + sort: codetour delivers an ordered sequence of steps; sort arranges items into categories or an order. The tour's step order carries the sort directly — an ordering is expressible as a sequence, and a categorization as grouped consecutive steps. Resolution — order the steps by the sorting scheme, and name that scheme in the first step's description so the reader can see what the order means; for a categorization, keep each category's steps consecutive and introduce each group. A tour whose step order does not follow the sorting scheme, or that never names the scheme, does not satisfy sort and does not satisfy this composition."
+    },
+    {
+      "name": "faq+code",
+      "tokens": [
+        "faq",
+        "code"
+      ],
+      "prose": "faq + code: faq organizes content as separated question headings with concise answers beneath each; code emits only code or markup with no prose slot. The question/answer pairs are content the artifact cannot carry. Resolution: keep the artifact pure, and place the question/answer pairs in a separate block before or after it. Folding that content into the artifact — as comments, step text, or embedded strings — in place of the adjacent block does not satisfy faq, and an artifact with no adjacent block does not satisfy it either; neither satisfies this composition. "
+    },
+    {
+      "name": "faq+codetour",
+      "tokens": [
+        "faq",
+        "codetour"
+      ],
+      "prose": "faq + codetour: faq organizes content as separated question headings with concise answers; a CodeTour is a JSON sequence of navigable steps through existing code, with no slot for standalone question/answer pairs. Resolution: keep the artifact pure, and place the question/answer pairs in a separate block before or after it. Folding that content into the artifact — as comments, step text, or embedded strings — in place of the adjacent block does not satisfy faq, and an artifact with no adjacent block does not satisfy it either; neither satisfies this composition. "
+    },
+    {
+      "name": "faq+shellscript",
+      "tokens": [
+        "faq",
+        "shellscript"
+      ],
+      "prose": "faq + shellscript: faq organizes content as separated question headings with concise answers; shellscript emits an output-only executable script with no prose slot. Resolution: keep the artifact pure, and place the question/answer pairs in a separate block before or after it. Folding that content into the artifact — as comments, step text, or embedded strings — in place of the adjacent block does not satisfy faq, and an artifact with no adjacent block does not satisfy it either; neither satisfies this composition. "
+    },
+    {
+      "name": "log+codetour",
+      "tokens": [
+        "log",
+        "codetour"
+      ],
+      "prose": "log + codetour: log reads as dated or time-marked short updates with enough context for later reference; a CodeTour is a JSON sequence of navigable code steps with no slot for a running log. Resolution: keep the artifact pure, and place the log entries in a separate block before or after it. Folding that content into the artifact — as comments, step text, or embedded strings — in place of the adjacent block does not satisfy log, and an artifact with no adjacent block does not satisfy it either; neither satisfies this composition. "
+    },
+    {
+      "name": "spike+codetour",
+      "tokens": [
+        "spike",
+        "codetour"
+      ],
+      "prose": "spike + codetour: spike formats a research item — a problem or decision statement followed by the key questions to answer, staying on questions rather than implementation; a CodeTour is a JSON sequence of navigable code steps with no slot for an open research document. Resolution: keep the artifact pure, and place the spike write-up in a separate block before or after it. Folding that content into the artifact — as comments, step text, or embedded strings — in place of the adjacent block does not satisfy spike, and an artifact with no adjacent block does not satisfy it either; neither satisfies this composition. "
+    },
+    {
+      "name": "questions+gherkin",
+      "tokens": [
+        "questions",
+        "gherkin"
+      ],
+      "prose": "questions + gherkin: questions presents the answer as a series of probing or clarifying questions; gherkin emits Given/When/Then scenario syntax, which asserts behavior rather than asking. The token already adapts to a structured channel when combined with diagram, where its output becomes a question tree; apply the same principle here. Resolution: keep the artifact pure, and place the question series in a separate block before or after it. Folding that content into the artifact — as comments, step text, or embedded strings — in place of the adjacent block does not satisfy questions, and an artifact with no adjacent block does not satisfy it either; neither satisfies this composition. "
+    },
+    {
+      "name": "questions+shellscript",
+      "tokens": [
+        "questions",
+        "shellscript"
+      ],
+      "prose": "questions + shellscript: questions presents the answer as a series of probing or clarifying questions; shellscript emits an output-only executable script with no prose slot. The token already adapts to a structured channel when combined with diagram, where its output becomes a question tree; apply the same principle here. Resolution: keep the artifact pure, and place the question series in a separate block before or after it. Folding that content into the artifact — as comments, step text, or embedded strings — in place of the adjacent block does not satisfy questions, and an artifact with no adjacent block does not satisfy it either; neither satisfies this composition. "
+    },
+    {
+      "name": "case+gherkin",
+      "tokens": [
+        "case",
+        "gherkin"
+      ],
+      "prose": "case + gherkin: case builds reasoning toward a conclusion — background, evidence, trade-offs, and alternatives before converging on a recommendation that addresses objections; gherkin emits Given/When/Then scenario syntax, which asserts behavior rather than arguing for it. Same mechanism as faq+gherkin-class pairings: a content-bearing form meets a DSL-only channel. Resolution: keep the scenarios pure, and place the case in a separate block before or after them, with the recommendation it converges on stated there. Folding the argument into step text in place of that block does not satisfy case, and scenarios with no adjacent case do not satisfy it either; neither satisfies this composition."
+    },
+    {
+      "name": "case+codetour",
+      "tokens": [
+        "case",
+        "codetour"
+      ],
+      "prose": "case + codetour: case builds reasoning toward a conclusion — background, evidence, trade-offs, and alternatives before converging on a recommendation; a CodeTour is a JSON sequence of navigable steps through existing code, with no slot for a standalone argument. Resolution: keep the tour valid, and place the case in a separate block before or after it, with the recommendation stated there. Folding the argument into step descriptions in place of that block does not satisfy case, and a tour with no adjacent case does not satisfy it either; neither satisfies this composition."
+    },
+    {
+      "name": "case+shellscript",
+      "tokens": [
+        "case",
+        "shellscript"
+      ],
+      "prose": "case + shellscript: case builds reasoning toward a conclusion — background, evidence, trade-offs, and alternatives before converging on a recommendation; shellscript emits an output-only executable script with no prose slot. Resolution: keep the script executable, and place the case in a separate block before or after it. Reducing the argument to script comments in place of that block does not satisfy case, and a script with no adjacent case does not satisfy it either; neither satisfies this composition."
     }
   ],
   "guidebook": [
@@ -135050,7 +135108,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "6ef8f6d8a19a3692316f00ef1d744202eac096fc8c3e6e85f3d95e0e8071146d",
+    "axes": "f8ddbc79e15b5f096d7b46804f18fba323732a3f4565f81a508d776f87d24a65",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",
@@ -135058,7 +135116,7 @@
     "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
     "starter_packs": "2f00f9f30b9ff4f023085ebe493cd9c874c345e173928f889248605e8641bb20",
     "sequences": "4914cfc40ef2dc17d4e4a36b81b3a84814903814f2f6d90ffecea943b81871b2",
-    "compositions": "38a0c7fd2514dea237e8ffc80d8577f1afbbf78e7b741ac9815694fa47eb5e38",
+    "compositions": "8bf94660f62208cc5ced5eba3960c273857e5b129cab42a82a53d09c960f2567",
     "guidebook": "6dffedf1b0da52d43ac579f53b48618db10426238bcab0f7a01739c2847a29fd",
     "lateral_seed_words": "02059b803deb1294ee139b3e9d5217aad99959d6add559c071fbcb5201a31c98"
   }

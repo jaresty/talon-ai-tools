@@ -520,6 +520,68 @@ reason: "'Tight' controls depth/verbosity more than structure"
 evidence: [seed_15, seed_31]
 ```
 
+#### Choosing the layer: composition, cautionary, guidebook, or the definition itself
+
+**Apply this before writing any entry.** A low combination score says two tokens strained; it does
+not say which layer owns the strain. Four cycles of evidence (23-27) show the default instinct is
+to file a cross-axis entry, and that it is wrong more often than not.
+
+Ask in this order:
+
+1. **Is a token mis-describing itself?** If a token's description claims something it is not — a
+   format it does not own, a medium it presupposes, an affinity belonging in structured data — fix
+   the description. The conflict dissolves and no pairwise entry is needed. Confirmed instances:
+   `tight` claimed a format while being a style/volume token (dissolved four channel conflicts);
+   `interactive` presupposed its medium (fixed by format-neutral attachment); `recipe` was filed as
+   a prose form by all five of its cautionary entries when it is a notation form (a mini-language
+   plus a key), so `code`/`shellscript` became *natural*. A cautionary entry can itself encode the
+   mis-description — check the definition, not the neighbouring entries.
+
+2. **Does a coherent output satisfy both tokens?** If yes it is a **composition**, including the
+   case of two coexisting artifacts: the channel's artifact stays pure and the form's content sits
+   in an **adjacent block**. This resolution is shipped for `prep+svg`, `ghost+svg`, `twin+svg`,
+   `cards+gherkin`, `contextualise+{svg,sketch,gherkin,shellscript,codetour}`, `faq+{code,codetour,
+   shellscript}`, `case+{gherkin,codetour,shellscript}`, `log+codetour`, `spike+codetour`,
+   `questions+{gherkin,shellscript}`. A channel's "no surrounding prose" clause governs the
+   task-content region, not the whole response — the metaprompt mandates derivation and
+   interpretation scaffolding outside it regardless.
+
+3. **Is the strain about co-presence ordering or precedence rather than format?** Then it is a
+   composition stating sequencing or precedence (`browse+pull`, `browse+fix`: fetch first, then
+   operate; `paradox+fix`, `mu+fix`: transform the form while preserving the tension).
+
+4. **Otherwise it is a cautionary — and it must be one of exactly two kinds:**
+   - **Capacity starvation** — no coexisting output exists because the constraint is *how much*
+     fits, not *where* it goes (`commit`×compound directionals, `skim`×`rigor`/`orbit`,
+     `minimal`×`models`, `presenterm`×`max`/`deep`). Note the boundary: when overflow into an
+     appended section is acceptable this becomes a composition instead (`deep+commit`).
+   - **Subject absent** — the form's object does not exist in the paired context, so no rule can
+     supply it (`socratic`×enacted channels: socratic must name a claim from the user's input, and a
+     response driving an external target contains no user position). Distinct from a rendering
+     problem — `interactive` was rescuable because an artifact could *be* its named state; socratic's
+     subject cannot be supplied by any artifact.
+   - **Audience fit** is a third legitimate use, but it is not a structural conflict at all
+     (`shellscript`×`to-ceo`): both tokens are satisfiable and the output simply serves the reader
+     badly. No rule fixes it because nothing is broken.
+
+**A cautionary reason of the form "has no prose slot" or "cannot be rendered as X" is a
+mis-layered composition.** That phrasing describes *where content goes*, which an adjacent block
+answers. The cycle-27 sweep converted the entire render class on this basis (13 entries; 121
+cautionary entries reduced to 107, compositions 33 to 43) and found two pairs carrying **both** a
+composition and a contradicting cautionary (`ghost+svg`, `deep+commit`) — a state that must not
+recur.
+
+**Invariant to check after any entry change:** no token pair may have both a composition and a
+cautionary entry. The two layers give opposite instructions ("here is how" versus "avoid this"), so
+overlap is always a defect. A shipped composition supersedes any cautionary for the same pair;
+remove the cautionary rather than leaving both.
+
+**Whole-response forms are the exception to step 2.** A form that *is* the entire response rather
+than content within it has nothing to place adjacently — an adjacent block would be the response.
+`template` (every position is an empty labeled slot, no prose outside slot positions) stays
+cautionary for DSL channels for this reason, as does any form whose definition forbids content
+outside its own structure.
+
 #### Add Cautionary Entry
 Cross-axis combination produces structurally poor output that cannot be resolved by the pairing tokens' individual descriptions. The structural incompatibility may be any of:
 - **Format incompatibility**: the task's inherent modality (narrative, non-executable) conflicts with the channel's output format (e.g., `shellscript+sim`)

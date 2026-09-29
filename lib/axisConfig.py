@@ -223,8 +223,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "commit": "The response structures ideas as a conventional commit message with a short type or scope line and an optional concise body.",
         "contextualise": "The response packages the subject to be passed directly to another LLM operation: it enriches the content with all context a downstream model would need to act on it "
         "without further explanation — adding background, assumptions, constraints, and framing that would otherwise be implicit or missing. The main content is not rewritten.",
-        "coupling": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is. Pairs "
-        "naturally with snag/mesh methods.",
+        "coupling": "The response structures the output as a coupling map — showing which domains or components are joined at a seam, what crosses that boundary, and where the interface is.",
         "dialogue": "The response formats content as a dialogue between named speakers. Before writing turns: name each speaker and their register (formal/casual/expert/naive). Write each turn as "
         "`Speaker: their words`, maintaining the register committed above. Where the subject has a scene boundary or tonal shift, add a narration line in [square brackets] before the "
         "relevant turn.",
@@ -331,13 +330,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "boundaries) and including descriptive test names.",
         "tight": "The response is as small and dense as it can be while still fully serving the request — no filler, padding, or redundant elaboration — governing volume and density within "
         "whatever format the other tokens set, not the format itself.",
-        "timeline": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each occurs. Pairs "
-        "naturally with trace/flow methods.",
+        "timeline": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each occurs.",
         "twin": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving.",
         "variants": "The response presents several distinct, decision-ready options as separate variants, labelling each one with a short description and including approximate probabilities when "
         "helpful while avoiding near-duplicate alternatives.",
         "vet": "The response structures the output as a post-experiment review: what the transcript showed (naming null results as gaps, not as disconfirmation), how outcomes compare to the prior "
-        "prediction, what can be derived from what was observed (not from what was absent), and what follows. Complements prep.",
+        "prediction, what can be derived from what was observed (not from what was absent), and what follows.",
         "walkthrough": "The response guides the audience step by step by outlining stages and walking through them in order so understanding builds gradually.",
         "wardley": "The response expresses the answer as a Wardley Map showing value chain evolution from genesis to commodity.",
         "wasinawa": "The response applies a What–So What–Now What reflection: it describes what happened, interprets why it matters, and proposes concrete next steps.",
@@ -2448,8 +2446,14 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             }
         },
-        "coupling": {"channel": {"natural": ["diagram", "sketch", "svg"]}},
-        "timeline": {"channel": {"natural": ["diagram", "sketch", "svg"]}},
+        "coupling": {
+            "channel": {"natural": ["diagram", "sketch", "svg"]},
+            "method": {"natural": ["snag", "mesh"]},
+        },
+        "timeline": {
+            "channel": {"natural": ["diagram", "sketch", "svg"]},
+            "method": {"natural": ["trace", "flow"]},
+        },
         "ghost": {
             "channel": {
                 "cautionary": {

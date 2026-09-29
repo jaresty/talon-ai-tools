@@ -134104,6 +134104,14 @@
         "shellscript"
       ],
       "prose": "case + shellscript: case builds reasoning toward a conclusion — background, evidence, trade-offs, and alternatives before converging on a recommendation; shellscript emits an output-only executable script with no prose slot. Resolution: keep the script executable, and place the case in a separate block before or after it. Reducing the argument to script comments in place of that block does not satisfy case, and a script with no adjacent case does not satisfy it either; neither satisfies this composition."
+    },
+    {
+      "name": "chain+shoshin",
+      "tokens": [
+        "chain",
+        "shoshin"
+      ],
+      "prose": "chain + shoshin: when a pass runs in an isolated context and a later step reproduces that pass's output, the reproduction carries content across the isolation boundary after the leak check for that context has already run — so the reproduced text can re-admit a frame the disposition marked inadmissible, and nothing downstream audits it. The reproduction is therefore itself audited before the step that performs it: emit one 'Forwarded: <item> — [requirement | inadmissible-frame]' line per item of the reproduced output, at an earlier transcript position than the step reproducing it; an item carrying an inadmissible frame appears only as an explicit question. Alternatively, name a predecessor produced under a disposition in which that frame was admissible, and reproduce that one instead. A step that reproduces an isolated context's output with no such audit at an earlier transcript position does not satisfy this composition, and neither does one whose audit omits an item the reproduction carries."
     }
   ],
   "guidebook": [
@@ -135219,7 +135227,7 @@
     "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
     "starter_packs": "2f00f9f30b9ff4f023085ebe493cd9c874c345e173928f889248605e8641bb20",
     "sequences": "4914cfc40ef2dc17d4e4a36b81b3a84814903814f2f6d90ffecea943b81871b2",
-    "compositions": "2308a2f6a41871ea18a7be21983e1478ca8a6b122f22059a940265991f5dd2b9",
+    "compositions": "aaf1377e26724ecf741e34e9e73acdf21d7957c11d07c78c6f77affab276af53",
     "guidebook": "6dffedf1b0da52d43ac579f53b48618db10426238bcab0f7a01739c2847a29fd",
     "lateral_seed_words": "02059b803deb1294ee139b3e9d5217aad99959d6add559c071fbcb5201a31c98"
   }

@@ -669,6 +669,25 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "composition."
         ),
     },
+    {
+        "name": "chain+shoshin",
+        "tokens": ["chain", "shoshin"],
+        "prose": (
+            "chain + shoshin: when a pass runs in an isolated context and a later step reproduces "
+            "that pass's output, the reproduction carries content across the isolation boundary "
+            "after the leak check for that context has already run — so the reproduced text can "
+            "re-admit a frame the disposition marked inadmissible, and nothing downstream audits "
+            "it. The reproduction is therefore itself audited before the step that performs it: "
+            "emit one 'Forwarded: <item> — [requirement | inadmissible-frame]' line per item of "
+            "the reproduced output, at an earlier transcript position than the step reproducing "
+            "it; an item carrying an inadmissible frame appears only as an explicit question. "
+            "Alternatively, name a predecessor produced under a disposition in which that frame "
+            "was admissible, and reproduce that one instead. A step that reproduces an isolated "
+            "context's output with no such audit at an earlier transcript position does not "
+            "satisfy this composition, and neither does one whose audit omits an item the "
+            "reproduction carries."
+        ),
+    },
 ]
 
 

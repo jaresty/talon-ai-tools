@@ -2351,6 +2351,27 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             }
         },
         "browse": {"task": {"natural": ["make", "check", "pull"]}},
+        "zettel": {
+            "task": {
+                "natural": ["pull", "probe", "show"],
+                "cautionary": {
+                    "make": "a note captures a claim about something that already holds; a newly created artifact is the thing itself rather than a claim about it, so "
+                    "there is nothing to state as a one-claim note until the artifact exists and something is asserted about it; use no channel",
+                    "fix": "a note captures a claim; a reformatted artifact is the transformed content itself rather than a claim about it, and capturing it as notes "
+                    "discards the transformation the task asks for; use no channel",
+                },
+            }
+        },
+        "github": {
+            "task": {
+                "natural": ["make", "fix", "check", "diff"],
+                "cautionary": {
+                    "sim": "a scenario played out over time has no natural GitHub artifact — an issue, comment, or pull request records a state or a change, not an "
+                    "unfolding sequence; use no channel"
+                },
+            }
+        },
+        "notion": {"task": {"natural": ["make", "show", "pull", "check"]}},
         "notebook": {
             "task": {"natural": ["make", "show", "probe", "sim"]},
             "form": {"natural": ["scorecard"]},

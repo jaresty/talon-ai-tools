@@ -101038,6 +101038,42 @@
             ]
           }
         },
+        "zettel": {
+          "task": {
+            "natural": [
+              "pull",
+              "probe",
+              "show"
+            ],
+            "cautionary": {
+              "make": "a note captures a claim about something that already holds; a newly created artifact is the thing itself rather than a claim about it, so there is nothing to state as a one-claim note until the artifact exists and something is asserted about it; use no channel",
+              "fix": "a note captures a claim; a reformatted artifact is the transformed content itself rather than a claim about it, and capturing it as notes discards the transformation the task asks for; use no channel"
+            }
+          }
+        },
+        "github": {
+          "task": {
+            "natural": [
+              "make",
+              "fix",
+              "check",
+              "diff"
+            ],
+            "cautionary": {
+              "sim": "a scenario played out over time has no natural GitHub artifact — an issue, comment, or pull request records a state or a change, not an unfolding sequence; use no channel"
+            }
+          }
+        },
+        "notion": {
+          "task": {
+            "natural": [
+              "make",
+              "show",
+              "pull",
+              "check"
+            ]
+          }
+        },
         "notebook": {
           "task": {
             "natural": [
@@ -135175,7 +135211,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "884140047bb8a8f9f5c559e2a1d81403b245d4c84a18acadf5d8a1d17a586eb9",
+    "axes": "07595589dc61f0054989208bc4f15895e76c10ee4e735271eb88b6a0e6d31f64",
     "tasks": "a2c1287697149629e9d3be3005c803e3996c88ccc123190155ef9fa6833696ba",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",

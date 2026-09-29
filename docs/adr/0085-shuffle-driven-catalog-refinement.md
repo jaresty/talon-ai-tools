@@ -571,6 +571,17 @@ cautionary entries reduced to 107, compositions 33 to 43) and found two pairs ca
 composition and a contradicting cautionary (`ghost+svg`, `deep+commit`) — a state that must not
 recur.
 
+**A channel needs a cross-axis entry only if it imposes a capacity or a target constraint.** A
+channel that merely supplies formatting conventions (`slack`, `jira` — Markdown or Jira markup and
+nothing more), or that declares itself additive (`store`: "Conversational output continues normally;
+storage is additive, not a replacement"), constrains nothing. An entry for such a channel is either
+vacuous (a natural list of "all tasks") or actively contradicts its own definition. The channels that
+legitimately carry entries impose something checkable: a capacity limit (`sync`, `presenterm`,
+`aloud`), a content unit (`zettel`'s one-claim note, `hunk`'s change hunk, `codetour`'s navigable
+step), a target that must be inferable (`github`, `notion`), or a substituted deliverable
+(`agent`, `skill`, `image` — see constructor channels above). **Record deliberate omissions with
+their reason**, or a later pass will "complete" the coverage by filling them in.
+
 **A pairwise entry that states a fact about ONE token belongs in that token's definition.** Test
 each entry: strip one token and ask whether the rule still says something true and general about the
 other. If it does, the entry is a definition clause wearing a pairwise costume, and it silently fails

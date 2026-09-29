@@ -2296,6 +2296,23 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             },
         },
         "ledger": {"task": {"natural": ["pick", "plan"]}},
+        "aloud": {
+            "task": {"natural": ["show", "pull"]},
+            "completeness": {
+                "cautionary": {
+                    "max": "spoken delivery condenses to speech density and summarizes rather than truncates; max treats omissions as errors, which a spoken "
+                    "response cannot satisfy; use gist or minimal instead",
+                    "full": "spoken delivery condenses to speech density; full coverage of every named element exceeds a natural spoken length; use gist or minimal "
+                    "instead",
+                }
+            },
+        },
+        "hunk": {"task": {"natural": ["check", "fix", "diff"]}},
+        "browse": {"task": {"natural": ["make", "check", "pull"]}},
+        "notebook": {
+            "task": {"natural": ["make", "show", "probe", "sim"]},
+            "form": {"natural": ["scorecard"]},
+        },
         "codetour": {
             "task": {
                 "natural": ["make", "fix", "show", "pull"],
@@ -2459,7 +2476,8 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "channel": {
                 "natural": ["plain", "slack", "html"],
                 "cautionary": {
-                    "shellscript": "template produces a prose artifact with labeled slots — cannot be rendered as executable shell code; use plain or no channel",
+                    "shellscript": "template IS the whole response — every content position is an empty labeled slot, so it cannot sit alongside an executable script "
+                    "rather than replacing it; use plain or no channel",
                     "codetour": "template produces a fill-in artifact; CodeTour JSON has no slot for placeholder-based prose; use plain or no channel",
                     "gherkin": "template slots cannot be expressed as Given/When/Then assertions; use plain or no channel",
                 },
@@ -2469,8 +2487,10 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "channel": {
                 "natural": ["plain", "slack"],
                 "cautionary": {
-                    "shellscript": "Socratic method produces reflective questions — cannot be rendered as executable shell code; use plain or no channel",
-                    "codetour": "Socratic questions cannot be rendered as a VS Code CodeTour JSON; use plain or no channel",
+                    "shellscript": "socratic must name a claim from the user's input before questioning it; an output-only script contains no user position to examine, "
+                    "so the subject socratic operates on is absent rather than merely unrenderable; use plain or no channel",
+                    "codetour": "socratic must name a claim from the user's input before questioning it; a tour of existing code contains no user position to examine, "
+                    "so the subject socratic operates on is absent rather than merely unrenderable; use plain or no channel",
                     "browse": "socratic must name a claim from the user's input before questioning it; a response that drives an external target contains no user "
                     "position to examine, so the subject socratic operates on is absent rather than merely unrenderable; use plain or no channel",
                 },

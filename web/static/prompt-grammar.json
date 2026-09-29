@@ -100970,6 +100970,53 @@
             ]
           }
         },
+        "aloud": {
+          "task": {
+            "natural": [
+              "show",
+              "pull"
+            ]
+          },
+          "completeness": {
+            "cautionary": {
+              "max": "spoken delivery condenses to speech density and summarizes rather than truncates; max treats omissions as errors, which a spoken response cannot satisfy; use gist or minimal instead",
+              "full": "spoken delivery condenses to speech density; full coverage of every named element exceeds a natural spoken length; use gist or minimal instead"
+            }
+          }
+        },
+        "hunk": {
+          "task": {
+            "natural": [
+              "check",
+              "fix",
+              "diff"
+            ]
+          }
+        },
+        "browse": {
+          "task": {
+            "natural": [
+              "make",
+              "check",
+              "pull"
+            ]
+          }
+        },
+        "notebook": {
+          "task": {
+            "natural": [
+              "make",
+              "show",
+              "probe",
+              "sim"
+            ]
+          },
+          "form": {
+            "natural": [
+              "scorecard"
+            ]
+          }
+        },
         "codetour": {
           "task": {
             "natural": [
@@ -101234,7 +101281,7 @@
               "html"
             ],
             "cautionary": {
-              "shellscript": "template produces a prose artifact with labeled slots — cannot be rendered as executable shell code; use plain or no channel",
+              "shellscript": "template IS the whole response — every content position is an empty labeled slot, so it cannot sit alongside an executable script rather than replacing it; use plain or no channel",
               "codetour": "template produces a fill-in artifact; CodeTour JSON has no slot for placeholder-based prose; use plain or no channel",
               "gherkin": "template slots cannot be expressed as Given/When/Then assertions; use plain or no channel"
             }
@@ -101247,8 +101294,8 @@
               "slack"
             ],
             "cautionary": {
-              "shellscript": "Socratic method produces reflective questions — cannot be rendered as executable shell code; use plain or no channel",
-              "codetour": "Socratic questions cannot be rendered as a VS Code CodeTour JSON; use plain or no channel",
+              "shellscript": "socratic must name a claim from the user's input before questioning it; an output-only script contains no user position to examine, so the subject socratic operates on is absent rather than merely unrenderable; use plain or no channel",
+              "codetour": "socratic must name a claim from the user's input before questioning it; a tour of existing code contains no user position to examine, so the subject socratic operates on is absent rather than merely unrenderable; use plain or no channel",
               "browse": "socratic must name a claim from the user's input before questioning it; a response that drives an external target contains no user position to examine, so the subject socratic operates on is absent rather than merely unrenderable; use plain or no channel"
             }
           }
@@ -135108,7 +135155,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "f8ddbc79e15b5f096d7b46804f18fba323732a3f4565f81a508d776f87d24a65",
+    "axes": "478a96ba8a5a748d2bb6cb09480846ae2cd082de512a4a0478a07e0e770669c8",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",

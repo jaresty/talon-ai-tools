@@ -140,10 +140,46 @@ retained:
 # ---------------------------------------------------------------------------
 # Blocked — needs a decision, not more evidence
 # ---------------------------------------------------------------------------
-blocked:
+unblocked_and_implemented:
   - id: c26-R3
     topic: "interactive should compose natively with artifact channels (definition extension)"
-    status: blocked
+    status: implemented
+    resolution: >
+      UNBLOCKED by finding the inversion rationale in git (it was never in nn). Chain:
+      v3 (44c12fb6) required naming input->state transitions; v5 (c4b0206a) inverted that to
+      withholding "to enforce that the response is a first move in an exchange rather than a
+      pre-rendered state map" — closing a v3 loophole where "if A then X; if B then Y" satisfied
+      the transition requirement while being a finished artifact; v6 (b7aa0adb) refined
+      withholding from an INFORMATION rule into a LOGICAL-FORM rule so tutorial responses that
+      describe states without asserting causal paths pass.
+      Decisive: because the rule governs logical form, not medium, it does NOT constrain output
+      format — so extending interactive for artifact channels neither touches withholding nor
+      risks restoring v3. The earlier block was well-founded on the evidence then available
+      (a reviewed nn note contradicting the shipped config) but dissolved once the rationale was
+      visible.
+    change: >
+      Extended the definition so attachment is format-neutral: "The named current state may be
+      carried by whatever the response produces — including an artifact whose format another
+      token governs — in which case the available inputs are the points in that artifact the
+      other side can act on, and the closing prompt accompanies the artifact rather than
+      replacing it." Also hardened the withholding clause to close an artifact-shaped loophole:
+      causal claims are withheld "whether asserted in prose or encoded in the artifact."
+    preserved:
+      - "the three clauses bar-suggest SKILL.md implements (name current state; name >=1 available input; end with a prompt naming >=1 input)"
+      - "the v6 logical-form withholding clause (still about ASSERTING, not about naming)"
+      - "the v5 failure mode: a pre-rendered state map still fails — now also when encoded in an artifact"
+    orthogonality: "names no channel token (verified by word-boundary check); does not restate any channel's format rule"
+    no_longer_needed: >
+      The per-channel interactive+{code,svg,sketch} entries proposed earlier are now unnecessary —
+      the token composes natively. Same pattern as cycle-25's tight fix: correcting the definition
+      removed the need for per-channel patches.
+    verified: "bar help token interactive renders the extension; go + python suites green (1482 OK); binary reinstalled"
+    nn: "v3 note 20260624003149-4122 retitled SUPERSEDED with the full chain; new note 20260929185913-9507 carries the v5/v6 rationale"
+    evidence: [seed_219]
+
+superseded_framings:
+  - id: c26-R3
+    status: superseded
     why: >
       The shipped `interactive` definition CONTRADICTS its own recorded derivation, and the
       reversal is uncaptured. nn note 20260624003149-4122 ("form:interactive v3 definition",

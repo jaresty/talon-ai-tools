@@ -239,8 +239,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response acts to advance the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully "
         "model the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and ends with a "
-        "prompt that itself names at least one of those inputs. The response does not assert that any named input produces a named system state — causal claims of the form 'input → "
-        "state' are withheld until the user acts.",
+        "prompt that itself names at least one of those inputs. The named current state may be carried by whatever the response produces — including an artifact whose format another "
+        "token governs — in which case the available inputs are the points in that artifact the other side can act on, and the closing prompt accompanies the artifact rather than "
+        "replacing it. The response does not assert that any named input produces a named system state — causal claims of the form 'input → state' are withheld until the user acts, "
+        "whether asserted in prose or encoded in the artifact.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",

@@ -22,6 +22,8 @@ requirement test result (or the composition name if one was created).
 | flow + trace | additive | 2026-04-09 | No emergent requirement — stage ordering and data path narration compose additively |
 | mint + root | composition | 2026-04-09 | Produces `mint+root` composition — generative model mint constructs must itself be root-compliant (single canonical generative structure) |
 | chain + shoshin | composition | 2026-09-29 | Produces `chain+shoshin` — chain's reproduction of an isolated pass's output crosses the isolation boundary AFTER that context's leak check ran, so the reproduction is itself `Forwarded:`-audited before the step performing it |
+| atomic + shoshin | additive | 2026-09-29 | No falsification case constructible — atomic governs step granularity and turn discipline (a subagent call is a tool call, not a user turn); shoshin governs frame selection and context isolation. The axes do not touch. Predicted as likely-composition by analogy with chain+shoshin; the shared token was shoshin, but the emergent requirement there came from chain reproducing an isolated output |
+| cite + objectivity | additive | 2026-09-29 | Not emergent but REDUNDANT: objectivity already requires "supporting cited-evidence claims with named sources", which subsumes cite. Neither token's distinctions mention the other. Routed to the distinctions layer, not compositions — see note below |
 
 ---
 

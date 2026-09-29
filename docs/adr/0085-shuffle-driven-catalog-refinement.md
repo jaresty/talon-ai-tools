@@ -571,6 +571,26 @@ cautionary entries reduced to 107, compositions 33 to 43) and found two pairs ca
 composition and a contradicting cautionary (`ghost+svg`, `deep+commit`) — a state that must not
 recur.
 
+**A pairwise entry that states a fact about ONE token belongs in that token's definition.** Test
+each entry: strip one token and ask whether the rule still says something true and general about the
+other. If it does, the entry is a definition clause wearing a pairwise costume, and it silently fails
+to apply to every other pairing that needs it. Confirmed instances (cycle 28):
+
+- `pull+deep` said "deep governs how much of the selected subset to carry across — not a licence to
+  unpack, elaborate, or add reasoning beyond what the source states." That is a fact about **pull**,
+  not about deep. Because it lived in a pairwise entry, it did not govern `pull`+`models` (cycle 26),
+  `pull`+`jobs` (cycle 24) or `pull`+`ontology` (cycle 28) — three seeds strained against a principle
+  the catalog already contained but could not reach. Moved into pull's definition; entry removed.
+- `snap+zettel` said to decompose a composite snapshot into one-claim notes plus an entry note. That
+  is a fact about **zettel** (how it handles any composite input), not about snap. Moved into
+  zettel's definition; entry removed, and the `contextualise+zettel` entry that cycle 28 was about to
+  add became unnecessary.
+
+The diagnostic symptom is **a queue of near-identical pairwise candidates**. Three seeds proposing
+`pull+models`, `pull+ontology`, `pull+jobs` is not three findings; it is one missing definition
+clause reported three times. Prefer one general statement over N entries, and delete the pairwise
+entry that motivated it.
+
 **Invariant to check after any entry change:** no token pair may have both a composition and a
 cautionary entry. The two layers give opposite instructions ("here is how" versus "avoid this"), so
 overlap is always a defect. A shipped composition supersedes any cautionary for the same pair;

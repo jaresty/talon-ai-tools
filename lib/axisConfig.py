@@ -141,12 +141,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "video": "The response consists solely of a video as the complete output — described through scene, camera motion, subject actions, style, and temporal progression — with no surrounding "
         "prose or explanation.",
         "zettel": "The response is structured as one or more Zettelkasten notes in nn format. Each note body must contain exactly one claim: the body has no coordinating conjunction (and, but, "
-        "or) joining two independent sentences — a body that does is two notes. Each note title is a complete declarative sentence (subject + finite verb + object or predicate, ending "
-        "in a period). Choose --type from: concept | argument | model | hypothesis | observation | question | protocol; use protocol when every sentence in the body is imperative "
-        "(begins with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE --content '...' --no-edit --status draft`; (2) the returned ID must appear "
-        "as the literal argument to the next command — a response where the ID appears only in prose does not satisfy this requirement; (3) run `nn suggest-links <id>`; (4) if the "
-        "suggest-links output contains at least one candidate not already marked (already linked), run `nn bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: "
-        "skipped — zero qualifying suggestions` in the transcript.",
+        "or) joining two independent sentences — a body that does is two notes. When the content to capture arrives as a composite unit — a snapshot, a context package, a review, or "
+        "any structure whose parts are meant to be read together — it is decomposed rather than captured whole: each constituent claim becomes its own note, and one entry note carries "
+        "the cross-cutting part (the frame, the pointer, or the context the others depend on) and links them. A single body carrying more than one of the composite's parts does not "
+        "satisfy the one-claim rule, and a note set with no entry note carrying the cross-cutting part does not preserve what the composite conveyed. Each note title is a complete "
+        "declarative sentence (subject + finite verb + object or predicate, ending in a period). Choose --type from: concept | argument | model | hypothesis | observation | question | "
+        "protocol; use protocol when every sentence in the body is imperative (begins with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE "
+        "--content '...' --no-edit --status draft`; (2) the returned ID must appear as the literal argument to the next command — a response where the ID appears only in prose does "
+        "not satisfy this requirement; (3) run `nn suggest-links <id>`; (4) if the suggest-links output contains at least one candidate not already marked (already linked), run `nn "
+        "bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: skipped — zero qualifying suggestions` in the transcript.",
     },
     "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
@@ -2308,6 +2311,45 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             },
         },
         "hunk": {"task": {"natural": ["check", "fix", "diff"]}},
+        "agent": {
+            "task": {
+                "natural": ["make"],
+                "cautionary": {
+                    "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
+                    "diff": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would compare the subjects rather than the comparison they asked for; use no channel when the comparison is the deliverable",
+                    "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable",
+                },
+            }
+        },
+        "skill": {
+            "task": {
+                "natural": ["make"],
+                "cautionary": {
+                    "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
+                    "diff": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would compare the subjects rather than the comparison they asked for; use no channel when the comparison is the deliverable",
+                    "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable",
+                },
+            }
+        },
+        "image": {
+            "task": {
+                "natural": ["make"],
+                "cautionary": {
+                    "fix": "fix succeeds only if meaning is preserved, and an image cannot be compared against the source to check that; the transformed content the task "
+                    "asks for is not produced; use no channel",
+                    "pull": "pull extracts a subset of the source without altering it; an image is a new artifact rather than the extracted material, so the subset is not "
+                    "delivered; use no channel",
+                    "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable",
+                },
+            }
+        },
         "browse": {"task": {"natural": ["make", "check", "pull"]}},
         "notebook": {
             "task": {"natural": ["make", "show", "probe", "sim"]},

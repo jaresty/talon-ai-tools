@@ -357,20 +357,6 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
-        "name": "pull+deep",
-        "tokens": ["pull", "deep"],
-        "prose": (
-            "pull + deep: pull selects a subset of the given material without altering its "
-            "substance; deep asks for substantial depth. When both are active, deep governs "
-            "how much of the selected subset to carry across — which items and how many of "
-            "their sub-parts to retain — not a licence to unpack, elaborate, or add reasoning "
-            "beyond what the source states. The depth is depth of selection, not depth of "
-            "expansion. A response that introduces analysis, inference, or content not present "
-            "in the source in order to satisfy deep does not satisfy pull, and does not satisfy "
-            "this composition."
-        ),
-    },
-    {
         "name": "browse+pull",
         "tokens": ["browse", "pull"],
         "prose": (
@@ -521,21 +507,6 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "four sections into code comments in place of that block does not satisfy prep's "
             "structured write-up requirement, and a code artifact with no adjacent write-up does "
             "not satisfy prep; neither satisfies this composition."
-        ),
-    },
-    {
-        "name": "snap+zettel",
-        "tokens": ["snap", "zettel"],
-        "prose": (
-            "snap + zettel: snap produces a composite state snapshot — current progress, key "
-            "decisions made, what remains, and enough context to resume; zettel requires each "
-            "note body to carry exactly one claim. When both are active the snapshot is "
-            "decomposed rather than emitted whole: each decision, each remaining item, and each "
-            "progress fact becomes its own single-claim note, and one entry note carries the "
-            "resume pointer and links the others. A single note body carrying more than one of "
-            "the snapshot's parts does not satisfy zettel's one-claim rule; a note set with no "
-            "entry note naming where to resume does not satisfy snap's requirement that the "
-            "output be sufficient to pick the work back up. Neither satisfies this composition."
         ),
     },
     {

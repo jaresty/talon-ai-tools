@@ -323,7 +323,7 @@ _TASK_METADATA: dict[str, TaskMetadata] = {
         ],
     },
     "pull": {
-        "definition": "Extracting a subset of information from source material.",
+        "definition": "Extracting a subset of information from source material. Other tokens select within that source rather than adding to it: depth, method, and form govern which parts to carry across and how to arrange them, never licence to introduce analysis, inference, framing, or content the source does not state. A response that adds material not present in the source in order to satisfy another token has altered the substance and does not satisfy this task.",
         "heuristics": [
             "extract",
             "list the",

@@ -1,0 +1,172 @@
+# ADR-0085 Cycle 28 recommendations (stratified; seeds 244/245/248/251/254/259)
+# Date: 2026-09-29 | single-evaluator | binary: dev @ 9363dec6
+# Mean 2.83/5 all six; 3.25/5 excluding two flagged cautionaries.
+# SECOND stratified cycle — first with a comparable baseline (c27 = 2.83 / 3.0).
+
+comparability:
+  note: >
+    c27 and c28 both used six distinct channels at one seed each. All-seed means are identical
+    (2.83) and excluding-flagged means are close (3.0 vs 3.25). Under matched stratification this
+    suggests ~2.8-3.3 is the catalog's actual score against random combinations, not a sampling
+    artifact. First interpretable mean of the session.
+  cautionaries_fired: "c27: 1 (sim×code). c28: 2 (skim×fly-bog, gist×bog) — caution layer visibly working."
+
+recommendations:
+
+  # ---- c28-R1: contextualise+zettel composition (direct snap+zettel precedent) ----
+  - id: c28-R1
+    action: composition-add
+    file: lib/compositionConfig.py
+    entry: contextualise+zettel
+    rule: >
+      contextualise enriches content so a downstream model can act on it without further
+      explanation; zettel requires each note body to carry exactly one claim. Resolution
+      (identical to the shipped snap+zettel): decompose into one-claim notes, and place
+      contextualise's enrichment — background, assumptions, constraints, framing — in an entry note
+      whose single claim is the context frame, linking the others. Gate clause: a note body
+      carrying the enrichment alongside a substantive claim does not satisfy zettel's one-claim
+      rule; a note set with no entry note carrying the context does not satisfy contextualise.
+    reason: >
+      Identical tension to snap+zettel (composite content vs one-claim-per-note), with the same
+      resolution already shipped. contextualise's natural channels are [plain, sync, jira, slack]
+      and zettel is unlisted, so nothing currently governs the pairing. Seed 248 scored 3/5 purely
+      because no rule states the decomposition.
+    evidence: [seed_248]
+    confidence: high   # extends a shipped composition to a structurally identical pairing
+
+  # ---- c28-R2: constructor channels need entries (image, skill; agent already known) ----
+  - id: c28-R2
+    action: cross-axis-add
+    file: lib/axisConfig.py
+    targets:
+      - "CROSS_AXIS_COMPOSITION[channel][image]  — NO entry exists"
+      - "CROSS_AXIS_COMPOSITION[channel][skill]  — NO entry exists"
+      - "CROSS_AXIS_COMPOSITION[channel][agent]  — NO entry exists (known since cycle 23)"
+    proposal: >
+      Constructor channels produce a SPECIFICATION for generating an artifact or tool, not the
+      task's own output. Natural task: [make] (creating the spec IS the task). Cautionary for
+      tasks whose deliverable is the analysis or the transformed content itself — probe, diff,
+      show, fix, pull — because the reader receives a spec instead of the thing they asked for.
+      Reason must be stated as deliverable-substitution, not rendering.
+    reason: >
+      Three independent confirmations of the constructor class now: agent×diff (cycle 23, 2/5),
+      skill×probe (seed 259, 2/5), image×fix (seed 244, 2/5). The class is named in the channel
+      taxonomy note (nn 20260717011133-2169) but has zero cross-axis coverage.
+    evidence: [seed_244, seed_259, "cycle-23 seed_204"]
+    confidence: medium-high   # three instances across three cycles; new-entry creation
+    note: >
+      image×fix has a sharper reason worth stating: fix's success condition is meaning-PRESERVATION,
+      which cannot be checked against an image. That is stronger than generic deliverable
+      substitution.
+
+  # ---- c28-R3: generalize pull's select-not-add principle beyond `deep` ----
+  - id: c28-R3
+    action: consider
+    file: lib/axisConfig.py or lib/compositionConfig.py
+    proposal: >
+      Three independent seeds across three cycles show additive forms/methods straining against
+      pull's "without altering its substance": jobs×pull (c24, mild), models×pull (c26, mild),
+      ontology×pull (c28, 3/5). The shipped pull+deep composition already states the governing
+      principle — "deep governs how much of the selected subset to carry across ... not a licence
+      to unpack, elaborate, or add reasoning beyond what the source states". The move is to
+      generalize that from `deep` to additive modifiers broadly, rather than write one entry per
+      pairing.
+    reason: >
+      Writing pull+ontology, pull+models, pull+jobs separately would be three entries encoding one
+      principle — the pairwise-entry-by-analogy failure mode that mis-filed recipe. Prefer one
+      general statement.
+    evidence: [seed_254, "cycle-26 seed_221", "cycle-24 seed_207"]
+    confidence: medium
+    status: deferred   # needs a design decision on WHERE a general principle lives, not just an entry
+
+observations:
+  - id: c28-O1
+    topic: "`store` is a second positive exemplar (after `facilitate`)"
+    detail: >
+      store's definition states "Conversational output continues normally; storage is additive, not
+      a replacement" — pre-empting every conflict a delivery channel normally creates. Seed 245
+      scored 5/5 with five tokens active. Like facilitate (c27-O1), the token anticipates its own
+      interaction instead of leaving a latent conflict. Design lesson: a channel that declares
+      itself ADDITIVE needs no cautionary entries at all.
+
+  - id: c28-O2
+    topic: "the undocumented-channel backlog is larger than c27-O2 estimated, and it clusters"
+    detail: >
+      Cycle 27 closed four gaps (aloud, hunk, browse, notebook). This batch immediately surfaced
+      five more with NO entry: image, store, zettel, github, skill. The remaining gap clusters on
+      CONSTRUCTOR (image, skill, agent) and DELIVERY-MECHANISM (store, zettel, github) channels —
+      not format channels, which are well covered. Suggests the coverage work should be organised
+      by channel CLASS rather than one channel at a time.
+
+  - id: c28-O3
+    topic: "story is a fixed-template form whose subject must already be a requirement"
+    detail: >
+      story formats as "As a <persona>, I want <capability>, so that <value>" — a backlog-item
+      template, not a general structure. story×fix (seed 251) is derivable (reformat a requirement
+      into story shape) but only when the source is already requirement-shaped. Pattern-watch.
+
+  - id: c28-O4
+    topic: "documented cautionaries fired twice — the layer is working"
+    detail: >
+      skim×fly-bog (seed 251) and gist×bog (seed 259) both fired as designed, the third and fourth
+      confirmations this session of the compound-directional capacity family. No action; recorded as
+      positive evidence that the capacity class (which the c27 sweep deliberately did NOT convert)
+      is correctly retained.
+
+retained:
+  - "check+authority+shear+store (seed 245): clean 5/5 audit combination. No action."
+
+# ---------------------------------------------------------------------------
+# Outcomes (implemented same session)
+# ---------------------------------------------------------------------------
+outcomes:
+  - id: c28-R1
+    status: implemented-differently
+    original: "add a contextualise+zettel composition (precedent: snap+zettel)"
+    final: >
+      NOT added as a pairwise entry. The reviewer asked whether the behavior belongs in zettel's
+      DEFINITION — it does. zettel already said "a body that does is two notes" but said nothing
+      about composite input arriving as one unit. Added that general clause to zettel's definition
+      (decompose into one-claim notes plus an entry note carrying the cross-cutting part), and
+      REMOVED the snap+zettel composition, which stated the same behavior for one pairing. The
+      contextualise+zettel entry became unnecessary.
+    verified: "bar help token zettel renders the composite clause; snap+zettel no longer a composition"
+
+  - id: c28-R2
+    status: implemented
+    file: lib/axisConfig.py
+    change: >
+      Cross-axis entries for the three constructor channels: agent, skill, image. Each natural task
+      [make]; cautionary for analysis/transform tasks stating DELIVERABLE SUBSTITUTION (the reader
+      receives a spec for something that would do the task rather than the output they asked for).
+      image gets sharper reasons: image×fix cites that fix succeeds only if meaning is preserved and
+      an image cannot be compared against the source to check it; image×pull cites that an image is
+      a new artifact rather than the extracted material.
+    evidence: [seed_244, seed_259, "cycle-23 seed_204"]
+    verified: "agent/skill/image natural=[make]; agent×diff still flagged"
+
+  - id: c28-R3
+    status: implemented-as-definition
+    original: "generalize pull's select-not-add principle (deferred pending a design decision on where it lives)"
+    final: >
+      The design decision resolved with R1's: it lives in pull's DEFINITION. pull was a bare
+      8-word sentence ("Extracting a subset of information from source material.") while the whole
+      select-not-add principle sat inside the pull+deep composition — so it never governed
+      pull+models, pull+jobs or pull+ontology. Added to pull's definition in
+      lib/staticPromptConfig.py; REMOVED the pull+deep composition.
+    verified: "bar help token pull renders the select-within clause; pull+deep no longer a composition"
+
+  - id: c28-ADR
+    status: implemented
+    change: >
+      New ADR-0085 rule: "A pairwise entry that states a fact about ONE token belongs in that
+      token's definition." Includes the strip-one-token test, both confirmed instances, and the
+      diagnostic symptom (a queue of near-identical pairwise candidates is one missing definition
+      clause reported N times). Also appended as a corollary to the description-purity principle
+      note (nn 20260929154929-2747).
+
+final_counts:
+  compositions: 41   # 43 - 2 removed (snap+zettel, pull+deep)
+  cautionary: 118    # 109 + 9 constructor entries
+  double_layered: 0
+  render_class_phrasing: 0

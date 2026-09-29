@@ -42,16 +42,45 @@ def load_grammar():
         return json.load(f)
 
 
-def load_evaluated_pairs():
-    """Return set of frozensets of already-evaluated pairs from candidates.md."""
-    evaluated = set()
+def load_doc_pairs():
+    """Return set of frozensets of pairs recorded in the candidates.md table."""
+    pairs = set()
     text = CANDIDATES_PATH.read_text()
     for line in text.splitlines():
         # Match table rows: | token + token | status | ...
         m = re.match(r"\|\s*([\w-]+)\s*\+\s*([\w-]+)\s*\|", line)
         if m:
-            evaluated.add(frozenset([m.group(1).strip(), m.group(2).strip()]))
-    return evaluated
+            pairs.add(frozenset([m.group(1).strip(), m.group(2).strip()]))
+    return pairs
+
+
+def load_shipped_pairs():
+    """Return set of frozensets of pairs that exist as shipped COMPOSITIONS.
+
+    lib/compositionConfig.py is the source of truth for what has been composed. The
+    markdown table is a hand-maintained index and drifts: a pair composed without a
+    doc-table row would otherwise keep reranking as pending forever.
+    """
+    sys.path.insert(0, str(ROOT / "lib"))
+    from compositionConfig import COMPOSITIONS
+
+    pairs = set()
+    for entry in COMPOSITIONS:
+        name = entry.get("name", "")
+        if "+" not in name:
+            continue
+        a, b = name.split("+", 1)
+        pairs.add(frozenset([a.strip(), b.strip()]))
+    return pairs
+
+
+def load_evaluated_pairs():
+    """Pairs to exclude: shipped compositions UNION pairs recorded in the doc table.
+
+    Both sources are needed. COMPOSITIONS misses pairs judged `additive` (evaluated but
+    deliberately never composed); the doc misses pairs composed without a table row.
+    """
+    return load_shipped_pairs() | load_doc_pairs()
 
 
 def keyword_overlap(def_a: str, def_b: str) -> int:
@@ -65,7 +94,10 @@ def keyword_overlap(def_a: str, def_b: str) -> int:
 
 def generate_candidates(top_n: int, category_filter: str | None):
     grammar = load_grammar()
-    evaluated = load_evaluated_pairs()
+    shipped = load_shipped_pairs()
+    documented = load_doc_pairs()
+    evaluated = shipped | documented
+    undocumented = shipped - documented
 
     method_defs = grammar["axes"]["definitions"].get("method", {})
     method_cats = grammar["axes"].get("categories", {}).get("method", {})
@@ -113,6 +145,11 @@ def generate_candidates(top_n: int, category_filter: str | None):
           f"({100*len(evaluated)/total_pairs:.1f}%) | "
           f"High-priority (same-category): {evaluated_same_cat} / {total_same_cat} "
           f"({100*evaluated_same_cat/total_same_cat:.1f}%)\n")
+    if undocumented:
+        print(f"Note: {len(undocumented)} shipped composition(s) have no row in "
+              f"{CANDIDATES_PATH.name} and were excluded from COMPOSITIONS directly. "
+              f"Reconcile the doc index when convenient: "
+              f"{', '.join(sorted('+'.join(sorted(p)) for p in undocumented))}\n")
     print(f"| Pair | Priority | Rationale |")
     print(f"|---|---|---|")
     for _, a, b, cat_a, cat_b, rationale in candidates[:top_n]:

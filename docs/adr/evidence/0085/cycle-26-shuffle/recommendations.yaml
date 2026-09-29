@@ -1,0 +1,170 @@
+# ADR-0085 Cycle 26 recommendations (seeds 0219-0224)
+# Date: 2026-09-29 | single-evaluator | binary: dev @ ae83f74b
+# Mean 2.83/5 all six; 3.0/5 excluding flagged cautionary (seed 223).
+# Cause of the dip: 3 of 6 seeds drew `code`, the most restrictive channel. Sampling, not regression.
+#
+# HEADLINE: `code` never received the adjacent-prose-block composition treatment that `svg`,
+# `gherkin`, `sketch`, `shellscript` and `codetour` all have. Its prose-form conflicts are
+# resolved only as cautionary (faq+code, recipe+code) — an unpropagated mechanism, the same
+# mis-layering cycle-24 corrected for contextualise.
+
+recommendations:
+
+  # ---- c26-R1: prep+code composition (direct sibling of shipped prep+svg) ----
+  - id: c26-R1
+    action: composition-add
+    file: lib/compositionConfig.py
+    entry: prep+code
+    rule: >
+      prep requires four prose sections (hypothesis, method, expected outcomes, evaluation
+      criteria); code emits code/markup only with no prose slot. Resolution (verbatim the
+      shipped prep+svg pattern): keep the code artifact pure, and place the prep write-up in a
+      prose block before or after it. Gate clause: a code-only response with no adjacent prep
+      write-up does not satisfy prep; folding the write-up into code comments in place of the
+      block does not satisfy prep's structured-sections requirement.
+    reason: >
+      Direct sibling of shipped prep+svg ("the prep write-up must appear as a prose block before
+      or after the svg artifact"). `code` is structurally the same artifact-only channel as svg
+      but has no prep entry. Seed 224 (plan+prep+analog+prime+code) scored 2/5.
+    evidence: [seed_224]
+    confidence: high   # extends a shipped composition to a structurally identical channel
+
+  # ---- c26-R2: snap+zettel composition ----
+  - id: c26-R2
+    action: composition-add
+    file: lib/compositionConfig.py
+    entry: snap+zettel
+    rule: >
+      snap produces a composite state snapshot (progress, decisions made, what remains, context
+      to resume); zettel requires each note body to contain exactly one claim. Resolution:
+      decompose the snapshot into one-claim notes — one per decision, per remaining item, per
+      progress fact — plus an entry note whose single claim is the resume pointer, linking the
+      others. Gate clause: a single note body carrying multiple snapshot parts does not satisfy
+      zettel's one-claim rule; a note set with no entry note carrying the resume pointer does not
+      satisfy snap's requirement that the output be sufficient to resume the work.
+    reason: >
+      A coherent output exists that is better than either token alone — the decomposition is not
+      a compromise but the correct artifact. Seed 222 (pick+good+snap+zettel+fip-rog) scored 3/5
+      purely because no rule stated the decomposition.
+    evidence: [seed_222]
+    confidence: medium-high   # novel pair, but clean coexisting output; no precedent needed
+
+  # ---- c26-R3: interactive — REFRAMED then BLOCKED (see blocked: section below) ----
+  # Reframed twice: (1) cautionary, (2) composition after re-reading interactive's actual
+  # requirements — it needs TURN STRUCTURE, not prose, so the artifact can BE the named current
+  # state with affordances+prompt adjacent (I had conflated "needs a turn" with "needs prose").
+  # (3) User then asked for the better fix: extend the token definition so it composes with
+  # artifact channels natively. That is BLOCKED — see blocked: c26-R3 below.
+  # Original cautionary proposal retained for the record:
+  # ---- c26-R3 (original): interactive + artifact-only channels — CAUTIONARY ----
+  - id: c26-R3
+    action: cautionary-entry
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[form][interactive][channel].cautionary   # interactive has NO entry yet
+    add:
+      code: >
+        interactive is a turn-taking protocol — it names a current state and offers the
+        counterparty at least one option to respond to; a code-only artifact cannot host that
+        exchange, and an adjacent prose block would be the response rather than accompany it;
+        use plain or no channel
+      svg: >
+        interactive requires a turn-taking exchange the counterparty responds into; markup-only
+        output cannot host it; use plain or no channel
+      sketch: >
+        interactive requires a turn-taking exchange the counterparty responds into; pure D2
+        diagram source cannot host it; use plain or no channel
+    reason: >
+      CAUTIONARY not composition, and the contrast is what makes the rule precise: prep is
+      supplementary CONTENT (a write-up) so it composes adjacently; interactive is a
+      WHOLE-RESPONSE PROTOCOL (an exchange) so no adjacent block satisfies it — the interaction
+      must BE the response. Seed 219 (pull+dam+interactive+code) scored 2/5.
+    evidence: [seed_219]
+    confidence: medium-high
+
+  # ---- c26-R4: minimal + enumeration-floor methods — extend skim's cautionary family ----
+  - id: c26-R4
+    action: cautionary-entry
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[completeness][minimal][method].cautionary   # minimal has NO entry yet
+    add:
+      models: >
+        minimal licenses the smallest answer that satisfies the request; models has an
+        enumeration floor — name the operative model set, then each absent model with why it
+        applies and what it surfaces — which exceeds that budget; expect score-3 output
+    reason: >
+      Same completeness-floor-vs-method-minimum mechanism as the shipped skim+rigor and
+      skim+orbit entries, applied to `minimal`. No coexisting output: satisfying models' floor
+      exceeds minimal, honoring minimal starves the enumeration. Seed 221 scored 3/5.
+    evidence: [seed_221]
+    confidence: medium-high   # extends a shipped cautionary family to a sibling completeness token
+
+# ---------------------------------------------------------------------------
+# Observations (no action)
+# ---------------------------------------------------------------------------
+observations:
+  - id: c26-O1
+    topic: "`code` channel is under-served relative to `svg` (structural gap)"
+    detail: >
+      svg/gherkin/sketch/shellscript/codetour all have adjacent-prose-block COMPOSITIONS for their
+      prose-form conflicts. `code` has only cautionary entries (faq+code, recipe+code) and zero
+      compositions. Since code is structurally identical (artifact-only, no prose slot), its
+      prose-form conflicts should compose the same way. c26-R1 fixes one instance (prep). The
+      broader question — should faq+code and recipe+code be UPGRADED to compositions, as
+      contextualise's DSL cautions were in cycle-24? — is deliberately NOT acted on here (it
+      re-opens shipped decisions). Highest-value candidate for a targeted follow-up pass.
+
+  - id: c26-O2
+    topic: "mark × artifact-only channels"
+    detail: >
+      mark's '## Step N' checkpoint headers are prose structure that code-only output cannot host
+      — mechanically identical to prep+code. Not acted on: seed 223 also contained the already-
+      cautioned sim+code, so mark's contribution is not isolated. Revisit if mark draws an
+      artifact channel without a confounding cautionary.
+
+  - id: c26-O3
+    topic: "models × pull (additive frame vs verbatim extraction)"
+    detail: >
+      models introduces external frames; pull extracts "without altering its substance". Mild,
+      same shape as cycle-24's jobs+pull (4/5 there). Pattern-watch.
+
+  - id: c26-O4
+    topic: "pick+table natural pairing"
+    detail: >
+      Seed 220 (pick+skim+table) scored 5/5 — options as rows, criteria as columns, ending in the
+      choice. table has no cross-axis entry; candidate natural task list [pick, diff]. Single seed;
+      deferred (new-entry creation > extension), consistent with how ledger+pick was handled.
+
+retained:
+  - "sim+code cautionary confirmed working again (seed 223) — cross-axis check functioning as designed."
+
+# ---------------------------------------------------------------------------
+# Blocked — needs a decision, not more evidence
+# ---------------------------------------------------------------------------
+blocked:
+  - id: c26-R3
+    topic: "interactive should compose natively with artifact channels (definition extension)"
+    status: blocked
+    why: >
+      The shipped `interactive` definition CONTRADICTS its own recorded derivation, and the
+      reversal is uncaptured. nn note 20260624003149-4122 ("form:interactive v3 definition",
+      status reviewed) records a 22-word root criterion that REQUIRES naming input->state pairs:
+      "The response names at least one user-driven state transition: a specific input or action
+      and the specific state or outcome it produces" — its verification cases PASS precisely when
+      the pair is named. The shipped definition in axisConfig.py instead FORBIDS that: "causal
+      claims of the form 'input -> state' are withheld until the user acts." So a later v4+
+      inverted v3's root criterion and no note records why. A search for the inverting revision
+      returned nothing.
+    risk_of_proceeding: >
+      The withholding clause is load-bearing for internal/barcli/skills/bar-suggest/SKILL.md,
+      which implements the interactive contract across turns (names current state, names at least
+      one available input, ends with a prompt naming those inputs). Rewriting for format-neutrality
+      without knowing why withholding was introduced risks silently restoring the v3 behavior that
+      someone deliberately removed.
+    lower_risk_alternative: >
+      Add an `interactive+code` COMPOSITION stating the attachment rule (the artifact is the named
+      current state; affordances and the closing prompt sit adjacent; withholding unaffected).
+      Same runtime behavior, does not touch the contested definition.
+    also_note: >
+      nn 20260624003149-4122 is a current-state claim modified 97 days ago and is now falsified by
+      the shipped config. It should be corrected rather than merely expired.
+    evidence: [seed_219]

@@ -509,6 +509,35 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "browse result produced does not satisfy this composition."
         ),
     },
+    {
+        "name": "prep+code",
+        "tokens": ["prep", "code"],
+        "prose": (
+            "prep + code: prep requires four prose sections — hypothesis, method, expected "
+            "outcomes, and evaluation criteria; code emits only code or markup as the complete "
+            "output, with no prose slot. Same mechanism as prep+svg: the form demands prose "
+            "structure the channel structurally cannot hold. Resolution: keep the code artifact "
+            "pure, and place the prep write-up in a prose block before or after it. Folding the "
+            "four sections into code comments in place of that block does not satisfy prep's "
+            "structured write-up requirement, and a code artifact with no adjacent write-up does "
+            "not satisfy prep; neither satisfies this composition."
+        ),
+    },
+    {
+        "name": "snap+zettel",
+        "tokens": ["snap", "zettel"],
+        "prose": (
+            "snap + zettel: snap produces a composite state snapshot — current progress, key "
+            "decisions made, what remains, and enough context to resume; zettel requires each "
+            "note body to carry exactly one claim. When both are active the snapshot is "
+            "decomposed rather than emitted whole: each decision, each remaining item, and each "
+            "progress fact becomes its own single-claim note, and one entry note carries the "
+            "resume pointer and links the others. A single note body carrying more than one of "
+            "the snapshot's parts does not satisfy zettel's one-claim rule; a note set with no "
+            "entry note naming where to resume does not satisfy snap's requirement that the "
+            "output be sufficient to pick the work back up. Neither satisfies this composition."
+        ),
+    },
 ]
 
 

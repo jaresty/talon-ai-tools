@@ -59,6 +59,14 @@ bar shuffle --seed 102 --include persona_preset --fill 0.0
 - Category deep-dives: 10-20 per axis with `--include` forcing selection
 - **Method category samples**: 5-10 shuffles per method semantic category (Decision/Understanding/Exploration/Diagnostic) with `--include method` to evaluate whether tokens within each category produce distinguishable, coherent outputs. Tokens in the same category that produce indistinguishable results are a stronger retirement signal than cross-category redundancy.
 - Edge cases: Low-fill (`--fill 0.1`) and high-fill (`--fill 0.9`) extremes
+- **Channel stratification (required for cross-cycle comparability)**: cap how many seeds in a
+  batch draw the same channel token, or deliberately rotate the channel under test using
+  `--include`/`--exclude`. Plain sequential seeds let one channel dominate a small batch — in
+  cycle 26, three of six seeds drew `code` (the most restrictive channel: artifact-only, no prose
+  slot), which depressed the batch mean to 2.83 vs cycle 25's 3.5. **A cycle mean is not
+  comparable to another cycle's mean unless channel draw is controlled.** Report the channel
+  distribution of the batch alongside the mean; when a channel is over-represented, report the
+  mean excluding those seeds as well.
 
 ### Phase 2: Evaluation
 
@@ -764,6 +772,15 @@ Run this process periodically or when catalog drift is suspected:
 12. **Post-Apply Validate**: Re-test original evidence cases against new catalog state
 13. **Validate**: Re-run shuffle samples to confirm improvement
 
+**Step 12 (Post-Apply Validate) is a standing step, not optional.** It is the only check that
+catches *propagation* failures — an edit correct in source that never reaches the artifact a user
+runs. Cycles 23-25 shipped edits with no post-apply run; the first run (cycle 25) immediately
+found the installed binary was stale by three cycles, reporting "unknown composition" for shipped
+entries while the source and the whole test suite were green. Tests verify correctness; only
+post-apply verifies propagation. Run it every cycle that ships an edit, and verify against a
+binary built from current source (or reinstall first) — never against a possibly-stale installed
+binary.
+
 #### Phase 0: Calibrate
 
 Before evaluating any prompts, establish evaluator consistency:
@@ -961,6 +978,20 @@ Store: `docs/adr/evidence/0085/skill-updates/{skill-name}-{date}.md`
 
 ### Risks
 
+- **Discovery limit — the process extends known families reliably; it does not reliably discover
+  novel interaction classes.** Across cycles 23-26 every recommendation that reached
+  high confidence was an *extension of an already-shipped family* (a new member of the
+  prose-form-vs-artifact-channel compositions, or of the completeness-floor-vs-method-minimum
+  cautionaries). The genuinely novel moves in that span each came from outside the process —
+  from a reviewer asking a question the rubric does not ask: "can this be a composition instead
+  of a warning?" (which upgraded contextualise's DSL cautionaries), "can we fix the token so it
+  does not specify format?" (which found that `tight` had baked a format claim into a
+  style/volume token, dissolving four channel conflicts at the root), and "is there a way to make
+  the exchange also work as a composition?". Shuffle scoring surfaces *that* a combination
+  strains; it does not ask *at which layer the strain should be resolved*, so it tends to file a
+  symptom where a root-cause fix was available. Mitigation: treat a low score as a prompt to ask
+  "which layer owns this?" — token definition, composition, cautionary, or guidebook — before
+  writing any entry. Do not credit the method with the root-cause fixes it did not generate.
 - Over-pruning: Removing tokens that are valuable in rare contexts
 - Churn: Frequent changes destabilize user muscle memory
 - Subjectivity: Different evaluators may score differently

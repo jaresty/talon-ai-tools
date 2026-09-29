@@ -2547,6 +2547,14 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             }
         },
+        "minimal": {
+            "method": {
+                "cautionary": {
+                    "models": "minimal licenses the smallest answer that satisfies the request; models has an enumeration floor — name the operative model set, "
+                    "then each absent model with why it applies and what it surfaces — which exceeds that budget; expect score-3 output"
+                }
+            }
+        },
         "skim": {
             "directional": {
                 "cautionary": {

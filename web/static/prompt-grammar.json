@@ -101322,6 +101322,13 @@
             }
           }
         },
+        "minimal": {
+          "method": {
+            "cautionary": {
+              "models": "minimal licenses the smallest answer that satisfies the request; models has an enumeration floor — name the operative model set, then each absent model with why it applies and what it surfaces — which exceeds that budget; expect score-3 output"
+            }
+          }
+        },
         "skim": {
           "directional": {
             "cautionary": {
@@ -133904,6 +133911,22 @@
         "fix"
       ],
       "prose": "browse + fix: fix reformats existing content that is already present; browse obtains content by driving an external target rather than operating on given input. When both are active they sequence: browse first produces the content, then fix reformats that produced content. Same shape as browse+pull. The reformatted output must trace to content browse actually returned in a prior result, not to assumed or recalled content. A fix whose input is content no prior browse result produced does not satisfy this composition."
+    },
+    {
+      "name": "prep+code",
+      "tokens": [
+        "prep",
+        "code"
+      ],
+      "prose": "prep + code: prep requires four prose sections — hypothesis, method, expected outcomes, and evaluation criteria; code emits only code or markup as the complete output, with no prose slot. Same mechanism as prep+svg: the form demands prose structure the channel structurally cannot hold. Resolution: keep the code artifact pure, and place the prep write-up in a prose block before or after it. Folding the four sections into code comments in place of that block does not satisfy prep's structured write-up requirement, and a code artifact with no adjacent write-up does not satisfy prep; neither satisfies this composition."
+    },
+    {
+      "name": "snap+zettel",
+      "tokens": [
+        "snap",
+        "zettel"
+      ],
+      "prose": "snap + zettel: snap produces a composite state snapshot — current progress, key decisions made, what remains, and enough context to resume; zettel requires each note body to carry exactly one claim. When both are active the snapshot is decomposed rather than emitted whole: each decision, each remaining item, and each progress fact becomes its own single-claim note, and one entry note carries the resume pointer and links the others. A single note body carrying more than one of the snapshot's parts does not satisfy zettel's one-claim rule; a note set with no entry note naming where to resume does not satisfy snap's requirement that the output be sufficient to pick the work back up. Neither satisfies this composition."
     }
   ],
   "guidebook": [
@@ -135011,7 +135034,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "c1990417bc221c65fbce2c86d28556c9886ae6c1b92962181af2de19ad20570f",
+    "axes": "bb8addffcc9535a92b77d7db0c1b4f2fad13dcdd2d93ddaf8e14fb37b3655e25",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",
@@ -135019,7 +135042,7 @@
     "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
     "starter_packs": "2f00f9f30b9ff4f023085ebe493cd9c874c345e173928f889248605e8641bb20",
     "sequences": "4914cfc40ef2dc17d4e4a36b81b3a84814903814f2f6d90ffecea943b81871b2",
-    "compositions": "ce9ed6e2bd914b4badc04bdee2ebbceef124dfa11ff8faa8571b980cc293d128",
+    "compositions": "a2f1e4b47cd378c74ec04c21522960447285806bb28953a4f88942cd97a3490d",
     "guidebook": "6dffedf1b0da52d43ac579f53b48618db10426238bcab0f7a01739c2847a29fd",
     "lateral_seed_words": "02059b803deb1294ee139b3e9d5217aad99959d6add559c071fbcb5201a31c98"
   }

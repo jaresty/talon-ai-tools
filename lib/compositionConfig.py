@@ -538,6 +538,37 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "output be sufficient to pick the work back up. Neither satisfies this composition."
         ),
     },
+    {
+        "name": "codetour+pick",
+        "tokens": ["codetour", "pick"],
+        "prose": (
+            "codetour + pick: codetour delivers an ordered sequence of navigable steps with "
+            "fields appropriate to the task; pick commits to one option among alternatives. "
+            "These compose rather than conflict: the tour carries the evidence and its final "
+            "step carries the verdict. Resolution — give each candidate its own step, walking "
+            "the reader through the code that bears on it, then add a final step whose "
+            "description names the chosen option and the reason for choosing it. Same shape as "
+            "pick+cocreate, where a step structure converges to a decision point. codetour's "
+            "exclusion of surrounding explanation governs prose outside the artifact, not the "
+            "description fields inside each step, which is where the rationale belongs. A tour "
+            "that walks the candidates but ends without a step naming the selection does not "
+            "satisfy pick and does not satisfy this composition."
+        ),
+    },
+    {
+        "name": "codetour+sort",
+        "tokens": ["codetour", "sort"],
+        "prose": (
+            "codetour + sort: codetour delivers an ordered sequence of steps; sort arranges items "
+            "into categories or an order. The tour's step order carries the sort directly — an "
+            "ordering is expressible as a sequence, and a categorization as grouped consecutive "
+            "steps. Resolution — order the steps by the sorting scheme, and name that scheme in "
+            "the first step's description so the reader can see what the order means; for a "
+            "categorization, keep each category's steps consecutive and introduce each group. A "
+            "tour whose step order does not follow the sorting scheme, or that never names the "
+            "scheme, does not satisfy sort and does not satisfy this composition."
+        ),
+    },
 ]
 
 

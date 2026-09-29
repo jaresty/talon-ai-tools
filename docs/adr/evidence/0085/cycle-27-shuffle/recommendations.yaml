@@ -1,0 +1,118 @@
+# ADR-0085 Cycle 27 recommendations (stratified; seeds 225/228/230/234/239/240)
+# Date: 2026-09-29 | single-evaluator | binary: dev @ 72764a46
+# Mean 2.83/5 across SIX DISTINCT CHANNELS (first stratified cycle — first comparable mean).
+
+sampling:
+  rule_applied: "channel stratification (ADR-0085, amended this session)"
+  method: >
+    Surveyed seeds 225-240 for channel draw before selecting. 9 of 16 drew no channel; the 7
+    channel-bearing seeds were all distinct. Selected 6 with six distinct channels, no repeats.
+  distribution: "codetour, formal, aloud, hunk, browse, code — 1 seed each"
+  note: >
+    Mean equals cycle 26's 2.83 by coincidence. Cycle 26's was produced by `code` appearing in 3
+    of 6 seeds; this one spans six channels at one seed each. Only this figure is a baseline.
+  what_it_bought: >
+    Six channels scored instead of effectively three, and it exposed that FOUR channels have no
+    cross-axis entry at all (aloud, hunk, browse; ledger/notebook from earlier cycles) — a
+    coverage gap sequential sampling was hiding by repeatedly drawing well-documented channels.
+
+recommendations:
+
+  # ---- c27-R1: codetour + pick cautionary (extends shipped codetour+sort) ----
+  - id: c27-R1
+    action: cautionary-entry
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[channel][codetour][task].cautionary
+    add:
+      pick: "tends to be incoherent — a selection verdict has no navigable code structure"
+    reason: >
+      codetour ALREADY cautions `sort` with "sorted items have no navigable code structure".
+      `pick` produces the same class of output (a selection verdict) and fails identically: a
+      `.tour` JSON's content unit is a navigable step through existing code, and a committed
+      choice is not a step. A "tour of the options" never commits, so pick's success condition is
+      unmet. Not rescuable by an adjacent block — the deliverable is wrong, not merely unrenderable.
+      Seed 225 (pick+boom+codetour+fip-bog) scored 2/5.
+    evidence: [seed_225]
+    confidence: high   # one-member extension of a shipped cautionary with identical mechanism
+
+  # ---- c27-R2: socratic + enacted channels cautionary (with a sharper reason) ----
+  - id: c27-R2
+    action: cautionary-entry
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[form][socratic][channel].cautionary
+    add:
+      browse: >
+        socratic must name a claim from the user's input to interrogate; a response that drives an
+        external target contains no user position to examine — the object socratic operates on is
+        absent, not merely unrenderable; use plain or no channel
+    reason: >
+      socratic's existing entries (shellscript, codetour) give FORMAT reasons ("cannot be rendered
+      as executable shell code"). The real constraint is subject-based: socratic needs a user
+      position, which an enacted/delivery channel does not supply. Distinct from `interactive`,
+      which WAS rescuable because its named current state could BE the artifact — socratic's
+      subject cannot be supplied by any artifact. Seed 239 (fix+thrust+socratic+browse) scored 2/5.
+    evidence: [seed_239]
+    confidence: medium-high
+    note: >
+      The same subject-based reason plausibly applies to other enacted/delivery channels (github,
+      store, zettel, hunk, aloud). Only `browse` has seed evidence; the rest are deliberately NOT
+      added. Consider rewording the two existing format-based entries to the subject-based reason
+      in a future pass — not done here (re-opens shipped wording without evidence).
+
+# ---------------------------------------------------------------------------
+# Observations (no action)
+# ---------------------------------------------------------------------------
+observations:
+  - id: c27-O1
+    topic: "`facilitate` is the positive exemplar of a format-neutral definition"
+    detail: >
+      facilitate's own description states its channel interaction: "Without an output-exclusive
+      channel, acts as a live facilitator; with one, produces a static facilitation guide." That is
+      exactly what this session's description-purity principle prescribes — the token anticipates
+      the channel case instead of leaving a latent conflict for a cross-axis entry to patch.
+      Seed 228 scored 4/5, the cycle high, with five modifiers active. Cite as the model case when
+      writing or revising form-token definitions.
+
+  - id: c27-O2
+    topic: "four channels have NO cross-axis entry (coverage gap surfaced by stratification)"
+    detail: >
+      aloud, hunk, browse have no CROSS_AXIS_COMPOSITION entry at all (ledger and notebook were
+      noted in earlier cycles; ledger has since gained a task natural list). These are the
+      delivery-mechanism and enacted channels — the least documented class. Sequential sampling hid
+      this by repeatedly drawing well-documented format channels (code, svg, adr). A targeted pass
+      giving each a natural task list would be higher-yield than more random cycles.
+
+  - id: c27-O3
+    topic: "aloud + analytic forms / aloud + full completeness"
+    detail: >
+      Spoken-word condensation ("strip code blocks, raw URLs, long enumerations; summarize rather
+      than truncate") erodes vet's four-part analytic structure and its null-result-vs-
+      disconfirmation distinction, and cannot carry `full`/`max` coverage. The completeness half is
+      the same shape as the shipped presenterm entry (cautions max/deep, lists minimal/gist
+      natural). Deferred: single seed, and would require creating aloud's first entry.
+
+  - id: c27-O4
+    topic: "hunk's content unit constrains which tasks fit"
+    detail: >
+      hunk delivers via a live diff review session; its content unit is a change hunk. make/fix/
+      check/pull suit it; sort/pick/sim do not (seed 234, 3/5 — reframe "group the hunks by
+      category" is available, so not a starvation case). Candidate natural task list. Single seed.
+
+  - id: c27-O5
+    topic: "diff may be natural for code"
+    detail: >
+      `diff` is absent from code's natural AND cautionary lists. code naturally hosts
+      make/fix/show/pull/check, and comparing two approaches by showing both implementations is a
+      real use (seed 240, 3/5). Pattern-watch.
+
+post_apply_validation:
+  status: PASS
+  detail: >
+    ADR step 12 (standing, amended this session). Seed 239 co-presented browse+fix, and the
+    `browse+fix` composition shipped in cycle 25 FIRED correctly in the installed binary —
+    confirming a prior cycle's edit is live and active. This is the intended use of a later cycle
+    to validate an earlier one's edits, and the first time it happened organically rather than as
+    a separate check.
+
+retained:
+  - "facilitate+formal (seed 228): the token's own definition resolves the channel case. No action."

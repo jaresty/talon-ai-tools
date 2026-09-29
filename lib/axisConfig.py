@@ -2301,8 +2301,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "task": {
                 "natural": ["make", "fix", "show", "pull"],
                 "cautionary": {
-                    "sim": "tends to be incoherent — simulation is narrative with no code subject to navigate",
-                    "sort": "tends to be incoherent — sorted items have no navigable code structure",
+                    "sim": "tends to be incoherent — simulation is narrative with no code subject to navigate"
                 },
             },
             "audience": {
@@ -2501,6 +2500,8 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 "cautionary": {
                     "shellscript": "Socratic method produces reflective questions — cannot be rendered as executable shell code; use plain or no channel",
                     "codetour": "Socratic questions cannot be rendered as a VS Code CodeTour JSON; use plain or no channel",
+                    "browse": "socratic must name a claim from the user's input before questioning it; a response that drives an external target contains no user "
+                    "position to examine, so the subject socratic operates on is absent rather than merely unrenderable; use plain or no channel",
                 },
             }
         },

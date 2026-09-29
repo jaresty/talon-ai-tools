@@ -95,6 +95,38 @@ bar-grammar-update:
 		cp build/prompt-grammar.json web/static/prompt-grammar.json; \
 	fi
 	@echo "✓ Grammar files updated. Review with 'git diff' before committing."
+	@echo "  NOTE: the installed bar embeds this grammar at COMPILE time and is now stale."
+	@echo "        Run 'make bar-install' to refresh it, or verify against a fresh build."
+
+# Reinstall the bar binary over whatever `which bar` resolves to.
+#
+# Why this exists: bar-grammar-update rewrites the embedded grammar JSON in source, but the
+# installed binary embedded that JSON when it was compiled — so it keeps serving the old catalog
+# until rebuilt. This drifted undetected for three ADR-0085 refinement cycles: the installed
+# binary reported "unknown composition" for shipped entries while source and both full test
+# suites were green. `bar --version` prints "dev" for stale and fresh builds alike, so the
+# version string cannot detect it; the reliable tell is whether a recently added composition
+# resolves.
+#
+# Destination is the resolved `which bar` rather than GOPATH/bin on purpose: if an
+# earlier-PATH copy exists (e.g. /opt/homebrew/bin/bar), installing to GOPATH/bin would be
+# shadowed by the stale file and recreate the same bug in a subtler form.
+bar-install:
+	@command -v go >/dev/null 2>&1 || { echo "Go toolchain not found; install Go 1.21+ to build bar" >&2; exit 1; }
+	@DEST=$$(command -v bar 2>/dev/null); \
+	if [ -z "$$DEST" ]; then \
+		echo "bar not found on PATH — cannot infer an install destination." >&2; \
+		echo "Build it explicitly, e.g.: go build -o <dir-on-your-PATH>/bar ./cmd/bar" >&2; \
+		exit 1; \
+	fi; \
+	echo "Building bar and installing to $$DEST ..."; \
+	go build -o "$$DEST" ./cmd/bar || exit 1; \
+	echo "✓ bar installed to $$DEST"
+
+# Regenerate the grammar and refresh the installed binary in one step, so the source and the
+# binary a user actually runs cannot diverge.
+bar-grammar-update-install: bar-grammar-update bar-install
+	@echo "✓ Grammar regenerated and installed binary refreshed."
 
 grammar-update-all: bar-grammar-update axis-regenerate-apply
 	@echo "Updating README axis modifier lines..."
@@ -107,7 +139,7 @@ axis-import-guard:
 	@ast-grep scan --rule rules/no-direct-axisconfig-import.yml lib/ GPT/
 	@echo "✓ No direct axisConfig imports in production code"
 
-.PHONY: output_tags test check-sync composition-check composition-candidates churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-help-llm-test bar-grammar-check bar-grammar-update grammar-update-all axis-import-guard axis-config-check
+.PHONY: bar-install bar-grammar-update-install output_tags test check-sync composition-check composition-candidates churn-scan adr010-check adr010-status axis-regenerate axis-regenerate-apply axis-regenerate-all axis-catalog-validate axis-cheatsheet axis-guardrails axis-guardrails-ci axis-guardrails-test talon-lists talon-lists-check adr0046-guardrails ci-guardrails guardrails help overlay-guardrails overlay-lifecycle-guardrails request-history-guardrails request-history-guardrails-fast readme-axis-lines readme-axis-refresh static-prompt-docs static-prompt-refresh doc-snapshots bar-completion-guard bar-help-llm-test bar-grammar-check bar-grammar-update grammar-update-all axis-import-guard axis-config-check
 
 test:
 	$(PYTHON) -m unittest discover -s tests

@@ -496,6 +496,19 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "composition; a tour with no adjacent context block does not satisfy contextualise."
         ),
     },
+    {
+        "name": "browse+fix",
+        "tokens": ["browse", "fix"],
+        "prose": (
+            "browse + fix: fix reformats existing content that is already present; browse "
+            "obtains content by driving an external target rather than operating on given "
+            "input. When both are active they sequence: browse first produces the content, "
+            "then fix reformats that produced content. Same shape as browse+pull. The "
+            "reformatted output must trace to content browse actually returned in a prior "
+            "result, not to assumed or recalled content. A fix whose input is content no prior "
+            "browse result produced does not satisfy this composition."
+        ),
+    },
 ]
 
 

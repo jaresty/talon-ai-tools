@@ -329,7 +329,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "relational phrases) are permitted between slots; prose content outside slot positions is not.",
         "test": "The response presents test cases in a structured format with clear setup, execution, and assertion sections, organized by scenario type (happy path, edge cases, errors, "
         "boundaries) and including descriptive test names.",
-        "tight": "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler.",
+        "tight": "The response is as small and dense as it can be while still fully serving the request — no filler, padding, or redundant elaboration — governing volume and density within "
+        "whatever format the other tokens set, not the format itself.",
         "timeline": "The response structures the output as a timeline or sequence layout — stages, events, or steps arranged in temporal order with explicit markers for when each occurs. Pairs "
         "naturally with trace/flow methods and diagram/sketch channels.",
         "twin": "The response presents two or more alternatives side-by-side, giving each equal structural weight so the reader can compare them directly without narrative interleaving.",

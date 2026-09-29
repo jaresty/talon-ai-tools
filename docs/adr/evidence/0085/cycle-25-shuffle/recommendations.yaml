@@ -1,0 +1,86 @@
+# ADR-0085 Cycle 25 recommendations (seeds 0213-0218)
+# Date: 2026-09-29 | single-evaluator | binary: dev @ 47ea6e76
+# Mean 3.5/5 (highest of cycles 23-25). No documented cautionary fired.
+
+recommendations:
+
+  # ---- c25-R1: tight + code-like channels — RESOLVED AT THE ROOT (token definition fix) ----
+  # Evolution across three framings this session:
+  #   (1) cautionary (tight+code/shellscript/svg/sketch) — matched faq/recipe+code precedent
+  #   (2) composition (tight styles prose within the channel's format) — deep+commit precedent
+  #   (3) FINAL (user): the conflict was a FLAW IN TIGHT'S OWN DEFINITION. tight said "concise
+  #       dense PROSE ... without bullets, tables, or code" — baking in a FORMAT claim when
+  #       tight's job is style/volume, NOT format. That format claim is the sole reason it
+  #       appeared to collide with code/svg/sketch. Fixing the root dissolves all four conflicts.
+  - id: c25-R1
+    status: implemented
+    action: token-definition-edit
+    file: lib/axisConfig.py
+    token: tight
+    axis: form
+    classification: concept-description token  # per nn 20260525192838-1526 — hollow N/A; direct rewrite
+    old: "The response uses concise, dense prose, remaining freeform without bullets, tables, or code and avoiding filler."
+    new: >
+      The response is as small and dense as it can be while still fully serving the request —
+      no filler, padding, or redundant elaboration — governing volume and density within
+      whatever format the other tokens set, not the format itself.
+    reason: >
+      tight controls style/volume, not format. The old definition's "prose ... without bullets,
+      tables, or code" was a format claim that fought every format channel (code, svg, sketch,
+      shellscript) and every structural form. Removing it makes tight compose natively with any
+      channel — a tight+code is dense code, a tight+svg is a minimal depiction — with no
+      per-channel entries needed.
+    superseded:
+      - "the 4 tight+{code,shellscript,svg,sketch} composition entries added earlier this
+         session were REMOVED — once tight no longer claims a format, they restate the corrected
+         solo definition (orthogonality violation)."
+    evidence: [seed_217]
+    confidence: high
+    verified: "bar help token tight shows format-agnostic definition; tight+code composition now unknown (correctly removed); tests green"
+
+  # ---- c25-R2: generalize browse+pull -> browse + given-content tasks (add browse+fix) ----
+  - id: c25-R2
+    action: composition-add
+    file: lib/compositionConfig.py
+    entry: browse+fix
+    rule: >
+      Sequencing (same shape as the shipped browse+pull): browse fetches the material first,
+      then fix reformats the fetched content. Gate clause: a fix whose input is content no
+      prior browse result produced does not satisfy this composition.
+    reason: >
+      Second instance of the browse-vs-given-content pattern (cycle-23 was browse+pull, now a
+      shipped composition). browse fetches; fix/pull operate on GIVEN content. browse+fix
+      resolves by the same fetch-then-transform sequencing. Seed 215 (fix+redact+browse+fip-ong)
+      scored 3/5, browse the disruptive member.
+    evidence: [seed_215, "cycle-23 seed_203 (browse+pull)"]
+    confidence: medium-high   # second instance of an already-resolved pattern
+
+# ---------------------------------------------------------------------------
+# Observations (no action — single-seed or positive)
+# ---------------------------------------------------------------------------
+observations:
+  - id: c25-O1
+    topic: "scorecard + notebook is a GOOD pairing (natural candidate)"
+    detail: >
+      Seed 218 (make+scorecard+notebook) scored 4/5 — a computed metrics scorecard as a runnable
+      Jupyter notebook is coherent, arguably natural (notebooks are built for computed dashboards).
+      Candidate future natural-list entry (notebook natural form: scorecard). Not acted on — no
+      cross-axis entry exists for notebook yet; single seed.
+
+  - id: c25-O2
+    topic: "diagram-affinity forms (coupling, timeline) + non-diagram channels"
+    detail: >
+      coupling and timeline both say in their own descriptions they "pair naturally with
+      diagram/sketch channels." Paired with a non-diagram channel (seed 214 coupling+html) the
+      form renders in attenuated fashion. This is a SOFT affinity (html can host a coupling map),
+      not a hard conflict — so not a cautionary. Pattern-watch only.
+
+  - id: c25-O3
+    topic: "presenterm + full mild brevity tension"
+    detail: >
+      Seed 213 (check+presenterm+full): presenterm's completeness natural is minimal/gist with a
+      12-slide cap; full pulls against that but is not cautioned. Too mild / single-seed to act.
+      Also: check may belong in presenterm's natural task list (verdict deck) — candidate.
+
+retained:
+  - "perturb+check (seed 216): clean high-value pairing — stress-test as verification. No action."

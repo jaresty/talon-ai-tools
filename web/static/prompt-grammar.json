@@ -101237,14 +101237,14 @@
           "channel": {
             "natural": [
               "plain",
-              "slack"
+              "slack",
+              "code",
+              "shellscript"
             ],
             "cautionary": {
-              "codetour": "recipe steps cannot be expressed as navigable code stops; schema has no prose slot; use plain or no channel",
-              "code": "recipe cannot be rendered as code-only output; schema has no prose slot; use plain or no channel",
-              "shellscript": "recipe prose structure cannot be rendered as shell script; schema has no prose slot; use plain or no channel",
-              "svg": "recipe cannot be expressed as SVG markup; use plain or no channel",
-              "presenterm": "recipe prose structure cannot be expressed as presenterm slide sections; use plain or sync instead"
+              "codetour": "recipe defines a custom notation and a key for reading it; a CodeTour is a sequence of navigable stops in existing files, with no place to introduce a notation or its key; use plain or code",
+              "svg": "recipe defines a custom notation and a key for reading it; SVG renders marks, not a legible notation key readers can apply; use plain or code",
+              "presenterm": "recipe's notation and its key need to be read together; slide sections separate them across slides, so the key is not in view where the notation is used; use plain or sync instead"
             }
           }
         },
@@ -135034,7 +135034,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "02d1a84e4c0a4b9210bd334eb6ceb6c45814386e099ef4684c809c326ef27e08",
+    "axes": "2119a94a50e6b2216fc1b090ff48cfbeca826b3582ce6f39458215e4846d4e6d",
     "tasks": "1fa5714d462f65ae07cd6e19bf279ee2ef895664f1aeddd326e97c20e800e891",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",

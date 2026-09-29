@@ -2475,13 +2475,13 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         },
         "recipe": {
             "channel": {
-                "natural": ["plain", "slack"],
+                "natural": ["plain", "slack", "code", "shellscript"],
                 "cautionary": {
-                    "codetour": "recipe steps cannot be expressed as navigable code stops; schema has no prose slot; use plain or no channel",
-                    "code": "recipe cannot be rendered as code-only output; schema has no prose slot; use plain or no channel",
-                    "shellscript": "recipe prose structure cannot be rendered as shell script; schema has no prose slot; use plain or no channel",
-                    "svg": "recipe cannot be expressed as SVG markup; use plain or no channel",
-                    "presenterm": "recipe prose structure cannot be expressed as presenterm slide sections; use plain or sync instead",
+                    "codetour": "recipe defines a custom notation and a key for reading it; a CodeTour is a sequence of navigable stops in existing files, with no place "
+                    "to introduce a notation or its key; use plain or code",
+                    "svg": "recipe defines a custom notation and a key for reading it; SVG renders marks, not a legible notation key readers can apply; use plain or code",
+                    "presenterm": "recipe's notation and its key need to be read together; slide sections separate them across slides, so the key is not in view where the "
+                    "notation is used; use plain or sync instead",
                 },
             }
         },

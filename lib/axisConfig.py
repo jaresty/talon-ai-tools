@@ -5874,7 +5874,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "verify = apply falsification pressure internally; cite = anchor claims to external sources the user can check",
                     "token": "verify",
-                }
+                },
+                {
+                    "note": "objectivity = partition every claim into cited-evidence versus responder-assessment AND name sources for the cited half; cite = anchor claims to "
+                    "sources without requiring that split. objectivity already covers cite's requirement, so selecting both adds nothing",
+                    "token": "objectivity",
+                },
             ],
             "heuristics": [
                 "cite your sources",
@@ -6948,7 +6953,13 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "rigor = disciplined logical reasoning; objectivity = separate what is factual from what is evaluative",
                     "token": "rigor",
-                }
+                },
+                {
+                    "note": "cite = anchor claims to sources only; objectivity = that anchoring PLUS partitioning every claim into cited-evidence versus "
+                    "responder-assessment. Choose cite when only the anchoring is wanted; choose objectivity when the factual/evaluative split is also wanted; "
+                    "selecting both is redundant",
+                    "token": "cite",
+                },
             ],
             "heuristics": [
                 "what's objective vs subjective",

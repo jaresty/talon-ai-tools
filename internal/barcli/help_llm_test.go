@@ -498,9 +498,12 @@ func TestLLMHelpADR0107TokenDescriptions(t *testing.T) {
 		t.Error("D4: Token Catalog missing 'learning-oriented' audience note in scaffold description")
 	}
 
-	// D5: bug form context-affinity
-	if !strings.Contains(catalog, "diagnostic and debugging") {
-		t.Error("D5: Token Catalog missing 'diagnostic and debugging' note in bug form description")
+	// D5: bug form context-affinity. Like D2, this content moved out of the Token
+	// Catalog description into CROSS_AXIS_COMPOSITION, so it renders in Choosing Form
+	// rather than in the catalog prose. The property is that the affinity is reachable
+	// in LLM help, not that it lives in the description.
+	if !strings.Contains(output, "reformat task in bar's grammar") {
+		t.Error("D5: bug form task-affinity missing from LLM help (expected via Choosing Form)")
 	}
 }
 

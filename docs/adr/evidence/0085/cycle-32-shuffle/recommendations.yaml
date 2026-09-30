@@ -1,0 +1,102 @@
+# ADR-0085 Cycle 32 recommendations
+# Date: 2026-09-30 | mean 3.17/5 (6 seeds, 6/6 channel-bearing)
+
+recommendations:
+
+  # ---- c32-R1: the form/channel precedence rule was never delivered on the bar build path ----
+  - id: c32-R1
+    status: implemented
+    action: token-definition-edit
+    file: lib/axisConfig.py
+    target: AXIS_KEY_TO_AXIS_DESC["form"]
+    layer: axis-description (delivered prompt text)
+    finding: >
+      Two seeds (314, 326) read as form-vs-channel collisions. The resolving rule already
+      existed — "When form and channel tokens are both present, the channel defines the output
+      format and the form describes the conceptual organization within that format"
+      (lib/metaPromptConfig.py:145) — but grep shows exactly one consumer,
+      prompt_reference_key_as_text() at lib/modelTypes.py:349, which is the TALON VOICE PATH ONLY.
+      The `bar build` CLI path emits only axes.axis_descriptions from the grammar JSON, whose form
+      line was "Output structure — how the response is organised (...)" with no precedence clause.
+      So every agent using `bar build` — including every ADR-0085 shuffle — never received the rule.
+    enumeration: >
+      The affected set is bounded and was enumerated rather than sampled (per nn 20260930173923-3639):
+      5 sole-output channels (code, html, image, svg, video) x 52 forms. Of the 52 forms, 7 had
+      hand-written their own channel-adaptation clause (axiom, cocreate, facilitate, ghost, ontology,
+      questions, taxonomy) — that duplication is the symptom of the missing axis rule. The other 44
+      were unguided, which is why bug+code and story+video read as collisions while ghost+code did not.
+    resolution: >
+      Added the precedence clause to the DELIVERED form axis description, extended to name the
+      sole-output case explicitly: "...so a channel whose output excludes prose carries the form in
+      its own constructs rather than adding prose sections."
+    verified: "bar build show form:bug channel:code — clause absent before (grep -c = 0), present after (= 1); confirmed on the installed binary after make bar-install"
+    confidence: high   # two independent seeds; bounded set enumerated, not sampled
+
+  # ---- c32-R2: ghost's channel clause is now surplus ----
+  - id: c32-R2
+    status: implemented
+    action: definition-prose-removal
+    file: lib/axisConfig.py
+    token: ghost
+    removed: "When combined with a channel, the trace is expressed within that channel's format constraints."
+    reason: >
+      Pure restatement of the now-delivered axis rule — an orthogonality violation of the same class
+      as the retired pull+deep and snap+zettel single-token-facts.
+    not_removed: >
+      The other six clause-bearing forms were KEPT. axiom, ontology, taxonomy, questions, cocreate and
+      facilitate each name WHICH SPECIFIC CONSTRUCT the form maps to per channel (predicate notation,
+      entity-relation graph, type system, question tree, comments-as-questions, live-vs-static). The
+      general rule cannot derive those, so stripping them would delete information. Tested by the
+      strip-one-token test applied to prose: strip the clause, ask whether the axis rule reconstructs it.
+    verified: "bar help token ghost — clause absent (grep -c = 0); 52 form tokens intact"
+
+  # ---- c32-R3: bug carried affinity prose in its definition ----
+  - id: c32-R3
+    status: implemented
+    action: cross-axis-add + definition-prose-removal
+    file: lib/axisConfig.py
+    token: bug
+    layer: 'CROSS_AXIS_COMPOSITION["form"]["bug"] (was: definition prose)'
+    finding: >
+      bug's description carried three cross-axis facts — task affinity (probe/make/show + diagnostic
+      methods), friction with `fix`, and a conflict with `sync` — the same defect class as the
+      coupling/timeline affinity prose retired earlier this session. bug had NO cross-axis entry, so
+      those facts sat where the routing engine cannot act on them.
+    added:
+      task: "natural [probe, make, show]; cautionary fix -> fix is a reformat task in bar's grammar, not a repair task..."
+      channel: "cautionary sync -> a bug report is a static artifact, not a live session agenda..."
+    deliberate_omission: >
+      The "make/show paired with diagnostic methods (diagnose, inversion, adversarial)" condition was
+      NOT encoded. `natural` is a task list; a method-conditional affinity is not expressible in the
+      schema. Dropped deliberately rather than approximated.
+    verified: "CrossAxisCompositionFor('form','bug') returns both axes with the expected cautionary text (executed via the real accessor); renderLLMHelpAllSections reaches both strings"
+
+  # ---- c32-R4: guard updated to observe the migrated property ----
+  - id: c32-R4
+    status: implemented
+    action: test-guard-update
+    file: internal/barcli/help_llm_test.go
+    guard: TestLLMHelpADR0107TokenDescriptions / D5
+    reason: >
+      D5 asserted 'diagnostic and debugging' appears in ## Token Catalog. R3 moved that content to
+      CROSS_AXIS_COMPOSITION, so it now renders in ### Choosing Form. The PROPERTY the guard observes
+      — bug's task-affinity is reachable in LLM help — still holds; only its location changed. This is
+      the same migration the D2 comment already documents for the adr channel ("After ADR-0148 Part C,
+      cross-axis content moved from Token Guidance to Choosing Channel").
+      Per the ground+falsify guard-edit entry point, the property was named and confirmed by execution
+      BEFORE the guard was touched: renderLLMHelpAllSections was probed and both migrated strings were
+      observed present.
+    verified: "go test ./internal/barcli/... — ok (was: FAIL D5)"
+
+observations:
+  - id: c32-O1
+    topic: "cross-axis cautionaries are TUI-only — they never reach a bar build agent"
+    detail: >
+      Verifying R3 exposed this: CrossAxisCompositionFor is consumed only by internal/bartui2/program.go
+      (selection-time guidance in the interactive picker). Neither `bar build` output nor `bar help token`
+      renders cautionary text. A known-good shipped cautionary (commit+max) greps 0 on both paths, which is
+      how this was distinguished from a defect in the new entry.
+      IMPLICATION FOR ADR-0085 ITSELF: every cycle that recorded a cautionary as "firing" was reading the
+      config, not observed delivered text. The cautionary layer guides humans in the TUI; it does not
+      constrain agents. Worth deciding deliberately rather than by default — filed as a followup.
+    confidence: high   # established by execution against known-good state

@@ -210,9 +210,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "interpretation it rules out. The vocabulary (the symbols the axioms range over) must be named before the first axiom — either as a prior ontology or as an inline preamble. Output "
         "adapts to channel: formal/code channel → predicate or type-system notation; no channel → prose axiom entries.",
         "bug": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable "
-        "details. Strongest with diagnostic and debugging tasks (`probe`, or `make`/`show` paired with diagnostic methods: `diagnose`, `inversion`, `adversarial`). Creates semantic friction "
-        "with non-debugging tasks (e.g., `fix`, which is a reformat task in bar's grammar). Conflicts with session-plan channels (`sync`) — a bug report is a static artifact, not a live "
-        "session agenda.",
+        "details.",
         "bullets": "The response organizes ideas as concise bullet points, avoiding long paragraphs.",
         "cards": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
         "case": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a "
@@ -240,7 +238,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "faq": "The response organizes ideas as clearly separated question headings with concise answers beneath each one, keeping content easy to skim and free of long uninterrupted prose.",
         "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
-        "trace: action taken, result observed, next action, result observed. When combined with a channel, the trace is expressed within that channel's format constraints.",
+        "trace: action taken, result observed, next action, result observed.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response acts to advance the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully "
         "model the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and ends with a "
@@ -2090,7 +2088,9 @@ AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
     "spectrum in their combined directions simultaneously — not alternating or sequential. fig (fog + dig) spans the full vertical range; bog (rog + ong) spans the full horizontal range. "
     "Three prefix families encode vertical orientation: fly prefix = fog (abstract); dip prefix = dig (concrete); fip prefix = fig (full vertical span, abstract + concrete). The second "
     "component (rog, ong, bog) adds horizontal orientation independently — so fly-rog = abstract + structural/reflective; dip-ong = concrete + acting; fip-bog = all four directions.",
-    "form": "Output structure — how the response is organised (bullets, table, recipe, story, map, etc.).",
+    "form": "Output structure — how the response is organised (bullets, table, recipe, story, map, etc.). When a form and a channel are both active, the channel defines the output format and the form "
+    "describes the conceptual organisation within that format — the form is expressed through the channel's format rather than alongside it, so a channel whose output excludes prose carries the "
+    "form in its own constructs rather than adding prose sections.",
     "intent": "The purpose of the response — the motivation the speaker has.",
     "method": "Reasoning approach — how to think through the problem. Up to five can be combined.",
     "persona": "Communication style — who speaks, for whom, and in what tone.",
@@ -2510,6 +2510,20 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         },
     },
     "form": {
+        "bug": {
+            "task": {
+                "natural": ["probe", "make", "show"],
+                "cautionary": {
+                    "fix": "fix is a reformat task in bar's grammar, not a repair task — a bug report's Steps to Reproduce and Expected/Actual sections describe a defect rather "
+                    "than transforming the given content; use probe when the defect is what the response investigates"
+                },
+            },
+            "channel": {
+                "cautionary": {
+                    "sync": "a bug report is a static artifact, not a live session agenda; use no channel when the report is the deliverable"
+                }
+            },
+        },
         "commit": {
             "completeness": {
                 "natural": ["gist", "minimal"],

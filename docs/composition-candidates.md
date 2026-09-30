@@ -24,6 +24,14 @@ requirement test result (or the composition name if one was created).
 | chain + shoshin | composition | 2026-09-29 | Produces `chain+shoshin` — chain's reproduction of an isolated pass's output crosses the isolation boundary AFTER that context's leak check ran, so the reproduction is itself `Forwarded:`-audited before the step performing it |
 | atomic + shoshin | additive | 2026-09-29 | No falsification case constructible — atomic governs step granularity and turn discipline (a subagent call is a tool call, not a user turn); shoshin governs frame selection and context isolation. The axes do not touch. Predicted as likely-composition by analogy with chain+shoshin; the shared token was shoshin, but the emergent requirement there came from chain reproducing an isolated output |
 | cite + objectivity | additive | 2026-09-29 | Not emergent but REDUNDANT: objectivity already requires "supporting cited-evidence claims with named sources", which subsumes cite. Neither token's distinctions mention the other. Routed to the distinctions layer, not compositions — see note below |
+| abduce + eliminate | composition | 2026-09-29 | Emergent: eliminate never constrains WHERE its candidate set comes from, so abduce's hypotheses and eliminate's candidates can be different lists — both tokens satisfied while the response's own hypotheses are never subjected to elimination |
+| adversarial + inversion | composition | 2026-09-29 | Emergent: adversarial only FINDS failures (categories then instances); inversion BLOCKS one named outcome. Nothing joins the sets, so the found failures can go un-blocked while both tokens pass |
+| depends + enforce | composition | 2026-09-29 | Emergent: enforce creates preconditions that gate subsequent steps; depends traces dependency order. Nothing requires enforce's gate order to follow the dependency order depends established |
+| abduce + rigor | additive | 2026-09-29 | A hypothesis IS a claim, so rigor's premise-naming already reaches abduce's output. No gap |
+| automate + enforce | additive | 2026-09-29 | Different objects: automate operates on the SUBJECT's workflow, enforce on the RESPONSE's step structure. No join needed |
+| automate + mint | additive | 2026-09-29 | Different objects: subject's operations vs the response's derivation structure |
+| cite + eliminate | additive | 2026-09-29 | A defeater is a claim, so cite already reaches it; no requirement the combination adds |
+| cite + rigor | additive | 2026-09-29 | Premise-naming (rigor) and source-anchoring (cite) are independent dimensions of the same claim |
 
 ---
 

@@ -134120,6 +134120,30 @@
         "shoshin"
       ],
       "prose": "chain + shoshin: when a pass runs in an isolated context and a later step reproduces that pass's output, the reproduction carries content across the isolation boundary after the leak check for that context has already run — so the reproduced text can re-admit a frame the disposition marked inadmissible, and nothing downstream audits it. The reproduction is therefore itself audited before the step that performs it: emit one 'Forwarded: <item> — [requirement | inadmissible-frame]' line per item of the reproduced output, at an earlier transcript position than the step reproducing it; an item carrying an inadmissible frame appears only as an explicit question. Alternatively, name a predecessor produced under a disposition in which that frame was admissible, and reproduce that one instead. A step that reproduces an isolated context's output with no such audit at an earlier transcript position does not satisfy this composition, and neither does one whose audit omits an item the reproduction carries."
+    },
+    {
+      "name": "abduce+eliminate",
+      "tokens": [
+        "abduce",
+        "eliminate"
+      ],
+      "prose": "abduce + eliminate: abduce generates explanatory hypotheses, each naming the evidence it explains that the alternatives do not; eliminate enumerates a closed set of labeled candidate claims and strikes each with a named defeater. eliminate does not constrain where its candidate set comes from, so the two can be different lists — leaving the response's own hypotheses untested while both tokens are satisfied. When both are active the sets are the same set: the closed candidate set eliminate enumerates is exactly the hypotheses abduce generated, and its count N equals that hypothesis count. A candidate set containing an item that is not one of the generated hypotheses, or omitting one of them, does not satisfy this composition."
+    },
+    {
+      "name": "adversarial+inversion",
+      "tokens": [
+        "adversarial",
+        "inversion"
+      ],
+      "prose": "adversarial + inversion: adversarial names categories of failure and at least one specific instance in each — it finds failures but does not block them; inversion begins from a named failure outcome and names a path to it plus an intervention that blocks the path. Nothing in either token requires the outcome inversion works from to be one of the instances adversarial found, so a response can pass both while every failure it identified goes un-blocked. When both are active the outcome inversion begins from is one of the specific instances adversarial named. An inverted outcome that appears in no adversarial category, or a set of named instances none of which is inverted, does not satisfy this composition."
+    },
+    {
+      "name": "depends+enforce",
+      "tokens": [
+        "depends",
+        "enforce"
+      ],
+      "prose": "depends + enforce: depends traces which things depend on which and how changes propagate; enforce converts a requirement that could be met by description into a precondition that gates subsequent steps on a real artifact. Both concern ordering, but neither requires the gates enforce creates to follow the order depends traced — so a response can gate its steps in an order its own dependency analysis contradicts. When both are active the gate order follows the traced order: a step whose artifact another step depends on is gated before that dependent step, and the precondition names which traced dependency it enforces. A gate ordered against the traced dependency direction, or a precondition that names no traced dependency, does not satisfy this composition."
     }
   ],
   "guidebook": [
@@ -135235,7 +135259,7 @@
     "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
     "starter_packs": "2f00f9f30b9ff4f023085ebe493cd9c874c345e173928f889248605e8641bb20",
     "sequences": "4914cfc40ef2dc17d4e4a36b81b3a84814903814f2f6d90ffecea943b81871b2",
-    "compositions": "aaf1377e26724ecf741e34e9e73acdf21d7957c11d07c78c6f77affab276af53",
+    "compositions": "4197a47393ae7b065130f51486bf4456d1be5239b8bb262f1e9e7af86c8caff4",
     "guidebook": "6dffedf1b0da52d43ac579f53b48618db10426238bcab0f7a01739c2847a29fd",
     "lateral_seed_words": "02059b803deb1294ee139b3e9d5217aad99959d6add559c071fbcb5201a31c98"
   }

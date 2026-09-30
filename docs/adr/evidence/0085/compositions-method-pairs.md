@@ -110,3 +110,50 @@ is inert.
 59 / 5778 pairs (1.0%); 25 / 743 same-category (3.4%). Remaining from the original top 12:
 abduce+eliminate, abduce+rigor, adversarial+inversion, automate+enforce, automate+mint,
 cite+eliminate, cite+rigor, depends+enforce.
+
+---
+
+# Third pass (2026-09-29) — the remaining 8 candidates cleared
+
+All eight remaining candidates from the original top-12 evaluated. **Three compositions, five
+additive.** Coverage 59 → 67 / 5778 (1.2%); same-category 25 → 33 / 743 (4.4%).
+
+## Three compositions — one shape, three different joining relations
+
+All three close the same class of gap: **two token-generated sets that nothing joins.** Each token
+produces a set and passes on its own terms, so a response can satisfy both while the sets never meet.
+Critically, the joining relation differs in each, which is why they are three entries rather than one
+general rule:
+
+| Pair | The gap | Joining relation |
+|---|---|---|
+| `abduce+eliminate` | eliminate never constrains WHERE its candidate set comes from, so abduce's hypotheses and eliminate's candidates can be disjoint lists — the response's own hypotheses go untested | **set identity**: the closed candidate set IS the hypothesis set, N equal |
+| `adversarial+inversion` | adversarial only FINDS failures; inversion BLOCKS one outcome. Nothing requires the inverted outcome to be among the found instances, so every failure identified can go un-blocked | **membership**: the inverted outcome is one of the named instances |
+| `depends+enforce` | enforce creates gates; depends traces dependency order. Nothing requires the gate order to follow the traced order, so a response can gate against its own analysis | **ordering**: gate order follows traced order, and each precondition names which dependency it enforces |
+
+I flagged the pattern-matching risk explicitly before writing these — three pairs sharing a shape is
+exactly the by-analogy reasoning that mis-filed `recipe` and that produced my failed `atomic+shoshin`
+prediction. Each therefore got its own strip-one-token test, and each passed independently.
+
+## Five additive, with reasons
+
+- `abduce+rigor` — a hypothesis IS a claim, so rigor's premise-naming already reaches abduce's output.
+- `cite+eliminate` — a defeater is a claim, so cite already reaches it.
+- `cite+rigor` — premise-naming and source-anchoring are independent dimensions of one claim.
+- `automate+enforce` — **different objects**: automate operates on the SUBJECT's workflow, enforce on
+  the RESPONSE's step structure.
+- `automate+mint` — different objects again: subject's operations vs the response's derivation.
+
+The "different objects" reason is worth naming as its own additive pattern: two tokens can share
+vocabulary (ordering, structure, automation) while acting on entirely different things. Vocabulary
+overlap is not interaction.
+
+## Verification
+
+All three fire on co-presence; invariants hold (45 compositions, 121 cautionary, 0 double-layered).
+
+**Harness note, second occurrence:** the fire-check loop returned a false 3/3 MISSING due to nested
+command substitution in the probe — the same shell pattern that produced a false 12/12 MISSING in the
+render-sweep validation. Caught because a uniform all-fail against known-good state is a harness
+signal, not a regression signal. Checking one pair directly confirmed it fired. Worth remembering:
+validate the validator against one known-good case before trusting a sweep of results.

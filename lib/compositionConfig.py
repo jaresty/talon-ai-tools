@@ -688,6 +688,52 @@ COMPOSITIONS: list[dict[str, Any]] = [
             "reproduction carries."
         ),
     },
+    {
+        "name": "abduce+eliminate",
+        "tokens": ["abduce", "eliminate"],
+        "prose": (
+            "abduce + eliminate: abduce generates explanatory hypotheses, each naming the evidence "
+            "it explains that the alternatives do not; eliminate enumerates a closed set of "
+            "labeled candidate claims and strikes each with a named defeater. eliminate does not "
+            "constrain where its candidate set comes from, so the two can be different lists — "
+            "leaving the response's own hypotheses untested while both tokens are satisfied. When "
+            "both are active the sets are the same set: the closed candidate set eliminate "
+            "enumerates is exactly the hypotheses abduce generated, and its count N equals that "
+            "hypothesis count. A candidate set containing an item that is not one of the generated "
+            "hypotheses, or omitting one of them, does not satisfy this composition."
+        ),
+    },
+    {
+        "name": "adversarial+inversion",
+        "tokens": ["adversarial", "inversion"],
+        "prose": (
+            "adversarial + inversion: adversarial names categories of failure and at least one "
+            "specific instance in each — it finds failures but does not block them; inversion "
+            "begins from a named failure outcome and names a path to it plus an intervention that "
+            "blocks the path. Nothing in either token requires the outcome inversion works from to "
+            "be one of the instances adversarial found, so a response can pass both while every "
+            "failure it identified goes un-blocked. When both are active the outcome inversion "
+            "begins from is one of the specific instances adversarial named. An inverted outcome "
+            "that appears in no adversarial category, or a set of named instances none of which is "
+            "inverted, does not satisfy this composition."
+        ),
+    },
+    {
+        "name": "depends+enforce",
+        "tokens": ["depends", "enforce"],
+        "prose": (
+            "depends + enforce: depends traces which things depend on which and how changes "
+            "propagate; enforce converts a requirement that could be met by description into a "
+            "precondition that gates subsequent steps on a real artifact. Both concern ordering, "
+            "but neither requires the gates enforce creates to follow the order depends traced — so "
+            "a response can gate its steps in an order its own dependency analysis contradicts. "
+            "When both are active the gate order follows the traced order: a step whose artifact "
+            "another step depends on is gated before that dependent step, and the precondition "
+            "names which traced dependency it enforces. A gate ordered against the traced "
+            "dependency direction, or a precondition that names no traced dependency, does not "
+            "satisfy this composition."
+        ),
+    },
 ]
 
 

@@ -90,13 +90,19 @@ recommendations:
 
 observations:
   - id: c32-O1
-    topic: "cross-axis cautionaries are TUI-only — they never reach a bar build agent"
+    topic: "cautionaries are selection-path, not execution-path — no cautionary has ever guided a shuffle response"
     detail: >
-      Verifying R3 exposed this: CrossAxisCompositionFor is consumed only by internal/bartui2/program.go
-      (selection-time guidance in the interactive picker). Neither `bar build` output nor `bar help token`
-      renders cautionary text. A known-good shipped cautionary (commit+max) greps 0 on both paths, which is
-      how this was distinguished from a defect in the new entry.
-      IMPLICATION FOR ADR-0085 ITSELF: every cycle that recorded a cautionary as "firing" was reading the
-      config, not observed delivered text. The cautionary layer guides humans in the TUI; it does not
-      constrain agents. Worth deciding deliberately rather than by default — filed as a followup.
-    confidence: high   # established by execution against known-good state
+      Verifying R3 raised the question of where cautionary text actually renders. An initial claim that it
+      is TUI-only was REFUTED by execution: `bar help llm --section heuristics` carries it (line ~406 for
+      bug), and that section is agent-reachable and advertised in the `bar help llm` navigation endpoint.
+      The accurate split is by ROLE, not by interface:
+        - carries cautionaries: `bar help llm --section heuristics`, interactive TUI   (token SELECTION)
+        - does not: `bar build <tokens>`, `bar help token <slug>`                      (token EXECUTION)
+      This is coherent by design — a warning not to pick bug+fix is useless once bug+fix is the instruction.
+      CONSEQUENCE FOR ADR-0085: a shuffle draw arrives with tokens already chosen, so no cautionary has ever
+      guided a shuffle response. A low score on a cautioned pair confirms the pair is bad; it is never evidence
+      the catalog handled it, and per nn 20260929194833-0640 the attributed cause may still be wrong. Every
+      "cautionary fired" in cycles 23-32 evidence means "is present in config", never "was delivered".
+      This also settles the open followup: rendering cautionaries into the build prompt is the WRONG fix,
+      since it would inject 'you should have picked differently' into a prompt whose tokens are fixed.
+    confidence: high   # established by execution on four paths, including against known-good commit+max

@@ -1119,6 +1119,21 @@ Store: `docs/adr/evidence/0085/skill-updates/{skill-name}-{date}.md`
   before scoring and stating the test in advance** — choosing seeds after seeing scores could have
   supported either conclusion. Report the mean with its channel-bearing count, and treat coverage
   findings (which pairings had no entry) as the reliable output rather than the score.
+- **A cautionary never guided a shuffle response, so a cautioned pair's low score says nothing
+  about the catalog.** Cross-axis cautionaries render on the token *selection* paths —
+  `bar help llm --section heuristics` and the interactive TUI — and not on the *execution* paths,
+  `bar build <tokens>` and `bar help token <slug>`. This is correct by design: a warning not to pick
+  `bug`+`fix` is useless once `bug`+`fix` is the instruction. But a shuffle draw arrives with its
+  tokens already chosen, so no cautionary in the catalog has ever shaped a shuffle response. Two
+  consequences. First, "the cautionary fired" in any cycle's evidence means "an entry exists in
+  config", never "the model was warned" — do not score a cautioned draw as evidence that the catalog
+  handled it. Second, a low score on a cautioned pair confirms only that the pairing is bad, which
+  the entry already asserted; and per the recipe case, a real low score can still sit on a wrongly
+  attributed cause, appearing to confirm an entry that misdiagnoses the token. Rendering cautionaries
+  into the build prompt is not the fix — it would tell the model it should have chosen differently
+  when the choice is no longer available. To test whether a cautionary is *right*, read the token
+  definitions it depends on; the shuffle score cannot referee it.
+
 - **Discovery limit — the process extends known families reliably; it does not reliably discover
   novel interaction classes.** Across cycles 23-26 every recommendation that reached
   high confidence was an *extension of an already-shipped family* (a new member of the

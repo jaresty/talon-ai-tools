@@ -30,6 +30,9 @@ Reported with its channel-bearing count for comparability with c27/c28/c31 only.
    falsification step located `metaPromptConfig.py:145`. Recorded rather than quietly
    fixed, because the same reasoning error (reading a pairwise collision where an axis
    rule already governs) is the one this cycle's finding is about.
-2. **"Cautionaries fired" was imprecise.** What fired was my reading of the config. Cross-axis
-   cautionaries surface **only in the interactive TUI** (`internal/bartui2/program.go:2056+`)
-   — never in `bar build` output or `bar help token`. An agent driving `bar build` never sees them.
+2. **"Cautionaries fired" was imprecise.** What fired was my reading of the config, not observed
+   delivered text. I first claimed cautionaries were TUI-only; execution refuted that —
+   `bar help llm --section heuristics` carries them and is agent-reachable. The accurate split is
+   by role: the SELECTION paths (help llm heuristics, TUI) carry them; the EXECUTION paths
+   (`bar build`, `bar help token`) do not. Since a shuffle draw arrives with tokens already
+   chosen, no cautionary has ever guided a shuffle response. See c32-O1.

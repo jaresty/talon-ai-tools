@@ -1548,3 +1548,52 @@ func TestCompositionInstructionNoSelfAssessedSkip(t *testing.T) {
 		t.Error("render.go COMPOSITION instruction still contains old 'skip confirmed' condition — must be replaced with --skip mechanic")
 	}
 }
+
+// TestTokensBlockClausesReachRenderedOutput guards the TOKENS compliance clauses
+// against the RENDERED prompt rather than against render.go's source text.
+//
+// The pre-existing TestTokensInstruction* guards above read render.go with
+// os.ReadFile and assert substrings of the source. That catches deletion of a
+// literal but not a change that keeps the literal and stops emitting it — the
+// whole block is one string literal written in a single WriteString call, so a
+// refactor that drops the call leaves those guards green. These assertions run
+// against RenderPlainText output, one per clause, so a failure names the clause
+// that regressed instead of diffing ~2400 characters of prose.
+func TestTokensBlockClausesReachRenderedOutput(t *testing.T) {
+	result := &BuildResult{
+		Subject: "Subject text",
+		Task:    "Task:\n  Do the thing.",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "form", Token: "bug", Description: "The response structures ideas as a bug report."},
+		},
+	}
+	output := RenderPlainText(result)
+
+	tokensIdx := strings.Index(output, "=== TOKENS 役割 ===")
+	if tokensIdx == -1 {
+		t.Fatal("TOKENS section absent from rendered output")
+	}
+	tokens := output[tokensIdx:]
+
+	clauses := []struct {
+		name   string
+		phrase string
+	}{
+		{"batch-in-one-call", "in a single Bash tool call joined with `&&`"},
+		{"skip-confirmation-admissible", "Either output satisfies the tool-result requirement."},
+		{"loaded-validity-root-criterion", "whose first line is"},
+		{"loaded-when-not-distinct-phrases", "a different verbatim complete semicolon-delimited phrase"},
+		{"because-declining-is-a-violation", "declines to apply it is a validity violation"},
+		{"no-skip-from-memory", "Do not skip based on memory or inference"},
+		{"parallel-batch-consecutive", "consecutive lines in the next assistant output block"},
+		{"loads-verified-count", "count of distinct valid"},
+		{"derivations-arrow-verbatim", "does not appear verbatim in that tool-result block"},
+		{"reduced-result-insufficient", "a result whose content was reduced before entering the transcript"},
+		{"not-a-turn-end-signal", "is not a turn-end signal"},
+	}
+	for _, c := range clauses {
+		if !strings.Contains(tokens, c.phrase) {
+			t.Errorf("TOKENS clause %q missing from rendered output (phrase: %q)", c.name, c.phrase)
+		}
+	}
+}

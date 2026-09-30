@@ -1,10 +1,12 @@
 # Cycle 32 — followups
 
-1. **Decide whether cross-axis cautionaries should reach the `bar build` path.** (from c32-O1)
-   Today they render only in the interactive TUI. 135 cautionary entries guide human token
-   selection and constrain no agent. Options: (a) leave as TUI-only and say so in ADR-0085 so
-   future cycles stop scoring them as delivered; (b) render active cautionaries into the build
-   prompt; (c) split the layer explicitly. Needs a deliberate choice.
+1. **RESOLVED (same session).** The question as posed rested on a false premise: cautionaries are not
+   TUI-only. `bar help llm --section heuristics` carries them and is agent-reachable. The real split is
+   by role — SELECTION paths carry them, EXECUTION paths (`bar build`, `bar help token`) do not — which
+   is correct by design. Option (b) is rejected: injecting a cautionary into a build prompt tells the
+   model it should have picked different tokens when the tokens are already fixed. Recorded as an
+   ADR-0085 scoring rule instead: a cautioned pair in a shuffle draw was never guided, so its low score
+   is not evidence about the catalog. See c32-O1.
 
 2. **Two independent seeds still unactioned:** ghost+skill (seed 314) — ghost traces actions
    taken, a skill spec is forward-looking. The constructor-channel cautionary on `skill` already

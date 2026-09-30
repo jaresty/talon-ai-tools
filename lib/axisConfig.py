@@ -2299,7 +2299,34 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             },
         },
-        "ledger": {"task": {"natural": ["pick", "plan", "diff", "make", "check"]}},
+        "ledger": {
+            "task": {"natural": ["pick", "plan", "diff", "make", "check"]},
+            "topology": {
+                "cautionary": {
+                    "witness": "ledger emits only content under Facts, Decisions, Constraints and Open Questions, and excludes reasoning traces by design — that "
+                    "exclusion is what distinguishes it from store. witness requires each assumption and its epistemic basis to be named before the "
+                    "conclusion that depends on it, which is the trace ledger discards, and ledger replaces conversational output rather than adding to it, "
+                    "so there is nowhere else for the trace to go. Use store, which is additive: the trace reaches the reader and the durable content is "
+                    "still persisted",
+                    "audit": "ledger emits only content under Facts, Decisions, Constraints and Open Questions, and excludes reasoning traces by design — that "
+                    "exclusion is what distinguishes it from store. audit requires each premise to be named before the conclusion that rests on it, which is "
+                    "the trace ledger discards, and ledger replaces conversational output rather than adding to it, so there is nowhere else for the trace to "
+                    "go. Use store, which is additive: the challenge per claim reaches the reader and the durable content is still persisted",
+                }
+            },
+            "form": {
+                "cautionary": {
+                    "case": "ledger emits only content under Facts, Decisions, Constraints and Open Questions, and excludes reasoning traces by design — that exclusion is "
+                    "what distinguishes it from store. case builds background, evidence, trade-offs and alternatives before converging on a recommendation, and "
+                    "everything before the convergence is the trace ledger discards; a ledger entry records the settled decision, not the argument that reached "
+                    "it. Use store to keep both, or drop the channel when the argument is the deliverable",
+                    "indirect": "ledger emits only content under Facts, Decisions, Constraints and Open Questions, and excludes reasoning traces by design — that "
+                    "exclusion is what distinguishes it from store. indirect leads with background, reasoning and trade-offs and arrives at the bottom line "
+                    "last, so the part ledger keeps is the part indirect defers; the ordering indirect exists to impose is not observable in a categorized "
+                    "record. Use store to keep both, or drop the channel",
+                }
+            },
+        },
         "aloud": {
             "task": {"natural": ["show", "pull"]},
             "completeness": {

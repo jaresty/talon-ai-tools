@@ -571,6 +571,27 @@ cautionary entries reduced to 107, compositions 33 to 43) and found two pairs ca
 composition and a contradicting cautionary (`ghost+svg`, `deep+commit`) — a state that must not
 recur.
 
+**Before writing a capacity cautionary, check whether the completeness token caps ABSOLUTELY or
+RELATIVE TO THE REQUEST.** A request-relative token cannot conflict with a structural requirement,
+because the requirement is part of the request it is sized against. Compare:
+
+- `minimal` — "the smallest answer **that satisfies the request**". Request-relative. When another
+  token imposes a floor, meeting that floor is part of the request, so minimal removes only surplus.
+  It cannot starve a requirement.
+- `skim` — "only a very light pass, **without aiming for completeness**". Absolute — it disclaims
+  completeness regardless of what is asked, so a structural floor genuinely starves.
+- `gist` — "short but complete... **without exploring every detail**". Absolute cap on detail.
+- `commit` — a fixed message shape. A *format* cap, not a request-relative one.
+
+A shipped `minimal`×`models` cautionary was retired on this basis: its own text read "minimal licenses
+the smallest answer that satisfies the request; models has an enumeration floor ... which exceeds that
+budget" — quoting the very clause that makes the floor part of the request, and so refuting itself. A
+pending `minimal`×`case` entry was dropped for the same reason. The `skim`/`gist`/`commit` capacity
+entries were left in place, because those tokens cap absolutely.
+
+The diagnostic: **if the cautionary's own reason quotes a request-relative clause, the entry is
+self-refuting.** Read the completeness token's qualifier before writing the warning.
+
 **A natural list derived from a single seed is drawn too tight.** Cycle 29 corrected two lists
 created earlier the same day: `ledger` had been given `[pick, plan]` and needed `diff`; `notion` had
 been given `[make, show, pull, check]` and needed `pick`. Both were derived correctly from the

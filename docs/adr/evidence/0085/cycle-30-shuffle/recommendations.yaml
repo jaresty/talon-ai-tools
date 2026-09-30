@@ -1,0 +1,99 @@
+# ADR-0085 Cycle 30 recommendations (stratified; seeds 289/293/296/301/305/306)
+# Date: 2026-09-30 | single-evaluator | binary: 7acaea5a
+# Mean 3.67/5 — no flagged cautionary fired, so no exclusion figure; every seed counts.
+
+recommendations:
+
+  # ---- c30-R1: STOP widening ledger one seed at a time — enumerate the task axis ----
+  - id: c30-R1
+    action: edit
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[channel][ledger][task].natural
+    change: "[pick, plan, diff] -> [pick, plan, diff, make, check]"
+    reason: >
+      Seed 306 (make+models+full+ledger) scored 4/5 — ONE HOUR after c29-R1 widened this same list
+      from [pick, plan] to [pick, plan, diff]. Second consecutive correction to one entry.
+      Rather than add `make` alone and invite a third correction, this enumerates the task axis against
+      ledger's content unit (four fixed headings: Facts, Decisions, Constraints, Open Questions):
+        - pick, plan, diff, make, check → FIT. Each produces facts, decisions taken, constraints
+          discovered, or unresolved questions. make records the decisions around an artifact; check
+          records a verdict plus what remains open.
+        - sim → DOES NOT FIT. A scenario unfolding over time has no home in four static headings.
+        - show, pull, probe, fix, sort → weak. These produce content about a subject rather than a
+          record of work on it; nothing forbids them but they are not natural.
+      This is the c29 lesson applied properly: derive from the content unit, then enumerate the axis,
+      rather than widening on each new seed.
+    evidence: [seed_306, "c29 seed_276", "c29 seed_281"]
+    confidence: medium-high
+
+  # ---- c30-R2: minimal x case — extends the shipped minimal x models family ----
+  - id: c30-R2
+    action: cautionary-entry
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[completeness][minimal][method].cautionary  # NOTE: case is a FORM, see below
+    correct_target: CROSS_AXIS_COMPOSITION[completeness][minimal][form].cautionary
+    add:
+      case: >
+        minimal licenses the smallest answer that satisfies the request; case requires background,
+        evidence, trade-offs AND alternatives before converging on a recommendation — a four-part
+        structural minimum that exceeds that budget; expect score-3 output
+    reason: >
+      Same completeness-floor-vs-structural-minimum mechanism as the shipped minimal×models entry.
+      case's four required parts are a floor `minimal` cannot honour. Seed 301 scored 3/5.
+    evidence: [seed_301]
+    confidence: medium-high   # extends a shipped cautionary family to a sibling axis (form rather than method)
+
+observations:
+  - id: c30-O1
+    topic: "adr × narrow — capacity candidate, same shape as the cautioned adr × skim"
+    detail: >
+      adr cautions `skim` ("ADRs need full context and consequences to be actionable") and its
+      completeness natural list is [full, deep]. `narrow` restricts SCOPE rather than depth — a
+      different axis of reduction — but the consequence for adr is identical: a context section that
+      "avoids broad context" undercuts the artifact. Seed 289, 3/5. Single seed; deferred.
+
+  - id: c30-O2
+    topic: "sim is arguably natural for presenterm"
+    detail: >
+      A scenario playing out over time maps onto a slide sequence, one state per slide — a better fit
+      than presenterm's cautioned `fix`/`probe`. presenterm's natural task list is [make, show, plan,
+      pull] and says nothing about sim. Seed 305. Single seed; deferred per the c29/c30 lesson.
+
+  - id: c30-O3
+    topic: "ration × brevity-capped channels — capacity candidate"
+    detail: >
+      ration must NAME the situational score and, for each shallow part, name its low score as the
+      reason. That justification is mandatory prose overhead, so a brevity-capped format (presenterm's
+      12 slides, commit, aloud) must absorb it. Seed 305. Pattern-watch.
+
+  - id: c30-O4
+    topic: "reset × historically-grounded forms"
+    detail: >
+      reset disclaims prior commitments; wardley, timeline and log are ABOUT what came before. Seed 293
+      scored 4/5 because the reframe is available (map the evolution as it would run unconstrained), so
+      a mild tension rather than a conflict. Pattern-watch.
+
+  - id: c30-O5
+    topic: "wasinawa + show/relations reads as a natural pairing"
+    detail: >
+      wasinawa's three movements (What / So What / Now What) took one subject each from `relations`, and
+      the seed scored 5/5 — the cycle high. wasinawa has no cross-axis entry. Deferred: single seed, and
+      c30-R1 exists precisely because single-seed natural lists get under-drawn.
+
+  - id: c30-O6
+    topic: "zero cautionaries fired — a signal I cannot cleanly read"
+    detail: >
+      c27 fired 1, c28 fired 2, c29 fired 2, c30 fired 0. That could mean the catalog now steers away
+      from known-bad pairings, or simply that this draw missed them. Four cycles cannot distinguish.
+      Recording the ambiguity rather than reading it as success.
+
+comparability:
+  note: >
+    Mean 3.67 vs baseline 2.83 (c27/c28) and 3.50 (c29). The improvement hypothesis GAINS SUPPORT: two
+    cycles now sit well above baseline, and c30 reached its figure with zero exclusions while c29 had
+    two flagged cautionaries inflating its adjusted number.
+  qualification: >
+    c30 had only 4 channel-bearing seeds versus 6 in c27/c28, and channel tokens are the most
+    constraining class — so part of the lift may be that two seeds had no channel to conflict with. I
+    chose that deliberately to reach form/method interactions, and it cuts against strict comparability.
+    Supported, not established; a fifth cycle at 6 distinct channels would be the clean test.

@@ -158,7 +158,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
         "grow": "The response begins at minimal depth and expands only where the analysis explicitly demands it, so every elaboration is justified rather than anticipated.",
         "max": "The response covers every element of the subject and every sub-element it can derive — any nameable element absent from the response is an omission requiring justification.",
-        "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need.",
+        "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need. What the request includes is set "
+        "by everything asked for: where another active token imposes a structural requirement, meeting that requirement is part of the request, so this token removes only what "
+        "is surplus to it and never reduces the response below it.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "prime": "The response ranks the subject's concepts by learning leverage — the ratio of understanding unlocked to learning effort required — naming this ranking criterion before "
         "covering any concept. It covers only the highest-leverage subset. After naming that subset, it writes a closure statement declaring coverage complete at the functional "
@@ -2298,7 +2300,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             },
         },
-        "ledger": {"task": {"natural": ["pick", "plan", "diff"]}},
+        "ledger": {"task": {"natural": ["pick", "plan", "diff", "make", "check"]}},
         "aloud": {
             "task": {"natural": ["show", "pull"]},
             "completeness": {
@@ -2601,14 +2603,6 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "dip-rog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
                     "dip-bog": "Conflict: gist brevity limits compound directional depth — completeness governs.",
                 },
-            }
-        },
-        "minimal": {
-            "method": {
-                "cautionary": {
-                    "models": "minimal licenses the smallest answer that satisfies the request; models has an enumeration floor — name the operative model set, "
-                    "then each absent model with why it applies and what it surfaces — which exceeds that budget; expect score-3 output"
-                }
             }
         },
         "skim": {

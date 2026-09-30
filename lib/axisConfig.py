@@ -2089,8 +2089,8 @@ AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
     "Three prefix families encode vertical orientation: fly prefix = fog (abstract); dip prefix = dig (concrete); fip prefix = fig (full vertical span, abstract + concrete). The second "
     "component (rog, ong, bog) adds horizontal orientation independently — so fly-rog = abstract + structural/reflective; dip-ong = concrete + acting; fip-bog = all four directions.",
     "form": "Output structure — how the response is organised (bullets, table, recipe, story, map, etc.). When a form and a channel are both active, the channel defines the output format and the form "
-    "describes the conceptual organisation within that format — the form is expressed through the channel's format rather than alongside it, so a channel whose output excludes prose carries the "
-    "form in its own constructs rather than adding prose sections.",
+    "describes the conceptual organisation within that format. Where the channel has a construct that can carry the form, the form is expressed through that construct rather than as prose "
+    "alongside the artifact; where it has none, the form's content goes in a block adjacent to the artifact. A composition rule for the specific pair governs over this default.",
     "intent": "The purpose of the response — the motivation the speaker has.",
     "method": "Reasoning approach — how to think through the problem. Up to five can be combined.",
     "persona": "Communication style — who speaks, for whom, and in what tone.",
@@ -2280,9 +2280,8 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "form": {
                 "natural": ["story"],
                 "cautionary": {
-                    "log": "log entries are prose-text; Gherkin cannot render date markers and bullet updates; use plain or no channel",
                     "recipe": "recipe defines a custom notation and a key for reading it; Gherkin's fixed Given/When/Then vocabulary cannot introduce a new notation or "
-                    "its key; use plain or code",
+                    "its key; use plain or code"
                 },
             },
         },
@@ -2455,14 +2454,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         },
         "sketch": {
             "task": {"natural": ["make", "plan", "show", "probe"]},
-            "form": {
-                "cautionary": {
-                    "indirect": "sketch produces D2 diagram source; indirect form requires prose without diagram structure; use no channel or diagram instead",
-                    "case": "case-building requires prose flow; D2 format has no slot for argument structure; use no channel or plain",
-                    "walkthrough": "walkthrough is narrative prose; D2 format cannot accommodate step-by-step narrative; use codetour or plain instead",
-                    "variants": "variants produce options-and-probabilities prose; D2 format has no slot for this; use plain or no channel",
-                }
-            },
+            "form": {"cautionary": {}},
         },
         "sync": {
             "task": {
@@ -2562,26 +2554,11 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             },
         },
-        "case": {
-            "channel": {
-                "natural": ["plain", "slack", "jira", "sync"],
-                "cautionary": {
-                    "html": "case-building requires prose flow; pure HTML output loses the argumentative structure; use plain or jira instead"
-                },
-            }
-        },
+        "case": {"channel": {"natural": ["plain", "slack", "jira", "sync"]}},
         "contextualise": {"channel": {"natural": ["plain", "sync", "jira", "slack"]}},
         "faq": {"channel": {"natural": ["plain", "slack", "jira"], "cautionary": {}}},
         "log": {
-            "channel": {
-                "natural": ["plain", "jira", "slack", "sync"],
-                "cautionary": {
-                    "svg": "log entries are prose-text — SVG cannot render date markers and bullet updates; use plain or no channel",
-                    "gherkin": "log entries are prose-text — Gherkin syntax is incompatible with log format; use plain or no channel",
-                    "shellscript": "log entries are prose-text — shell script cannot accommodate a research log; use plain or no channel",
-                    "html": "log entries are prose-text — pure HTML output loses the temporal/bullet structure; use jira or plain instead",
-                },
-            }
+            "channel": {"natural": ["plain", "jira", "slack", "sync"], "cautionary": {}}
         },
         "coupling": {
             "channel": {"natural": ["diagram", "sketch", "svg"]},
@@ -2598,8 +2575,6 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "channel": {
                 "natural": ["plain", "slack", "code", "shellscript"],
                 "cautionary": {
-                    "codetour": "recipe defines a custom notation and a key for reading it; a CodeTour is a sequence of navigable stops in existing files, with no place "
-                    "to introduce a notation or its key; use plain or code",
                     "svg": "recipe defines a custom notation and a key for reading it; SVG renders marks, not a legible notation key readers can apply; use plain or code",
                     "presenterm": "recipe's notation and its key need to be read together; slide sections separate them across slides, so the key is not in view where the "
                     "notation is used; use plain or sync instead",
@@ -2612,7 +2587,6 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 "cautionary": {
                     "shellscript": "template IS the whole response — every content position is an empty labeled slot, so it cannot sit alongside an executable script "
                     "rather than replacing it; use plain or no channel",
-                    "codetour": "template produces a fill-in artifact; CodeTour JSON has no slot for placeholder-based prose; use plain or no channel",
                     "gherkin": "template slots cannot be expressed as Given/When/Then assertions; use plain or no channel",
                 },
             }
@@ -2634,11 +2608,8 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "channel": {
                 "natural": ["plain", "slack", "jira"],
                 "cautionary": {
-                    "shellscript": "spike produces prose — shell script cannot accommodate a research document; use plain or no channel",
-                    "svg": "spike produces prose — SVG cannot accommodate a research question document; use plain or no channel",
-                    "html": "spike produces prose questions — pure HTML has no semantic slot for open-ended research; use plain or jira",
                     "gherkin": "spike is open-ended exploration; Gherkin requires concrete Given/When/Then structure incompatible with spike's question framing; use "
-                    "plain",
+                    "plain"
                 },
             }
         },

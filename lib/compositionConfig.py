@@ -541,6 +541,102 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "log+svg",
+        "tokens": ["log", "svg"],
+        "prose": (
+            "log + svg: log organises content as dated entries with short bullet updates; "
+            "SVG renders marks and shapes; it has no element that carries a date marker or a bullet sequence as readable text. The dated entries and bullet updates are content the artifact cannot carry. "
+            "Resolution: keep the artifact pure, and place the dated entries and bullet updates in a separate block before or after it. "
+            "Folding that content into the artifact — as comments, embedded strings, or narration — in place of "
+            "the adjacent block does not satisfy log, and an artifact with no adjacent block does not satisfy it "
+            "either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "log+shellscript",
+        "tokens": ["log", "shellscript"],
+        "prose": (
+            "log + shellscript: log organises content as dated entries with short bullet updates; "
+            "a shell script's constructs are commands and control flow; a research log's temporal narrative is not executable. The dated entries and bullet updates are content the artifact cannot carry. "
+            "Resolution: keep the artifact pure, and place the dated entries and bullet updates in a separate block before or after it. "
+            "Folding that content into the artifact — as comments, embedded strings, or narration — in place of "
+            "the adjacent block does not satisfy log, and an artifact with no adjacent block does not satisfy it "
+            "either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "spike+shellscript",
+        "tokens": ["spike", "shellscript"],
+        "prose": (
+            "spike + shellscript: spike states a problem or decision and lists the open questions the investigation should answer; "
+            "a shell script's constructs are commands; open research questions are not executable statements. The problem statement and the question list are content the artifact cannot carry. "
+            "Resolution: keep the artifact pure, and place the problem statement and the question list in a separate block before or after it. "
+            "Folding that content into the artifact — as comments, embedded strings, or narration — in place of "
+            "the adjacent block does not satisfy spike, and an artifact with no adjacent block does not satisfy it "
+            "either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "spike+svg",
+        "tokens": ["spike", "svg"],
+        "prose": (
+            "spike + svg: spike states a problem or decision and lists the open questions the investigation should answer; "
+            "SVG renders marks and shapes and has no element that carries an open question as readable text. The problem statement and the question list are content the artifact cannot carry. "
+            "Resolution: keep the artifact pure, and place the problem statement and the question list in a separate block before or after it. "
+            "Folding that content into the artifact — as comments, embedded strings, or narration — in place of "
+            "the adjacent block does not satisfy spike, and an artifact with no adjacent block does not satisfy it "
+            "either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "spike+html",
+        "tokens": ["spike", "html"],
+        "prose": (
+            "spike + html: spike states a problem or decision and lists the open questions the investigation should answer; "
+            "semantic HTML has containers for text but no element that marks content as an unresolved research question rather than an assertion. The problem statement and the question list are content the artifact cannot carry. "
+            "Resolution: keep the artifact pure, and place the problem statement and the question list in a separate block before or after it. "
+            "Folding that content into the artifact — as comments, embedded strings, or narration — in place of "
+            "the adjacent block does not satisfy spike, and an artifact with no adjacent block does not satisfy it "
+            "either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "case+html",
+        "tokens": ["case", "html"],
+        "prose": (
+            "case + html: case builds background, evidence, trade-offs and alternatives before converging on a recommendation; "
+            "semantic HTML nests and orders content but encodes no relation between a claim and the evidence offered for it, so the argumentative structure is not recoverable from the markup. The argument and its convergence on a recommendation are content the artifact cannot carry. "
+            "Resolution: keep the artifact pure, and place the argument and its convergence on a recommendation in a separate block before or after it. "
+            "Folding that content into the artifact — as comments, embedded strings, or narration — in place of "
+            "the adjacent block does not satisfy case, and an artifact with no adjacent block does not satisfy it "
+            "either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "template+codetour",
+        "tokens": ["template", "codetour"],
+        "prose": (
+            "template + codetour: template is an artifact of labeled empty slots with no pre-filled content; "
+            "a CodeTour step is anchored to a real file position and carries narration about existing code, so it cannot present an unfilled slot. The labeled slots are content the artifact cannot carry. "
+            "Resolution: keep the artifact pure, and place the labeled slots in a separate block before or after it. "
+            "Folding that content into the artifact — as comments, embedded strings, or narration — in place of "
+            "the adjacent block does not satisfy template, and an artifact with no adjacent block does not satisfy it "
+            "either; neither satisfies this composition. "
+        ),
+    },
+    {
+        "name": "recipe+codetour",
+        "tokens": ["recipe", "codetour"],
+        "prose": (
+            "recipe + codetour: recipe expresses the answer as a custom mini-language plus a short key for reading it; "
+            "a CodeTour's steps attach narration to file positions and offer no place to introduce a notation or its key. The notation and its key are content the artifact cannot carry. "
+            "Resolution: keep the artifact pure, and place the notation and its key in a separate block before or after it. "
+            "Folding that content into the artifact — as comments, embedded strings, or narration — in place of "
+            "the adjacent block does not satisfy recipe, and an artifact with no adjacent block does not satisfy it "
+            "either; neither satisfies this composition. "
+        ),
+    },
+    {
         "name": "faq+code",
         "tokens": ["faq", "code"],
         "prose": (

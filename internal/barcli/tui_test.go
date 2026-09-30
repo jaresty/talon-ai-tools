@@ -301,9 +301,13 @@ func TestHarnessCautionChannelToForm(t *testing.T) {
 		})
 	}
 
-	// Case 1: log form active + gherkin channel focused → caution must appear.
-	// (case no longer cautions gherkin — that pairing is now the case+gherkin composition)
-	h := newH([]string{"make", "log"})
+	// Case 1: recipe form active + gherkin channel focused → caution must appear.
+	// This fixture needs a pair that is STILL cautionary, and the render-class sweep has
+	// retired several in turn (case+gherkin became a composition; log+gherkin was retired
+	// as a duplicate once the general form/channel rule shipped). recipe+gherkin is retained
+	// on a non-render reason — Gherkin's fixed Given/When/Then vocabulary cannot introduce a
+	// new notation or its key — so it does not fall to the adjacent-block resolution.
+	h := newH([]string{"make", "recipe"})
 	if err := h.Act(bartui2.HarnessAction{Type: "nav", Target: "channel"}); err != nil {
 		t.Fatalf("nav to channel: %v", err)
 	}
@@ -312,7 +316,7 @@ func TestHarnessCautionChannelToForm(t *testing.T) {
 	}
 	view := h.ObserveView()
 	// Check for detail-panel caution text, not just chip-column ⚠.
-	if !strings.Contains(view, "⚠ Caution: log") {
+	if !strings.Contains(view, "⚠ Caution: recipe") {
 		t.Errorf("channel→form: detail-panel caution must appear when log form active + gherkin focused; got:\n%s", view)
 	}
 

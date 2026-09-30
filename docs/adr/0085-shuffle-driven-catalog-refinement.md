@@ -1119,6 +1119,18 @@ Store: `docs/adr/evidence/0085/skill-updates/{skill-name}-{date}.md`
   before scoring and stating the test in advance** — choosing seeds after seeing scores could have
   supported either conclusion. Report the mean with its channel-bearing count, and treat coverage
   findings (which pairings had no entry) as the reliable output rather than the score.
+- **An axis-level edit must be falsified against the narrower entries it now governs, not only
+  against delivery.** Cycle 32 added a form/channel precedence rule to the delivered form axis
+  description and verified it by observing the clause absent before and present after. That
+  falsification was sound for the question it asked and missed the one that mattered: the new rule
+  told the model to carry a form inside a prose-excluding artifact, while ten shipped compositions
+  told it to keep the artifact pure and place the form's content in an adjacent block — eight of them
+  explicitly forbidding exactly what the axis rule mandated. The contradiction shipped and was found
+  a cycle later. A rule can be correct in isolation and still wrong because something more specific
+  already answers the same question differently. So when an edit lands at the axis level, enumerate
+  the compositions and cautionary entries the new rule now governs and check each for agreement;
+  "does it reach the model?" is a necessary check, not a sufficient one.
+
 - **A cautionary never guided a shuffle response, so a cautioned pair's low score says nothing
   about the catalog.** Cross-axis cautionaries render on the token *selection* paths —
   `bar help llm --section heuristics` and the interactive TUI — and not on the *execution* paths,

@@ -2310,6 +2310,16 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                     "instead",
                 }
             },
+            "form": {
+                "cautionary": {
+                    "table": "a table encodes meaning in the position of a cell within its row and column, and speech has no positional dimension to carry that; aloud also "
+                    "strips long enumerations before speaking, so the rows are condensed away. Unlike a written channel there is no adjacent block to place the "
+                    "grid in. Use bullets or reference for a spoken comparison, or drop aloud to keep the grid",
+                    "twin": "twin gives each alternative equal structural weight by placing them side by side, and speech is strictly sequential, so whichever alternative "
+                    "is spoken second is heard as the later one rather than the equal one. Unlike a written channel there is no adjacent block to place the columns "
+                    "in. Use bullets or reference for a spoken comparison, or drop aloud to keep the parallel structure",
+                }
+            },
         },
         "hunk": {"task": {"natural": ["check", "fix", "diff"]}},
         "draw": {"task": {"natural": ["sort", "diff", "show"]}},

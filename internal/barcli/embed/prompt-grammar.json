@@ -101000,6 +101000,12 @@
               "max": "spoken delivery condenses to speech density and summarizes rather than truncates; max treats omissions as errors, which a spoken response cannot satisfy; use gist or minimal instead",
               "full": "spoken delivery condenses to speech density; full coverage of every named element exceeds a natural spoken length; use gist or minimal instead"
             }
+          },
+          "form": {
+            "cautionary": {
+              "table": "a table encodes meaning in the position of a cell within its row and column, and speech has no positional dimension to carry that; aloud also strips long enumerations before speaking, so the rows are condensed away. Unlike a written channel there is no adjacent block to place the grid in. Use bullets or reference for a spoken comparison, or drop aloud to keep the grid",
+              "twin": "twin gives each alternative equal structural weight by placing them side by side, and speech is strictly sequential, so whichever alternative is spoken second is heard as the later one rather than the equal one. Unlike a written channel there is no adjacent block to place the columns in. Use bullets or reference for a spoken comparison, or drop aloud to keep the parallel structure"
+            }
           }
         },
         "hunk": {
@@ -135392,7 +135398,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "456a620eafd87d9a2a6a90f3d3ea7779a213a9f85054e4ae2c5551f49396bb9b",
+    "axes": "5b11eb059032fda5b41af7722b3bf6fcd7e21ee88405720298e1834b51e931d8",
     "tasks": "a2c1287697149629e9d3be3005c803e3996c88ccc123190155ef9fa6833696ba",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",

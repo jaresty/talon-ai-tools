@@ -1105,6 +1105,14 @@ Store: `docs/adr/evidence/0085/skill-updates/{skill-name}-{date}.md`
 
 ### Risks
 
+- **Cycle means are not evidence of progress at this sample size.** Five stratified cycles produced
+  2.83, 2.83, 3.50, 3.67, 3.17. The two above-baseline cycles had fewer channel-bearing seeds (5 and 4)
+  than the baseline cycles (6 each); a cycle run at a matched 6 fell back to 3.17. Between-cycle
+  variance exceeds any improvement signal five cycles can demonstrate, so a single cycle's mean says
+  nothing about whether the catalog improved. What made this readable was **fixing the sampling design
+  before scoring and stating the test in advance** — choosing seeds after seeing scores could have
+  supported either conclusion. Report the mean with its channel-bearing count, and treat coverage
+  findings (which pairings had no entry) as the reliable output rather than the score.
 - **Discovery limit — the process extends known families reliably; it does not reliably discover
   novel interaction classes.** Across cycles 23-26 every recommendation that reached
   high confidence was an *extension of an already-shipped family* (a new member of the

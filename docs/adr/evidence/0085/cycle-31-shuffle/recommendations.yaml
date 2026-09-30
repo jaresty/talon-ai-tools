@@ -1,0 +1,102 @@
+# ADR-0085 Cycle 31 recommendations + outcomes (seeds 314/317/318/319/331/333)
+# Date: 2026-09-30 | single-evaluator | binary: 7cedd81e
+# Mean 3.17/5 (3.20 excluding one flagged cautionary). Matched 6-channel design.
+
+hypothesis_test:
+  pre_committed: >
+    Design fixed BEFORE scoring: 6 distinct channel-bearing seeds, matching c27/c28 exactly. Stated
+    test — if the mean lands near 2.83 the earlier c29/c30 lift was sampling; if near 3.5-3.7 the
+    improvement hypothesis holds under matched conditions.
+  result: WEAKENED
+  detail: >
+    Mean 3.17 — above the 2.83 baseline but well below c29's 3.50 and c30's 3.67. That is consistent
+    with the qualification stated in c30: part of that lift came from having fewer channel-bearing
+    seeds (4 in c30, 5 in c29, 6 here), and channel tokens are the most constraining class.
+  conclusion: >
+    Across five stratified cycles the catalog scores roughly 2.8-3.7 against random combinations, and
+    the between-cycle variance exceeds any improvement signal demonstrable from five cycles. Individual
+    cycle means should stop being read as evidence of progress. Pre-committing the design is what made
+    this readable — choosing seeds after seeing scores could have supported either story.
+
+outcomes:
+
+  # ---- c31-R1: enumerate the constructor task axis across ALL FOUR constructor channels ----
+  - id: c31-R1
+    status: implemented
+    file: lib/axisConfig.py
+    change: >
+      agent, skill, image, video — natural [make]; cautionary probe/diff/show/CHECK (plus fix/pull for
+      image and video, which additionally cannot carry transformed or extracted content).
+    reason: >
+      Seed 314 scored check+skill at 2/5 for exactly the deliverable substitution the existing
+      probe/diff/show entries describe. Rather than add `check` to skill alone — the third repetition of
+      the single-seed under-drawing error (c29 ledger, c30 ledger, c31 skill) — the task axis was
+      enumerated against the constructor content unit: `make` fits because the spec IS the artifact;
+      probe/diff/show/check/fix/pull do not, because each asks for the analysis, verdict, or content
+      itself.
+    video_gap: >
+      video had NO entry at all. Yesterday's constructor pass covered agent, skill and image and MISSED
+      video, which produces a spec for generating an artifact by the same mechanism. Seed 319 scored
+      pull+video at 2/5 on precisely the image×pull reasoning. This is a coverage gap in my own pass,
+      not a new mechanism.
+    evidence: [seed_314, seed_319, "c23 seed_204", "c28 seed_244", "c28 seed_259"]
+    verified: "all four render natural [make]; make remains natural for every constructor"
+
+  # ---- c31-R2: draw cross-axis entry — two independent seeds ----
+  - id: c31-R2
+    status: implemented
+    file: lib/axisConfig.py
+    change: "channel/draw task natural [sort, diff, show]"
+    reason: >
+      Spatial ASCII layout (boxes, arrows, indentation, a short legend) suits categorization,
+      comparison and structural explanation. Two INDEPENDENT seeds across two cycles where draw RAISED
+      the score: draw×sort (c29 seed 274) and draw×diff (c31 seed 317). That clears the two-seed action
+      bar c29/c30 set after single-seed lists kept under-drawing.
+    evidence: ["c29 seed_274", "c31 seed_317"]
+    confidence: medium-high
+
+  # ---- c31-R3: zoom on presenterm — after passing the request-relative check ----
+  - id: c31-R3
+    status: implemented
+    file: lib/axisConfig.py
+    change: "channel/presenterm completeness cautionary + zoom (alongside max, deep)"
+    reason: >
+      Applied the c30 `minimal` lesson FIRST: is zoom request-relative or absolute? Absolute — "Both
+      ends must appear as explicit anchors: do not begin at an intermediate level or leave either end
+      implicit", and bucket count scales with the subject's span, not any budget. So unlike `minimal`,
+      a capacity cautionary is legitimate here. A twelve-slide cap cannot absorb substantive coverage
+      per exponentially-spaced bucket. Two seeds: zoom×presenterm (c30 seed 305), zoom×canvas (c31
+      seed 331).
+    evidence: ["c30 seed_305", "c31 seed_331"]
+    confidence: medium-high
+    not_extended_to_canvas: >
+      canvas was the second seed but did not receive an entry: exponentially-spaced buckets ARE
+      spatially renderable as nested regions, so the pressure there is softer than a fixed slide cap.
+      Recorded rather than acted.
+
+deliberate_omissions:
+  - token: remote
+    reason: >
+      `remote` is an ADDITIVE channel — "optimised for remote delivery ... surfacing tooling or
+      interaction hints" constrains nothing about the deliverable. Seed 333 scored it 5/5 in a
+      six-token combination. Per the channel-entry-necessity rule it needs no entry, and this seed is
+      evidence FOR that judgment rather than a gap. Third additive channel after `store` and
+      `facilitate`'s self-describing clause. Recorded so a later coverage pass does not fill it in.
+
+observations:
+  - id: c31-O1
+    topic: "ghost and demo overlap substantially"
+    detail: >
+      ghost requires "a sequence of autonomous actions with their observed results — action taken,
+      result observed"; demo requires "as literal text: (1) the action taken, and (2) the result as it
+      appeared when captured". Nearly the same requirement, with demo adding the evidence-artifact
+      framing. Neither token's distinctions mentions the other. Same subsumption shape as
+      cite/objectivity — routes to the DISTINCTIONS layer, since nothing produces bad output. Seed 318
+      scored 4/5. Candidate reciprocal distinctions; not acted on (single seed, and editing
+      distinctions is outside a shuffle cycle's scope).
+
+  - id: c31-O2
+    topic: "five of six channels drawn had no cross-axis entry"
+    detail: >
+      draw, demo, video, canvas, remote — only `skill` had one. After two coverage passes this session
+      the uncovered set is still large, which is the reliable finding of this cycle. The score was not.

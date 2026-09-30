@@ -101004,14 +101004,24 @@
             ]
           }
         },
+        "draw": {
+          "task": {
+            "natural": [
+              "sort",
+              "diff",
+              "show"
+            ]
+          }
+        },
         "agent": {
           "task": {
             "natural": [
               "make"
             ],
             "cautionary": {
-              "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
+              "check": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would evaluate the subject rather than the verdict they asked for; use no channel when the verdict is the deliverable",
               "diff": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would compare the subjects rather than the comparison they asked for; use no channel when the comparison is the deliverable",
+              "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
               "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable"
             }
           }
@@ -101022,8 +101032,9 @@
               "make"
             ],
             "cautionary": {
-              "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
+              "check": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would evaluate the subject rather than the verdict they asked for; use no channel when the verdict is the deliverable",
               "diff": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would compare the subjects rather than the comparison they asked for; use no channel when the comparison is the deliverable",
+              "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
               "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable"
             }
           }
@@ -101034,8 +101045,26 @@
               "make"
             ],
             "cautionary": {
+              "check": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would evaluate the subject rather than the verdict they asked for; use no channel when the verdict is the deliverable",
+              "diff": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would compare the subjects rather than the comparison they asked for; use no channel when the comparison is the deliverable",
               "fix": "fix succeeds only if meaning is preserved, and an image cannot be compared against the source to check that; the transformed content the task asks for is not produced; use no channel",
+              "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
               "pull": "pull extracts a subset of the source without altering it; an image is a new artifact rather than the extracted material, so the subset is not delivered; use no channel",
+              "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable"
+            }
+          }
+        },
+        "video": {
+          "task": {
+            "natural": [
+              "make"
+            ],
+            "cautionary": {
+              "check": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would evaluate the subject rather than the verdict they asked for; use no channel when the verdict is the deliverable",
+              "diff": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would compare the subjects rather than the comparison they asked for; use no channel when the comparison is the deliverable",
+              "fix": "fix succeeds only if meaning is preserved, and a video cannot be compared against the source to check that; the transformed content the task asks for is not produced; use no channel",
+              "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
+              "pull": "pull extracts a subset of the source without altering it; a video is a new artifact rather than the extracted material, so the subset is not delivered; use no channel",
               "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable"
             }
           }
@@ -101206,7 +101235,8 @@
             ],
             "cautionary": {
               "max": "tends to be undeliverable — slides require brevity; max produces overloaded decks; use minimal or gist instead",
-              "deep": "same constraint as max — slide format cannot accommodate deep analysis; use minimal or gist instead"
+              "deep": "same constraint as max — slide format cannot accommodate deep analysis; use minimal or gist instead",
+              "zoom": "zoom requires both ends of the magnitude range as explicit anchors and substantive coverage per exponentially-spaced bucket, so bucket count is set by the subject's span rather than any budget; a twelve-slide deck cannot absorb it; use minimal or gist instead"
             }
           }
         }
@@ -135248,7 +135278,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "ade351303c2bf63c7a00245107a2c8cfd0d6f6fd036403cba1c83de444b663ef",
+    "axes": "08587d2864b056fefb97046d6eb63a8b4339b768854f472929a7a68cda534956",
     "tasks": "a2c1287697149629e9d3be3005c803e3996c88ccc123190155ef9fa6833696ba",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",

@@ -2313,14 +2313,17 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             },
         },
         "hunk": {"task": {"natural": ["check", "fix", "diff"]}},
+        "draw": {"task": {"natural": ["sort", "diff", "show"]}},
         "agent": {
             "task": {
                 "natural": ["make"],
                 "cautionary": {
-                    "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
-                    "that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
+                    "check": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would evaluate the subject rather than the verdict they asked for; use no channel when the verdict is the deliverable",
                     "diff": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
                     "that would compare the subjects rather than the comparison they asked for; use no channel when the comparison is the deliverable",
+                    "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
                     "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
                     "that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable",
                 },
@@ -2330,10 +2333,12 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "task": {
                 "natural": ["make"],
                 "cautionary": {
-                    "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
-                    "that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
+                    "check": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would evaluate the subject rather than the verdict they asked for; use no channel when the verdict is the deliverable",
                     "diff": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
                     "that would compare the subjects rather than the comparison they asked for; use no channel when the comparison is the deliverable",
+                    "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
                     "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
                     "that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable",
                 },
@@ -2343,9 +2348,34 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
             "task": {
                 "natural": ["make"],
                 "cautionary": {
+                    "check": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would evaluate the subject rather than the verdict they asked for; use no channel when the verdict is the deliverable",
+                    "diff": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would compare the subjects rather than the comparison they asked for; use no channel when the comparison is the deliverable",
                     "fix": "fix succeeds only if meaning is preserved, and an image cannot be compared against the source to check that; the transformed content the task "
                     "asks for is not produced; use no channel",
+                    "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
                     "pull": "pull extracts a subset of the source without altering it; an image is a new artifact rather than the extracted material, so the subset is not "
+                    "delivered; use no channel",
+                    "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable",
+                },
+            }
+        },
+        "video": {
+            "task": {
+                "natural": ["make"],
+                "cautionary": {
+                    "check": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would evaluate the subject rather than the verdict they asked for; use no channel when the verdict is the deliverable",
+                    "diff": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would compare the subjects rather than the comparison they asked for; use no channel when the comparison is the deliverable",
+                    "fix": "fix succeeds only if meaning is preserved, and a video cannot be compared against the source to check that; the transformed content the task "
+                    "asks for is not produced; use no channel",
+                    "probe": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
+                    "that would analyze the subject rather than the analysis they asked for; use no channel when the analysis is the deliverable",
+                    "pull": "pull extracts a subset of the source without altering it; a video is a new artifact rather than the extracted material, so the subset is not "
                     "delivered; use no channel",
                     "show": "a constructor channel produces a specification for a tool or artifact, not the task's own output; the reader receives a spec for something "
                     "that would explain the subject rather than the explanation they asked for; use no channel when the explanation is the deliverable",
@@ -2450,6 +2480,9 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 "cautionary": {
                     "max": "tends to be undeliverable — slides require brevity; max produces overloaded decks; use minimal or gist instead",
                     "deep": "same constraint as max — slide format cannot accommodate deep analysis; use minimal or gist instead",
+                    "zoom": "zoom requires both ends of the magnitude range as explicit anchors and substantive coverage per exponentially-spaced bucket, so "
+                    "bucket count is set by the subject's span rather than any budget; a twelve-slide deck cannot absorb it; use minimal or gist "
+                    "instead",
                 },
             },
         },

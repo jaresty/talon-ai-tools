@@ -446,8 +446,24 @@ func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
 		t.Fatal("could not locate ## Token Catalog section")
 	}
 	catalog := output[catalogStart:]
-	if !strings.Contains(catalog, "Output adapts to channel") {
-		t.Error("D4: Token Catalog missing channel-adaptive description for taxonomy (expected 'Output adapts to channel')")
+	// The channel adaptation is stated as a CONSTRUCT PARTITION rather than the former
+	// "Output adapts to channel: code channel → ...; no channel → ..." member list, which left
+	// 29 of 32 channels matching no branch and falling through to the no-channel case. The
+	// property is that taxonomy's description says how the hierarchy adapts to the active
+	// channel. The old assertion matched the literal phrase anywhere in the catalog, so any of
+	// the three enumerating forms satisfied it; this one is anchored to taxonomy's own row.
+	var taxRow string
+	for _, line := range strings.Split(catalog, "\n") {
+		if strings.HasPrefix(line, "| `taxonomy` |") {
+			taxRow = line
+			break
+		}
+	}
+	if taxRow == "" {
+		t.Fatal("D4: could not locate taxonomy row in Token Catalog")
+	}
+	if !strings.Contains(taxRow, "active channel's constructs can carry") {
+		t.Errorf("D4: taxonomy description missing channel-adaptive construct partition; got:\n%s", taxRow)
 	}
 
 	// D5 and D6 are token description changes validated by the grammar itself;

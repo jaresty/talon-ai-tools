@@ -1105,6 +1105,12 @@ Store: `docs/adr/evidence/0085/skill-updates/{skill-name}-{date}.md`
 
 ### Risks
 
+- **When sampling reports the same class of gap three runs in a row, enumerate the axis instead.**
+  Cycles 27, 28 and 31 each reported "five more channels have no cross-axis entry", with different
+  membership each time, because shuffle finds an uncovered token only when it draws it — so each
+  discovery looks like a new gap rather than a member of a known set. Enumerating the 32-token channel
+  axis directly settled the whole question in one pass: 27 entries, 5 deliberate omissions, set closed.
+  Sampling is the wrong instrument for a bounded set whose decision rule already exists.
 - **Cycle means are not evidence of progress at this sample size.** Five stratified cycles produced
   2.83, 2.83, 3.50, 3.67, 3.17. The two above-baseline cycles had fewer channel-bearing seeds (5 and 4)
   than the baseline cycles (6 each); a cycle run at a matched 6 fell back to 3.17. Between-cycle

@@ -2314,6 +2314,28 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         },
         "hunk": {"task": {"natural": ["check", "fix", "diff"]}},
         "draw": {"task": {"natural": ["sort", "diff", "show"]}},
+        "svg": {"task": {"natural": ["make", "show"]}},
+        "canvas": {"task": {"natural": ["show", "sort", "diff", "plan"]}},
+        "diagram": {
+            "task": {
+                "natural": ["show", "sort", "plan", "diff"],
+                "cautionary": {
+                    "sim": "a scenario unfolding over time is narrative — diagram syntax renders structure and sequence, not an account of what happens as conditions "
+                    "change; use no channel"
+                },
+            }
+        },
+        "demo": {
+            "task": {
+                "natural": ["check", "fix", "make"],
+                "cautionary": {
+                    "probe": "the evidence artifact is an action paired with the result as it appeared; an analysis is neither an action nor a captured result, so there is "
+                    "nothing to evidence; use no channel",
+                    "show": "the evidence artifact is an action paired with the result as it appeared; an explanation is neither an action nor a captured result; use no "
+                    "channel",
+                },
+            }
+        },
         "agent": {
             "task": {
                 "natural": ["make"],
@@ -3424,6 +3446,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "sync = session plan with timing cues; demo = fixed-at-capture evidence, no timing",
                     "token": "sync",
+                },
+                {
+                    "note": "ghost (form) = structure the response as an action-and-result trace; demo (channel) = that trace IS the evidence artifact, literal and "
+                    "reviewer-interpretable. demo subsumes ghost's requirement, so choose ghost alone when the trace is a structure rather than the deliverable",
+                    "token": "ghost",
                 },
             ],
             "heuristics": [
@@ -4779,6 +4806,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "mark = method for capturing checkpoint evidence during a process; ghost = form for structuring output as workflow execution trace",
                     "token": "mark",
+                },
+                {
+                    "note": "demo (channel) = the action-and-result pair IS the deliverable, an evidence artifact requiring no execution by the reader; ghost (form) = the "
+                    "action-and-result trace is how the response is structured. demo already requires action plus captured result as literal text, so pairing them adds "
+                    "little",
+                    "token": "demo",
                 },
             ],
             "heuristics": [

@@ -207,9 +207,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "actions": "The response structures ideas as concrete actions or tasks a user or team could take, leaving out background analysis or explanation.",
         "activities": "The response organizes ideas as concrete session activities or segments—what to do, by whom, and in what order—rather than abstract description.",
         "axiom": "The response structures the content as a named set of axioms over a given vocabulary: each axiom is stated as a constraint, paired with a brief note naming the class of "
-        "interpretation it rules out. The vocabulary (the symbols the axioms range over) must be named before the first axiom — either as a prior ontology or as an inline preamble. The "
-        "axioms are expressed in whatever the active channel's constructs can carry them: a formal, code or notation channel renders them as predicates or type-system constraints, and a "
-        "channel without a notation construct as named axiom entries.",
+        "interpretation it rules out. The vocabulary (the symbols the axioms range over) must be named before the first axiom — either as a prior ontology or as an inline preamble. A "
+        "formal, code or notation channel renders the axioms as predicates or type-system constraints.",
         "bug": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable "
         "details.",
         "bullets": "The response organizes ideas as concise bullet points, avoiding long paragraphs.",
@@ -251,10 +250,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
         "ontology": "The response defines the concepts and relations that constitute the subject domain: each named concept gets a definition and a set of properties; each named relation gets a "
-        "source concept, a target concept, and a cardinality constraint. The concepts and relations are expressed in whatever the active channel's constructs can carry them: a graph "
-        "channel renders them as nodes and labelled edges, a code or notation channel as a formal schema with types, fields and constraints, and a channel with no such construct as "
-        "named concept entries with their relations stated. Differs from taxonomy, which classifies instances into categories; ontology defines what kinds of things exist and how they "
-        "are structurally related.",
+        "source concept, a target concept, and a cardinality constraint. A graph channel renders the concepts and relations as nodes and labelled edges; a code or notation channel as a "
+        "formal schema of types, fields and constraints. Differs from taxonomy, which classifies instances into categories; ontology defines what kinds of things exist and how they are "
+        "structurally related.",
         "prep": "The response structures the output as an experiment write-up: hypothesis, method, expected outcomes, and evaluation criteria. Used to design an experiment before running it.",
         "questions": "The response presents the answer as a series of probing or clarifying questions rather than statements. When combined with `diagram` channel, the output is Mermaid code "
         "structured as a question tree, decision map, or inquiry flow rather than a structural diagram of the subject.",
@@ -329,8 +327,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "has not been introduced in that panel or an earlier panel.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
         "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes "
-        "clearly. The hierarchy is expressed in whatever the active channel's constructs can carry it: a code or notation channel renders it as a type system of interfaces, enums and "
-        "hierarchies, a channel with nesting as nested structure, and a channel with neither as named sections ordered by level.",
+        "clearly. A code or notation channel renders the hierarchy as a type system of interfaces, enums and hierarchies; a channel with a nesting construct as nested structure.",
         "template": "The response is an artifact in which every content position is a labeled slot of the form [ContentType], where ContentType is a noun-phrase naming the type of content "
         "expected. Each slot's content is absent from the response — no slot is pre-filled. The artifact contains at least two slots. Structural connectors (headings, separators, "
         "relational phrases) are permitted between slots; prose content outside slot positions is not.",

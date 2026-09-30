@@ -462,8 +462,13 @@ func TestLLMHelpChannelAffinityAndTokenClarity(t *testing.T) {
 	if taxRow == "" {
 		t.Fatal("D4: could not locate taxonomy row in Token Catalog")
 	}
-	if !strings.Contains(taxRow, "active channel's constructs can carry") {
-		t.Errorf("D4: taxonomy description missing channel-adaptive construct partition; got:\n%s", taxRow)
+	// Anchor on the taxonomy-SPECIFIC mapping, not the general frame. The general
+	// "where the channel has a construct / where it has none" partition lives in the form AXIS
+	// description (AXIS_KEY_TO_AXIS_DESC["form"]) and is delivered to every form, so asserting it
+	// here would pass on text that says nothing about taxonomy. What only taxonomy can state is
+	// which construct carries a hierarchy — a type system of interfaces and enums.
+	if !strings.Contains(taxRow, "type system of interfaces") {
+		t.Errorf("D4: taxonomy description missing its channel-specific mapping; got:\n%s", taxRow)
 	}
 
 	// D5 and D6 are token description changes validated by the grammar itself;

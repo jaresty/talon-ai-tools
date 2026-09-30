@@ -2298,7 +2298,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             },
         },
-        "ledger": {"task": {"natural": ["pick", "plan"]}},
+        "ledger": {"task": {"natural": ["pick", "plan", "diff"]}},
         "aloud": {
             "task": {"natural": ["show", "pull"]},
             "completeness": {
@@ -2371,7 +2371,7 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 },
             }
         },
-        "notion": {"task": {"natural": ["make", "show", "pull", "check"]}},
+        "notion": {"task": {"natural": ["make", "show", "pull", "check", "pick"]}},
         "notebook": {
             "task": {"natural": ["make", "show", "probe", "sim"]},
             "form": {"natural": ["scorecard"]},

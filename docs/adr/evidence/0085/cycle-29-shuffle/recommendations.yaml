@@ -1,0 +1,104 @@
+# ADR-0085 Cycle 29 recommendations (stratified; seeds 263/269/274/276/281/283)
+# Date: 2026-09-29 | single-evaluator | binary: d2326f5b (post make bar-install)
+# Mean 3.50/5 all six; 4.00/5 excluding two flagged cautionaries.
+#
+# NOTE: the two strongest findings are CORRECTIONS to natural lists I added earlier today.
+# Same-session evidence that new-entry creation from a single seed draws the boundary too tight.
+
+post_apply_validation:
+  status: PASS (third organic confirmation)
+  detail: >
+    Two cross-axis entries added earlier TODAY fired on independent random draws: agent×probe (the
+    constructor-channel cautionary, seed 269) and gist×dip-bog (seed 274). Neither was sought — the
+    stratified draw produced them. Precedent: c27 validated browse+fix, c28 validated the skim/gist
+    directional family.
+  jira_omission_confirmed: >
+    Today's delivery-channel pass deliberately gave `jira` NO entry, judging it a pure formatting
+    convention that imposes no capacity or target constraint. Seed 283 put jira in a five-token
+    combination and it composed without friction. The deliberate omission is validated, which matters
+    because the pass recorded omissions precisely so a later reader would not "complete" them.
+
+recommendations:
+
+  # ---- c29-R1: ledger natural task list is too narrow — add diff ----
+  - id: c29-R1
+    action: edit
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[channel][ledger][task].natural
+    change: "[pick, plan] -> [pick, plan, diff]"
+    reason: >
+      Seed 276 (diff+full+mean+ledger) scored 4/5. A comparison maps onto ledger's four fixed headings
+      well: compared attributes are Facts, tradeoffs are Constraints, what the comparison cannot settle
+      is Open Questions. Its only gap is Decisions — which diff withholds BY DESIGN, since it leaves
+      the choice to the reader. A deliberately empty heading is not a defect.
+      I set [pick, plan] earlier today from a single seed; this is the correction.
+    evidence: [seed_276]
+    confidence: medium-high
+    also_consider: >
+      `check` — a verdict populates Facts (what was evaluated) and Open Questions (what remains
+      unresolved). No seed evidence; not proposed as part of this change.
+
+  # ---- c29-R2: notion natural task list — add pick ----
+  - id: c29-R2
+    action: edit
+    file: lib/axisConfig.py
+    target: CROSS_AXIS_COMPOSITION[channel][notion][task].natural
+    change: "[make, show, pull, check] -> [make, show, pull, check, pick]"
+    reason: >
+      Seed 281 (pick+adversarial+axiom+notion) scored 4/5. notion is a bidirectional delivery target
+      constraining WHERE output goes, not what it is; a recorded decision is an ordinary Notion
+      artifact. Same correction shape as c29-R1 — I derived [make, show, pull, check] today from the
+      channel's content unit and drew it one task too tight.
+    evidence: [seed_281]
+    confidence: medium
+
+# ---------------------------------------------------------------------------
+# Observations (no action — single seed each)
+# ---------------------------------------------------------------------------
+observations:
+  - id: c29-O1
+    topic: "`draw` has no cross-axis entry, and draw×sort is a GOOD pairing"
+    detail: >
+      draw is "a spatial prose layout using ASCII arrangement, boxes, arrows, indentation, and a short
+      legend". Seed 274 paired it with sort+thing: a categorization of named entities is naturally a
+      spatial grouping, and the pairing RAISED the score. Candidate natural task list [sort, diff,
+      show] — spatial layout suits categorization, comparison, and structural explanation. Deferred:
+      single seed, and new-entry creation is exactly what c29-R1/R2 show gets drawn too tightly from
+      one data point.
+
+  - id: c29-O2
+    topic: "axiom + pick reads as a strong pairing"
+    detail: >
+      axiom structures content as named constraints "each paired with a brief note naming the class of
+      interpretation it rules out". For a decision that reads as: state the constraints the choice must
+      satisfy, each ruling out a class of candidate — a genuinely good justification structure. axiom
+      has no cross-axis entry. One precondition the combination does not guarantee: axiom needs a named
+      vocabulary to be axiomatic over. Pattern-watch.
+
+  - id: c29-O3
+    topic: "zoom × slide-like channels — capacity family candidate"
+    detail: >
+      zoom treats the subject as exponentially-spaced buckets, each receiving substantive coverage.
+      Paired with slides (seed 283) the structural mapping is natural (one bucket per unit) but the
+      bucket count pushes unit count — the same capacity shape as the shipped presenterm×max/deep
+      entries. Derivable (choose fewer buckets), so a strain rather than a conflict. Single seed.
+
+  - id: c29-O4
+    topic: "`facilitate` tops a second cycle"
+    detail: >
+      Seed 263 scored 5/5, after c27 seed 228 scored 4/5. Its definition states its own channel
+      interaction ("Without an output-exclusive channel, acts as a live facilitator; with one, produces
+      a static facilitation guide"), so it never needs a cross-axis entry. Two cycles of top scores is
+      the strongest available evidence for the format-neutral-definition pattern (c27-O1).
+
+  - id: c29-O5
+    topic: "one cycle above baseline is a hypothesis, not a trend"
+    detail: >
+      c27 and c28 both scored 2.83; c29 scored 3.50 (4.00 excluding flagged). Two explanations cannot
+      be separated from one cycle: the catalog genuinely improved (~30 entries added or corrected
+      today, two of which these seeds exercised), or draw luck (this batch had a channel-free seed and
+      two low-constraint channels). Recording the ambiguity rather than claiming improvement.
+
+retained:
+  - "sim+fourfold+facilitate (seed 263): clean 5/5. No action."
+  - "jira: no entry, confirmed correct by seed 283."

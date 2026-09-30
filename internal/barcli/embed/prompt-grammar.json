@@ -100974,7 +100974,8 @@
           "task": {
             "natural": [
               "pick",
-              "plan"
+              "plan",
+              "diff"
             ]
           }
         },
@@ -101078,7 +101079,8 @@
               "make",
               "show",
               "pull",
-              "check"
+              "check",
+              "pick"
             ]
           }
         },
@@ -135251,7 +135253,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "c7e60298f625b4ed45ced3c500331f1ae8058874c9bdc7a84ae5d3d5f0fef633",
+    "axes": "ec461a9741c4c5fa5379235d010bcb3d41727c5c339c3d5f43de3b88a85aebac",
     "tasks": "a2c1287697149629e9d3be3005c803e3996c88ccc123190155ef9fa6833696ba",
     "persona": "d4e6397d4f75e4c7b1a402b8e6e71aa7b638609d931cf0224c19d9ab0d607ef9",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",

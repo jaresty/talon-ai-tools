@@ -571,6 +571,19 @@ cautionary entries reduced to 107, compositions 33 to 43) and found two pairs ca
 composition and a contradicting cautionary (`ghost+svg`, `deep+commit`) — a state that must not
 recur.
 
+**A natural list derived from a single seed is drawn too tight.** Cycle 29 corrected two lists
+created earlier the same day: `ledger` had been given `[pick, plan]` and needed `diff`; `notion` had
+been given `[make, show, pull, check]` and needed `pick`. Both were derived correctly from the
+channel's content unit — the method was sound, the sample was not. One seed shows you a task that
+*does* fit; it tells you nothing about the tasks you did not draw.
+
+Mitigation, in order of preference: derive the list from the content unit and then **enumerate the
+task axis against it** rather than stopping at the drawn seed, asking of each task whether the
+channel's content unit can carry its deliverable; or state the list as provisional and expect a later
+cycle to widen it. Note the failure mode is asymmetric — a natural list that is too *narrow* only
+loses a recommendation, while one that is too *wide* asserts a pairing that may not hold, so widening
+on later evidence is the safer direction and should be expected rather than treated as a defect.
+
 **A channel needs a cross-axis entry only if it imposes a capacity or a target constraint.** A
 channel that merely supplies formatting conventions (`slack`, `jira` — Markdown or Jira markup and
 nothing more), or that declares itself additive (`store`: "Conversational output continues normally;

@@ -21,9 +21,11 @@
    failure captured in the notebook. Leaning (b) — the rule exists, and `falsify` is already 15.5k
    characters. Needs the consistency check against `ground+falsify` and `falsify+atomic` either way.
 
-4. **Proposed ADR-0085 check, still not written into the ADR:** the duplication discriminator from
-   nn 20260930224858-5322. It has now been applied twice (cycle 34 rejected an edit, cycle 35
-   justified one), so it has earned its place in the Risks section.
+4. **DONE (2026-10-01):** the duplication discriminator from nn 20260930224858-5322 is now an
+   ADR-0085 Risks entry, placed immediately before the axis-level-consistency entry it guards — this
+   check decides whether to make an axis-level edit, that one checks the edit once decided. It earned
+   the entry by being applied twice in opposite directions: cycle 34 rejected an unnecessary rule
+   (3 members stating the clause, 0 lacking), cycle 35 justified one (3 of 4 lacking, scoring badly).
 
 5. **A stale note to correct:** `20260513145454-0928` ("topology axis: wired into bar build, TUI2,
    SPA, and metaprompt") asserts the axis was wired in, while cycle 35 found it shipped with no axis

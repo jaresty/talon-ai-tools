@@ -1131,6 +1131,24 @@ Store: `docs/adr/evidence/0085/skill-updates/{skill-name}-{date}.md`
   the compositions and cautionary entries the new rule now governs and check each for agreement;
   "does it reach the model?" is a necessary check, not a sufficient one.
 
+- **N token definitions restating the same rule signals a missing axis-level rule only when some
+  member of the class lacks the clause and scores badly.** Repeated clauses are the symptom that
+  justified the form/channel axis rule, and they are also what nearly produced an unnecessary one a
+  cycle later; the two cases are indistinguishable without this check. In cycle 32, seven form tokens
+  each stated some version of "express the form through the channel's format" and **forty-four said
+  nothing** — the silent forms were the ones whose draws scored badly, so the seven hand-patches were
+  compensating for an absent rule and adding it fixed forty-four tokens. In cycle 34, three forms
+  (`facilitate`, `interactive`, `quiz`) each stated "collapse the turn-taking into the artifact when
+  the output is static", the picture looked identical, and **every member already stated it** — the
+  apparently-unguarded fourth member (`twin`) was not a member of the class at all, a pattern match
+  having caught the phrase "the reader", which is an audience reference. Extracting a general rule
+  there would have bought consistency at the cost of three short clauses while incurring the
+  axis-level risk in the entry above. So before treating duplication as a gap, ask two questions: does
+  a member lack the clause, and does that member score badly on the interaction the clause governs?
+  Both yes is the only case that warrants the edit. Verify class membership from each token's own
+  definition rather than from a pattern match over it — a class with a phantom unguarded member is
+  exactly the shape that justifies the edit one is already inclined to make.
+
 - **A cautionary never guided a shuffle response, so a cautioned pair's low score says nothing
   about the catalog.** Cross-axis cautionaries render on the token *selection* paths —
   `bar help llm --section heuristics` and the interactive TUI — and not on the *execution* paths,

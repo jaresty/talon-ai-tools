@@ -870,6 +870,34 @@ func TestBlindCodeCompositionRuleRendered(t *testing.T) {
 	}
 }
 
+// TestTopologyCapacityGuidanceDelivered replaces C22-R2's witness+skim/gist case.
+//
+// R2 originally asserted the guidance appeared in `### Choosing Topology`, which renders from
+// CROSS_AXIS_COMPOSITION. Cycle 36 found the two witness cautionaries asserted a conflict where a
+// resolution already existed — the shipped blind+skim composition compresses assumption blocks to
+// one-line headers and keeps the dependency reference — and that the same compression rule applies to
+// all four externalizing topology tokens against both absolute caps. The rule moved to the topology
+// axis description, which is a strictly wider delivery: an axis description reaches the model in the
+// build prompt where the tokens are active, whereas a cautionary renders only on the token-selection
+// paths. Asserted against the axis description so the property is checked where it now lives.
+func TestTopologyCapacityGuidanceDelivered(t *testing.T) {
+	grammar := loadCompletionGrammar(t)
+
+	desc := grammar.Axes.AxisDescriptions["topology"]
+	if desc == "" {
+		t.Fatal("topology axis description missing")
+	}
+	for _, phrase := range []string{
+		"caps depth absolutely",
+		"compresses to its shortest labelled form",
+		"only the elaboration is suppressed",
+	} {
+		if !strings.Contains(desc, phrase) {
+			t.Errorf("topology axis description missing capacity guidance %q; got:\n%s", phrase, desc)
+		}
+	}
+}
+
 // TestChoosingTopologyC22Recommendations specifies that bar help llm Choosing Topology
 // section contains all four ADR-0085 cycle-22 recommendations:
 // R2: witness+skim/gist guidance; R3: audit+probe natural; R4: relay+notebook natural;
@@ -895,11 +923,6 @@ func TestChoosingTopologyC22Recommendations(t *testing.T) {
 		phrases []string
 		msg     string
 	}{
-		{
-			"R2: witness+skim/gist guidance",
-			[]string{"witness", "skim", "gist"},
-			"witness+skim/gist guidance missing from ### Choosing Topology — add note about compressed assumption traces",
-		},
 		{
 			"R3: audit+probe natural",
 			[]string{"audit", "probe"},

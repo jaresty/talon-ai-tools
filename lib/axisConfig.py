@@ -2101,7 +2101,8 @@ AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
     "topology": "Who the reasoning is externalised for, and what must therefore be visible in the output — a future reader reconstructing it, a live observer checking each transition, a challenger "
     "testing each claim, or no observer at all. Each token names text the response must carry before the conclusions that depend on it. Where a channel is also active, that text is "
     "expressed in the channel's own constructs — comments in code, step narration in a tour, descriptive fields in a specification — rather than as prose beside the artifact; a channel that "
-    "produces a specification is itself text and can carry it. A composition rule for the specific pair governs over this default.",
+    "produces a specification is itself text and can carry it. Where a completeness token caps depth absolutely, the required text compresses to its shortest labelled form rather than being "
+    "dropped — the label and the reference from each conclusion to it survive, and only the elaboration is suppressed. A composition rule for the specific pair governs over this default.",
     "voice": "Who is speaking — the perspective and expertise level.",
 }
 
@@ -2753,21 +2754,14 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
         "solo": {
             "persona_preset": {
                 "cautionary": {
-                    "stakeholder_facilitator": "solo externalizes minimal reasoning state; stakeholder facilitation requires relay-level continuity so "
-                    "participants can follow the reasoning thread — use relay topology instead"
+                    "stakeholder_facilitator": "solo labels each intermediate step with the prior step it closes, which is a derivation record for the author "
+                    "rather than a thread a group can follow; stakeholder facilitation needs the carried-forward state named for "
+                    "whoever picks it up — use relay topology instead"
                 }
             }
         },
         "witness": {
-            "completeness": {
-                "natural": ["zoom"],
-                "cautionary": {
-                    "skim": "witness+skim tends to produce compressed assumption traces that undermine witness's purpose — assumption externalization requires "
-                    "space; prefer solo if brevity is required",
-                    "gist": "witness+gist tends to produce compressed assumption traces that undermine witness's purpose — assumption externalization requires "
-                    "space; prefer solo if brevity is required",
-                },
-            },
+            "completeness": {"natural": ["zoom"]},
             "form": {"natural": ["gate"]},
         },
     },

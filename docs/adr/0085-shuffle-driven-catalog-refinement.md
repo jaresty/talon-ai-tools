@@ -526,6 +526,21 @@ evidence: [seed_15, seed_31]
 not say which layer owns the strain. Four cycles of evidence (23-27) show the default instinct is
 to file a cross-axis entry, and that it is wrong more often than not.
 
+**Step 0, before the questions below: look the pair up.** Run `make pair-lookup PAIR="<a> <b>"`. It reports
+whether a composition already ships for the pair, any existing cross-axis entry in either direction, whether
+either definition names the other token, and whether an axis description carries a rule that already
+governs it. This is not the same as asking the questions below — the questions
+test your reading of the pair, this tests the catalog's. In cycle 36 the capacity reading was
+*defensible*: `witness`×`skim` looks exactly like check 4's capacity-starvation class, which already
+cites `skim`×`rigor` as a member. Eight cautionaries were written on that reading, and a shipped
+`blind+skim` composition — assumption blocks compress to one-line headers, the dependency reference
+survives — showed the whole class compresses rather than starves. The double-layer invariant caught it
+only *after* the entries were written. Run the lookup first and the question never arises: **if a
+composition exists for the pair, a cautionary for it is wrong by construction.** This has five
+instances this week (the 15 prose-slot entries, `ghost+svg`, the `aloud`/`table` framing, the
+`image`/`video` proposal, and these eight), all with the same shape — reaching for the layer that
+*records* a problem before checking whether a layer that *resolves* it already applies.
+
 Ask in this order:
 
 1. **Is a token mis-describing itself?** If a token's description claims something it is not — a

@@ -1,8 +1,14 @@
 # Cycle 36 — followups
 
-1. **Proposed ADR-0085 step: run the double-layer check BEFORE writing a cautionary**, not as a
-   post-commit invariant. Five instances this week of writing a cautionary where a composition exists
-   or a definition already resolves it; the check is one command and encodes the decision reliably.
+1. **DONE (2026-10-01):** the layer procedure gains **step 0 — look the pair up** before asking any of
+   its four questions, implemented as `make pair-lookup PAIR="<a> <b>"`
+   (`scripts/pair-lookup.py`). It reports whether a composition already ships, any cross-axis entry in
+   either direction, whether either definition names the other token, and whether an axis description
+   already governs the pair. Verified against this week's five instances: it flags `blind`+`skim`,
+   `ghost`+`svg` and `faq`+`code` as having shipped compositions, and correctly reports none for
+   `bug`+`code` and `audit`+`ledger`, which are genuine cautionary/axis cases. Run against
+   `blind`+`skim` it prints "COMPOSITION EXISTS — a cautionary for this pair is wrong by construction"
+   as its first line, which is what would have stopped cycle 36 before the first entry was written.
 
 2. **`blind` × `aloud`** (cycle 35 seed 602, one seed) — still open. Note the capacity clause added
    this cycle does NOT cover it: `aloud`'s problem is that speech has no stable referenceable label,

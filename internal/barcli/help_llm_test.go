@@ -838,29 +838,35 @@ func TestChoosingTopologyHasTriggerHeuristics(t *testing.T) {
 	}
 }
 
-// TestBlindCodeCompositionRuleRendered specifies that bar help llm contains a
-// composition note for blind+code in the Choosing Topology section. ADR-0085 C22-R1.
+// TestBlindCodeCompositionRuleRendered specifies that the blind+code resolution —
+// assumption blocks carried as structured comments inside code-only output — is reachable.
+// ADR-0085 C22-R1.
+//
+// This originally asserted the rule appeared in `### Choosing Topology`, which renders from
+// CROSS_AXIS_COMPOSITION. The test's own name said "composition" while the entry was filed as a
+// cautionary, and the entry text opened with the words "blind+code composition" — a layer
+// mismatch. Cycle 35 moved it to COMPOSITIONS, which strengthens the property rather than
+// weakening it: cautionary entries render only on the token-SELECTION paths, whereas a
+// composition is injected into the build prompt's COMPOSITION RULES section and so reaches the
+// model when blind and code are actually co-present. Asserted against the shipped composition.
 func TestBlindCodeCompositionRuleRendered(t *testing.T) {
 	grammar := loadCompletionGrammar(t)
-	var buf bytes.Buffer
-	renderLLMHelp(&buf, grammar, "heuristics", false)
-	output := buf.String()
 
-	start := strings.Index(output, "### Choosing Topology")
-	if start == -1 {
-		t.Fatal("bar help llm output missing ### Choosing Topology section")
+	var rule string
+	for _, c := range grammar.Compositions {
+		if c.Name == "blind+code" {
+			rule = c.Prose
+			break
+		}
 	}
-	end := strings.Index(output[start:], "### Choosing Completeness")
-	if end == -1 {
-		end = len(output) - start
+	if rule == "" {
+		t.Fatal("blind+code composition missing from grammar COMPOSITIONS")
 	}
-	section := output[start : start+end]
-
-	if !strings.Contains(section, "blind") || !strings.Contains(section, "code") {
-		t.Errorf("### Choosing Topology section missing blind+code composition rule — blind and code must both appear in the section as a composition note")
+	if !strings.Contains(rule, "comment") {
+		t.Errorf("blind+code composition must describe comment-based assumption reconstruction (expected 'comment'); got:\n%s", rule)
 	}
-	if !strings.Contains(section, "comment") {
-		t.Errorf("### Choosing Topology blind+code composition rule must describe comment-based assumption reconstruction (expected 'comment' in section)")
+	if !strings.Contains(rule, "assumption block") {
+		t.Errorf("blind+code composition must name blind's assumption blocks; got:\n%s", rule)
 	}
 }
 

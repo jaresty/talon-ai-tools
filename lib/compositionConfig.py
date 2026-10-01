@@ -637,6 +637,19 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "blind+code",
+        "tokens": ["blind", "code"],
+        "prose": (
+            "blind + code: blind opens each section that uses prior context with a labelled assumption block before any "
+            "conclusion in that section depends on it; code emits only code or markup with no prose slot. The assumption "
+            "blocks are carried in the channel's own construct rather than beside it: they appear as structured comment "
+            "headers (for example `# ASSUMPTION:` and `# CONTEXT:`) immediately preceding the code sections that depend "
+            "on them, and each dependent section names the block it draws from by that label. Code-only output is "
+            "preserved — an adjacent prose block does not satisfy this composition, and code carrying no labelled "
+            "assumption headers does not satisfy blind. "
+        ),
+    },
+    {
         "name": "faq+code",
         "tokens": ["faq", "code"],
         "prose": (

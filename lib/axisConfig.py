@@ -2098,6 +2098,10 @@ AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
     "scope": "Which dimension of the topic to focus on (entities, structure, meaning, actions, quality). Up to two.",
     "task": "What the response does — the primary action to perform.",
     "tone": "The emotional register — how the response sounds.",
+    "topology": "Who the reasoning is externalised for, and what must therefore be visible in the output — a future reader reconstructing it, a live observer checking each transition, a challenger "
+    "testing each claim, or no observer at all. Each token names text the response must carry before the conclusions that depend on it. Where a channel is also active, that text is "
+    "expressed in the channel's own constructs — comments in code, step narration in a tour, descriptive fields in a specification — rather than as prose beside the artifact; a channel that "
+    "produces a specification is itself text and can carry it. A composition rule for the specific pair governs over this default.",
     "voice": "Who is speaking — the perspective and expertise level.",
 }
 
@@ -2745,28 +2749,14 @@ CROSS_AXIS_COMPOSITION: Dict[str, Dict[str, Dict[str, Any]]] = {
                 }
             },
         },
-        "blind": {
-            "channel": {
-                "cautionary": {
-                    "code": "blind+code composition: assumption reconstruction manifests as structured comments (`# ASSUMPTION:`, `# CONTEXT:`) placed before the code "
-                    "sections that depend on them — code-only output is preserved; the assumption blocks appear as inline comment headers rather than prose"
-                }
-            }
-        },
         "relay": {"channel": {"natural": ["notebook"]}},
         "solo": {
-            "method": {
-                "cautionary": {
-                    "inversion": "solo suppresses reasoning externalization; inversion's failure-path chain requires visible derivation steps to be meaningful — use "
-                    "relay or witness instead so the failure-to-intervention path is externalized"
-                }
-            },
             "persona_preset": {
                 "cautionary": {
                     "stakeholder_facilitator": "solo externalizes minimal reasoning state; stakeholder facilitation requires relay-level continuity so "
                     "participants can follow the reasoning thread — use relay topology instead"
                 }
-            },
+            }
         },
         "witness": {
             "completeness": {

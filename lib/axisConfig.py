@@ -5214,8 +5214,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "timeline",
                 },
                 {
-                    "note": "slideshow = discrete slides, no transition artifacts required; stage = named states with explicit transition artifacts",
-                    "token": "slideshow",
+                    "note": "slides = discrete slide units, no transition artifacts required; stage = named states with explicit transition artifacts",
+                    "token": "slides",
                 },
                 {
                     "note": "ghost = autonomous action trace with observed results; stage = named-state sequence with explicit transition artifacts",
@@ -5776,8 +5776,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "balance": {
             "distinctions": [
                 {
-                    "note": "resilience = behavior under stress; balance = how opposing forces produce equilibrium or instability",
-                    "token": "resilience",
+                    "note": "survive = behavior when exposed to live uncontrolled conditions; balance = how opposing forces produce equilibrium or instability",
+                    "token": "survive",
                 }
             ],
             "heuristics": [
@@ -5842,8 +5842,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "boom": {
             "distinctions": [
                 {
-                    "note": "boom = behavior at extremes of scale/intensity where things qualitatively break or dominate; resilience = behavior under normal stress range",
-                    "token": "resilience",
+                    "note": "boom = behavior at extremes of scale/intensity where things qualitatively break or dominate; survive = behavior when exposed to live uncontrolled "
+                    "conditions",
+                    "token": "survive",
                 }
             ],
             "heuristics": [
@@ -6527,13 +6528,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "gloss": {
             "distinctions": [
                 {
-                    "note": "summary = condense content; gloss = compress an unfamiliar system into a tractable representation for someone who needs to understand and intervene, "
-                    "explicitly naming what is lost",
-                    "token": "summary",
+                    "note": "gist = condense content to its main points; gloss = compress an unfamiliar system into a tractable representation for someone who needs to understand "
+                    "and intervene, explicitly naming what is lost",
+                    "token": "gist",
                 },
                 {
-                    "note": "define = state the meaning of a term; gloss = map a whole system's structure for an external actor, identifying key mechanisms, actors, and omissions",
-                    "token": "define",
+                    "note": "ontology = state the concepts and relations that constitute the domain; gloss = map a whole system's structure for an external actor, identifying key "
+                    "mechanisms, actors, and omissions",
+                    "token": "ontology",
                 },
             ],
             "heuristics": [
@@ -6684,6 +6686,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what general pattern can I extract from these three failing tests",
                 "what rule do these similar bugs suggest",
                 "generalize a rule or model from a set of observed outcomes",
+                "generalize from what already exists",
+                "derive the rule the existing cases follow",
             ],
         },
         "inversion": {
@@ -7122,6 +7126,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "how did this evolve",
                 "archaeology of the codebase",
                 "why is this the way it is",
+                "what do the existing artifacts imply",
+                "what did past usage already settle",
+                "read the structure out of what exists",
             ],
         },
         "own": {
@@ -7492,8 +7499,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "robust": {
             "distinctions": [
                 {
-                    "note": "resilience = system behavior under stress; robust = select options that perform across uncertain futures",
-                    "token": "resilience",
+                    "note": "survive = behavior when exposed to live uncontrolled conditions; robust = select options that perform across uncertain futures",
+                    "token": "survive",
                 }
             ],
             "heuristics": [
@@ -8062,7 +8069,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "act = what entities are doing or performing; thing = what entities exist",
                     "token": "thing",
-                }
+                },
+                {
+                    "note": "act = the activity currently being performed; jobs = the outcome sought, which persists even if every current activity were removed",
+                    "token": "jobs",
+                },
             ],
             "heuristics": [
                 "what actions",
@@ -8072,6 +8083,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what work is happening",
                 "what are the intended operations",
                 "the activities it performs",
+                "how is this done today",
+                "what is the current workflow",
+                "what is being done now",
+                "what workarounds are in use",
             ],
         },
         "assume": {
@@ -8187,7 +8202,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "product = features, user needs, value propositions broadly; jobs = specifically the outcome/progress users seek and the forces blocking or enabling it",
                     "token": "product",
-                }
+                },
+                {
+                    "note": "jobs = the outcome sought, independent of any current activity; act = the activity presently being performed",
+                    "token": "act",
+                },
             ],
             "heuristics": [
                 "what is the user actually trying to accomplish",

@@ -86,6 +86,12 @@ STARTER_PACKS: list[StarterPack] = [
         heuristics=("compare these", "which is better", "tradeoffs between", "pros and cons", "A vs B", "choose between", "evaluate options", "compare alternatives"),
     ),
     StarterPack(
+        name="glean",
+        framing="Deriving structure from work already being done",
+        command="bar build probe act origin induce",
+        heuristics=("start from how it works today", "study the existing artifacts first", "derive requirements from what exists", "what does current usage tell us", "understand the workflow before changing it", "read the structure out of existing work", "learn from the legacy system", "what do the current outputs imply"),
+    ),
+    StarterPack(
         name="craft",
         framing="Disciplined iterative making — TDD and strict artifact cycles",
         command="bar build make witness ground gate falsify atomic",

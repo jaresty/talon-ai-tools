@@ -248,6 +248,46 @@ def validate_kanji_no_duplicates_within_axis(catalog) -> List[str]:
     return errors
 
 
+def validate_distinction_targets(catalog) -> List[str]:
+    """Each distinction must reference a token that exists in the catalog.
+
+    A distinction whose target token was renamed or removed leaves a dangling
+    reference: the entry still reads correctly but points at nothing, so the
+    distinction it draws can never be looked up from the token it names.
+    """
+    errors: List[str] = []
+    metadata = catalog.get("axis_token_metadata", {}) or {}
+
+    known: set[str] = set()
+    for tokens in (catalog.get("axes", {}) or {}).values():
+        known |= set(tokens or {})
+    static_prompts = catalog.get("static_prompts", {}) or {}
+    known |= {
+        entry["name"]
+        for entry in (static_prompts.get("profiled", []) or [])
+        if isinstance(entry, dict) and "name" in entry
+    }
+    known |= set(static_prompts.get("unprofiled_tokens", []) or [])
+
+    for axis_name, tokens in metadata.items():
+        for token, payload in (tokens or {}).items():
+            for distinction in (payload or {}).get("distinctions", []) or []:
+                target = (distinction or {}).get("token")
+                if target is None:
+                    errors.append(
+                        f"[distinction drift] axis={axis_name} token='{token}' has a "
+                        f"distinction with no 'token' field"
+                    )
+                elif target not in known:
+                    errors.append(
+                        f"[distinction drift] axis={axis_name} token='{token}' "
+                        f"references unknown token '{target}' (rename the target or "
+                        f"remove the distinction; targets must be a registered axis "
+                        f"token or task)"
+                    )
+    return errors
+
+
 def validate_generated_lists(catalog, lists_dir: Path) -> List[str]:
     """Ensure committed Talon lists match catalog-generated tokens."""
 
@@ -357,6 +397,7 @@ def main() -> int:
     errors.extend(validate_axis_tokens(catalog))
     errors.extend(validate_no_legacy_style_axis(catalog))
     errors.extend(validate_kanji_no_duplicates_within_axis(catalog))
+    errors.extend(validate_distinction_targets(catalog))
     errors.extend(validate_static_prompt_axes(catalog))
     errors.extend(validate_static_prompt_descriptions(catalog))
     errors.extend(validate_static_prompt_sections_present(catalog))

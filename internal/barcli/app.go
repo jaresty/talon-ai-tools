@@ -108,6 +108,8 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar help
   bar help tokens [section...] [--grammar PATH]
+  bar help token <slug> [<slug>...]      one or more token names
+  bar help composition <a>+<b>           members joined with "+", one composition
   bar tui [tokens...] [--grammar PATH] [--no-alt-screen]
   bar tui2 [tokens...]  (deprecated alias for bar tui)
 
@@ -712,33 +714,35 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 		return 0
 	case "token":
 		if len(opts.Tokens) < 2 {
-			writeError(stderr, "usage: bar help token <slug>")
+			writeError(stderr, "usage: bar help token <slug> [<slug>...]")
 			return 1
 		}
-		slug := opts.Tokens[1]
+		slugs := opts.Tokens[1:]
 		grammar, err := LoadGrammar(opts.GrammarPath)
 		if err != nil {
 			writeError(stderr, err.Error())
 			return 1
 		}
-		if opts.Skip != "" {
+		// Render every operand in argument order. --skip applies per slug so a
+		// batch of already-known tokens still collapses to confirmation lines.
+		exit := 0
+		for i, slug := range slugs {
 			var buf bytes.Buffer
 			if err := renderHelpToken(&buf, grammar, slug); err != nil {
 				writeError(stderr, err.Error())
-				return 1
+				exit = 1
+				continue
 			}
-			if strings.Contains(buf.String(), opts.Skip) {
+			if i > 0 {
+				fmt.Fprintln(stdout)
+			}
+			if opts.Skip != "" && strings.Contains(buf.String(), opts.Skip) {
 				fmt.Fprintf(stdout, "# Token: %s (confirmed: %q)\n", slug, opts.Skip)
-				return 0
+				continue
 			}
 			_, _ = io.Copy(stdout, &buf)
-			return 0
 		}
-		if err := renderHelpToken(stdout, grammar, slug); err != nil {
-			writeError(stderr, err.Error())
-			return 1
-		}
-		return 0
+		return exit
 	case "composition":
 		name := ""
 		if len(opts.Tokens) > 1 {
@@ -748,6 +752,19 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 		if err != nil {
 			writeError(stderr, err.Error())
 			return 1
+		}
+		// Composition members supplied as separate arguments are a plausible
+		// mistake: if joining them with "+" names a real composition, say so
+		// instead of printing the whole catalog.
+		if len(opts.Tokens) > 2 {
+			joined := strings.Join(opts.Tokens[1:], "+")
+			for _, comp := range grammar.Compositions {
+				if comp.Name == joined {
+					writeError(stderr, "composition names use \"+\" between members.")
+					fmt.Fprintf(stderr, "Try: bar help composition %s\n", joined)
+					return 1
+				}
+			}
 		}
 		if opts.Skip != "" && name != "" {
 			var buf bytes.Buffer
@@ -813,6 +830,25 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 		renderLLMHelp(stdout, grammar, opts.Section, opts.Compact)
 		return 0
 	default:
+		// A token name supplied directly after `help` is a plausible mistake:
+		// name the exact correction instead of falling back to general usage.
+		if grammar, err := LoadGrammar(opts.GrammarPath); err == nil {
+			known := make(map[string]struct{})
+			for _, t := range grammar.GetAllAxisTokens() {
+				known[t] = struct{}{}
+			}
+			if _, ok := known[topic]; ok {
+				var cmds []string
+				for _, t := range opts.Tokens {
+					if _, ok := known[t]; ok {
+						cmds = append(cmds, "bar help token "+t)
+					}
+				}
+				writeError(stderr, fmt.Sprintf("%q is a token name; token help requires the \"token\" subcommand.", topic))
+				fmt.Fprintf(stderr, "Try: %s\n", strings.Join(cmds, " && "))
+				return 1
+			}
+		}
 		writeError(stderr, fmt.Sprintf("unknown help topic %q", topic))
 		fmt.Fprint(stdout, generalHelpText)
 		return 1

@@ -1589,6 +1589,7 @@ func TestTokensBlockClausesReachRenderedOutput(t *testing.T) {
 		{"loads-verified-count", "count of distinct valid"},
 		{"derivations-arrow-verbatim", "does not appear verbatim in that tool-result block"},
 		{"reduced-result-insufficient", "a result whose content was reduced before entering the transcript"},
+		{"faithful-retrieval-admissible", "retrieved in full from where it was stored"},
 		{"not-a-turn-end-signal", "is not a turn-end signal"},
 	}
 	for _, c := range clauses {

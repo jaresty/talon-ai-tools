@@ -91,6 +91,7 @@ bar-grammar-update:
 		.venv/bin/python3 scripts/embed_tokens.py; \
 	else \
 		echo "⚠ Skipping embeddings: sentence_transformers not found in .venv (run: uv pip install sentence-transformers)"; \
+		cp build/prompt-grammar.json internal/barcli/embed/prompt-grammar.json; \
 		cp build/prompt-grammar.json cmd/bar/testdata/grammar.json; \
 		cp build/prompt-grammar.json web/static/prompt-grammar.json; \
 	fi

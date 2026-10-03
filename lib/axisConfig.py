@@ -1088,7 +1088,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     "completeness": {
         "deep": "Substantial depth within scope",
         "descend": "Complete each part before the next",
-        "full": "Thorough, all major aspects",
+        "full": "Every element, one level deep",
         "gist": "Brief but complete summary",
         "grow": "Expand only when demanded",
         "max": "Exhaustive, treat omissions as errors",
@@ -1830,7 +1830,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     "completeness": {
         "deep": "Unpack reasoning layers and fine details",
         "descend": "One part at a time, each to completion",
-        "full": "Thorough coverage without exhausting every edge case",
+        "full": "Every named element, one level deep — no sub-elements",
         "gist": "Essential points only",
         "grow": "Expand on demand",
         "max": "Exhaustive — every case, every edge",
@@ -3973,6 +3973,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "full picture",
                 "don't leave anything major out",
                 "complete treatment",
+                "breadth-first",
+                "breadth over depth",
+                "one level at a time",
+                "survey everything before going deeper",
+                "same depth across the board",
             ],
         },
         "gist": {

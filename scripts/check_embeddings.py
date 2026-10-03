@@ -13,7 +13,16 @@ import json
 import sys
 from pathlib import Path
 
-DEFAULT_GRAMMAR = Path(__file__).resolve().parents[1] / "build" / "prompt-grammar.json"
+_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_GRAMMAR = _ROOT / "build" / "prompt-grammar.json"
+# Every committed mirror, not just build/: internal/barcli/embed is what go:embed
+# compiles into the binary, so a mirror missing vectors ships silently.
+DEFAULT_GRAMMARS = [
+    DEFAULT_GRAMMAR,
+    _ROOT / "internal" / "barcli" / "embed" / "prompt-grammar.json",
+    _ROOT / "cmd" / "bar" / "testdata" / "grammar.json",
+    _ROOT / "web" / "static" / "prompt-grammar.json",
+]
 
 
 def check_embeddings(grammar_path: Path) -> list[str]:
@@ -44,28 +53,41 @@ def check_embeddings(grammar_path: Path) -> list[str]:
 
 
 def main() -> None:
-    grammar_path = Path(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_GRAMMAR
-    if not grammar_path.exists():
-        print(f"check_embeddings: {grammar_path} not found", file=sys.stderr)
-        sys.exit(1)
+    if len(sys.argv) > 1:
+        paths = [Path(a) for a in sys.argv[1:]]
+    else:
+        paths = [p for p in DEFAULT_GRAMMARS if p.exists()]
+        if not paths:
+            print(f"check_embeddings: {DEFAULT_GRAMMAR} not found", file=sys.stderr)
+            sys.exit(1)
 
-    missing = check_embeddings(grammar_path)
-    if missing:
-        print(
-            f"check_embeddings: {len(missing)} token(s) missing embedding vectors in {grammar_path}",
-            file=sys.stderr,
-        )
-        for m in missing[:10]:
-            print(f"  - {m}", file=sys.stderr)
-        if len(missing) > 10:
-            print(f"  ... and {len(missing) - 10} more", file=sys.stderr)
+    failed = False
+    for grammar_path in paths:
+        if not grammar_path.exists():
+            print(f"check_embeddings: {grammar_path} not found", file=sys.stderr)
+            failed = True
+            continue
+
+        missing = check_embeddings(grammar_path)
+        if missing:
+            failed = True
+            print(
+                f"check_embeddings: {len(missing)} token(s) missing embedding vectors in {grammar_path}",
+                file=sys.stderr,
+            )
+            for m in missing[:10]:
+                print(f"  - {m}", file=sys.stderr)
+            if len(missing) > 10:
+                print(f"  ... and {len(missing) - 10} more", file=sys.stderr)
+        else:
+            print(f"check_embeddings: OK ({grammar_path.name})")
+
+    if failed:
         print(
             "\nRun: .venv/bin/python3 scripts/embed_tokens.py",
             file=sys.stderr,
         )
         sys.exit(1)
-
-    print(f"check_embeddings: OK ({grammar_path.name})")
 
 
 if __name__ == "__main__":

@@ -153,6 +153,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     },
     "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
+        "descend": "The response carries each part of the subject to full depth before beginning the next, so that at any point some parts are complete and the rest untouched. It names the "
+        "part it is taking up before covering it, and does not reopen a completed part to extend it once the next has begun.",
         "full": "The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of "
         "each.",
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
@@ -1085,6 +1087,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     },
     "completeness": {
         "deep": "Substantial depth within scope",
+        "descend": "Complete each part before the next",
         "full": "Thorough, all major aspects",
         "gist": "Brief but complete summary",
         "grow": "Expand only when demanded",
@@ -1351,6 +1354,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     },
     "completeness": {
         "deep": "深",
+        "descend": "縦",
         "full": "全",
         "gist": "旨",
         "grow": "増",
@@ -1825,6 +1829,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     },
     "completeness": {
         "deep": "Unpack reasoning layers and fine details",
+        "descend": "One part at a time, each to completion",
         "full": "Thorough coverage without exhausting every edge case",
         "gist": "Essential points only",
         "grow": "Expand on demand",
@@ -3897,6 +3902,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "deep = substantial depth within scope; full = breadth across major aspects",
                     "token": "full",
                 },
+                {
+                    "note": "deep = how much depth any part receives once covered; descend = which part is covered first and how far before moving on",
+                    "token": "descend",
+                },
             ],
             "heuristics": [
                 "go deep",
@@ -3909,6 +3918,38 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "depth over breadth",
             ],
         },
+        "descend": {
+            "distinctions": [
+                {
+                    "note": "descend = order of coverage, each part completed before the next begins; full = every part carried to one depth, no part completed ahead of "
+                    "the others",
+                    "token": "full",
+                },
+                {
+                    "note": "descend = which part is covered first and how far before moving on; deep = how much depth any part receives once covered",
+                    "token": "deep",
+                },
+                {
+                    "note": "descend = the remaining parts are deferred and still covered later; narrow = the remaining parts are excluded and never covered",
+                    "token": "narrow",
+                },
+                {
+                    "note": "descend = order fixed in advance, each part taken to completion; grow = depth added only where the analysis demands it",
+                    "token": "grow",
+                },
+            ],
+            "heuristics": [
+                "depth-first",
+                "one at a time, all the way through",
+                "finish this before moving on",
+                "vertical slice",
+                "end-to-end on one case",
+                "walking skeleton",
+                "complete one feature through every layer",
+                "don't leave half-finished work",
+                "fully resolve each item before the next",
+            ],
+        },
         "full": {
             "distinctions": [
                 {
@@ -3918,6 +3959,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "full = breadth across major aspects; deep = substantial depth within scope",
                     "token": "deep",
+                },
+                {
+                    "note": "full = every part carried to one depth, no part completed ahead of the others; descend = each part completed before the next begins",
+                    "token": "descend",
                 },
             ],
             "heuristics": [
@@ -3957,6 +4002,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "grow = dynamic — justifies each expansion; max = static — exhaust all coverage from the start",
                     "token": "max",
+                },
+                {
+                    "note": "grow = depth added only where the analysis demands it; descend = order fixed in advance, each part taken to completion",
+                    "token": "descend",
                 },
             ],
             "heuristics": [
@@ -4015,7 +4064,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "narrow = very small slice of topic; minimal = smallest answer",
                     "token": "minimal",
-                }
+                },
+                {
+                    "note": "narrow = the remaining parts are excluded and never covered; descend = the remaining parts are deferred and still covered later",
+                    "token": "descend",
+                },
             ],
             "heuristics": [
                 "specifically",

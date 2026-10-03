@@ -17,6 +17,7 @@ class CompletenessAxisMetadataTests(unittest.TestCase):
     AXIS = "completeness"
     EXPECTED_TOKENS = {
         "deep",
+        "descend",
         "full",
         "gist",
         "grow",

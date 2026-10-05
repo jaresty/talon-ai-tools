@@ -1594,6 +1594,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
             "as enthusiast": "熱",
             "as facilitator": "介",
             "as future historian": "史",
+            "as insider": "内",
             "as junior engineer": "駆",
             "as mathematician": "数",
             "as pirate": "海",

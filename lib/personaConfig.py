@@ -41,6 +41,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as technical writer": "The response adopts a technical writer's stance: structured, topic-sentence-led prose, audience-scoped vocabulary, minimal redundancy, and document-level coherence.",
         "as mathematician": "The response adopts a mathematician's stance: precise definitions, explicit assumptions, formal reasoning, and clean notation — claims are stated as propositions and supported by proof or counterexample.",
         "as plainspeak": "The response applies Simplified Technical English rules: short sentences, active voice, one instruction per sentence, controlled vocabulary, and no ambiguous pronouns.",
+        "as insider": "The response speaks in the established terms of the subject's own field. Before the response content, write two lines: `Field: [the field this subject belongs to]`; `Terms: [the terms of art that field uses for the things this subject involves]`. Then use those terms throughout, in place of the everyday paraphrases a non-member would reach for, introducing a term on first use only where the subject itself leaves its meaning ambiguous.",
     },
     "audience": {
         "to managers": "The response addresses managers, naming outcomes, risk, and staffing.",
@@ -105,6 +106,7 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "as technical writer": "Technical writer structure",
         "as mathematician": "Mathematical precision and proof",
         "as plainspeak": "Simplified Technical English",
+        "as insider": "The field's own terms of art",
     },
     "audience": {
         "to managers": "Outcome-focused for managers",
@@ -171,6 +173,7 @@ PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "as technical writer":   "Technical writer voice",
         "as mathematician":      "Mathematician voice",
         "as plainspeak":         "Plainspeak voice",
+        "as insider":            "Insider voice",
     },
     "audience": {
         "to CEO":                 "CEO audience",
@@ -244,6 +247,7 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "as technical writer": "技",
         "as mathematician": "数",
         "as plainspeak": "簡",
+        "as insider": "内",
     },
     "audience": {
         "to managers": "監",
@@ -1333,6 +1337,38 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 {
                     "token": "as programmer",
                     "note": "as mathematician = formal definitions, propositions, proof structure; as programmer = implementation-minded, engineering precision",
+                },
+            ],
+        },
+        "as insider": {
+            "definition": "Speak in the established terms of the subject's own field. Before the response content, write two lines: `Field: [the field this subject belongs to]`; `Terms: [the terms of art that field uses for the things this subject involves]`. Then use those terms throughout, in place of the everyday paraphrases a non-member would reach for, introducing a term on first use only where the subject itself leaves its meaning ambiguous.",
+            "heuristics": [
+                "use the domain's terminology",
+                "use domain-specific terminology",
+                "constrain the language to fit the domain",
+                "use the proper terms of art",
+                "sound like someone in the field",
+                "don't paraphrase the jargon",
+                "speak like a practitioner",
+                "use the right technical vocabulary",
+                "match the vocabulary of the discipline",
+            ],
+            "distinctions": [
+                {
+                    "token": "as plainspeak",
+                    "note": "as insider = word choice constrained toward the field's terms of art; as plainspeak = word choice constrained toward a controlled general vocabulary. Both constrain vocabulary, in opposite directions.",
+                },
+                {
+                    "token": "as technical writer",
+                    "note": "as insider = which terms the prose uses, resolved from the subject's field; as technical writer = how the document is structured, without vocabulary restriction.",
+                },
+                {
+                    "token": "as wild",
+                    "note": "as insider = resolves the subject's field and speaks in its terms; as wild = resolves a surprising figure and speaks in their voice. Both resolve a referent from the subject, but insider seeks the expected field while wild seeks the unexpected speaker.",
+                },
+                {
+                    "token": "to programmer",
+                    "note": "as insider = the speaker commands the field's terms; to programmer = the reader is assumed to. Audience scopes vocabulary to who is listening; voice sets which terms the speaker reaches for.",
                 },
             ],
         },

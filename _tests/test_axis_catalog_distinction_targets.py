@@ -93,12 +93,7 @@ if not TYPE_CHECKING:
 
         # Entries that still fail this invariant and need authored contrast text
         # rather than a subject label. Tracked as debt, not exempted silently.
-        KNOWN_UNATTRIBUTED = {
-            ("channel", "canvas", "diagram"),
-            ("channel", "canvas", "draw"),
-            ("method", "induce", "deduce"),
-            ("method", "deduce", "abduce"),
-        }
+        KNOWN_UNATTRIBUTED: set[tuple[str, str, str]] = set()
 
         def _metadata(self):
             import sys

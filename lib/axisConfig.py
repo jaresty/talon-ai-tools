@@ -3401,11 +3401,13 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "sketch",
                 },
                 {
-                    "note": "diagram = Mermaid code for Mermaid renderer",
+                    "note": "diagram = Mermaid code for a Mermaid renderer; canvas = named shapes and connections for a canvas rendering agent that draws them onto a live "
+                    "canvas document",
                     "token": "diagram",
                 },
                 {
-                    "note": "draw = ASCII spatial arrangement, human-readable only",
+                    "note": "draw = ASCII spatial arrangement rendered as text in the response, human-readable only; canvas = named shapes and connections handed to a rendering "
+                    "agent that produces a canvas document outside the response",
                     "token": "draw",
                 },
             ],
@@ -6192,7 +6194,13 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "deduce": {
-            "distinctions": [{"note": "evidence → hypothesis", "token": "abduce"}],
+            "distinctions": [
+                {
+                    "note": "deduce = derive what must follow from stated premises, so the conclusion is entailed; abduce = propose explanations the evidence would account for, "
+                    "so the conclusion is the best available candidate rather than an entailment",
+                    "token": "abduce",
+                }
+            ],
             "heuristics": [
                 "what follows from",
                 "given these premises",
@@ -6732,8 +6740,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "abduce",
                 },
                 {
-                    "note": "generalizing a structure or dependency map from accumulated failed attempts is induction — the failures are the observation set; deduce derives what "
-                    "must follow from a stated premise instead",
+                    "note": "induce = generalize a pattern from an observation set, as when a dependency map is built up from accumulated failed attempts and the failures are "
+                    "the observation set; deduce = derive what must follow from a stated premise instead",
                     "token": "deduce",
                 },
             ],

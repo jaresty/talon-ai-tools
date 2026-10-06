@@ -3,6 +3,7 @@ package barcli
 import (
 	"bytes"
 	"io/fs"
+	"os"
 	"regexp"
 	"strings"
 	"testing"
@@ -1109,5 +1110,68 @@ func TestLLMHelpSequencesDispatchPointer(t *testing.T) {
 	output := buf.String()
 	if !strings.Contains(output, "bar help dispatch") {
 		t.Errorf("sequences section should reference 'bar help dispatch' as the live protocol source\noutput:\n%s", output)
+	}
+}
+
+// TestHelpTokenPersonaAxisAndKanji asserts that persona-family tokens (voice,
+// audience, tone, intent) render the same header block as the seven axis-family
+// tokens. The persona branch of renderTokenHelp omitted both the **Axis** line
+// and the **Kanji** line even though AxisLevelDescription and PersonaKanji are
+// populated for these axes, so a reader of `bar help token as-pm` could not see
+// which axis the token belongs to or its kanji.
+func TestHelpTokenPersonaAxisAndKanji(t *testing.T) {
+	cases := []struct {
+		slug string
+		axis string
+		desc string
+	}{
+		{"as-pm", "voice", "Who is speaking"},
+		{"to-team", "audience", "Who this is for"},
+		{"kindly", "tone", "emotional register"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.slug, func(t *testing.T) {
+			var stdout, stderr bytes.Buffer
+			if exit := Run([]string{"help", "token", tc.slug}, os.Stdin, &stdout, &stderr); exit != 0 {
+				t.Fatalf("help token %s exited %d: %s", tc.slug, exit, stderr.String())
+			}
+			out := stdout.String()
+
+			axisLine := "**Axis**: " + tc.axis + " — "
+			if !strings.Contains(out, axisLine) {
+				t.Errorf("missing %q in help token %s output:\n%s", axisLine, tc.slug, out)
+			}
+			if !strings.Contains(out, tc.desc) {
+				t.Errorf("axis description %q absent for %s; axis line should carry it", tc.desc, tc.slug)
+			}
+			if !strings.Contains(out, "**Kanji**: ") {
+				t.Errorf("missing **Kanji** line in help token %s output:\n%s", tc.slug, out)
+			}
+		})
+	}
+}
+
+// TestHelpTokenFieldOrderMatchesAcrossFamilies pins the header order so the two
+// render paths cannot drift apart again.
+func TestHelpTokenFieldOrderMatchesAcrossFamilies(t *testing.T) {
+	order := []string{"**Axis**: ", "**Kanji**: ", "**Label**: ", "**Description**: "}
+	for _, slug := range []string{"witness", "as-pm"} {
+		var stdout, stderr bytes.Buffer
+		if exit := Run([]string{"help", "token", slug}, os.Stdin, &stdout, &stderr); exit != 0 {
+			t.Fatalf("help token %s exited %d: %s", slug, exit, stderr.String())
+		}
+		out := stdout.String()
+		prev := -1
+		for _, field := range order {
+			idx := strings.Index(out, field)
+			if idx < 0 {
+				t.Errorf("%s: missing field %q", slug, field)
+				continue
+			}
+			if idx < prev {
+				t.Errorf("%s: field %q out of order", slug, field)
+			}
+			prev = idx
+		}
 	}
 }

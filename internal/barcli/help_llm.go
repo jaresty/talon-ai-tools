@@ -90,6 +90,12 @@ func renderHelpToken(w io.Writer, grammar *Grammar, slug string) error {
 			continue
 		}
 		fmt.Fprintf(w, "# Token: %s (%s)\n\n", slug, personaAxis)
+		if axisDesc := grammar.AxisLevelDescription(personaAxis); axisDesc != "" {
+			fmt.Fprintf(w, "**Axis**: %s — %s\n\n", personaAxis, axisDesc)
+		}
+		if kanji := grammar.PersonaKanji(personaAxis, canonical); kanji != "" {
+			fmt.Fprintf(w, "**Kanji**: %s\n\n", kanji)
+		}
 		label := grammar.PersonaLabel(personaAxis, canonical)
 		if label != "" {
 			fmt.Fprintf(w, "**Label**: %s\n\n", label)

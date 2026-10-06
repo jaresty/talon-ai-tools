@@ -115,3 +115,50 @@ if bootstrap is not None:
             grammar_src = Path("lib/promptGrammar.py").read_text()
             self.assertIn('"topology"', grammar_src,
                           "topology missing from axis loop in lib/promptGrammar.py")
+
+    class TopologyAxisDescriptionTests(unittest.TestCase):
+        """ADR-0085: the topology axis channel clause must be construct-conditional.
+
+        The form axis states the mechanism as a two-branch conditional keyed on
+        whether the channel has a construct that can carry the content. The
+        topology axis asserted only the construct branch, which contradicted the
+        shipped form/channel compositions (case+codetour, contextualise+sketch,
+        faq+code, ...) that forbid folding content into the artifact and require
+        an adjacent block instead.
+        """
+
+        def _desc(self, axis: str) -> str:
+            from talon_user.lib.axisConfig import AXIS_KEY_TO_AXIS_DESC
+            return AXIS_KEY_TO_AXIS_DESC[axis]
+
+        def test_T9_topology_desc_has_no_construct_fallback_branch(self) -> None:
+            """property 1: a channel with no carrying construct has a defined destination."""
+            self.assertIn(
+                "where it has none",
+                self._desc("topology"),
+                "topology axis description has no no-construct fallback branch: a topology "
+                "token paired with a channel that cannot carry its text has no defined "
+                "destination for that text",
+            )
+
+        def test_T10_topology_desc_channel_clause_is_not_unconditional(self) -> None:
+            """property 2: the construct branch is conditional, not asserted for every channel."""
+            self.assertNotIn(
+                "Where a channel is also active, that text is expressed in the channel's own constructs",
+                self._desc("topology"),
+                "topology axis description asserts the construct branch unconditionally, "
+                "mandating the fold-in that the shipped form/channel compositions forbid",
+            )
+
+        def test_T11_topology_and_form_agree_on_shared_mechanism(self) -> None:
+            """property 3: both axes state the same two-branch mechanism."""
+            for axis in ("topology", "form"):
+                desc = self._desc(axis)
+                self.assertIn(
+                    "has a construct that can carry", desc,
+                    f"{axis} axis description does not state the construct-conditional branch",
+                )
+                self.assertIn(
+                    "where it has none", desc,
+                    f"{axis} axis description does not state the no-construct branch",
+                )

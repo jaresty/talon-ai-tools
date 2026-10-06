@@ -2105,10 +2105,11 @@ AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
     "task": "What the response does — the primary action to perform.",
     "tone": "The emotional register — how the response sounds.",
     "topology": "Who the reasoning is externalised for, and what must therefore be visible in the output — a future reader reconstructing it, a live observer checking each transition, a challenger "
-    "testing each claim, or no observer at all. Each token names text the response must carry before the conclusions that depend on it. Where a channel is also active, that text is "
-    "expressed in the channel's own constructs — comments in code, step narration in a tour, descriptive fields in a specification — rather than as prose beside the artifact; a channel that "
-    "produces a specification is itself text and can carry it. Where a completeness token caps depth absolutely, the required text compresses to its shortest labelled form rather than being "
-    "dropped — the label and the reference from each conclusion to it survive, and only the elaboration is suppressed. A composition rule for the specific pair governs over this default.",
+    "testing each claim, or no observer at all. Each token names text the response must carry before the conclusions that depend on it. When a channel is also active, where the channel has "
+    "a construct that can carry that text — comments in code, step narration in a tour, descriptive fields in a specification — it is expressed through that construct rather than as prose "
+    "beside the artifact; where it has none, the text goes in a block adjacent to the artifact. A channel that produces a specification is itself text and can carry it. Where a completeness "
+    "token caps depth absolutely, the required text compresses to its shortest labelled form rather than being dropped — the label and the reference from each conclusion to it survive, and "
+    "only the elaboration is suppressed. A composition rule for the specific pair governs over this default.",
     "voice": "Who is speaking — the perspective and expertise level.",
 }
 

@@ -5659,11 +5659,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "afford": {
             "distinctions": [
                 {
-                    "note": "actors interact via a shared medium; afford = how available-action structure pre-shapes individual choices",
+                    "note": "field = actors interact via a shared medium; afford = how available-action structure pre-shapes individual choices",
                     "token": "field",
                 },
                 {
-                    "note": "feedback loops and emergent dynamics; afford = structural availability shapes what actors perceive as actionable",
+                    "note": "systemic = feedback loops and emergent dynamics; afford = structural availability shapes what actors perceive as actionable",
                     "token": "systemic",
                 },
             ],
@@ -6479,7 +6479,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "field": {
             "distinctions": [
                 {
-                    "note": "surface elements; field = model the medium and why compatibility produces observed routing",
+                    "note": "mapping = surface elements; field = model the medium and why compatibility produces observed routing",
                     "token": "mapping",
                 }
             ],
@@ -6684,7 +6684,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "grove": {
             "distinctions": [
                 {
-                    "note": "interacting whole; grove = rate of accumulation through mechanisms",
+                    "note": "systemic = interacting whole; grove = rate of accumulation through mechanisms",
                     "token": "systemic",
                 }
             ],
@@ -6869,7 +6869,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "meld": {
             "distinctions": [
                 {
-                    "note": "evaluate alternatives; meld = balance constraints between elements that must coexist",
+                    "note": "compare = evaluate alternatives; meld = balance constraints between elements that must coexist",
                     "token": "compare",
                 }
             ],

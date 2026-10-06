@@ -2,6 +2,7 @@
 
 These tests must FAIL before implementation and PASS after.
 """
+import re
 import unittest
 from pathlib import Path
 
@@ -162,3 +163,69 @@ if bootstrap is not None:
                     "where it has none", desc,
                     f"{axis} axis description does not state the no-construct branch",
                 )
+
+    class ReplacementChannelDefinitionTests(unittest.TestCase):
+        """ADR-0085: a channel that REPLACES conversational output must say so.
+
+        The axis descriptions route content two ways: into a construct the
+        channel provides, or into a block adjacent to the artifact. Both
+        branches presuppose that something can sit beside the artifact. For a
+        channel that replaces conversational output rather than accompanying it
+        (ledger writes to a file; aloud speaks instead of displaying), neither
+        branch is available, and the adjacent-block fallback is unfollowable.
+
+        Per the pairwise invariants (20260929213652-7626) this is a fact about
+        the CHANNEL — it holds against form and task tokens too, not only
+        topology — so it belongs in the channel definition, not in pairwise
+        entries. Cautionary entries already encode it for two ledger pairs, but
+        cautionaries reach only the TUI selection UI, never the bar build prompt.
+        """
+
+        def _channel(self, token: str) -> str:
+            from talon_user.lib.axisConfig import AXIS_KEY_TO_VALUE
+            return AXIS_KEY_TO_VALUE["channel"][token]
+
+        def test_T12_ledger_definition_states_it_replaces_conversational_output(self) -> None:
+            """property 1: ledger's definition names the replacement property."""
+            self.assertIn(
+                "replaces conversational output",
+                self._channel("ledger"),
+                "ledger's definition says content is excluded but not that it REPLACES "
+                "conversational output; a reader cannot tell that no adjacent block exists, "
+                "which is what makes the axis adjacent-block fallback unfollowable here",
+            )
+
+        def test_T13_aloud_definition_states_it_replaces_conversational_output(self) -> None:
+            """property 2: aloud's definition names the replacement property."""
+            self.assertIn(
+                "replaces conversational output",
+                self._channel("aloud"),
+                "aloud's definition says 'rather than displayed inline' but does not state "
+                "the consequence: no adjacent block accompanies spoken delivery",
+            )
+
+        def test_T14_replacement_clause_is_single_token_and_domain_agnostic(self) -> None:
+            """property 3: the added clause names no partner token and no domain."""
+            partner_tokens = (
+                "witness", "audit", "blind", "relay", "solo", "live",
+                "topology", "faq", "case", "spike", "contextualise",
+            )
+            for channel in ("ledger", "aloud"):
+                defn = self._channel(channel).lower()
+                for tok in partner_tokens:
+                    # Whole-word match only: a substring test matches "live" inside
+                    # "delivered" and reports a defect that is not there.
+                    self.assertIsNone(
+                        re.search(rf"\b{re.escape(tok)}\b", defn),
+                        f"{channel} definition names partner token {tok!r} — a channel "
+                        "definition states what the channel IS, not what partner tokens do",
+                    )
+
+        def test_T15_store_remains_the_additive_counterpart(self) -> None:
+            """property 4: store still states the additive property ledger contrasts with."""
+            self.assertIn(
+                "additive, not a replacement",
+                self._channel("store"),
+                "store must keep stating its additive property, or the ledger/store choice "
+                "loses the distinction that makes store the working alternative",
+            )

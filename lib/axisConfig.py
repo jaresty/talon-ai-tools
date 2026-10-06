@@ -56,7 +56,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         ".claude/agents/<name>.md for project-scoped agents).",
         "aloud": "The response is delivered via the system text-to-speech command rather than displayed inline. Before speaking: condense the content to spoken-word density — strip code blocks, "
         "raw URLs, and long enumerations; summarize rather than truncate if content would exceed a natural spoken length. Use an elevated speech rate (e.g. `say -r 250` on macOS, "
-        "`espeak --speed=250` on Linux). Detect the platform via `uname` if uncertain. If no TTS command is available, display the condensed text inline instead.",
+        "`espeak --speed=250` on Linux). Spoken delivery replaces conversational output rather than accompanying it, so no block sits beside it to carry what condensing strips. Detect "
+        "the platform via `uname` if uncertain. If no TTS command is available, display the condensed text inline instead.",
         "browse": "The response is enacted by driving a browser through the `agent-browser` CLI rather than displayed inline — a bidirectional target the response may read from (fetch page "
         "content) or act on (navigate, click, type). Before proceeding, run `agent-browser skills get core --full` to load the usage guide and follow its workflow; load a specialized "
         "skill via `agent-browser skills get <name>` (e.g. electron, slack) when the target warrants it. If the CLI is unavailable, ask the user to install agent-browser first.",
@@ -90,8 +91,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "or explanation.",
         "jira": "The response formats the content using Jira markup (headings, lists, panels) where relevant and avoids extra explanation beyond the main material.",
         "ledger": "The response writes its output to a persistent ledger file using available tools, structuring content under four fixed headings: Facts, Decisions, Constraints, and Open "
-        "Questions. Only content relevant to one of these categories is emitted — conversational filler and reasoning traces are excluded. When no storage tool is available, the "
-        "response outputs the categorized content and notes that it should be appended to a ledger file.",
+        "Questions. Only content relevant to one of these categories is emitted — conversational filler and reasoning traces are excluded. The ledger file replaces conversational "
+        "output rather than accompanying it, so no block sits beside it to carry what the headings exclude; where that excluded material must reach the reader, store persists the "
+        "durable content additively instead. When no storage tool is available, the response outputs the categorized content and notes that it should be appended to a ledger file.",
         "notebook": "The response is delivered as a valid Jupyter notebook (`.ipynb` JSON), with an ordered sequence of markdown and code cells appropriate to the task, structured for execution "
         "and exploration. No surrounding prose outside the notebook structure. When tools are available, write the output to a file with a `.ipynb` extension rather than displaying "
         "it inline.",

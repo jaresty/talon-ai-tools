@@ -1488,6 +1488,30 @@ func TestTokensContinuityAnchor2(t *testing.T) {
 	}
 }
 
+// TestTokensPreparationPrecedesTask verifies that the TOKENS instruction orders
+// token loading against task tool calls, not only against written text, and that
+// work done on the task before preparation completes cannot be repaired afterward.
+func TestTokensPreparationPrecedesTask(t *testing.T) {
+	result := &BuildResult{
+		Task: "make something",
+		HydratedConstraints: []HydratedPromptlet{
+			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
+		},
+	}
+	output := RenderPlainText(result)
+	tokensIdx := strings.Index(output, sectionTokens)
+	formatIdx := strings.Index(output, sectionFormat)
+	tokensBlock := output[tokensIdx:formatIdx]
+	for _, want := range []string{
+		"the only tool calls permitted are the `bar help token` and `bar help composition` calls this prompt requires",
+		"does not satisfy a requirement that must precede it",
+	} {
+		if !strings.Contains(tokensBlock, want) {
+			t.Errorf("TOKENS instruction must contain %q, got:\n%s", want, tokensBlock)
+		}
+	}
+}
+
 func TestCompositionActiveProtocolPresent(t *testing.T) {
 	result := &BuildResult{
 		Task: "make something",

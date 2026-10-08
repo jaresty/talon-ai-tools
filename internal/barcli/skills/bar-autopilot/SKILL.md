@@ -204,7 +204,6 @@ After selecting tokens via discovery:
 3. **Pull context from conversation** - When executing the bar-generated prompt:
    - ✓ Use context from the user's messages and conversation history
    - ✓ Reference relevant code, files, or information from the current session
-   - ✗ Do NOT include bar tokens, `bar help` output, or token catalog content
    - The bar prompt structure guides HOW you respond, not WHAT content you use
 
 **Example:** If the user asks "explain authentication" and you run `bar build explain core flows --subject "authentication"`, the output will contain `=== SUBJECT ===\nauthentication`. You should explain authentication using context from the conversation, not explain the word "authentication" in isolation.

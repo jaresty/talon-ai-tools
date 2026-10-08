@@ -259,7 +259,6 @@ bar build diff full struct depends --subject "microservices architecture"
 3. **Pull context from conversation** - When executing the bar-generated prompt:
    - ✓ Use context from the user's messages and conversation history
    - ✓ Reference relevant code, files, or information from the current session
-   - ✗ Do NOT include bar tokens, `bar help` output, or token catalog content
    - The bar prompt structure guides HOW you respond, not WHAT content you use
 
 4. **After user selects option** - Execute the corresponding bar command and follow the generated prompt to structure your response.

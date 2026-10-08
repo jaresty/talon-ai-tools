@@ -339,7 +339,6 @@ bar build <discovered-action-tokens> --subject "synthesize recommendations"
 4. **Pull context from conversation** - When executing the bar-generated prompt:
    - ✓ Use context from the user's messages and conversation history
    - ✓ Reference relevant code, files, or information from the current session
-   - ✗ Do NOT include bar tokens, `bar help` output, or token catalog content
    - The bar prompt structure guides HOW you respond, not WHAT content you use
 
 5. **In multi-step workflows** - Each bar command in the sequence produces its own structured prompt. Execute each step fully before moving to the next, and carry forward relevant insights (not the bar structure itself).

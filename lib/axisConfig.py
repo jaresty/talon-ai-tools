@@ -6471,6 +6471,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "falsify is an observation discipline, not an inference form; deduce and induce shape how conclusions are inferred.",
                     "token": "deduce",
                 },
+                {
+                    "note": "falsify = the evaluating procedure stands apart from the conclusion it evaluates; audit = each claim stands apart from its surrounding context",
+                    "token": "audit",
+                },
             ],
             "heuristics": [
                 "what check would reject a bad version",
@@ -8548,6 +8552,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "audit = locally defensible; solo = no observer assumed",
                     "token": "solo",
+                },
+                {
+                    "note": "audit = each claim stands apart from its surrounding context; falsify = the evaluating procedure stands apart from the conclusion it evaluates",
+                    "token": "falsify",
                 },
             ],
             "heuristics": [

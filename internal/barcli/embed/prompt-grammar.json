@@ -62351,6 +62351,10 @@
             {
               "note": "falsify is an observation discipline, not an inference form; deduce and induce shape how conclusions are inferred.",
               "token": "deduce"
+            },
+            {
+              "note": "falsify = the evaluating procedure stands apart from the conclusion it evaluates; audit = each claim stands apart from its surrounding context",
+              "token": "audit"
             }
           ],
           "heuristics": [
@@ -98839,6 +98843,10 @@
             {
               "note": "audit = locally defensible; solo = no observer assumed",
               "token": "solo"
+            },
+            {
+              "note": "audit = each claim stands apart from its surrounding context; falsify = the evaluating procedure stands apart from the conclusion it evaluates",
+              "token": "falsify"
             }
           ],
           "heuristics": [
@@ -136310,7 +136318,7 @@
     "zipper"
   ],
   "checksums": {
-    "axes": "7544d9f15bc0ae3ae77acb13d4026fc9cb7ba3c9412e2ddf43879984dd48908f",
+    "axes": "3ec60004d5b60951a06b29850b9a0b1343f983a09fc8e25e69a0a9ab13c1753c",
     "tasks": "a2c1287697149629e9d3be3005c803e3996c88ccc123190155ef9fa6833696ba",
     "persona": "1829367a49e85fe79a5181ce9d591a853a00eaa141e74ad85dd79f9f42aae67d",
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",

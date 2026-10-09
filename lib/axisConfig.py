@@ -984,46 +984,38 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "dynamic operates, not further interventions.",
     },
     "scope": {
-        "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed—suppressing interpretation, evaluation, structural explanation, or "
-        "perspective-shifting.",
+        "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed.",
         "assume": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
         "authority": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how "
-        "their choices influence results, rather than attributing outcomes solely to impersonal structure or equilibrium dynamics.",
+        "their choices influence results.",
         "cross": "The response focuses on concerns or forces that propagate across otherwise distinct units, layers, or domains—examining how they traverse boundaries or become distributed across "
-        "partitions—without primarily analyzing internal arrangement or recurring structural form.",
+        "partitions.",
         "dam": "The response focuses on containment boundaries — what remains within defined limits, what is explicitly excluded or kept out, and where boundaries are drawn between what belongs "
         "inside versus outside a defined scope.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure "
-        "modes rather than overall quality or preferred outcomes.",
-        "good": "The response focuses on the criteria, metrics, standards, or values by which the subject is judged — assuming a framing for what counts as success rather than defining one or "
-        "shifting perspective.",
+        "modes.",
+        "good": "The response focuses on the criteria, metrics, standards, or values by which the subject is judged — assuming a framing for what counts as success.",
         "jobs": "The response focuses on the outcomes the subject is trying to achieve and the pressures that would persist even if every current solution were removed — the pressures that make "
         "the outcome non-negotiable rather than merely convenient. Any finding that depends on the features of a specific product or system is about the product, not the outcome, and does "
         "not satisfy this requirement.",
         "lever": "The response focuses on intervention points—places in the system where applied force shifts equilibrium; identifying feedback loops, constraints, delays, rules, or parameters "
         "whose change propagates to alter which stable states the system settles into. Includes load-bearing elements whose change disproportionately alters the outcome, even before any "
         "deliberate intervention.",
-        "mean": "The response focuses on how something is conceptually framed or understood prior to evaluation or action—its purpose, interpretation, definitions, categorization, or theoretical "
-        "role—without asserting required premises, judging quality, prescribing action, or adopting a specific stakeholder perspective.",
-        "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns without analyzing "
-        "their internal topology in detail or their boundary-spanning distribution.",
+        "mean": "The response focuses on how something is conceptually framed or understood—its purpose, interpretation, definitions, categorization, or theoretical role.",
+        "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns.",
         "product": "The response focuses on the subject through a product lens — features, user needs, and value propositions — suppressing concerns that do not bear on what users want, what the "
         "product does, and why it matters to them.",
-        "relations": "The response treats the connections between entities as the primary object of study rather than the entities themselves. It names each relationship type present, "
-        "characterizes what each type asserts, and examines how the relationship structure as a whole enables or constrains the entities it connects. Entity properties are referenced "
-        "only insofar as they explain or are explained by the relationships.",
+        "relations": "The response treats the connections between entities as the primary object of study. It names each relationship type present, characterizes what each type asserts, and "
+        "examines how the relationship structure as a whole enables or constrains the entities it connects.",
         "stable": "The response focuses on equilibrium, persistence, and self-reinforcing states within a system—identifying configurations that maintain themselves, and the properties preserved "
         "as the system changes — what returns to itself after a disturbance.",
         "storage": "The response focuses on the storage dimension — what state or output must survive beyond the current operation, what medium it is stored in, the lifetime and recovery "
         "guarantees, and the conditions under which it can be lost or corrupted.",
         "struct": "The response focuses on how parts of a system are arranged and related—dependencies, coordination, constraints, incentives, or organizing configurations—analyzing the internal "
-        "topology of units without emphasizing repetition across instances or boundary-spanning propagation.",
-        "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded, without emphasizing actions, relationships, "
-        "evaluation, or perspective.",
-        "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics—rather than static structure, evaluation, or "
-        "immediate action.",
-        "view": "The response focuses on how the subject appears from a specific stakeholder, role, or positional perspective, making that viewpoint explicit without asserting it as definitive, "
-        "evaluating outcomes, or prescribing action.",
+        "topology of units.",
+        "thing": "The response focuses on what entities are in view—objects, people, roles, systems, domains, or bounded units—and what is excluded.",
+        "time": "The response focuses on when things occur and how they change over time—sequences, evolution, history, phases, or temporal dynamics.",
+        "view": "The response focuses on how the subject appears from a specific role or positional perspective, making that viewpoint explicit without asserting it as definitive.",
     },
     "topology": {
         "audit": "The response makes each claim by naming the evidence or premise it depends on before stating the claim. Each paragraph or step names its supporting evidence or premise in the "
@@ -1302,7 +1294,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "struct": "Arrangement and relationships",
         "thing": "Entities and bounded units",
         "time": "Sequences and temporal change",
-        "view": "Stakeholder perspective",
+        "view": "Positional perspective",
     },
     "topology": {
         "audit": "Locally defensible reasoning",
@@ -8148,6 +8140,26 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "act = the activity currently being performed; jobs = the outcome sought, which persists even if every current activity were removed",
                     "token": "jobs",
                 },
+                {
+                    "note": "act = what is being done or intended; mean = how something is conceptually framed or understood",
+                    "token": "mean",
+                },
+                {
+                    "note": "act = what is being done or intended; good = the criteria by which the subject is judged",
+                    "token": "good",
+                },
+                {
+                    "note": "act = what is being done or intended; struct = how parts are arranged and related",
+                    "token": "struct",
+                },
+                {
+                    "note": "act = what is being done or intended; view = how the subject appears from a specific vantage point",
+                    "token": "view",
+                },
+                {
+                    "note": "act = what is being done or intended; time = when things occur and how they change",
+                    "token": "time",
+                },
             ],
             "heuristics": [
                 "what actions",
@@ -8164,7 +8176,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "assume": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "assume = the premises that must hold for it to function; mean = how something is conceptually framed or understood",
+                    "token": "mean",
+                }
+            ],
             "heuristics": [
                 "what assumptions",
                 "what are we assuming",
@@ -8179,7 +8196,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "authority = who has decision-making authority; view = how the subject appears from a specific vantage point",
                     "token": "view",
-                }
+                },
+                {
+                    "note": "authority = outcomes explained through actors who can choose among alternatives; struct = how parts are arranged and related",
+                    "token": "struct",
+                },
+                {
+                    "note": "authority = outcomes explained through actors who can choose among alternatives; stable = states that persist and reinforce themselves",
+                    "token": "stable",
+                },
             ],
             "heuristics": [
                 "who decides",
@@ -8259,6 +8284,22 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "good = how to judge quality; mean = conceptual framing before evaluation",
                     "token": "mean",
                 },
+                {
+                    "note": "good = the criteria by which the subject is judged; act = what is being done or intended",
+                    "token": "act",
+                },
+                {
+                    "note": "good = the criteria by which the subject is judged; thing = which entities are in view and which are excluded",
+                    "token": "thing",
+                },
+                {
+                    "note": "good = the criteria by which the subject is judged; time = when things occur and how they change",
+                    "token": "time",
+                },
+                {
+                    "note": "good = the criteria by which the subject is judged; view = how the subject appears from a specific vantage point",
+                    "token": "view",
+                },
             ],
             "heuristics": [
                 "quality criteria",
@@ -8334,7 +8375,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "mean = conceptual framing before evaluation; good = how to judge quality",
                     "token": "good",
-                }
+                },
+                {
+                    "note": "mean = how something is conceptually framed or understood; act = what is being done or intended",
+                    "token": "act",
+                },
+                {
+                    "note": "mean = how something is conceptually framed or understood; assume = the premises that must hold for it to function",
+                    "token": "assume",
+                },
+                {
+                    "note": "mean = how something is conceptually framed or understood; view = how the subject appears from a specific vantage point",
+                    "token": "view",
+                },
             ],
             "heuristics": [
                 "what does X mean",
@@ -8402,6 +8455,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "mesh = coupling problems between components; relations = connections as the primary subject, not as a diagnostic lens for coupling issues",
                     "token": "mesh",
                 },
+                {
+                    "note": "relations = the connections between entities as the primary object; thing = which entities are in view and which are excluded",
+                    "token": "thing",
+                },
             ],
             "heuristics": [
                 "what connects these",
@@ -8429,6 +8486,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "stable = map the current attractor landscape; lever = find where to push to shift it (often paired)",
                     "token": "lever",
+                },
+                {
+                    "note": "stable = states that persist and reinforce themselves; authority = outcomes explained through actors who can choose among alternatives",
+                    "token": "authority",
                 },
             ],
             "heuristics": [
@@ -8475,7 +8536,23 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "struct = internal topology and arrangement within units; cross = horizontal span across module boundaries",
                     "token": "cross",
-                }
+                },
+                {
+                    "note": "struct = how parts are arranged and related; act = what is being done or intended",
+                    "token": "act",
+                },
+                {
+                    "note": "struct = how parts are arranged and related; time = when things occur and how they change",
+                    "token": "time",
+                },
+                {
+                    "note": "struct = how parts are arranged and related; authority = outcomes explained through actors who can choose among alternatives",
+                    "token": "authority",
+                },
+                {
+                    "note": "struct = how parts are arranged and related; motifs = recurring forms that appear in multiple places",
+                    "token": "motifs",
+                },
             ],
             "heuristics": [
                 "how is it structured",
@@ -8492,7 +8569,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "thing = what entities exist; act = what those entities are doing or performing",
                     "token": "act",
-                }
+                },
+                {
+                    "note": "thing = which entities are in view and which are excluded; relations = the connections between entities as the primary object",
+                    "token": "relations",
+                },
+                {
+                    "note": "thing = which entities are in view and which are excluded; good = the criteria by which the subject is judged",
+                    "token": "good",
+                },
+                {
+                    "note": "thing = which entities are in view and which are excluded; view = how the subject appears from a specific vantage point",
+                    "token": "view",
+                },
             ],
             "heuristics": [
                 "what entities",
@@ -8510,7 +8599,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "time = how things evolve; stable = what persists (often paired)",
                     "token": "stable",
-                }
+                },
+                {
+                    "note": "time = when things occur and how they change; struct = how parts are arranged and related",
+                    "token": "struct",
+                },
+                {
+                    "note": "time = when things occur and how they change; good = the criteria by which the subject is judged",
+                    "token": "good",
+                },
+                {
+                    "note": "time = when things occur and how they change; act = what is being done or intended",
+                    "token": "act",
+                },
             ],
             "heuristics": [
                 "step by step",
@@ -8529,7 +8630,23 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "view = how the subject appears from a specific vantage point; authority = who has decision-making authority",
                     "token": "authority",
-                }
+                },
+                {
+                    "note": "view = how the subject appears from a specific vantage point; act = what is being done or intended",
+                    "token": "act",
+                },
+                {
+                    "note": "view = how the subject appears from a specific vantage point; mean = how something is conceptually framed or understood",
+                    "token": "mean",
+                },
+                {
+                    "note": "view = how the subject appears from a specific vantage point; thing = which entities are in view and which are excluded",
+                    "token": "thing",
+                },
+                {
+                    "note": "view = how the subject appears from a specific vantage point; good = the criteria by which the subject is judged",
+                    "token": "good",
+                },
             ],
             "heuristics": [
                 "from the user's perspective",

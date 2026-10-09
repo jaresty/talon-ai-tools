@@ -46,7 +46,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "audience": {
         "to managers": "The response addresses managers, naming outcomes, risk, and staffing.",
         "to team": "The response addresses the team, keeping the guidance actionable and collaborative.",
-        "to stakeholders": "The response addresses stakeholders, focusing on impact, decisions, and clarity.",
+        "to stakeholders": "The response addresses a group whose members hold different roles: it does not assume any one role's vocabulary or concerns are shared by every reader, and lets each kind of reader locate what bears on them and any decision being asked of them.",
         "to product manager": "The response addresses a product manager, connecting user value, scope, and trade-offs.",
         "to designer": "The response addresses a designer, emphasising user experience, flows, and visual clarity.",
         "to analyst": "The response addresses an analyst, providing structure, data framing, and ways to visualise results.",
@@ -759,7 +759,7 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
             ],
         },
         "to stakeholders": {
-            "definition": "Address a broad stakeholder group focused on impact and decisions: the audience includes mixed roles needing clarity on what matters and why.",
+            "definition": "Address a group whose members hold different roles: assume no single role's vocabulary or concerns are shared by every reader, and make what bears on each kind of reader, and any decision asked of them, easy to locate.",
             "heuristics": [
                 "for stakeholders",
                 "mixed audience",

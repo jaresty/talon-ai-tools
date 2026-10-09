@@ -36,6 +36,7 @@ PERSONA_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "as Yoda": "The response channels Yoda's inverted syntax and aphoristic wisdom — short declarative reversals, patience with difficulty, and insight that arrives sideways.",
         "as Buddha": "The response speaks as Buddha, reframing problems as states of mind, using paradox and non-attachment, and pointing toward the question beneath the question.",
         "as pirate": "The response speaks as a pirate — nautical metaphors, irreverent swagger, and enthusiasm for plunder (of ideas).",
+        "as end user": "The response speaks in the first person as someone who receives the outcome without having made it: it states what they are trying to get done, where the subject helps or obstructs that, and the terms they would use for it, without assuming knowledge of how the subject is made.",
         "as enthusiast": "The response speaks with maximum enthusiasm — everything is exciting, possibilities are boundless, and energy is contagious.",
         "as wild": "The response adopts the voice of a specific figure chosen for subject-relative surprise. Before the response content, write two lines: `Obvious: [the figure most associated with this subject]`; `Voice: [a different figure whose perspective is unexpected for this subject but illuminating]`. Then respond entirely in the chosen figure's voice.",
         "as technical writer": "The response adopts a technical writer's stance: structured, topic-sentence-led prose, audience-scoped vocabulary, minimal redundancy, and document-level coherence.",
@@ -101,6 +102,7 @@ PERSONA_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "as Yoda": "Yoda inverted wisdom",
         "as Buddha": "Buddhist reframing",
         "as pirate": "Pirate swagger",
+        "as end user": "The recipient's own account of use",
         "as enthusiast": "Maximum enthusiasm",
         "as wild": "Surprising subject-relative voice",
         "as technical writer": "Technical writer structure",
@@ -168,6 +170,7 @@ PERSONA_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "as Yoda":               "Yoda voice",
         "as Buddha":             "Buddha voice",
         "as pirate":             "Pirate voice",
+        "as end user":          "End user voice",
         "as enthusiast":         "Enthusiast voice",
         "as wild":               "Wild voice",
         "as technical writer":   "Technical writer voice",
@@ -242,6 +245,7 @@ PERSONA_KEY_TO_KANJI: Dict[str, Dict[str, str]] = {
         "as Yoda": "逆",
         "as Buddha": "禅",
         "as pirate": "海",
+        "as end user": "用",
         "as enthusiast": "熱",
         "as wild": "野",
         "as technical writer": "技",
@@ -1052,6 +1056,10 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                     "token": "as PM",
                     "note": "as designer = UX, interaction, visual clarity; as PM = outcomes, scope, stakeholder alignment",
                 },
+                {
+                    "token": "as end user",
+                    "note": "as designer = shapes usability, interaction and visual clarity; as end user = describes lived use of the outcome",
+                },
             ],
         },
         "as teacher": {
@@ -1108,6 +1116,10 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                     "token": "as designer",
                     "note": "as PM = outcomes, scope, stakeholder value; as designer = UX, interaction, visual clarity",
                 },
+                {
+                    "token": "as end user",
+                    "note": "as PM = manages the work toward outcomes and scope; as end user = receives the outcome without having made it",
+                },
             ],
         },
         "as junior engineer": {
@@ -1127,6 +1139,10 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 {
                     "token": "as principal engineer",
                     "note": "as junior engineer = candid, learning-oriented; as principal engineer = broad systems thinking, trade-off authority",
+                },
+                {
+                    "token": "as end user",
+                    "note": "as junior engineer = learning the craft, asking how it works; as end user = describes what they are trying to get done, with no craft knowledge assumed",
                 },
             ],
         },
@@ -1276,6 +1292,41 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 },
             ],
         },
+        "as end user": {
+            "definition": "Speak in the first person as someone who receives the outcome without having made it: state what they are trying to get done, where the subject helps or obstructs that, and the terms they would use for it, without assuming knowledge of how the subject is made.",
+            "heuristics": [
+                "speak as the user",
+                "in the user's own words",
+                "as a customer would put it",
+                "write as someone using it",
+                "first-person user feedback",
+                "what would the person using this say",
+                "describe it from the receiving end",
+                "user voice, not builder voice",
+            ],
+            "distinctions": [
+                {
+                    "token": "as junior engineer",
+                    "note": "as end user = describes what they are trying to get done, with no craft knowledge assumed; as junior engineer = learning the craft, asking how it works",
+                },
+                {
+                    "token": "as PM",
+                    "note": "as end user = receives the outcome without having made it; as PM = manages the work toward outcomes and scope",
+                },
+                {
+                    "token": "as designer",
+                    "note": "as end user = describes lived use of the outcome; as designer = shapes usability, interaction and visual clarity",
+                },
+                {
+                    "token": "as plainspeak",
+                    "note": "as end user = a speaker's own position and concerns; as plainspeak = a controlled vocabulary and sentence rules, whoever speaks",
+                },
+                {
+                    "token": "view",
+                    "note": "as end user = the recipient is resolved from the subject and speaks from that position as given; view = the role is named in the request and the response marks its position as one among others",
+                },
+            ],
+        },
         "as enthusiast": {
             "definition": "Speak with maximum enthusiasm: everything is exciting, possibilities are boundless, and energy is contagious — exclamation points earned by genuine excitement.",
             "heuristics": [
@@ -1390,6 +1441,10 @@ PERSONA_TOKEN_METADATA: Dict[str, Dict[str, PersonaTokenMetadata]] = {
                 {
                     "token": "to 5 year old",
                     "note": "as plainspeak = controlled vocabulary for precision in procedures; to 5 year old = simplified vocabulary for comprehension by a child audience",
+                },
+                {
+                    "token": "as end user",
+                    "note": "as plainspeak = a controlled vocabulary and sentence rules, whoever speaks; as end user = a speaker's own position and concerns",
                 },
             ],
         },

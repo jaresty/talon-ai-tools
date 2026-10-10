@@ -135348,6 +135348,47 @@
           "prompt_hint": "Extract what was learned across the spike directions — what each throwaway artifact revealed, where directions agreed or diverged, and which direction (if any) is worth carrying into real, kept work. The spike artifacts themselves are disposable; the learning is the output. If the explorer wants another round, loop back to fresh direction enumeration."
         }
       ]
+    },
+    "inductive-plan": {
+      "description": "Sample several independent plans for the same subject, then induce the plan from what recurs across them and judge what diverges.",
+      "example": "Planning a database migration: five isolated agents each plan it cold, and the final plan keeps the steps and risks most of them reached independently, while examining the steps only one or two found.",
+      "heuristics": [
+        "plan several times and compare",
+        "induce the plan from examples",
+        "what do independent plans agree on",
+        "sample plans then merge",
+        "consensus planning",
+        "plan N times",
+        "common parts of multiple plans"
+      ],
+      "mode": "linear",
+      "steps": [
+        {
+          "type": "dispatch",
+          "role": "independent plan sampling",
+          "fan_out": "replicate",
+          "join": "all",
+          "isolation": true,
+          "during_dispatch": "show form:quiz",
+          "prompt_hint": "Spawn exactly 5 agents, each receiving only the subject — no frame, no other agent's output. Each produces a complete plan from scratch. Return each plan in a labeled block (Plan 1 … Plan 5)."
+        },
+        {
+          "token": "task:show",
+          "role": "plan collection",
+          "prompt_hint": "Present the returned plans, one labeled block each, without interpretation. Do not synthesize yet."
+        },
+        {
+          "token": "task:plan method:converge",
+          "role": "induction",
+          "prompt_hint": "Induce the plan from the samples. First list steps, ordering constraints and risks that appear in at least 3 of 5 plans, naming which plans contain each. Then list items found in only 1-2 plans and, for each divergence, state whether it is a valid alternative choice, a sound item the others missed, or an error. Agreement is evidence of robustness, not correctness: shared omissions and shared assumptions across plans must be named rather than assumed absent."
+        },
+        {
+          "token": "show form:quiz",
+          "role": "knowledge transfer",
+          "optional": true,
+          "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked."
+        }
+      ]
     }
   },
   "compositions": [
@@ -136896,7 +136937,7 @@
     "slugs": "42aaa586180b8446d2ab4f8c32f01c47090f0d0f3a97ba56a119d15e03604f44",
     "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
     "starter_packs": "fbdb1e7d2b587b3ce6cfa3e0d461062d7221b8c0066b6e1ccd14d18634cdc5b9",
-    "sequences": "4914cfc40ef2dc17d4e4a36b81b3a84814903814f2f6d90ffecea943b81871b2",
+    "sequences": "30f7a5846a2c9cade26b09121eb5efcea806bfebf90d8fc13a0f8277d9b7d9e9",
     "compositions": "5bdb8ac83c2a5373997cae11e29dba05b12ae3b3adcac26f4d17b07d457a41ee",
     "guidebook": "6dffedf1b0da52d43ac579f53b48618db10426238bcab0f7a01739c2847a29fd",
     "lateral_seed_words": "02059b803deb1294ee139b3e9d5217aad99959d6add559c071fbcb5201a31c98"

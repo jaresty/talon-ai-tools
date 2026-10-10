@@ -805,6 +805,39 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "inductive-plan": {
+        "description": "Sample several independent plans for the same subject, then induce the plan from what recurs across them and judge what diverges.",
+        "example": "Planning a database migration: five isolated agents each plan it cold, and the final plan keeps the steps and risks most of them reached independently, while examining the steps only one or two found.",
+        "heuristics": ["plan several times and compare", "induce the plan from examples", "what do independent plans agree on", "sample plans then merge", "consensus planning", "plan N times", "common parts of multiple plans"],
+        "mode": "linear",
+        "steps": [
+            {
+                "type": "dispatch",
+                "role": "independent plan sampling",
+                "fan_out": "replicate",
+                "join": "all",
+                "isolation": True,
+                "during_dispatch": "show form:quiz",
+                "prompt_hint": "Spawn exactly 5 agents, each receiving only the subject — no frame, no other agent's output. Each produces a complete plan from scratch. Return each plan in a labeled block (Plan 1 … Plan 5).",
+            },
+            {
+                "token": "task:show",
+                "role": "plan collection",
+                "prompt_hint": "Present the returned plans, one labeled block each, without interpretation. Do not synthesize yet.",
+            },
+            {
+                "token": "task:plan method:converge",
+                "role": "induction",
+                "prompt_hint": "Induce the plan from the samples. First list steps, ordering constraints and risks that appear in at least 3 of 5 plans, naming which plans contain each. Then list items found in only 1-2 plans and, for each divergence, state whether it is a valid alternative choice, a sound item the others missed, or an error. Agreement is evidence of robustness, not correctness: shared omissions and shared assumptions across plans must be named rather than assumed absent.",
+            },
+            {
+                "token": "show form:quiz",
+                "role": "knowledge transfer",
+                "optional": True,
+                "prompt_hint": "Quiz the user on the key findings, decisions, and tradeoffs from this run — questions before answers so the user must engage before seeing the answers. Default: run the quiz. Skip only if the content is trivial or the user explicitly declines when asked.",
+            },
+        ],
+    },
 }
 
 

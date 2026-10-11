@@ -929,7 +929,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "whose <label-of-context> equals that label); a participant label owning no Terminal line leaves the dialogue incomplete — emit the missing Terminal, or record that context as "
         "'withdrawn: no claim on <the question of its last received Message, or, if it received none, the content of its own last sent Message>'; a participant label owning more than "
         "one Terminal line is a violation — keep the last such line in transcript order and remove the earlier ones; the check terminates when every participant label owns exactly one "
-        "Terminal line. A Terminal line is valid only when at least one Message line appears at an earlier transcript position. - inductive: N isolated contexts, N being two or more "
+        "Terminal line. A Terminal line is valid only when at least one Message line appears at an earlier transcript position. - inductive: N isolated contexts, N being three or more "
         "and declared in the Orchestration line as 'Orchestration: inductive (N=<n>)', each a block under its own '## shoshin context <label>' header with its own disposition block, "
         "run in sequence, with no exchange between them: the conclusions of every earlier context are listed as inadmissible frames in each later context's disposition block, so that "
         "block's own leak check covers them. Chosen when the question is which conclusions hold however the frames are selected, rather than what any one selection yields. The "

@@ -98,6 +98,17 @@ class ShoshinInductiveTests(unittest.TestCase):
         self.assertIn("evidence it holds across the selections tried", clause)
         self.assertNotIn("evidence of independence from the selection", clause)
 
+    def test_floor_is_three_contexts(self):
+        # k-of-N needs a majority/minority split, which N=2 cannot give
+        clause = _inductive_clause()
+        self.assertIn("N being three or more", clause)
+        self.assertNotIn("N being two or more", clause)
+
+    def test_other_shapes_keep_two_or_more(self):
+        # the floor change is scoped to inductive only
+        self.assertIn("parallel: two or more isolated contexts", _SHOSHIN)
+        self.assertIn("dialogue: two or more isolated contexts", _SHOSHIN)
+
     def test_clause_names_no_other_token(self):
         # property 5: orthogonality — no sibling token named in the clause
         clause = _inductive_clause()

@@ -66,6 +66,31 @@ class ShoshinInductiveTests(unittest.TestCase):
             _SHOSHIN[start:end],
         )
 
+    def test_simulated_contexts_are_closed_blocks(self):
+        # token-wide: an in-thread block opens at a header and closes at End:
+        self.assertIn("closes at an 'End: <pass N | label>' line", _SHOSHIN)
+        self.assertIn("none outside", _SHOSHIN)
+        self.assertIn(
+            "the next header does not appear until the current block has closed",
+            _SHOSHIN,
+        )
+
+    def test_block_rule_exempts_real_agents(self):
+        # real subagents are bounded by their result block, not by End:
+        self.assertIn("a subagent tool-use result block bounds it", _SHOSHIN)
+
+    def test_block_leak_check_is_inside_the_block(self):
+        self.assertIn("that block's own leak check", _SHOSHIN)
+
+    def test_reconcile_after_last_end_for_several_blocks(self):
+        self.assertIn("after the last End: line", _SHOSHIN)
+
+    def test_inductive_earlier_conclusions_are_inadmissible(self):
+        self.assertIn(
+            "conclusions of every earlier context are listed as inadmissible",
+            _inductive_clause(),
+        )
+
     def test_clause_names_no_other_token(self):
         # property 5: orthogonality — no sibling token named in the clause
         clause = _inductive_clause()

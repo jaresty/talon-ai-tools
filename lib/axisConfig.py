@@ -933,7 +933,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "and declared in the Orchestration line as 'Orchestration: inductive (N=<n>)', each a block under its own '## shoshin context <label>' header with its own disposition block, "
         "run in sequence, with no exchange between them: the conclusions of every earlier context are listed as inadmissible frames in each later context's disposition block, so that "
         "block's own leak check covers them. Chosen when the question is which conclusions hold however the frames are selected, rather than what any one selection yields. The "
-        "dispositions should differ across contexts, so that a claim surviving them is evidence of independence from the selection; N contexts sharing one disposition, declared as "
+        "dispositions should differ across contexts, so that a claim surviving them is evidence it holds across the selections tried; N contexts sharing one disposition, declared as "
         "'Disposition: shared' under the Orchestration line, measure only run-to-run variation and must say so. Reconcile appears once, after the last End: line, compares the N "
         "results claim by claim and emits 'Stable: <claim> — held in <k> of <N> contexts' for each claim held in every context, and 'Unstable: <claim> — held in <k> of <N>, absent "
         "from <labels>' for each claim held in some but not all; 'Stable: none' is valid and is the finding when nothing recurs. Only stable claims are induced as the result; unstable "

@@ -91,6 +91,13 @@ class ShoshinInductiveTests(unittest.TestCase):
             _inductive_clause(),
         )
 
+    def test_stability_claim_is_not_overstated(self):
+        # in-thread contexts share a reasoner, so stability shows robustness
+        # across the selections tried, not independence from selection itself
+        clause = _inductive_clause()
+        self.assertIn("evidence it holds across the selections tried", clause)
+        self.assertNotIn("evidence of independence from the selection", clause)
+
     def test_clause_names_no_other_token(self):
         # property 5: orthogonality — no sibling token named in the clause
         clause = _inductive_clause()

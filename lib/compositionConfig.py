@@ -798,6 +798,26 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "prism+shoshin",
+        "tokens": ["prism", "shoshin"],
+        "prose": (
+            "prism + shoshin: prism enumerates N named frames and applies each; shoshin run as "
+            "inductive sets N isolated contexts and keeps what recurs across them. Left alone the "
+            "two can run as unrelated lists — contexts under frames the shoshin run chose for "
+            "itself beside a separate set of prism output blocks. When both are active and the "
+            "Orchestration is inductive they are the same set: prism's enumeration appears before "
+            "the 'Orchestration: inductive (N=<n>)' line, <n> equals prism's stated N, the "
+            "dispositions are varied and declared as such, and each context admits exactly one "
+            "enumerated frame as the admit line of its disposition block, with that frame's label "
+            "as its '## shoshin context <label>' header. The context blocks are prism's headed "
+            "output blocks — no second set is produced. Reconcile reduces the per-frame results to "
+            "the 'Stable:' and 'Unstable:' lines in place of keeping every frame's result. A "
+            "context admitting a frame that prism did not enumerate, an enumerated frame no "
+            "context admits, or a count that differs from the stated N does not satisfy this "
+            "composition."
+        ),
+    },
+    {
         "name": "abduce+eliminate",
         "tokens": ["abduce", "eliminate"],
         "prose": (

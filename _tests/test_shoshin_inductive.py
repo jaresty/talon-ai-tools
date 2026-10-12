@@ -109,6 +109,22 @@ class ShoshinInductiveTests(unittest.TestCase):
         self.assertIn("parallel: two or more isolated contexts", _SHOSHIN)
         self.assertIn("dialogue: two or more isolated contexts", _SHOSHIN)
 
+    def test_default_is_one_shared_disposition(self):
+        # shared is the default, so it needs no declaration
+        clause = _inductive_clause()
+        self.assertIn("By default every context shares one disposition", clause)
+        self.assertNotIn("Disposition: shared", clause)
+        self.assertNotIn("The dispositions should differ across contexts", clause)
+
+    def test_varied_dispositions_are_a_declared_option(self):
+        self.assertIn("Disposition: varied", _inductive_clause())
+
+    def test_shared_stability_wording_states_the_guarantee(self):
+        # the machinery guarantees no reliance on other contexts' conclusions
+        self.assertIn(
+            "none of which relied on another's conclusions", _inductive_clause()
+        )
+
     def test_clause_names_no_other_token(self):
         # property 5: orthogonality — no sibling token named in the clause
         clause = _inductive_clause()

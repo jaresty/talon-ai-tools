@@ -355,3 +355,35 @@ def test_all_entries_have_prose():
     """Every composition entry must have non-empty prose."""
     for entry in COMPOSITIONS:
         assert entry.get("prose"), f"Entry '{entry['name']}' has empty or missing prose"
+
+
+# --- prism+shoshin: prism's enumerated frames are the inductive contexts' admitted frames ---
+
+
+def test_prism_shoshin_entry_present():
+    assert _get_entry("prism+shoshin") is not None
+
+
+def test_prism_shoshin_enumeration_precedes_orchestration_and_fixes_n():
+    prose = _get_entry("prism+shoshin")
+    assert "Orchestration: inductive (N=<n>)" in prose
+    assert "equals prism's stated N" in prose
+
+
+def test_prism_shoshin_contexts_are_the_prism_blocks():
+    prose = _get_entry("prism+shoshin")
+    assert "same set" in prose
+    assert "frame's label as its '## shoshin context <label>' header" in prose
+    assert "no second set is produced" in prose
+
+
+def test_prism_shoshin_reconcile_reduces_to_stable_unstable():
+    prose = _get_entry("prism+shoshin")
+    assert "'Stable:' and 'Unstable:'" in prose
+    assert "does not satisfy this composition" in prose
+
+
+def test_prism_shoshin_does_not_restate_prism_own_requirements():
+    # invariant 2: prism's single-vantage-point rule belongs to prism's definition
+    prose = _get_entry("prism+shoshin")
+    assert "single structural vantage point" not in prose

@@ -851,6 +851,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "from avoidance.",
         "preserve": "The response modifies the task by naming each existing interface or assumption the change touches and showing that no named interface or assumption is absent from the "
         "post-change state.",
+        "presume": "The response selects the most plausible option wherever the subject leaves a choice open and proceeds on it instead of stopping to request approval or clarification. For each "
+        "such choice it states 'Presumed: <option taken>' and 'Revised if: <the observation that would show the choice wrong>'. When a later result matches a stated 'Revised if:' "
+        "observation, the response replaces the presumed option and carries forward only the work that does not depend on it. A choice that cannot be undone, or whose reversal would "
+        "reach beyond what the response itself produced, is not presumed: the response states 'Deferred: <choice>' and does not act on it.",
         "prioritize": "The response enhances the task by ordering items by a named criterion stated in the response, naming the criterion before applying it, and making the ranking explicit.",
         "prism": "The response enhances the task by first enumerating N named vantage-point frames as a governing artifact, where N is stated as a numeral in the enumeration artifact — each "
         "frame is introduced by a named label that appears as a heading in the transcript, and each frame output block is headed by that label; a frame without a heading label or an "
@@ -931,34 +935,35 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "one Terminal line is a violation — keep the last such line in transcript order and remove the earlier ones; the check terminates when every participant label owns exactly one "
         "Terminal line. A Terminal line is valid only when at least one Message line appears at an earlier transcript position. - inductive: N isolated contexts, N being three or more "
         "and declared in the Orchestration line together with its disposition mode as 'Orchestration: inductive (N=<n>, [uniform | varied])', each a block under its own '## shoshin "
-        "context <label>' header with its own disposition block, run in sequence, with no exchange between them: the conclusions of every earlier context are listed as inadmissible "
-        "frames in each later context's disposition block, so that block's own leak check covers them. uniform: each later context's disposition lines repeat the first context's, "
-        "adding only the earlier-conclusion lines; chosen when the question is which conclusions recur across repeated runs under one selection, and a claim surviving them, none of "
-        "which relied on another's conclusions, is evidence it holds across repeated runs. varied: the contexts' dispositions differ, apart from the earlier-conclusion lines, in at "
-        "least one admit or inadmissible frame; chosen when the question is which conclusions hold however the frames are selected, and a claim surviving them is evidence it holds "
-        "across the selections tried. Reconcile appears once, after the last End: line, compares the N results claim by claim and emits 'Stable: <claim> — held in <k> of <N> contexts' "
-        "for each claim held in every context, and 'Unstable: <claim> — held in <k> of <N>, absent from <labels>' for each claim held in some but not all; 'Stable: none' is valid and "
-        "is the finding when nothing recurs. Only stable claims are induced as the result; unstable claims are reported, never promoted. Isolation mode (parallel, dialogue and "
-        "inductive), block decides — the same observable that resolves delegate: if a subagent tool-use result block is present for a context, that context's isolation is ENFORCED and "
-        "its 'Leak: not found' for inadmissible frames is guaranteed by construction; if no such block is present, the context is a DECLARED in-thread simulation (reasoning under "
-        "withheld frames without a separate process) and isolation rests on the leak check alone, with the same honest ceiling as single-thread delegation — declared, not enforced. "
-        "Separability governs parallel, dialogue and inductive as it governs delegate: a context is isolated only when the frames withheld from it are separable from the minimal "
-        "statement of its task; a frame that re-enters through a message is a leak, caught by that message's Forwarded: audit and by the leak check. Block: every pass or context run "
-        "as a declared in-thread simulation is a block — it opens at its '## shoshin pass N' or '## shoshin context <label>' header and closes at an 'End: <pass N | label>' line, and "
-        "all reasoning this token calls for, including that block's own leak check, appears between them and none outside; the next header does not appear until the current block has "
-        "closed. Message lines sit between blocks, never inside one. Where several blocks ran, Reconcile appears once after the last End: line and compares across them; a single pass "
-        "keeps Reconcile inside its block. A context run by a subagent tool-use block is exempt, since a subagent tool-use result block bounds it. Every item entering an isolated "
-        "context — the brief that spawns a delegate, parallel, dialogue, or inductive context, and every subsequent dialogue message — is Forwarded:-audited before that context's "
-        "tool-use call: emit one 'Forwarded: <item> — [requirement | inadmissible-frame]' line per item, each at an earlier transcript position than the tool-use block it enters; an "
-        "inadmissible-frame item must be absent from that input or appear only as an explicit question. The leak check runs over every context's conclusions AND every Message's "
-        "forwarded content.  (3) Reason: reason about the subject using the default and admit frames, excluding the inadmissible frames.  (4) Reconcile: compare the selected-frame "
-        "result against the current-frame view and either quote a specific differing claim or state no claim differs. Before Reconcile, run the leak check: for each conclusion, "
-        "identify any inadmissible frame it relied on — reused in-thread or passed as an assumption in a delegate's tool-use input; emit 'Leak: found' with the frame and redo "
-        "excluding it, or 'Leak: not found'; iteration terminates at 'Leak: not found'. When the pass ran in a genuinely isolating subagent that never received the inadmissible "
-        "frames, 'Leak: not found' for those is guaranteed by construction. A shoshin-eligible response that produced no disposition lines has not established that its frame set was "
-        "chosen rather than inherited; a response containing a delegation tool-use block with no disposition lines at an earlier transcript position does not satisfy this token; and a "
-        "response containing a delegation tool-use block with no 'Forwarded:' line at an earlier transcript position than that block does not satisfy this token, since the items "
-        "entering the delegate's prompt were not audited for inherited framing before the handoff.",
+        "context <label>' header with its own disposition block, with no exchange between them. Contexts run as declared in-thread simulations run in sequence: the conclusions of "
+        "every earlier context are listed as inadmissible frames in each later context's disposition block, so that block's own leak check covers them. uniform: each later context's "
+        "disposition lines repeat the first context's, adding only the earlier-conclusion lines, except that a context run by a subagent tool-use block gets none of them, since it "
+        "never receives another context's conclusions, so such contexts may run concurrently; chosen when the question is which conclusions recur across repeated runs under one "
+        "selection, and a claim surviving them, none of which relied on another's conclusions, is evidence it holds across repeated runs. varied: the contexts' dispositions differ, "
+        "apart from the earlier-conclusion lines, in at least one admit or inadmissible frame; chosen when the question is which conclusions hold however the frames are selected, and "
+        "a claim surviving them is evidence it holds across the selections tried. Reconcile appears once, after the last End: line, compares the N results claim by claim and emits "
+        "'Stable: <claim> — held in <k> of <N> contexts' for each claim held in every context, and 'Unstable: <claim> — held in <k> of <N>, absent from <labels>' for each claim held "
+        "in some but not all; 'Stable: none' is valid and is the finding when nothing recurs. Only stable claims are induced as the result; unstable claims are reported, never "
+        "promoted. Isolation mode (parallel, dialogue and inductive), block decides — the same observable that resolves delegate: if a subagent tool-use result block is present for a "
+        "context, that context's isolation is ENFORCED and its 'Leak: not found' for inadmissible frames is guaranteed by construction; if no such block is present, the context is a "
+        "DECLARED in-thread simulation (reasoning under withheld frames without a separate process) and isolation rests on the leak check alone, with the same honest ceiling as "
+        "single-thread delegation — declared, not enforced. Separability governs parallel, dialogue and inductive as it governs delegate: a context is isolated only when the frames "
+        "withheld from it are separable from the minimal statement of its task; a frame that re-enters through a message is a leak, caught by that message's Forwarded: audit and by "
+        "the leak check. Block: every pass or context run as a declared in-thread simulation is a block — it opens at its '## shoshin pass N' or '## shoshin context <label>' header "
+        "and closes at an 'End: <pass N | label>' line, and all reasoning this token calls for, including that block's own leak check, appears between them and none outside; the next "
+        "header does not appear until the current block has closed. Message lines sit between blocks, never inside one. Where several blocks ran, Reconcile appears once after the last "
+        "End: line and compares across them; a single pass keeps Reconcile inside its block. A context run by a subagent tool-use block is exempt, since a subagent tool-use result "
+        "block bounds it. Every item entering an isolated context — the brief that spawns a delegate, parallel, dialogue, or inductive context, and every subsequent dialogue message — "
+        "is Forwarded:-audited before that context's tool-use call: emit one 'Forwarded: <item> — [requirement | inadmissible-frame]' line per item, each at an earlier transcript "
+        "position than the tool-use block it enters; an inadmissible-frame item must be absent from that input or appear only as an explicit question. The leak check runs over every "
+        "context's conclusions AND every Message's forwarded content.  (3) Reason: reason about the subject using the default and admit frames, excluding the inadmissible frames.  (4) "
+        "Reconcile: compare the selected-frame result against the current-frame view and either quote a specific differing claim or state no claim differs. Before Reconcile, run the "
+        "leak check: for each conclusion, identify any inadmissible frame it relied on — reused in-thread or passed as an assumption in a delegate's tool-use input; emit 'Leak: found' "
+        "with the frame and redo excluding it, or 'Leak: not found'; iteration terminates at 'Leak: not found'. When the pass ran in a genuinely isolating subagent that never received "
+        "the inadmissible frames, 'Leak: not found' for those is guaranteed by construction. A shoshin-eligible response that produced no disposition lines has not established that "
+        "its frame set was chosen rather than inherited; a response containing a delegation tool-use block with no disposition lines at an earlier transcript position does not satisfy "
+        "this token; and a response containing a delegation tool-use block with no 'Forwarded:' line at an earlier transcript position than that block does not satisfy this token, "
+        "since the items entering the delegate's prompt were not audited for inherited framing before the handoff.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
         "snag": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean separation.",
@@ -1254,6 +1259,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "perturb": "Introduce controlled faults to observe system response",
         "polar": "Attractor and repeller dynamics",
         "preserve": "Maintain compatibility with existing structures",
+        "presume": "Act on a stated assumption; revise on contrary evidence",
         "prioritize": "Rank items by importance or impact",
         "prism": "Multi-frame enumeration",
         "probability": "Probabilistic and statistical reasoning",
@@ -1521,6 +1527,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "perturb": "擾",
         "polar": "磁",
         "preserve": "守",
+        "presume": "決",
         "prioritize": "優",
         "prism": "稜",
         "probability": "確",
@@ -1743,6 +1750,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "perturb": "Diagnostic",
         "polar": "Comparative",
         "preserve": "Structural",
+        "presume": "Conduct",
         "prioritize": "Comparative",
         "prism": "Generative",
         "probability": "Reasoning",
@@ -1998,6 +2006,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "perturb": "Introduce controlled variations",
         "polar": "Attractors/repellers",
         "preserve": "Backward compatibility",
+        "presume": "Proceed without approval",
         "prioritize": "Rank by importance",
         "prism": "Enumerate frames then apply each",
         "probability": "Statistical reasoning",
@@ -6141,7 +6150,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "authority (scope) = identify who has decision-making authority in a system; control (method) = direct evaluation exclusively toward factors within "
                     "agency, excluding those outside it",
                     "token": "authority",
-                }
+                },
+                {
+                    "note": "control = confine recommendations to factors within agency; presume = proceed on open choices without waiting for approval, deferring only what "
+                    "cannot be undone",
+                    "token": "presume",
+                },
             ],
             "heuristics": [
                 "focus on what I can control",
@@ -7314,6 +7328,35 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "stay compatible with",
             ],
         },
+        "presume": {
+            "distinctions": [
+                {
+                    "note": "yield = take the minimal intervention and let the system's own dynamics resolve the rest; presume = commit to one option now and revise it when "
+                    "evidence contradicts it",
+                    "token": "yield",
+                },
+                {
+                    "note": "robust = reason under uncertainty by naming where each option fails and an alternative succeeds; presume = commit to one plausible option and "
+                    "revise when a stated observation contradicts it",
+                    "token": "robust",
+                },
+                {
+                    "note": "control = confine recommendations to factors within agency; presume = proceed on open choices without waiting for approval, deferring only what "
+                    "cannot be undone",
+                    "token": "control",
+                },
+            ],
+            "heuristics": [
+                "make a call and move on",
+                "don't ask permission",
+                "guess and adjust",
+                "decide now, revise later",
+                "bias toward action",
+                "assume and proceed",
+                "don't block on approval",
+                "act and correct course if wrong",
+            ],
+        },
         "prioritize": {
             "distinctions": [
                 {
@@ -7582,7 +7625,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "survive = behavior when exposed to live uncontrolled conditions; robust = select options that perform across uncertain futures",
                     "token": "survive",
-                }
+                },
+                {
+                    "note": "robust = reason under uncertainty by naming where each option fails and an alternative succeeds; presume = commit to one plausible option and revise "
+                    "when a stated observation contradicts it",
+                    "token": "presume",
+                },
             ],
             "heuristics": [
                 "robust to uncertainty",
@@ -8131,7 +8179,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "yield = allow natural resolution with minimal guidance; preserve = maintain compatibility with existing structures",
                     "token": "preserve",
-                }
+                },
+                {
+                    "note": "yield = take the minimal intervention and let the system's own dynamics resolve the rest; presume = commit to one option now and revise it when "
+                    "evidence contradicts it",
+                    "token": "presume",
+                },
             ],
             "heuristics": [
                 "let it resolve naturally",

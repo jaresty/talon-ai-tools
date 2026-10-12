@@ -91,6 +91,19 @@ class ShoshinInductiveTests(unittest.TestCase):
             _inductive_clause(),
         )
 
+    def test_uniform_subagent_contexts_skip_earlier_conclusions_and_may_run_concurrently(self):
+        # an enforced-isolation context never receives other conclusions, so
+        # excluding them is vacuous and only forces sequential evaluation
+        clause = _inductive_clause()
+        self.assertIn(
+            "Contexts run as declared in-thread simulations run in sequence", clause
+        )
+        self.assertIn(
+            "a context run by a subagent tool-use block gets none of them", clause
+        )
+        self.assertIn("such contexts may run concurrently", clause)
+        self.assertNotIn("run in sequence, with no exchange", clause)
+
     def test_stability_claim_is_not_overstated(self):
         # in-thread contexts share a reasoner, so stability shows robustness
         # across the selections tried, not independence from selection itself

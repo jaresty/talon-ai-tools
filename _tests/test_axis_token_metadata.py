@@ -862,6 +862,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "perturb",
         "polar",
         "preserve",
+        "presume",
         "prioritize",
         "probability",
         "pulse",

@@ -109,15 +109,27 @@ class ShoshinInductiveTests(unittest.TestCase):
         self.assertIn("parallel: two or more isolated contexts", _SHOSHIN)
         self.assertIn("dialogue: two or more isolated contexts", _SHOSHIN)
 
-    def test_default_is_one_shared_disposition(self):
-        # shared is the default, so it needs no declaration
+    def test_mode_is_a_required_declaration_on_the_orchestration_line(self):
+        # neither mode is a default: the line itself states which one ran
         clause = _inductive_clause()
-        self.assertIn("By default every context shares one disposition", clause)
-        self.assertNotIn("Disposition: shared", clause)
-        self.assertNotIn("The dispositions should differ across contexts", clause)
+        self.assertIn(
+            "'Orchestration: inductive (N=<n>, [uniform | varied])'", clause
+        )
+        self.assertNotIn("By default", clause)
+        self.assertNotIn("Disposition: varied", clause)
 
-    def test_varied_dispositions_are_a_declared_option(self):
-        self.assertIn("Disposition: varied", _inductive_clause())
+    def test_uniform_is_observable_by_comparison(self):
+        self.assertIn("repeat the first context's", _inductive_clause())
+
+    def test_varied_is_observable_by_comparison(self):
+        self.assertIn(
+            "apart from the earlier-conclusion lines", _inductive_clause()
+        )
+
+    def test_each_mode_carries_its_own_purpose(self):
+        clause = _inductive_clause()
+        self.assertIn("which conclusions recur across repeated runs", clause)
+        self.assertIn("however the frames are selected", clause)
 
     def test_shared_stability_wording_states_the_guarantee(self):
         # the machinery guarantees no reliance on other contexts' conclusions

@@ -366,8 +366,15 @@ def test_prism_shoshin_entry_present():
 
 def test_prism_shoshin_enumeration_precedes_orchestration_and_fixes_n():
     prose = _get_entry("prism+shoshin")
-    assert "Orchestration: inductive (N=<n>)" in prose
+    assert "Orchestration: inductive (N=<n>, varied)" in prose
     assert "equals prism's stated N" in prose
+
+
+def test_prism_shoshin_points_at_varied_without_redescribing_it():
+    # invariant 2: what varied means belongs to shoshin's definition
+    prose = _get_entry("prism+shoshin")
+    assert "declared as such" not in prose
+    assert "dispositions are varied" not in prose
 
 
 def test_prism_shoshin_contexts_are_the_prism_blocks():

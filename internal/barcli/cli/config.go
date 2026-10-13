@@ -65,6 +65,10 @@ type Config struct {
 	// to emit a one-line confirmation when the phrase matches the definition.
 	Skip string
 
+	// MaxBytes holds a budget passed via --max-bytes; bar help token stops at the
+	// last whole block that fits. Zero means the flag was not given.
+	MaxBytes int
+
 	// Plain strips decorations (headers, bullets, descriptions) from token
 	// listings, emitting one slug per line for piping to grep/fzf.
 	Plain bool
@@ -329,6 +333,22 @@ func Parse(args []string) (*Config, error) {
 			cfg.Skip = args[i]
 		case strings.HasPrefix(arg, "--skip="):
 			cfg.Skip = strings.TrimPrefix(arg, "--skip=")
+		case arg == "--max-bytes":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--max-bytes requires a value")
+			}
+			n, err := strconv.Atoi(args[i])
+			if err != nil || n < 1 {
+				return nil, fmt.Errorf("--max-bytes requires a positive integer")
+			}
+			cfg.MaxBytes = n
+		case strings.HasPrefix(arg, "--max-bytes="):
+			n, err := strconv.Atoi(strings.TrimPrefix(arg, "--max-bytes="))
+			if err != nil || n < 1 {
+				return nil, fmt.Errorf("--max-bytes requires a positive integer")
+			}
+			cfg.MaxBytes = n
 		case arg == "--compact":
 			cfg.Compact = true
 		case arg == "--plain":

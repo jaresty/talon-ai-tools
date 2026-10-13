@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"sort"
 	"strings"
 	"time"
@@ -725,65 +726,56 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 		}
 		// Render every operand in argument order. --skip applies per slug so a
 		// batch of already-known tokens still collapses to confirmation lines.
-		exit := 0
-		for i, slug := range slugs {
-			var buf bytes.Buffer
-			if err := renderHelpToken(&buf, grammar, slug); err != nil {
-				writeError(stderr, err.Error())
-				exit = 1
-				continue
-			}
-			if i > 0 {
-				fmt.Fprintln(stdout)
-			}
-			if opts.Skip != "" && strings.Contains(buf.String(), opts.Skip) {
-				fmt.Fprintf(stdout, "# Token: %s (confirmed: %q)\n", slug, opts.Skip)
-				continue
-			}
-			_, _ = io.Copy(stdout, &buf)
-		}
-		return exit
+		return emitBudgetedHelpBatch(stdout, stderr, helpBatch{
+			noun:   "token",
+			names:  slugs,
+			skip:   opts.Skip,
+			budget: opts.MaxBytes,
+			render: func(w io.Writer, name string) error { return renderHelpToken(w, grammar, name) },
+		})
 	case "composition":
-		name := ""
-		if len(opts.Tokens) > 1 {
-			name = opts.Tokens[1]
-		}
+		operands := opts.Tokens[1:]
 		grammar, err := LoadGrammar(opts.GrammarPath)
 		if err != nil {
 			writeError(stderr, err.Error())
 			return 1
 		}
 		// Composition members supplied as separate arguments are a plausible
-		// mistake: if joining them with "+" names a real composition, say so
-		// instead of printing the whole catalog.
-		if len(opts.Tokens) > 2 {
-			joined := strings.Join(opts.Tokens[1:], "+")
+		// mistake: if joining them with "+" names a real composition and none
+		// of them is one itself, say so instead of printing the whole catalog.
+		if len(operands) > 1 {
+			joined := strings.Join(operands, "+")
+			anyReal := false
 			for _, comp := range grammar.Compositions {
-				if comp.Name == joined {
+				if slices.Contains(operands, comp.Name) {
+					anyReal = true
+				}
+			}
+			for _, comp := range grammar.Compositions {
+				if comp.Name == joined && !anyReal {
 					writeError(stderr, "composition names use \"+\" between members.")
 					fmt.Fprintf(stderr, "Try: bar help composition %s\n", joined)
 					return 1
 				}
 			}
 		}
-		if opts.Skip != "" && name != "" {
-			var buf bytes.Buffer
-			if err := renderHelpComposition(&buf, grammar, name); err != nil {
+		if len(operands) == 0 {
+			if err := renderHelpComposition(stdout, grammar, ""); err != nil {
 				writeError(stderr, err.Error())
 				return 1
 			}
-			if strings.Contains(buf.String(), opts.Skip) {
-				fmt.Fprintf(stdout, "# Composition: %s (confirmed: %q)\n", name, opts.Skip)
-				return 0
-			}
-			_, _ = io.Copy(stdout, &buf)
 			return 0
 		}
-		if err := renderHelpComposition(stdout, grammar, name); err != nil {
-			writeError(stderr, err.Error())
-			return 1
-		}
-		return 0
+		return emitBudgetedHelpBatch(stdout, stderr, helpBatch{
+			noun:   "composition",
+			names:  operands,
+			skip:   opts.Skip,
+			budget: opts.MaxBytes,
+			render: func(w io.Writer, name string) error { return renderHelpComposition(w, grammar, name) },
+			// A lone name keeps its historical bare form; a batch labels each
+			// block so the caller can tell where one ends and the next begins.
+			label: len(operands) > 1,
+		})
 	case "dispatch":
 		sequenceName := ""
 		if len(opts.Tokens) > 1 {
@@ -1879,4 +1871,65 @@ func writeError(w io.Writer, message string) {
 		return
 	}
 	fmt.Fprintf(w, "error: %s\n", message)
+}
+
+// defaultHelpTokenBudget bounds the block text a single `bar help token` call
+// emits, kept below the size at which a tool result is stored out of line.
+const defaultHelpTokenBudget = 20480
+
+// helpBatch describes a multi-operand help call whose blocks are emitted whole,
+// in argument order, under a shared byte budget.
+type helpBatch struct {
+	noun   string // "token" or "composition"; names the rerun command
+	names  []string
+	skip   string
+	budget int // zero selects defaultHelpTokenBudget
+	render func(w io.Writer, name string) error
+	label  bool // prefix each block with "# Composition: <name>"
+}
+
+// emitBudgetedHelpBatch emits blocks until the next one would push the emitted
+// total past the budget; the first block is always emitted. The unprinted
+// remainder is named on one closing line so the caller can request exactly
+// those names next. An operand that fails to render is reported on stderr and
+// makes the exit non-zero, but does not stop the remaining operands.
+func emitBudgetedHelpBatch(stdout, stderr io.Writer, b helpBatch) int {
+	budget := b.budget
+	if budget == 0 {
+		budget = defaultHelpTokenBudget
+	}
+	exit := 0
+	emitted, total := 0, 0
+	for i, name := range b.names {
+		var buf bytes.Buffer
+		if err := b.render(&buf, name); err != nil {
+			writeError(stderr, err.Error())
+			exit = 1
+			continue
+		}
+		block := buf.String()
+		if b.skip != "" && strings.Contains(block, b.skip) {
+			block = fmt.Sprintf("# %s: %s (confirmed: %q)\n", strings.ToUpper(b.noun[:1])+b.noun[1:], name, b.skip)
+		} else if b.label {
+			block = fmt.Sprintf("# %s: %s\n%s", strings.ToUpper(b.noun[:1])+b.noun[1:], name, block)
+		}
+		if emitted > 0 && total+len(block) > budget {
+			writeHelpBatchRemainder(stdout, b.noun, b.names[i:])
+			return exit
+		}
+		if emitted > 0 {
+			fmt.Fprintln(stdout)
+		}
+		_, _ = io.WriteString(stdout, block)
+		emitted++
+		total += len(block)
+	}
+	return exit
+}
+
+// writeHelpBatchRemainder closes a partial batch with one line naming the
+// names that were not printed and the exact call that prints them.
+func writeHelpBatchRemainder(w io.Writer, noun string, rest []string) {
+	fmt.Fprintf(w, "\nRemaining (not loaded): %s; rerun: bar help %s %s\n",
+		strings.Join(rest, ", "), noun, strings.Join(rest, " "))
 }

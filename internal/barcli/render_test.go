@@ -1603,7 +1603,7 @@ func TestTokensBlockClausesReachRenderedOutput(t *testing.T) {
 		name   string
 		phrase string
 	}{
-		{"batch-in-one-call", "in a single Bash tool call joined with `&&`"},
+		{"batch-in-one-call", "in a single Bash tool call before writing any `Loaded:` lines"},
 		{"skip-confirmation-admissible", "Either output satisfies the tool-result requirement."},
 		{"loaded-validity-root-criterion", "whose first line is"},
 		{"loaded-when-not-distinct-phrases", "a different verbatim complete semicolon-delimited phrase"},

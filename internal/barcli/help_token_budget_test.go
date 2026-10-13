@@ -173,15 +173,34 @@ func gateSentencesMentioning(t *testing.T, marker string) []string {
 	return hits
 }
 
-// TestTokenLoadGateAllowsMultiTokenForm specifies that the gate accepts the multi-token
-// call alongside the joined form (Ground property 7).
+// TestTokenLoadGateAllowsMultiTokenForm specifies that the gate names the multi-token
+// call shape and does not mention the joined form (Ground properties 1, 2 of the
+// joined-form removal).
 func TestTokenLoadGateAllowsMultiTokenForm(t *testing.T) {
 	g := tokenLoadGateParagraph(t)
 	if !strings.Contains(g, "bar help token <slug> <slug>") {
 		t.Fatalf("expected the gate to name the multi-token call shape, got:\n%s", g)
 	}
-	if !strings.Contains(g, "&&") {
-		t.Fatalf("expected the joined form to remain accepted, got:\n%s", g)
+	if strings.Contains(g, "&&") {
+		t.Fatalf("expected the gate not to mention the joined form, got:\n%s", g)
+	}
+}
+
+// TestTokenLoadGateFallbackClauseDoesNotSayCombined specifies that the fallback sentence
+// for output that is too large no longer refers to "combined" output, since there is no
+// joined form left for it to combine (Ground property 3).
+func TestTokenLoadGateFallbackClauseDoesNotSayCombined(t *testing.T) {
+	found := false
+	for _, s := range strings.Split(tokenLoadGateParagraph(t), ". ") {
+		if strings.Contains(s, "large enough") {
+			found = true
+			if strings.Contains(s, "combined") {
+				t.Fatalf("expected the fallback sentence not to say combined, got: %s", s)
+			}
+		}
+	}
+	if !found {
+		t.Fatalf("expected a fallback sentence about output that is large enough to be truncated")
 	}
 }
 

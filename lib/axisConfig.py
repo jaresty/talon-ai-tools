@@ -158,8 +158,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "descend": "The response carries each part of the subject to full depth before beginning the next, so that at any point some parts are complete and the rest untouched. It names the "
         "part it is taking up before covering it, and does not reopen a completed part to extend it once the next has begun.",
         "fixpoint": "The response applies the active method instructions again to each result or part it produces, repeating until a full pass over its own output finds no remaining "
-        "instance that those instructions would act on. It labels each pass 'Pass N: <instances found>' and ends with 'Fixpoint reached after N passes' when a pass finds none. "
-        "If it cannot complete a pass, it ends with 'Unprocessed: <instances left>' naming each one, and does not claim the fixpoint.",
+        "instance that those instructions would act on. Each pass is labeled 'Pass N: <instances found> → <change made to each>' and the next pass operates on the changed "
+        "output; a pass that finds an instance and leaves it unchanged is not a valid pass. It ends with 'Fixpoint reached after N passes' when a pass finds none; if the first "
+        "pass finds none, it says so and the response is unchanged. If it cannot complete a pass, it ends with 'Unprocessed: <instances left>' naming each one, and does not "
+        "claim the fixpoint.",
         "full": "The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of "
         "each.",
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",

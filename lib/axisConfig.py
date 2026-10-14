@@ -172,10 +172,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "by everything asked for: where another active token imposes a structural requirement, meeting that requirement is part of the request, so this token removes only what "
         "is surplus to it and never reduces the response below it.",
         "mirror": "The response names the reference whose content or behavior is to be matched, then lists the classes in scope, such as the kinds of input, section, claim, or effect the "
-        "reference has, as numbered 'Class N:' lines before judging any of them. It gives each class exactly one verdict: match, differ, or not exercised, stating for match and "
-        "differ what was compared and for not exercised what was left untried. A class that was not exercised is never counted as a match, and a verdict is only as strong as the "
-        "stated basis for it. It ends with 'Not exercised: <classes>' or 'Not exercised: none'. For a code port the classes are input kinds and effects; for a translation or "
-        "revision they are sections or claims.",
+        "reference has, as numbered 'Class N:' lines before judging any of them, splitting until each class can take a single verdict. It gives each class exactly one verdict: "
+        "match, differ, or not checked, stating for match and differ what was compared and for not checked what was left untried. A class that was not checked is never counted as "
+        "a match, and a verdict is only as strong as the stated basis for it. It also names anything in the subject that has no counterpart in the reference. It ends with 'Not "
+        "checked: <classes>' or 'Not checked: none'. For a code port the classes are input kinds and effects; for a translation or revision they are sections or claims.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "prime": "The response ranks the subject's concepts by learning leverage — the ratio of understanding unlocked to learning effort required — naming this ranking criterion before "
         "covering any concept. It covers only the highest-leverage subset. After naming that subset, it writes a closure statement declaring coverage complete at the functional "
@@ -859,8 +859,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "perturb": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, "
         "or detection mechanisms.",
         "pin": "The response enhances the task by tying each claim about the subject under study to a recorded observation of that subject, what was done or presented to it and what was seen, "
-        "quoted where the claim is made, and labelling each claim observed, inferred, or hypothesized. A claim with no recorded observation is labelled inferred or hypothesized and is "
-        "never stated as fact. For software the observation is an input with its output or trace; for a source or experiment it is the passage, measurement, or session record.",
+        "quoted where the claim is made, and labelling each claim observed, inferred, or hypothesized; a claim that is partly observed and partly inferred is split and each part labelled. "
+        "A claim with no recorded observation is labelled inferred or hypothesized and is never stated as fact. It earns its keep where access to the subject is indirect, such as a "
+        "black-box system, an interview, or field notes. For software the observation is an input with its output or trace; for a source or experiment it is the passage, measurement, or "
+        "session record.",
         "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit "
         "from avoidance.",
         "preserve": "The response modifies the task by naming each existing interface or assumption the change touches and showing that no named interface or assumption is absent from the "
@@ -4109,7 +4111,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "max": {
             "distinctions": [
                 {
-                    "note": "max = exhaustive coverage of the subject itself, omissions are errors; mirror = coverage measured against a reference, with unexercised classes "
+                    "note": "max = exhaustive coverage of the subject itself, omissions are errors; mirror = coverage measured against a reference, with unchecked classes "
                     "named",
                     "token": "mirror",
                 },
@@ -4160,12 +4162,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "mirror": {
             "distinctions": [
                 {
-                    "note": "mirror = every declared class of a reference's behavior gets a match, differ or not-exercised verdict; full = every named element of the "
+                    "note": "mirror = every declared class of a reference's behavior gets a match, differ or not-checked verdict; full = every named element of the "
                     "subject, one level deep",
                     "token": "full",
                 },
                 {
-                    "note": "mirror = coverage measured against a reference, with unexercised classes named; max = exhaustive coverage of the subject itself, omissions are "
+                    "note": "mirror = coverage measured against a reference, with unchecked classes named; max = exhaustive coverage of the subject itself, omissions are "
                     "errors",
                     "token": "max",
                 },
@@ -6112,7 +6114,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "cite": {
             "distinctions": [
                 {
-                    "note": "cite = claims point to sources and references; pin = claims point to recorded observations of the running thing",
+                    "note": "cite = claims point to sources and references; pin = claims point to recorded observations of the subject itself",
                     "token": "pin",
                 },
                 {
@@ -7397,7 +7399,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "witness",
                 },
                 {
-                    "note": "pin = claims point to recorded observations of the running thing; cite = claims point to sources and references",
+                    "note": "pin = claims point to recorded observations of the subject itself; cite = claims point to sources and references",
                     "token": "cite",
                 },
                 {
@@ -7414,9 +7416,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "heuristics": [
                 "what did we actually observe",
                 "observed versus inferred",
-                "cite the capture",
                 "record what was done and what happened",
-                "record the input and output",
+                "quote what was seen",
+                "mark what is guessed",
                 "evidence tier",
                 "do not guess what it does",
             ],

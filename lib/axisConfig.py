@@ -175,7 +175,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "reference has, as numbered 'Class N:' lines before judging any of them, splitting until each class can take a single verdict. It gives each class exactly one verdict: "
         "match, differ, or not checked, stating for match and differ what was compared and for not checked what was left untried. A class that was not checked is never counted as "
         "a match, and a verdict is only as strong as the stated basis for it. It also names anything in the subject that has no counterpart in the reference. It ends with 'Not "
-        "checked: <classes>' or 'Not checked: none'. For a code port the classes are input kinds and effects; for a translation or revision they are sections or claims.",
+        "checked: <classes>' or 'Not checked: none', which may also name dimensions deliberately left out of the comparison. For a code port the classes are input kinds and "
+        "effects; for a translation or revision they are sections or claims.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "prime": "The response ranks the subject's concepts by learning leverage — the ratio of understanding unlocked to learning effort required — naming this ranking criterion before "
         "covering any concept. It covers only the highest-leverage subset. After naming that subset, it writes a closure statement declaring coverage complete at the functional "
@@ -860,9 +861,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "or detection mechanisms.",
         "pin": "The response enhances the task by tying each claim about the subject under study to a recorded observation of that subject, what was done or presented to it and what was seen, "
         "quoted where the claim is made, and labelling each claim observed, inferred, or hypothesized; a claim that is partly observed and partly inferred is split and each part labelled. "
-        "A claim with no recorded observation is labelled inferred or hypothesized and is never stated as fact. It earns its keep where access to the subject is indirect, such as a "
-        "black-box system, an interview, or field notes. For software the observation is an input with its output or trace; for a source or experiment it is the passage, measurement, or "
-        "session record.",
+        "An absence across the whole subject counts as an observation. A claim with no recorded observation is labelled inferred or hypothesized and is never stated as fact. It earns its "
+        "keep where access to the subject is indirect, such as a black-box system, an interview, or field notes. For software the observation is an input with its output or trace; for a "
+        "source or experiment it is the passage, measurement, or session record.",
         "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit "
         "from avoidance.",
         "preserve": "The response modifies the task by naming each existing interface or assumption the change touches and showing that no named interface or assumption is absent from the "

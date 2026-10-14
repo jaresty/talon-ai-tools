@@ -171,6 +171,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need. What the request includes is set "
         "by everything asked for: where another active token imposes a structural requirement, meeting that requirement is part of the request, so this token removes only what "
         "is surplus to it and never reduces the response below it.",
+        "mirror": "The response names the reference whose content or behavior is to be matched, then lists the classes in scope, such as the kinds of input, section, claim, or effect the "
+        "reference has, as numbered 'Class N:' lines before judging any of them. It gives each class exactly one verdict: match, differ, or not exercised, stating for match and "
+        "differ what was compared and for not exercised what was left untried. A class that was not exercised is never counted as a match, and a verdict is only as strong as the "
+        "stated basis for it. It ends with 'Not exercised: <classes>' or 'Not exercised: none'. For a code port the classes are input kinds and effects; for a translation or "
+        "revision they are sections or claims.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "prime": "The response ranks the subject's concepts by learning leverage — the ratio of understanding unlocked to learning effort required — naming this ranking criterion before "
         "covering any concept. It covers only the highest-leverage subset. After naming that subset, it writes a closure statement declaring coverage complete at the functional "
@@ -853,6 +858,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "substituting a reframing that dissolves the resistance. Synthesis, resolution, and explanation are not valid closing moves.",
         "perturb": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, "
         "or detection mechanisms.",
+        "pin": "The response enhances the task by tying each claim about the subject under study to a recorded observation of that subject, what was done or presented to it and what was seen, "
+        "quoted where the claim is made, and labelling each claim observed, inferred, or hypothesized. A claim with no recorded observation is labelled inferred or hypothesized and is "
+        "never stated as fact. For software the observation is an input with its output or trace; for a source or experiment it is the passage, measurement, or session record.",
         "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit "
         "from avoidance.",
         "preserve": "The response modifies the task by naming each existing interface or assumption the change touches and showing that no named interface or assumption is absent from the "
@@ -1116,6 +1124,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "grow": "Expand only when demanded",
         "max": "Exhaustive, treat omissions as errors",
         "minimal": "Smallest satisfying answer only",
+        "mirror": "Match a reference, class by class",
         "narrow": "Restricted to a very small slice",
         "prime": "Highest-leverage concepts only, stop at functional grounding",
         "ration": "Allocate depth by a named score",
@@ -1267,6 +1276,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "own": "Operator-private effect scope",
         "paradox": "Hold subject as unresolved tension; name what resists analysis without resolving it",
         "perturb": "Introduce controlled faults to observe system response",
+        "pin": "Tie claims to recorded observations",
         "polar": "Attractor and repeller dynamics",
         "preserve": "Maintain compatibility with existing structures",
         "presume": "Act on a stated assumption; revise on contrary evidence",
@@ -1385,6 +1395,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "grow": "増",
         "max": "尽",
         "minimal": "小",
+        "mirror": "鏡",
         "narrow": "狭",
         "prime": "要",
         "ration": "配",
@@ -1536,6 +1547,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "own": "私",
         "paradox": "矛",
         "perturb": "擾",
+        "pin": "留",
         "polar": "磁",
         "preserve": "守",
         "presume": "決",
@@ -1759,6 +1771,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "own": "Boundary",
         "paradox": "Reasoning",
         "perturb": "Diagnostic",
+        "pin": "Reasoning",
         "polar": "Comparative",
         "preserve": "Structural",
         "presume": "Conduct",
@@ -1865,6 +1878,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "grow": "Expand on demand",
         "max": "Exhaustive — every case, every edge",
         "minimal": "Briefest valid response",
+        "mirror": "Verdict per class against a reference",
         "narrow": "Focused depth on a specific slice",
         "prime": "Highest-leverage concepts first, stop at functional grounding",
         "ration": "Allocate coverage depth by a named situational score",
@@ -2016,6 +2030,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "own": "Operator-private scope",
         "paradox": "Unresolved generative tension",
         "perturb": "Introduce controlled variations",
+        "pin": "Claims tied to recorded observations",
         "polar": "Attractors/repellers",
         "preserve": "Backward compatibility",
         "presume": "Proceed without approval",
@@ -4016,6 +4031,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "full": {
             "distinctions": [
                 {
+                    "note": "full = every named element of the subject, one level deep; mirror = every declared class of a reference's behavior gets a match, differ or "
+                    "not-exercised verdict",
+                    "token": "mirror",
+                },
+                {
                     "note": "full = thorough normal coverage; max = treat omissions as errors",
                     "token": "max",
                 },
@@ -4089,6 +4109,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "max": {
             "distinctions": [
                 {
+                    "note": "max = exhaustive coverage of the subject itself, omissions are errors; mirror = coverage measured against a reference, with unexercised classes "
+                    "named",
+                    "token": "mirror",
+                },
+                {
                     "note": "max = every relevant item, omissions are errors; full = thorough normal coverage",
                     "token": "full",
                 },
@@ -4130,6 +4155,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "don't add anything extra",
                 "bare minimum",
                 "only what I asked for",
+            ],
+        },
+        "mirror": {
+            "distinctions": [
+                {
+                    "note": "mirror = every declared class of a reference's behavior gets a match, differ or not-exercised verdict; full = every named element of the "
+                    "subject, one level deep",
+                    "token": "full",
+                },
+                {
+                    "note": "mirror = coverage measured against a reference, with unexercised classes named; max = exhaustive coverage of the subject itself, omissions are "
+                    "errors",
+                    "token": "max",
+                },
+            ],
+            "heuristics": [
+                "same behavior as the original",
+                "does the revision match the source",
+                "same as the original",
+                "port with parity",
+                "what did we not check against the original",
+                "class by class against the old one",
+                "what we did not check against the source",
+                "behavioral parity",
             ],
         },
         "narrow": {
@@ -6065,6 +6114,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "cite": {
             "distinctions": [
                 {
+                    "note": "cite = claims point to sources and references; pin = claims point to recorded observations of the running thing",
+                    "token": "pin",
+                },
+                {
                     "note": "verify = apply falsification pressure internally; cite = anchor claims to external sources the user can check",
                     "token": "verify",
                 },
@@ -6516,6 +6569,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "falsify": {
             "distinctions": [
+                {
+                    "note": "falsify = obtains an attributable observation that distinguishes an assertion's violating and satisfying states; pin = labels each claim by whether "
+                    "it was observed, inferred or hypothesized",
+                    "token": "pin",
+                },
                 {
                     "note": "falsify requires attributable observations that distinguish an assertion's violating and satisfying states; gate constrains whether later action is "
                     "blocked on a condition.",
@@ -7333,6 +7391,39 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "probe resilience",
             ],
         },
+        "pin": {
+            "distinctions": [
+                {
+                    "note": "pin = every claim about the subject cites a recorded observation of that subject and carries an evidence label; witness = each assumption names its "
+                    "epistemic basis before the conclusion that depends on it",
+                    "token": "witness",
+                },
+                {
+                    "note": "pin = claims point to recorded observations of the running thing; cite = claims point to sources and references",
+                    "token": "cite",
+                },
+                {
+                    "note": "pin = provenance, each claim about the subject traced to a recorded observation; survive = durability, claims stay provisional until exposed to live "
+                    "conditions",
+                    "token": "survive",
+                },
+                {
+                    "note": "pin = labels each claim by whether it was observed, inferred or hypothesized; falsify = obtains an attributable observation that distinguishes an "
+                    "assertion's violating and satisfying states",
+                    "token": "falsify",
+                },
+            ],
+            "heuristics": [
+                "what did we actually see",
+                "what did we actually observe",
+                "observed versus inferred",
+                "cite the capture",
+                "record the input and output",
+                "record what was done and what happened",
+                "do not guess what it does",
+                "evidence tier",
+            ],
+        },
         "polar": {
             "distinctions": [
                 {
@@ -7996,6 +8087,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "survive": {
             "distinctions": [
+                {
+                    "note": "survive = durability, claims stay provisional until exposed to live conditions; pin = provenance, each claim about the subject traced to a recorded "
+                    "observation",
+                    "token": "pin",
+                },
                 {
                     "note": "verify = design a challenge against a claim analytically; survive = let uncontrolled environmental exposure answer whether the claim held",
                     "token": "verify",
@@ -8898,6 +8994,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "witness": {
             "distinctions": [
+                {
+                    "note": "witness = each assumption names its epistemic basis before the conclusion that depends on it; pin = every claim about the subject cites a "
+                    "recorded observation of that subject and carries an evidence label",
+                    "token": "pin",
+                },
                 {
                     "note": "witness = continuous observer assumed; solo = no observer",
                     "token": "solo",

@@ -851,10 +851,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "from avoidance.",
         "preserve": "The response modifies the task by naming each existing interface or assumption the change touches and showing that no named interface or assumption is absent from the "
         "post-change state.",
-        "presume": "The response selects the most plausible option wherever the subject leaves a choice open and proceeds on it instead of stopping to request approval or clarification. For each "
-        "such choice it states 'Presumed: <option taken>' and 'Revised if: <the observation that would show the choice wrong>'. When a later result matches a stated 'Revised if:' "
-        "observation, the response replaces the presumed option and carries forward only the work that does not depend on it. A choice that cannot be undone, or whose reversal would "
-        "reach beyond what the response itself produced, is not presumed: the response states 'Deferred: <choice>' and does not act on it.",
+        "presume": "The response selects the most plausible option wherever the subject leaves a choice open, including choices that arise only while carrying out the work in any step or "
+        "sub-task, and proceeds on it instead of stopping to request approval or clarification. Any work the response hands off carries this same instruction. For each such choice it "
+        "states 'Presumed: <option taken>' and 'Revised if: <the observation that would show the choice wrong>'. When a later result matches a stated 'Revised if:' observation, the "
+        "response replaces the presumed option and carries forward only the work that does not depend on it, including every presumption made downstream of the replaced one. A choice "
+        "that cannot be undone, or whose reversal would reach beyond what the response itself produced, is not presumed: the response states 'Deferred: <choice>' and does not act on "
+        "it. Every Deferred choice, at whatever depth it arose, is reported where the response reports its outcome.",
         "prioritize": "The response enhances the task by ordering items by a named criterion stated in the response, naming the criterion before applying it, and making the ranking explicit.",
         "prism": "The response enhances the task by first enumerating N named vantage-point frames as a governing artifact, where N is stated as a numeral in the enumeration artifact — each "
         "frame is introduced by a named label that appears as a heading in the transcript, and each frame output block is headed by that label; a frame without a heading label or an "

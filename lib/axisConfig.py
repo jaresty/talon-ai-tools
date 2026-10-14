@@ -157,11 +157,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
         "descend": "The response carries each part of the subject to full depth before beginning the next, so that at any point some parts are complete and the rest untouched. It names the "
         "part it is taking up before covering it, and does not reopen a completed part to extend it once the next has begun.",
-        "fixpoint": "The response applies the active method instructions again to its own output, and its first production is not a pass. Each pass opens with 'Pass N:' and lists one pair "
-        'per instance as \'Before: "<verbatim span of the task content>" → After: "<replacement span>"\', where Before is drawn from the task content as changed by pass N-1, or '
-        "from the first production when N is 1, never from the 'Pass' lines or any other line this instruction requires, and After is a change the active method instructions "
-        "call for. A pass that lists no pair reads 'Pass N: none', and a pass that lists a pair is never the 'Pass N: none' pass. The last line is 'Fixpoint reached after N "
-        "passes' directly after the 'Pass N: none' line, or 'Unprocessed: <Before spans left>' when the response ends before one appears.",
+        "fixpoint": "The response applies the active method instructions again to its own output, treating that output as the subject they apply to, and its first production is not a pass. "
+        "Each pass opens with 'Pass N:' and lists one pair per instance as 'Before: \"<verbatim span of the task content>\" → After: \"<replacement span>\"', where Before is "
+        "drawn from the task content as changed by pass N-1, or from the first production when N is 1, never from the 'Pass' lines or any other line this instruction requires, "
+        "and After is a change the active method instructions call for. A pass that lists no pair reads 'Pass N: none', and a pass that lists a pair is never the 'Pass N: none' "
+        "pass. The last line is 'Fixpoint reached after N passes' directly after the 'Pass N: none' line, or 'Unprocessed: <Before spans left>' when the response ends before "
+        "one appears.",
         "full": "The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of "
         "each.",
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",

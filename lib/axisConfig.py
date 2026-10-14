@@ -157,6 +157,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
         "descend": "The response carries each part of the subject to full depth before beginning the next, so that at any point some parts are complete and the rest untouched. It names the "
         "part it is taking up before covering it, and does not reopen a completed part to extend it once the next has begun.",
+        "fixpoint": "The response applies the active method instructions again to each result or part it produces, repeating until a full pass over its own output finds no remaining "
+        "instance that those instructions would act on. It labels each pass 'Pass N: <instances found>' and ends with 'Fixpoint reached after N passes' when a pass finds none. "
+        "If it cannot complete a pass, it ends with 'Unprocessed: <instances left>' naming each one, and does not claim the fixpoint.",
         "full": "The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of "
         "each.",
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
@@ -1104,6 +1107,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     "completeness": {
         "deep": "Substantial depth within scope",
         "descend": "Complete each part before the next",
+        "fixpoint": "Reapply until nothing remains to act on",
         "full": "Every element, one level deep",
         "gist": "Brief but complete summary",
         "grow": "Expand only when demanded",
@@ -1372,6 +1376,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     "completeness": {
         "deep": "深",
         "descend": "縦",
+        "fixpoint": "定",
         "full": "全",
         "gist": "旨",
         "grow": "増",
@@ -1851,6 +1856,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     "completeness": {
         "deep": "Unpack reasoning layers and fine details",
         "descend": "One part at a time, each to completion",
+        "fixpoint": "Repeat to a stable fixed point",
         "full": "Every named element, one level deep — no sub-elements",
         "gist": "Essential points only",
         "grow": "Expand on demand",
@@ -3962,6 +3968,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "descend = order fixed in advance, each part taken to completion; grow = depth added only where the analysis demands it",
                     "token": "grow",
                 },
+                {
+                    "note": "descend = complete each part of the subject before starting the next; fixpoint = reapply the active instructions to what the response "
+                    "produced until no instance remains",
+                    "token": "fixpoint",
+                },
             ],
             "heuristics": [
                 "depth-first",
@@ -3973,6 +3984,30 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "complete one feature through every layer",
                 "don't leave half-finished work",
                 "fully resolve each item before the next",
+            ],
+        },
+        "fixpoint": {
+            "distinctions": [
+                {
+                    "note": "fixpoint = repeat the active instructions over the response's own output until a pass finds nothing left to act on; max = cover every "
+                    "element and derivable sub-element of the subject, omissions are errors",
+                    "token": "max",
+                },
+                {
+                    "note": "fixpoint = reapply the active instructions to what the response produced until no instance remains; descend = complete each part of the "
+                    "subject before starting the next",
+                    "token": "descend",
+                },
+            ],
+            "heuristics": [
+                "keep going until nothing is left",
+                "repeat until it stops changing",
+                "iterate until stable",
+                "apply it recursively",
+                "all the way down",
+                "until no more changes",
+                "run to closure",
+                "keep applying until nothing new turns up",
             ],
         },
         "full": {
@@ -4057,6 +4092,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "max = exhaustive across all relevant coverage; deep = depth within a focused scope",
                     "token": "deep",
+                },
+                {
+                    "note": "max = cover every element and derivable sub-element of the subject, omissions are errors; fixpoint = repeat the active instructions over the "
+                    "response's own output until a pass finds nothing left to act on",
+                    "token": "fixpoint",
                 },
             ],
             "heuristics": [

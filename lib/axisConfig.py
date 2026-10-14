@@ -157,11 +157,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",
         "descend": "The response carries each part of the subject to full depth before beginning the next, so that at any point some parts are complete and the rest untouched. It names the "
         "part it is taking up before covering it, and does not reopen a completed part to extend it once the next has begun.",
-        "fixpoint": "The response applies the active method instructions again to each result or part it produces, repeating until a full pass over its own output finds no remaining "
-        "instance that those instructions would act on. Each pass is labeled 'Pass N: <instances found> → <change made to each>' and the next pass operates on the changed "
-        "output; a pass that finds an instance and leaves it unchanged is not a valid pass. It ends with 'Fixpoint reached after N passes' when a pass finds none; if the first "
-        "pass finds none, it says so and the response is unchanged. If it cannot complete a pass, it ends with 'Unprocessed: <instances left>' naming each one, and does not "
-        "claim the fixpoint.",
+        "fixpoint": "The response applies the active method instructions again to its own output, and its first production is not a pass. Each pass opens with 'Pass N:' and lists one pair "
+        'per instance as \'Before: "<verbatim span of the current output>" → After: "<replacement span>"\', where Before is drawn from the output as changed by pass N-1, or '
+        "from the first production when N is 1, and After differs from Before. A pass that finds no such span reads 'Pass N: none'. After each pass the response quotes one "
+        "After span and states 'Unchanged: found' or 'Unchanged: not found'; if found, it changes that span and repeats this step. Exactly one terminal line follows the last "
+        "pass: 'Fixpoint reached after N passes' directly after a 'Pass N: none' line, or 'Unprocessed: <Before spans left>' when the response ends before one appears.",
         "full": "The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of "
         "each.",
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",

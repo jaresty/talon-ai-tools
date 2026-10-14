@@ -1117,15 +1117,19 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	}
 }
 
+// maxTokenHeuristics is how many heuristic phrases `bar help token` shows per token.
+// Phrases past this count are never displayed, so the strongest must come first.
+const maxTokenHeuristics = 5
+
 // axisTokenHeuristics returns the heuristic trigger phrases for an axis token as a
 // semicolon-joined string. ADR-0155 T-10.
 func axisTokenHeuristics(grammar *Grammar, axis, token string) string {
 	meta := grammar.AxisMetadataFor(axis, token)
 	if meta != nil && len(meta.Heuristics) > 0 {
-		// Use up to 5 heuristics to keep table cells manageable.
+		// Cap heuristics (maxTokenHeuristics) to keep table cells manageable.
 		h := meta.Heuristics
-		if len(h) > 5 {
-			h = h[:5]
+		if len(h) > maxTokenHeuristics {
+			h = h[:maxTokenHeuristics]
 		}
 		return strings.Join(h, "; ")
 	}
@@ -1152,8 +1156,8 @@ func personaTokenHeuristics(grammar *Grammar, axis, token string) string {
 	meta := grammar.PersonaMetadataFor(axis, token)
 	if meta != nil && len(meta.Heuristics) > 0 {
 		h := meta.Heuristics
-		if len(h) > 5 {
-			h = h[:5]
+		if len(h) > maxTokenHeuristics {
+			h = h[:maxTokenHeuristics]
 		}
 		return strings.Join(h, "; ")
 	}

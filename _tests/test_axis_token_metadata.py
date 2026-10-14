@@ -1155,5 +1155,38 @@ class MethodAxisMetadataTests(unittest.TestCase):
         )
 
 
+class HeuristicsBudgetTests(unittest.TestCase):
+    """`bar help token` shows only the first 5 heuristics, so none may repeat."""
+
+    def test_no_duplicate_heuristics_per_token(self):
+        import re
+        from lib.axisConfig import AXIS_TOKEN_METADATA
+
+        def norm(text):
+            return re.sub(r"[^a-z0-9 ]", "", text.lower()).strip()
+
+        for axis, tokens in AXIS_TOKEN_METADATA.items():
+            for token, data in tokens.items():
+                normed = [norm(h) for h in data.get("heuristics", [])]
+                with self.subTest(axis=axis, token=token):
+                    self.assertEqual(
+                        len(normed),
+                        len(set(normed)),
+                        f"{axis}/{token} has duplicate heuristics",
+                    )
+
+    def test_every_token_fills_the_displayed_budget(self):
+        from lib.axisConfig import AXIS_TOKEN_METADATA
+
+        for axis, tokens in AXIS_TOKEN_METADATA.items():
+            for token, data in tokens.items():
+                with self.subTest(axis=axis, token=token):
+                    self.assertGreaterEqual(
+                        len(data.get("heuristics", [])),
+                        5,
+                        f"{axis}/{token} should have at least 5 heuristics",
+                    )
+
+
 if __name__ == "__main__":
     unittest.main()

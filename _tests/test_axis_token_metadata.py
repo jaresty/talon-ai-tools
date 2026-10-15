@@ -844,6 +844,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "induce",
         "inversion",
         "lateral",
+        "lazy",
         "mapping",
         "meld",
         "melody",

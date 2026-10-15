@@ -809,6 +809,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "shift must change what is considered, not only how it is organized. Applies to framing and angle, not to facts — lateral thinking does not justify fabricating or distorting "
         "information. Use when predictability is the failure mode: the expected answer exists and is correct, but the default framing produces the same content set a different framing "
         "would have produced.",
+        "lazy": "The response resolves a choice only at the step that first needs its result. Until then the choice is recorded as 'Pending: <choice> — needed by <step>', and a pending choice "
+        "stays closed to every other instruction until its step is reached. Every step after the one being taken states its choices only as 'Pending:' lines and the dependencies it will "
+        "need resolved, not the resolutions. A choice is needed by a step when that step cannot be stated without it. When a step is reached, its pending choices are resolved with the "
+        "evidence then available.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a structure where each relationship between elements is shown as "
         "a named connection between two named nodes, rather than as a position in a sequence.",
         "mark": "The response captures checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression. Each checkpoint is headed by "
@@ -1260,6 +1264,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "inversion": "Reason from catastrophic outcomes back",
         "ladder": "Move between abstraction levels",
         "lateral": "Resist obvious framing; seek non-obvious angle",
+        "lazy": "Resolve each choice when a step first needs it",
         "mapping": "Surface elements and relationships",
         "mark": "Capture audit checkpoints",
         "meld": "Explore combinations and overlaps",
@@ -1531,6 +1536,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "inversion": "逆",
         "ladder": "階",
         "lateral": "斜",
+        "lazy": "遅",
         "mapping": "写",
         "mark": "印",
         "meld": "融",
@@ -1755,6 +1761,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "inversion": "Diagnostic",
         "ladder": "Reasoning",
         "lateral": "Reasoning",
+        "lazy": "Conduct",
         "mapping": "Structural",
         "mark": "Temporal/Dynamic",
         "meld": "Comparative",
@@ -2014,6 +2021,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "inversion": "Start from failure",
         "ladder": "Abstraction level traversal",
         "lateral": "Resist obvious framing; seek non-obvious angle",
+        "lazy": "Resolve choices just in time",
         "mapping": "Spatial map",
         "mark": "Audit trail",
         "meld": "Combinations/overlaps",
@@ -4097,6 +4105,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "grow = depth added only where the analysis demands it; descend = order fixed in advance, each part taken to completion",
                     "token": "descend",
+                },
+                {
+                    "note": "grow = the demand for added depth comes from the analysis; lazy = the demand for a choice comes from a later step that consumes its result",
+                    "token": "lazy",
                 },
             ],
             "heuristics": [
@@ -6713,6 +6725,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "chain governs how steps are linked when proceeding.",
                     "token": "chain",
                 },
+                {
+                    "note": "gate = blocks an action until a stated condition is met; lazy = orders when a choice is resolved relative to the step that needs it",
+                    "token": "lazy",
+                },
             ],
             "heuristics": [
                 "block until condition is met",
@@ -6963,6 +6979,33 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "if the obvious framing would produce the same items, you haven't applied lateral",
                 "what is a non-obvious solution to this bug",
                 "what would a completely different approach to this API look like",
+            ],
+        },
+        "lazy": {
+            "distinctions": [
+                {
+                    "note": "lazy = decide a choice only at the step that first needs it and record the rest as pending; presume = decide an open choice now without waiting for "
+                    "approval and revise it on contrary evidence",
+                    "token": "presume",
+                },
+                {
+                    "note": "lazy = the demand for a choice comes from a later step that consumes its result; grow = the demand for added depth comes from the analysis",
+                    "token": "grow",
+                },
+                {
+                    "note": "lazy = orders when a choice is resolved relative to the step that needs it; gate = blocks an action until a stated condition is met",
+                    "token": "gate",
+                },
+            ],
+            "heuristics": [
+                "just in time",
+                "decide when it is needed",
+                "don't plan ahead of need",
+                "rolling wave",
+                "cross that bridge when we come to it",
+                "detail the next step only",
+                "defer detail until the step arrives",
+                "don't resolve it yet",
             ],
         },
         "mapping": {
@@ -7481,6 +7524,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "control = confine recommendations to factors within agency; presume = proceed on open choices without waiting for approval, deferring only what "
                     "cannot be undone",
                     "token": "control",
+                },
+                {
+                    "note": "presume = decide an open choice now without waiting for approval and revise it on contrary evidence; lazy = decide a choice only at the step that "
+                    "first needs it and record the rest as pending",
+                    "token": "lazy",
                 },
             ],
             "heuristics": [

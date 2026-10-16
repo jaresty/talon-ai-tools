@@ -160,9 +160,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "fixpoint": "The response applies the active method instructions again to its own output, treating that output as the subject they apply to, and its first production is not a pass. "
         "Each pass opens with 'Pass N:' and lists one pair per instance as 'Before: \"<verbatim span of the task content>\" → After: \"<replacement span>\"', where Before is "
         "drawn from the task content as changed by pass N-1, or from the first production when N is 1, never from the 'Pass' lines or any other line this instruction requires, "
-        "and After is a change the active method instructions call for. A pass that lists no pair reads 'Pass N: none', and a pass that lists a pair is never the 'Pass N: none' "
-        "pass. The last line is 'Fixpoint reached after N passes' directly after the 'Pass N: none' line, or 'Unprocessed: <Before spans left>' when the response ends before "
-        "one appears.",
+        "and After is a change the active method instructions call for. A pass that lists no pair reads 'Pass N: none (checked: <what was checked>)', naming the quoted spans of "
+        "the output when the output is text, or a tool-executed result earlier in the transcript for any other artifact; a pass that lists a pair is never the 'Pass N: none' "
+        "pass. Where neither is available the pass reads 'Pass N: unobserved' and is not a none-pass. The last line is 'Fixpoint reached after N passes' directly after the "
+        "'Pass N: none' line, or 'Unprocessed: <Before spans left, or what could not be observed>' when the response ends before one appears.",
         "full": "The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of "
         "each.",
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
@@ -811,8 +812,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "would have produced.",
         "lazy": "The response resolves a choice only at the step that first needs its result. Until then the choice is recorded as 'Pending: <choice> — needed by <step>', and a pending choice "
         "stays closed to every other instruction until its step is reached. Every step after the one being taken states its choices only as 'Pending:' lines and the dependencies it will "
-        "need resolved, not the resolutions. A choice is needed by a step when that step cannot be stated without it. When a step is reached, its pending choices are resolved with the "
-        "evidence then available.",
+        "need resolved, not the resolutions. A choice is needed by a step when that step cannot be stated without it. A step is reached when its first action is taken or a result it "
+        "depends on exists; re-examining the output does not reach a step. When a step is reached, its pending choices are resolved with the evidence then available. The closing lines "
+        "list each choice still pending with the step that reaches it.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a structure where each relationship between elements is shown as "
         "a named connection between two named nodes, rather than as a position in a sequence.",
         "mark": "The response captures checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression. Each checkpoint is headed by "
@@ -7006,6 +7008,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "detail the next step only",
                 "defer detail until the step arrives",
                 "don't resolve it yet",
+                "later choices depend on outputs not yet produced",
+                "premature detail would create false confidence",
             ],
         },
         "mapping": {

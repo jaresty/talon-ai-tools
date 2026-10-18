@@ -158,14 +158,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "descend": "The response carries each part of the subject to full depth before beginning the next, so that at any point some parts are complete and the rest untouched. It names the "
         "part it is taking up before covering it, and does not reopen a completed part to extend it once the next has begun.",
         "fixpoint": "The response applies the active method instructions again to its own output, treating that output as the subject they apply to, and its first production is not a pass. "
-        "Before pass 1 it states 'Inventory: <the finite list of items the passes range over>'; an instance is a span within that inventory, a finding outside it is listed as "
-        "'Out of inventory: <finding>' and starts no pass, and where no finite list can be named no pass runs and the response ends 'Unprocessed: no finite inventory'. Each "
-        "pass opens with 'Pass N:' and lists one pair per instance as 'Before: \"<verbatim span of the task content>\" → After: \"<replacement span>\"', where Before is drawn "
-        "from the task content as changed by pass N-1, or from the first production when N is 1, never from the 'Pass' lines or any other line this instruction requires, and "
-        "After is a change the active method instructions call for. A pass that lists no pair reads 'Pass N: none (checked: <what was checked>)', naming the quoted spans of the "
-        "output when the output is text, or a tool-executed result earlier in the transcript for any other artifact; a pass that lists a pair is never the 'Pass N: none' pass. "
-        "Where neither is available the pass reads 'Pass N: unobserved' and is not a none-pass. The last line is 'Fixpoint reached over the inventory after N passes' directly "
-        "after the 'Pass N: none' line, or 'Unprocessed: <Before spans left, or what could not be observed>' when the response ends before one appears.",
+        "Before pass 1 it states 'Inventory: <the finite list of items the passes range over>', which includes every item the subject names; an instance is a span within that "
+        "inventory, a finding outside it is listed as 'Out of inventory: <finding>' and starts no pass, and where no finite list can be named no pass runs and the response ends "
+        "'Unprocessed: no finite inventory'. Each pass opens with 'Pass N:' and lists one pair per instance as 'Before: \"<verbatim span of the task content>\" → After: "
+        "\"<replacement span>\"', where Before is drawn from the task content as changed by pass N-1, or from the first production when N is 1, never from the 'Pass' lines or "
+        "any other line this instruction requires, and After is a change the active method instructions call for. A pass that lists no pair reads 'Pass N: none (checked: "
+        '<instruction checked>: "<quoted span>"; ...)\', with one quoted span of the output per active method instruction, each a span that instruction would act on and that '
+        "already satisfies it, or a tool-executed result earlier in the transcript for any other artifact; a pass that lists a pair is never the 'Pass N: none' pass. Where "
+        "neither is available the pass reads 'Pass N: unobserved' and is not a none-pass. The last line is 'Fixpoint reached over the inventory after N passes' directly after "
+        "the 'Pass N: none' line, or 'Unprocessed: <Before spans left, or what could not be observed>' when the response ends before one appears.",
         "full": "The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of "
         "each.",
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
@@ -4031,6 +4032,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "subject before starting the next",
                     "token": "descend",
                 },
+                {
+                    "note": "fixpoint = repeat the active instructions over the response's own output until a pass finds nothing left to act on, so it can converge over "
+                    "an incomplete first production; full = address every named element of the subject once, one level deep",
+                    "token": "full",
+                },
             ],
             "heuristics": [
                 "keep going until nothing is left",
@@ -4061,6 +4067,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "full = every part carried to one depth, no part completed ahead of the others; descend = each part completed before the next begins",
                     "token": "descend",
+                },
+                {
+                    "note": "full = address every named element of the subject once, one level deep; fixpoint = repeat the active instructions over the response's own output "
+                    "until a pass finds nothing left to act on",
+                    "token": "fixpoint",
                 },
             ],
             "heuristics": [
@@ -5922,6 +5933,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "change per step. use ground when the request needs disambiguation and formal property derivation; use atomic to control step size.",
                     "token": "ground",
                 },
+                {
+                    "note": "atomic = decide how a change is divided, one observable change per step; lazy = decide when a choice is resolved, at the step that first needs it",
+                    "token": "lazy",
+                },
             ],
             "heuristics": [
                 "one change at a time",
@@ -6999,6 +7014,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "lazy = orders when a choice is resolved relative to the step that needs it; gate = blocks an action until a stated condition is met",
                     "token": "gate",
+                },
+                {
+                    "note": "lazy = decide when a choice is resolved, at the step that first needs it; atomic = decide how a change is divided, one observable change per step",
+                    "token": "atomic",
                 },
             ],
             "heuristics": [

@@ -798,6 +798,20 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "lazy+presume",
+        "tokens": ["lazy", "presume"],
+        "prose": (
+            "lazy + presume: lazy governs when a choice may be resolved and presume governs how it "
+            "is resolved once that time comes. Before the step that first needs a choice, the choice "
+            "appears only as 'Pending: <choice> — needed by <step>' and receives no 'Presumed:' "
+            "line; at that step a reversible choice is resolved with 'Presumed: <option taken>' and "
+            "'Revised if: <observation>', and a choice that cannot be undone is 'Deferred:' and "
+            "never presumed. A response that presumes a choice before its step, or that leaves a "
+            "choice at its step with neither a 'Presumed:' nor a 'Deferred:' line, does not satisfy "
+            "this composition."
+        ),
+    },
+    {
         "name": "prism+shoshin",
         "tokens": ["prism", "shoshin"],
         "prose": (

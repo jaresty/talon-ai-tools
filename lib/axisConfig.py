@@ -321,6 +321,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "reference": "The response is arranged for direct retrieval: each unit of content is introduced by a short label naming what that unit covers, and the units are ordered or grouped so a "
         "reader can locate a specific one without reading the others in sequence. The medium of each unit is unconstrained — a unit may be a line, a short paragraph, a table row, or a "
         "diagram — provided its label makes it independently findable.",
+        "runbook": "The response is a procedure for an operator to perform, which the response issues and does not carry out itself. It opens with 'Operator: <who performs the steps>', then states "
+        "the preconditions, then gives the steps, each naming the action, the observation that shows it worked, and the action to take instead if the observation differs, and ends with "
+        "a verification step and a way to abort. When the operator is the person the response is addressed to, it gives one step at a time, stopping after each step the next depends on "
+        "to wait for the operator's report; otherwise it gives every step in order.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
         "where first-principles exposition contradicts assumed expertise.",
@@ -1193,6 +1197,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "recipe": "Recipe with ingredients and steps",
         "reel": "Animated scene specification with ordered scenes, element motion entries, and curve tokens",
         "reference": "Arranged for direct lookup",
+        "runbook": "Operator procedure: action, expected observation, fallback",
         "scaffold": "First-principles scaffolded explanation",
         "scorecard": "KPI scorecard with targets and RAG status",
         "slides": "Sequence of titled slide units with bounded bodies",
@@ -1465,6 +1470,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "recipe": "法",
         "reel": "巻",
         "reference": "覧",
+        "runbook": "手",
         "scaffold": "足",
         "scorecard": "績",
         "slides": "映",
@@ -1950,6 +1956,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "recipe": "Step-by-step with custom notation",
         "reel": "Animated scene sequence specification",
         "reference": "Retrieval-oriented lookup",
+        "runbook": "Procedure for an operator to perform",
         "scaffold": "Building understanding",
         "scorecard": "KPI metrics with targets and status",
         "slides": "Presentation slide deck",
@@ -4815,7 +4822,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "actions = general action-structured output; checklist = specifically checkbox-style imperative items designed to be ticked off",
                     "token": "actions",
-                }
+                },
+                {
+                    "note": "checklist = imperative tasks with no observation or fallback; runbook = each step carries its expected observation and fallback",
+                    "token": "runbook",
+                },
             ],
             "heuristics": [
                 "checklist",
@@ -5065,6 +5076,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "inputs, ends with a prompt naming an input, and withholds causal claims (input → state) — the exchange continues when the user acts",
                     "token": "socratic",
                 },
+                {
+                    "note": "interactive = names a current state and available inputs and ends with a prompt, with no step structure; runbook = fixes the step structure of "
+                    "action, expected observation and fallback and, when the operator is the requester, paces one step at a time",
+                    "token": "runbook",
+                },
             ],
             "heuristics": [
                 "interactively",
@@ -5212,7 +5228,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "walkthrough = linear narrated steps without custom notation; recipe = structured recipe with a custom mini-language and notation key",
                     "token": "walkthrough",
-                }
+                },
+                {
+                    "note": "recipe = steps in a custom notation with a key to read it; runbook = each step carries its expected observation and fallback",
+                    "token": "runbook",
+                },
             ],
             "heuristics": [
                 "document as recipe",
@@ -5270,6 +5290,43 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "at a glance",
                 "reference sheet",
                 "handbook",
+            ],
+        },
+        "runbook": {
+            "distinctions": [
+                {
+                    "note": "runbook = a procedure for an operator to perform, each step naming the observation that shows it worked and the fallback; walkthrough = guided "
+                    "narration that builds understanding of a process",
+                    "token": "walkthrough",
+                },
+                {
+                    "note": "runbook = fixes the step structure of action, expected observation and fallback and, when the operator is the requester, paces one step at a time; "
+                    "interactive = names a current state and available inputs and ends with a prompt, with no step structure",
+                    "token": "interactive",
+                },
+                {
+                    "note": "runbook = each step carries its expected observation and fallback; checklist = imperative tasks with no observation or fallback",
+                    "token": "checklist",
+                },
+                {
+                    "note": "runbook = each step carries its expected observation and fallback; recipe = steps in a custom notation with a key to read it",
+                    "token": "recipe",
+                },
+                {
+                    "note": "runbook = the operator performs each step and reports what they observed; gate = blocks the next action until a tool-executed result satisfies a "
+                    "stated condition",
+                    "token": "gate",
+                },
+            ],
+            "heuristics": [
+                "runbook",
+                "walk me through the steps",
+                "I'll run it, you guide me",
+                "playbook",
+                "operator procedure",
+                "I'll do the manual steps",
+                "on-call steps",
+                "tell me what I should see",
             ],
         },
         "scaffold": {
@@ -5683,6 +5740,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "scaffold = pedagogical first-principles introduction; walkthrough = guided sequential steps through a known process",
                     "token": "scaffold",
+                },
+                {
+                    "note": "walkthrough = guided narration that builds understanding of a process; runbook = a procedure for an operator to perform, each step naming the "
+                    "observation that shows it worked and the fallback",
+                    "token": "runbook",
                 },
             ],
             "heuristics": [
@@ -6747,6 +6809,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "gate = blocks an action until a stated condition is met; lazy = orders when a choice is resolved relative to the step that needs it",
                     "token": "lazy",
+                },
+                {
+                    "note": "gate = blocks the next action until a tool-executed result satisfies a stated condition; runbook = the operator performs each step and reports what "
+                    "they observed",
+                    "token": "runbook",
                 },
             ],
             "heuristics": [

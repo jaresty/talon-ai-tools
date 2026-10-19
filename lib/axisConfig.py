@@ -323,8 +323,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "diagram — provided its label makes it independently findable.",
         "runbook": "The response is a procedure for an operator to perform, which the response issues and does not carry out itself. It opens with 'Operator: <who performs the steps>', then states "
         "the preconditions, then gives the steps, each naming the action, the observation that shows it worked, and the action to take instead if the observation differs, and ends with "
-        "a verification step and a way to abort. When the operator is the person the response is addressed to, it gives one step at a time, stopping after each step the next depends on "
-        "to wait for the operator's report; otherwise it gives every step in order.",
+        "a verification step and a way to abort. When the operator is the person the response is addressed to and a human turn can follow the response, it gives one step at a time, "
+        "stopping after each step the next depends on to wait for the operator's report; otherwise it gives every step in order.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
         "where first-principles exposition contradicts assumed expertise.",

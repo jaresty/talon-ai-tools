@@ -137187,6 +137187,43 @@
         }
       ]
     },
+    "design-system": {
+      "description": "Derive the shared vocabulary, dimensions and rules behind a set of existing instances, state them as constraints, then check that each concept has one owner.",
+      "example": "Deriving the conventions behind an existing set of API endpoints, protocol methods or interface components, then stating the rules new ones must follow.",
+      "heuristics": [
+        "design system",
+        "derive the design principles",
+        "extract the conventions from these examples",
+        "style guide from existing components",
+        "common vocabulary for these tools",
+        "design rules for a protocol",
+        "pattern language for this API",
+        "make our designs consistent"
+      ],
+      "mode": "autonomous",
+      "steps": [
+        {
+          "token": "task:probe motifs induce",
+          "role": "recurring structure in existing instances",
+          "prompt_hint": "Use this step to find what recurs across the existing instances: what each names, accepts, promises and combines with, and which observation would show a generalization wrong."
+        },
+        {
+          "token": "task:make ontology dimension reify",
+          "role": "vocabulary and dimensions",
+          "prompt_hint": "Use this step to name the primitives, the dimensions they vary along, and the implicit rules made explicit, with each concept owned by exactly one primitive."
+        },
+        {
+          "token": "task:make axiom",
+          "role": "invariants and composition rules",
+          "prompt_hint": "Use this step to state the invariants and the rules for combining primitives as named constraints over the vocabulary, each noting what it rules out."
+        },
+        {
+          "token": "task:check snag",
+          "role": "ownership and seam check",
+          "prompt_hint": "Use this step to find concepts owned by more than one primitive, rules that restate a single primitive's behavior, and places where primitives interact with no stated rule."
+        }
+      ]
+    },
     "probe-and-plan": {
       "description": "Diagnose the structure and hidden assumptions of a situation, then derive a targeted action plan.",
       "example": "Figuring out why a team is slow to ship, then planning what to change.",
@@ -139583,7 +139620,7 @@
     "slugs": "d2578198076120f6d05fe209d77ace0e7995f985288410ccfb4dfeb0aaddf04f",
     "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
     "starter_packs": "fbdb1e7d2b587b3ce6cfa3e0d461062d7221b8c0066b6e1ccd14d18634cdc5b9",
-    "sequences": "30f7a5846a2c9cade26b09121eb5efcea806bfebf90d8fc13a0f8277d9b7d9e9",
+    "sequences": "b65870391a29bbb1e5627470fee316e6ae4d20a3db56f0cd3085354e97afdde7",
     "compositions": "bbbcbe244792cd7fc10c704ebadd648ea247cbd42c5f04bdb5a2293785caa2fb",
     "guidebook": "6dffedf1b0da52d43ac579f53b48618db10426238bcab0f7a01739c2847a29fd",
     "lateral_seed_words": "02059b803deb1294ee139b3e9d5217aad99959d6add559c071fbcb5201a31c98"

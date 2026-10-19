@@ -133,6 +133,34 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             },
         ],
     },
+    "design-system": {
+        "description": "Derive the shared vocabulary, dimensions and rules behind a set of existing instances, state them as constraints, then check that each concept has one owner.",
+        "example": "Deriving the conventions behind an existing set of API endpoints, protocol methods or interface components, then stating the rules new ones must follow.",
+        "heuristics": ["design system", "derive the design principles", "extract the conventions from these examples", "style guide from existing components", "common vocabulary for these tools", "design rules for a protocol", "pattern language for this API", "make our designs consistent"],
+        "mode": "autonomous",
+        "steps": [
+            {
+                "token": "task:probe motifs induce",
+                "role": "recurring structure in existing instances",
+                "prompt_hint": "Use this step to find what recurs across the existing instances: what each names, accepts, promises and combines with, and which observation would show a generalization wrong.",
+            },
+            {
+                "token": "task:make ontology dimension reify",
+                "role": "vocabulary and dimensions",
+                "prompt_hint": "Use this step to name the primitives, the dimensions they vary along, and the implicit rules made explicit, with each concept owned by exactly one primitive.",
+            },
+            {
+                "token": "task:make axiom",
+                "role": "invariants and composition rules",
+                "prompt_hint": "Use this step to state the invariants and the rules for combining primitives as named constraints over the vocabulary, each noting what it rules out.",
+            },
+            {
+                "token": "task:check snag",
+                "role": "ownership and seam check",
+                "prompt_hint": "Use this step to find concepts owned by more than one primitive, rules that restate a single primitive's behavior, and places where primitives interact with no stated rule.",
+            },
+        ],
+    },
     "probe-and-plan": {
         "description": "Diagnose the structure and hidden assumptions of a situation, then derive a targeted action plan.",
         "example": "Figuring out why a team is slow to ship, then planning what to change.",

@@ -877,6 +877,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "An absence across the whole subject counts as an observation. A claim with no recorded observation is labelled inferred or hypothesized and is never stated as fact. It earns its "
         "keep where access to the subject is indirect, such as a black-box system, an interview, or field notes. For software the observation is an input with its output or trace; for a "
         "source or experiment it is the passage, measurement, or session record.",
+        "pinch": "The response names every constraint the subject operates under before assessing any of them, then gives each constraint one line 'Margin: <constraint> — <distance between the "
+        "demand placed on it and its limit, with the basis for both>'. A margin is a quantity when the limit and the demand are both stated or derivable, and an ordering (tight, "
+        "moderate, or loose) with a stated reason otherwise. A constraint whose limit or demand is missing gets 'Margin unknown: <constraint> — <what is missing>' and is not ranked. "
+        "When relaxing one constraint reduces another's margin, that dependency is named on both lines. After the last margin line, the response states 'Binding: <constraint> — <what "
+        "the subject can no longer do once its margin is spent>' for the constraint with the least margin, or 'Binding: none ranked' when no constraint has a known margin.",
         "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit "
         "from avoidance.",
         "preserve": "The response modifies the task by naming each existing interface or assumption the change touches and showing that no named interface or assumption is absent from the "
@@ -1295,6 +1300,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "paradox": "Hold subject as unresolved tension; name what resists analysis without resolving it",
         "perturb": "Introduce controlled faults to observe system response",
         "pin": "Tie claims to recorded observations",
+        "pinch": "Margin on each constraint; name the binding one",
         "polar": "Attractor and repeller dynamics",
         "preserve": "Maintain compatibility with existing structures",
         "presume": "Act on a stated assumption; revise on contrary evidence",
@@ -1568,6 +1574,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "paradox": "矛",
         "perturb": "擾",
         "pin": "留",
+        "pinch": "締",
         "polar": "磁",
         "preserve": "守",
         "presume": "決",
@@ -1793,6 +1800,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "paradox": "Reasoning",
         "perturb": "Diagnostic",
         "pin": "Reasoning",
+        "pinch": "Diagnostic",
         "polar": "Comparative",
         "preserve": "Structural",
         "presume": "Conduct",
@@ -2054,6 +2062,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "paradox": "Unresolved generative tension",
         "perturb": "Introduce controlled variations",
         "pin": "Claims tied to recorded observations",
+        "pinch": "Margin per constraint; the binding one",
         "polar": "Attractors/repellers",
         "preserve": "Backward compatibility",
         "presume": "Proceed without approval",
@@ -6111,10 +6120,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "boom": {
             "distinctions": [
                 {
+                    "note": "boom = what changes between a named low and a named high value of scale; pinch = distance from each limit at the stated demand",
+                    "token": "pinch",
+                },
+                {
                     "note": "boom = behavior at extremes of scale/intensity where things qualitatively break or dominate; survive = behavior when exposed to live uncontrolled "
                     "conditions",
                     "token": "survive",
-                }
+                },
             ],
             "heuristics": [
                 "at 10x",
@@ -7379,9 +7392,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "operations": {
             "distinctions": [
                 {
+                    "note": "operations = names the objective, the constraints that bound it, and the tradeoffs among them; pinch = states how much margin remains on each "
+                    "constraint and names the one that binds",
+                    "token": "pinch",
+                },
+                {
                     "note": "systemic = feedback loops and emergent behavior; operations = OR/management science frameworks for resource and flow optimization",
                     "token": "systemic",
-                }
+                },
             ],
             "heuristics": [
                 "throughput",
@@ -7557,6 +7575,37 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "mark what is guessed",
                 "evidence tier",
                 "do not guess what it does",
+            ],
+        },
+        "pinch": {
+            "distinctions": [
+                {
+                    "note": "pinch = states how much margin remains on each constraint and names the one that binds; operations = names the objective, the constraints that bound "
+                    "it, and the tradeoffs among them",
+                    "token": "operations",
+                },
+                {
+                    "note": "pinch = which limit decides the outcome, found by remaining distance; lever = which element's change moves the outcome most, found by sensitivity",
+                    "token": "lever",
+                },
+                {
+                    "note": "pinch = distance from each limit at the stated demand; boom = what changes between a named low and a named high value of scale",
+                    "token": "boom",
+                },
+                {
+                    "note": "pinch = ranks the constraints that remain by margin; release = removes constraints that would dissolve if the current state changed",
+                    "token": "release",
+                },
+            ],
+            "heuristics": [
+                "how close are we to the limit",
+                "which constraint binds first",
+                "what runs out first",
+                "where is the tightest spot",
+                "how much room is left",
+                "what is the real limit",
+                "headroom and bottleneck",
+                "weakest link",
             ],
         },
         "polar": {
@@ -7821,10 +7870,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "release": {
             "distinctions": [
                 {
+                    "note": "release = removes constraints that would dissolve if the current state changed; pinch = ranks the constraints that remain by margin",
+                    "token": "pinch",
+                },
+                {
                     "note": "shift = rotate through multiple cognitive perspectives; release = reduce distortion by loosening identification with transient states or roles "
                     "rather than rotating perspective",
                     "token": "shift",
-                }
+                },
             ],
             "heuristics": [
                 "let go of the outcome",
@@ -8689,6 +8742,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "lever": {
             "distinctions": [
+                {
+                    "note": "lever = which element's change moves the outcome most, found by sensitivity; pinch = which limit decides the outcome, found by remaining distance",
+                    "token": "pinch",
+                },
                 {
                     "note": "lever = where to intervene to change what persists; stable = map of what currently persists (often paired)",
                     "token": "stable",

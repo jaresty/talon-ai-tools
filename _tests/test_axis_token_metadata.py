@@ -865,6 +865,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "paradox",
         "perturb",
         "pin",
+        "pinch",
         "polar",
         "preserve",
         "presume",

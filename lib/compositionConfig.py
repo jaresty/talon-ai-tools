@@ -812,6 +812,20 @@ COMPOSITIONS: list[dict[str, Any]] = [
         ),
     },
     {
+        "name": "presume+pilot",
+        "tokens": ["presume", "pilot"],
+        "prose": (
+            "presume + pilot: presume governs whether a choice may be taken without asking and how "
+            "it is closed; pilot governs which step comes first and which option is taken among "
+            "the options the subject does not rule out. When both are active, the option pilot "
+            "selects is the option presume closes, in place of the most plausible one, with "
+            "'Presumed: <option taken>' and 'Revised if: <observation>', and each 'Revised if:' "
+            "observation also appears as an 'Unknown:' line with its rate. A response whose "
+            "'Presumed:' option differs from the option pilot selected, or whose 'Revised if:' "
+            "observation has no 'Unknown:' line, does not satisfy this composition."
+        ),
+    },
+    {
         "name": "prism+shoshin",
         "tokens": ["prism", "shoshin"],
         "prose": (

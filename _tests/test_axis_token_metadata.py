@@ -876,6 +876,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "rebase",
         "release",
         "ritual",
+        "pilot",
         "ladder",
         "sense",
         "reset",

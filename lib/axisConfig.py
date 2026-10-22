@@ -872,6 +872,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "substituting a reframing that dissolves the resistance. Synthesis, resolution, and explanation are not valid closing moves.",
         "perturb": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, "
         "or detection mechanisms.",
+        "pilot": "The response orders its steps, and selects among the options the subject does not rule out, by learning rate: how much of the remaining uncertainty carrying out the step or "
+        "taking the option would resolve, per unit of time until that resolution can be observed. Before the first step it lists each open uncertainty as 'Unknown: <what is not yet "
+        "known> — observable at <step or event> — Rate: <high | medium | low>', or 'Unknown: none' when none remains, and carries out the steps in descending order of the stated rate. "
+        "Where two options are otherwise equal, it takes the one whose result can be observed sooner. When a result is observed, the response re-ranks the remaining unknowns with it and "
+        "drops any the result has settled, naming that result. The closing lines state each result that changed the order, or 'No reordering' when none did.",
         "pin": "The response enhances the task by tying each claim about the subject under study to a recorded observation of that subject, what was done or presented to it and what was seen, "
         "quoted where the claim is made, and labelling each claim observed, inferred, or hypothesized; a claim that is partly observed and partly inferred is split and each part labelled. "
         "An absence across the whole subject counts as an observation. A claim with no recorded observation is labelled inferred or hypothesized and is never stated as fact. It earns its "
@@ -1303,6 +1308,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "own": "Operator-private effect scope",
         "paradox": "Hold subject as unresolved tension; name what resists analysis without resolving it",
         "perturb": "Introduce controlled faults to observe system response",
+        "pilot": "Order by learning rate",
         "pin": "Tie claims to recorded observations",
         "pinch": "Margin on each constraint; name the binding one",
         "polar": "Attractor and repeller dynamics",
@@ -1577,6 +1583,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "own": "私",
         "paradox": "矛",
         "perturb": "擾",
+        "pilot": "先",
         "pin": "留",
         "pinch": "締",
         "polar": "磁",
@@ -1803,6 +1810,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "own": "Boundary",
         "paradox": "Reasoning",
         "perturb": "Diagnostic",
+        "pilot": "Conduct",
         "pin": "Reasoning",
         "pinch": "Diagnostic",
         "polar": "Comparative",
@@ -2065,6 +2073,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "own": "Operator-private scope",
         "paradox": "Unresolved generative tension",
         "perturb": "Introduce controlled variations",
+        "pilot": "Order by learning rate",
         "pin": "Claims tied to recorded observations",
         "pinch": "Margin per constraint; the binding one",
         "polar": "Attractors/repellers",
@@ -6660,7 +6669,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "verify = apply falsification pressure analytically; experimental = propose actual runnable tests",
                     "token": "verify",
-                }
+                },
+                {
+                    "note": "experimental = proposes concrete experiments; pilot = orders the steps already planned by what they teach",
+                    "token": "pilot",
+                },
             ],
             "heuristics": [
                 "design an experiment",
@@ -7102,6 +7115,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "lazy = decide when a choice is resolved, at the step that first needs it; atomic = decide how a change is divided, one observable change per step",
                     "token": "atomic",
+                },
+                {
+                    "note": "lazy = decides each choice at the step that first needs it; pilot = orders work so evidence arrives soonest",
+                    "token": "pilot",
                 },
             ],
             "heuristics": [
@@ -7549,6 +7566,39 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "probe resilience",
             ],
         },
+        "pilot": {
+            "distinctions": [
+                {
+                    "note": "pilot = ranks steps and options by how fast they resolve uncertainty; presume = acts on a plausible option without asking and revises on contrary "
+                    "evidence",
+                    "token": "presume",
+                },
+                {
+                    "note": "pilot = orders work so evidence arrives soonest; lazy = decides each choice at the step that first needs it",
+                    "token": "lazy",
+                },
+                {
+                    "note": "pilot = ranks by one fixed criterion, learning rate, with named unknowns; prioritize = ranks by a criterion the response chooses and names",
+                    "token": "prioritize",
+                },
+                {
+                    "note": "pilot = orders by uncertainty resolved per unit of time; winnow = resizes candidates and keeps the best decision-value per cost",
+                    "token": "winnow",
+                },
+                {
+                    "note": "pilot = orders the steps already planned by what they teach; experimental = proposes concrete experiments",
+                    "token": "experimental",
+                },
+            ],
+            "heuristics": [
+                "do what teaches us most first",
+                "fastest feedback first",
+                "what should we try first to learn",
+                "order by information gained",
+                "tracer bullet",
+                "smallest experiment first",
+            ],
+        },
         "pin": {
             "distinctions": [
                 {
@@ -7675,6 +7725,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "first needs it and record the rest as pending",
                     "token": "lazy",
                 },
+                {
+                    "note": "presume = acts on a plausible option without asking and revises on contrary evidence; pilot = ranks steps and options by how fast they resolve "
+                    "uncertainty",
+                    "token": "pilot",
+                },
             ],
             "heuristics": [
                 "make a call and move on",
@@ -7692,7 +7747,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "order = abstract structural reasoning about ordering schemes; prioritize = rank by importance or impact with explicit rationale",
                     "token": "order",
-                }
+                },
+                {
+                    "note": "prioritize = ranks by a criterion the response chooses and names; pilot = ranks by one fixed criterion, learning rate, with named unknowns",
+                    "token": "pilot",
+                },
             ],
             "heuristics": [
                 "prioritize",
@@ -8501,6 +8560,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "atomic = one observable change per execution step; winnow = a selection-time gate on which whole candidate to pursue",
                     "token": "atomic",
+                },
+                {
+                    "note": "winnow = resizes candidates and keeps the best decision-value per cost; pilot = orders by uncertainty resolved per unit of time",
+                    "token": "pilot",
                 },
             ],
             "heuristics": [

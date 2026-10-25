@@ -507,12 +507,13 @@ GUIDEBOOK: list[dict[str, Any]] = [
     {
         "id": "coupling-cluster",
         "title": "coupling cluster: snag → mesh → melody → shear/sever → seep",
-        "tokens": ["snag", "mesh", "melody", "shear", "sever", "seep"],
+        "tokens": ["snag", "mesh", "melody", "knit", "shear", "sever", "seep"],
         "body": (
             "The coupling tokens form a sequential flow — find it, describe it, rate it, fix it, audit it:\n\n"
             "**snag** — *find* the seams: where are coupling boundaries? Output is a map of locations.\n\n"
             "**mesh** — *trace* propagation: once you know a seam, what travels across it and how does change ripple? Requires `snag` first.\n\n"
             "**melody** — *rate* the seam across visibility, scope, and volatility. Answers 'how bad is this?' not 'how does it work?'\n\n"
+            "**knit** — *rate the inside*: where `melody` rates a seam between units, `knit` rates how strongly the parts of one unit belong together, across purpose, change cause, and internal reliance. Use it when the question is whether a unit should be split, before choosing `shear` or `sever`.\n\n"
             "**shear** — *procedural fix*: step-by-step plan to pull the coupled domains apart. Use when you need to navigate the separation.\n\n"
             "**sever** — *architectural fix*: introduce a boundary so all interaction must go through explicit interfaces. Use when you want enforcement.\n\n"
             "**seep** — *post-fix audit*: did the boundary hold? Where is influence leaking back through side channels?\n\n"

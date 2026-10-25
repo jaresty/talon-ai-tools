@@ -915,8 +915,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "approaches, methods, or investigation paths does not satisfy this requirement. The enumeration is a precondition: no frame may be applied until all N frames are named. A "
         "response that applies frames without first enumerating them, or that produces a count of headed output blocks not equal to N, does not satisfy this requirement.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
-        "pulse": "The response models the transfer being analyzed by distinguishing what is being conveyed from the medium that carries it, identifying where the medium distorts the content, and "
-        "specifying what mechanism — if any — detects and corrects that distortion.",
+        "pulse": "The response models the transfer being analyzed using communication theory: it distinguishes what is being conveyed from the medium that carries it, names the properties of "
+        "that medium that bear on the subject — such as fidelity, reach, timing, persistence, or the demand it places on the recipient's attention — and identifies how those properties "
+        "change what arrives, whether by distortion, loss, delay, restriction of who receives it, or displacement of other content. It specifies what mechanism — if any — detects and "
+        "corrects each such change.",
         "rebase": "The response re-expresses the items in the subject under a single named alternative basis — a coordinate system, grouping principle, or organizing frame different from the one "
         "the subject uses. The response names the original basis first, using the label 'Original basis:' before any re-expressed item appears. Every item named in the original basis "
         "must appear in the re-expression, placed within the new basis — not mentioned alongside it. After re-expressing all items, the response names what structural relationship or "
@@ -1325,7 +1327,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "prioritize": "Rank items by importance or impact",
         "prism": "Multi-frame enumeration",
         "probability": "Probabilistic and statistical reasoning",
-        "pulse": "Content vs medium; distortion and correction",
+        "pulse": "Content vs medium; how the medium changes what arrives",
         "rebase": "Re-express in alternative basis",
         "redact": "Rewrite for general consumption",
         "reify": "Make implicit patterns explicit as rules",
@@ -2093,7 +2095,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "prioritize": "Rank by importance",
         "prism": "Enumerate frames then apply each",
         "probability": "Statistical reasoning",
-        "pulse": "Content/medium separation and distortion",
+        "pulse": "Content/medium separation and the medium's effect on delivery",
         "rebase": "Alternative basis re-expression",
         "redact": "Criteria-governed content removal for general audience",
         "reify": "Make implicit explicit",
@@ -7881,7 +7883,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "pulse": {
             "distinctions": [
                 {
-                    "note": "flow = narrate step-by-step sequence; pulse = model noise, distortion, and fidelity across encode/decode stages",
+                    "note": "flow = narrate step-by-step sequence; pulse = model how the medium changes what arrives — noise, distortion, reach, timing, persistence, and "
+                    "attention cost",
                     "token": "flow",
                 }
             ],
@@ -7897,6 +7900,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "observability pipeline fidelity",
                 "where does signal get lost in this event pipeline",
                 "where does data degrade as it passes through these service boundaries",
+                "how does this notification reach people",
+                "synchronous versus asynchronous communication",
+                "push versus pull delivery",
+                "how does the alert compete for attention",
+                "interruption cost of notifications",
+                "who receives this broadcast and when",
+                "real-time video versus a recorded message",
+                "which channel should this announcement go through",
             ],
         },
         "rebase": {

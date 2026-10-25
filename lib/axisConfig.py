@@ -813,7 +813,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "are altered for the same reasons — a single cause that alters most parts together: strong; independent causes that each alter only a subset of the parts: weak. Internal "
         "reliance: how much the parts use, share, or presuppose one another — parts that cannot be understood or used without their siblings: strong; parts that could be separated "
         "without either side noticing: weak. For each dimension, the response names which of the listed structural properties are present in the unit and states the resulting "
-        "classification. All three dimensions must appear in the output; omitting any one is incomplete.",
+        "classification. Where the dimensions classify differently, the response names which dimensions differ and what that combination indicates about the unit. All three dimensions "
+        "must appear in the output; omitting any one is incomplete.",
         "ladder": "The response enhances the task by moving deliberately between abstraction levels — stepping up to higher-level causes, patterns, or systems, and stepping down to concrete "
         "consequences or implementations, ordered so that each rung names at least one term or concept that appears by name in the rung above it.",
         "lateral": "The response enhances the task by actively resisting the first and most probable framing before settling on an answer. The model's default is to complete toward the expected "

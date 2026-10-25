@@ -57,6 +57,11 @@ class KnitMethodTokenTests(unittest.TestCase):
         self.assertIn(": strong;", d)
         self.assertIn(": weak.", d)
 
+    def test_definition_names_the_dimensions_that_differ(self):
+        d = _definition()
+        self.assertIn("Where the dimensions classify differently", d)
+        self.assertIn("names which dimensions differ", d)
+
     def test_definition_names_no_other_token(self):
         d = _definition().lower()
         self.assertTrue(d, "definition must exist before it can be checked")

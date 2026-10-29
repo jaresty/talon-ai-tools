@@ -858,6 +858,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "navigate": "The response treats the subject as a structured space and the user as positioned within it. It identifies the user's current location in the space, names what is visible or "
         "reachable from that position, names the available moves and what each leads toward, and orients output around the goal relative to current position — not around the full "
         "space. It does not describe the whole structure; it describes what matters from here.",
+        "norm": "The response names the purpose the subject serves and the established practice that already serves that purpose, or states 'Established practice: none identified'. For each "
+        "point where the subject departs from that practice, it states 'Departure: <what differs> — Reason: <why the established practice does not serve the purpose here>', writing 'none "
+        "stated' as the reason when the subject gives none. It classifies each departure as warranted when the established practice cannot satisfy something the purpose requires, and as "
+        "unwarranted when the departure rebuilds what the established practice already provides. The closing line states 'Unwarranted departures: <count>'.",
         "objectivity": "The response enhances the task by marking each claim as either grounded in cited evidence or in the responder's assessment, and supporting cited-evidence claims with "
         "named sources.",
         "operations": "The response enhances the task by naming the objective being optimized, the constraints that bound it, and the tradeoffs that must be navigated — making the structural "
@@ -1310,6 +1314,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "models": "Apply named mental models explicitly",
         "mu": "State central tension as irresolvable conjunction; stop",
         "navigate": "Positioned traversal of a structured space",
+        "norm": "Check departures from established practice",
         "objectivity": "Separate facts from opinions",
         "operations": "Objective/constraint/tradeoff structure",
         "orbit": "Find attractor geometry across trajectories",
@@ -1586,6 +1591,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "models": "型",
         "mu": "無",
         "navigate": "渡",
+        "norm": "規",
         "objectivity": "客",
         "operations": "営",
         "orbit": "軌",
@@ -1814,6 +1820,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "models": "Generative",
         "mu": "Reasoning",
         "navigate": "Exploration",
+        "norm": "Diagnostic",
         "objectivity": "Reasoning",
         "operations": "Temporal/Dynamic",
         "orbit": "Temporal/Dynamic",
@@ -2078,6 +2085,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "models": "Named mental models",
         "mu": "Irresolvable conjunction; no elaboration",
         "navigate": "Where am I / what's next / available moves",
+        "norm": "Departures from established practice",
         "objectivity": "Facts vs opinions",
         "operations": "Objective, constraints, and tradeoffs",
         "orbit": "Attractor geometry",
@@ -5969,9 +5977,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "analog": {
             "distinctions": [
                 {
+                    "note": "analog = map relational structure from a chosen known case onto the subject and test where it holds; norm = audit the subject against established "
+                    "practice for the same purpose",
+                    "token": "norm",
+                },
+                {
                     "note": "models = apply named mental models explicitly; analog = reason through a structural mapping from a specific known case",
                     "token": "models",
-                }
+                },
             ],
             "heuristics": [
                 "what is this like",
@@ -6906,6 +6919,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "grain": {
             "distinctions": [
                 {
+                    "note": "grain = name the directions the subject's own structure already propagates and the interventions that follow them; norm = check the subject against "
+                    "practice the field already holds and classify each departure as warranted or not",
+                    "token": "norm",
+                },
+                {
                     "note": "preserve = maintain compatibility with existing structures; grain = identify which directions are already structurally determined before choosing",
                     "token": "preserve",
                 },
@@ -7443,6 +7461,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "show me what's adjacent",
                 "what paths lead toward the goal from here",
                 "I'm lost in this system, help me find my bearings",
+            ],
+        },
+        "norm": {
+            "distinctions": [
+                {
+                    "note": "norm = check the subject against practice the field already holds and classify each departure as warranted or not; grain = name the directions the "
+                    "subject's own structure already propagates and the interventions that follow them",
+                    "token": "grain",
+                },
+                {
+                    "note": "norm = audit the subject against established practice for the same purpose; analog = map relational structure from a chosen known case onto the "
+                    "subject and test where it holds",
+                    "token": "analog",
+                },
+            ],
+            "heuristics": [
+                "are we reinventing something",
+                "does this follow convention",
+                "is there a standard way to do this",
+                "why not use the built-in",
+                "is this idiomatic",
+                "diverging from best practice",
+                "hand-rolled version of something that already exists",
+                "what's the established approach here",
+                "is this departure justified",
+                "does a standard solution already cover this",
             ],
         },
         "objectivity": {

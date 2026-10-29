@@ -878,6 +878,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "ritual",
         "pilot",
         "knit",
+        "norm",
         "ladder",
         "sense",
         "reset",

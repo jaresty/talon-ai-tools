@@ -73,7 +73,7 @@ def test_plain_directive_requires_exact_quotes_for_every_token_including_method(
     assert "copied exactly" in d, "quotes must be copied exactly, not paraphrased"
     assert "one line for each token" in d
     assert "do not join" in d, "separate lines must not be stitched into one quote"
-    assert "method token" in d and "steps:" in d
+    assert "method token" in d
 
 
 def test_plain_token_loading_is_a_light_lookup_instruction():
@@ -193,19 +193,13 @@ def test_plain_directive_gives_form_tokens_something_to_quote():
     assert "form" in d and "first line" in d, "form tokens must quote the first line of the structure they shaped"
 
 
-def test_plain_directive_method_steps_are_a_separate_line_with_fixed_shape():
-    d = _plain().PLANNING_DIRECTIVE
-    assert "Steps:" in d, "method steps line must have a fixed 'Steps:' shape"
-    assert "->" in d, "steps are listed with arrows in order of appearance"
-
-
 def test_plain_directive_method_quote_is_any_exact_line_not_the_first_step():
     d = _plain().PLANNING_DIRECTIVE.lower()
     assert "first step it called for" not in d, "forcing 'the first step' pushes the model to stitch text together"
     assert "any line" in d or "one line" in d, "method quote is one exact line where the method shows"
 
 
-def test_plain_directive_steps_line_is_required_and_separate():
+def test_plain_directive_has_no_steps_line():
     d = _plain().PLANNING_DIRECTIVE
-    assert "own line" in d, "Steps: must be its own line, not appended to the token line"
-    assert "never join" in d.lower() or "not on the token line" in d.lower()
+    assert "Steps:" not in d and "->" not in d, "the Steps line was dropped: haiku omitted it in most runs"
+    assert "for a method token, quote any line" in d.lower(), "the method quote rule stays"

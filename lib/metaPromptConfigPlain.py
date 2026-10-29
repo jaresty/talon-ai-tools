@@ -60,10 +60,7 @@ PLANNING_DIRECTIVE: str = (
     "so a reader can find it by searching. Copy it from the response text itself rather than from your own summary of it, "
     "and do not join separate lines into one quote. "
     "For a form token, quote the first line of the structure it shaped, such as the first bullet or the first table row. "
-    "For a method token, quote any line of the response where the method shows. "
-    "Then give a method token its own line, never joined to the token line, in this shape: "
-    "'Steps: [first step] -> [next step] -> [last step]', "
-    "listing the steps in the order they appear in the response."
+    "For a method token, quote any line of the response where the method shows."
 )
 
 META_INTERPRETATION_GUIDANCE: str = (

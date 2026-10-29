@@ -8,6 +8,7 @@ from typing import Any, Iterable, Mapping
 
 from .axisCatalog import axis_catalog
 from .axisMappings import DEFAULT_COMPLETENESS_TOKEN
+from . import metaPromptConfigPlain as _plain
 from .metaPromptConfig import AXIS_INTERACTION, LATERAL_SEED_BODY_PLURAL, LATERAL_SEED_BODY_SINGULAR, META_INTERPRETATION_GUIDANCE, MUTATION_INSTRUCTION, PLANNING_DIRECTIVE, PREAMBLE, PROMPT_REFERENCE_KEY, SUBJECT_FRAMING
 from .personaCatalog import get_persona_intent_catalog
 from .personaConfig import (
@@ -564,6 +565,19 @@ def prompt_grammar_payload() -> dict[str, Any]:
         "mutation_instruction": MUTATION_INSTRUCTION,
         "lateral_seed_body_singular": LATERAL_SEED_BODY_SINGULAR,
         "lateral_seed_body_plural": LATERAL_SEED_BODY_PLURAL,
+        # Web pilot: alternate scaffolding text. The top-level fields above remain the
+        # standard set used by the CLI; the web renderer chooses between them.
+        "plain": {
+            "reference_key": _plain.PROMPT_REFERENCE_KEY,
+            "preamble": _plain.PREAMBLE,
+            "axis_interaction": _plain.AXIS_INTERACTION,
+            "planning_directive": _plain.PLANNING_DIRECTIVE,
+            "subject_framing": _plain.SUBJECT_FRAMING,
+            "meta_interpretation_guidance": _plain.META_INTERPRETATION_GUIDANCE,
+            "token_loading": _plain.TOKEN_LOADING,
+            "composition_loading": _plain.COMPOSITION_LOADING,
+            "sequence": _plain.SEQUENCE,
+        },
         **sections,
         "checksums": checksums,
     }

@@ -39,4 +39,9 @@ describe('stores', () => {
 		expect(get(selected)).toEqual({ method: ['diagnose'] });
 		selected.set({});
 	});
+
+	it('promptVariant store defaults to plain', async () => {
+		const { promptVariant } = await import('./stores.js');
+		expect(get(promptVariant)).toBe('plain');
+	});
 });

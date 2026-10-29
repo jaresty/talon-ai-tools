@@ -50,6 +50,10 @@ type Config struct {
 	// Reuses Seed for reproducibility.
 	Mutate bool
 
+	// Style selects the prompt scaffolding for `bar build`: "plain" or "standard".
+	// Empty means unset (the BAR_PROMPT_STYLE environment variable, then plain).
+	Style string
+
 	// install-skills specific flags
 	Location string
 	DryRun   bool
@@ -284,6 +288,14 @@ func Parse(args []string) (*Config, error) {
 			cfg.SeedWords = n
 		case arg == "--mutate":
 			cfg.Mutate = true
+		case arg == "--style":
+			i++
+			if i >= len(args) {
+				return nil, fmt.Errorf("--style requires a value (plain or standard)")
+			}
+			cfg.Style = args[i]
+		case strings.HasPrefix(arg, "--style="):
+			cfg.Style = strings.TrimPrefix(arg, "--style=")
 		case arg == "--include":
 			i++
 			if i >= len(args) {

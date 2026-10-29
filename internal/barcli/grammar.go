@@ -32,6 +32,52 @@ type ReferenceKeyContracts struct {
 	Subject         string            `json:"subject"`
 }
 
+// PlainDispatch is the plain-style text for dispatch steps and inner cycles.
+// Placeholders: {ctx} isolation context, {cmd} during-dispatch command, {tok} last cycle token.
+type PlainDispatch struct {
+	Header           string   `json:"header"`
+	Preflight        []string `json:"preflight"`
+	OrchestratorOnly string   `json:"orchestrator_only"`
+	FanOutEnumerate  string   `json:"fan_out_enumerate"`
+	FanOutReplicate  string   `json:"fan_out_replicate"`
+	IsolationTrue    string   `json:"isolation_true"`
+	IsolationFalse   string   `json:"isolation_false"`
+	Start            string   `json:"start"`
+	StartDuring      string   `json:"start_during"`
+	AgentTask        string   `json:"agent_task"`
+	AgentTaskInner   string   `json:"agent_task_inner"`
+	JoinAll          string   `json:"join_all"`
+	JoinFirst        string   `json:"join_first"`
+	JoinMerge        string   `json:"join_merge"`
+	After            string   `json:"after"`
+	CycleIntro       string   `json:"cycle_intro"`
+	CycleCheck       string   `json:"cycle_check"`
+	InnerAction      string   `json:"inner_action"`
+}
+
+// PlainSequence is the plain-style text for `bar sequence show` and `bar sequence list`.
+type PlainSequence struct {
+	ModeAutonomous string         `json:"mode_autonomous"`
+	ModeLinear     string         `json:"mode_linear"`
+	ModeCycle      string         `json:"mode_cycle"`
+	Opening        string         `json:"opening"`
+	BuildGate      []string       `json:"build_gate"`
+	ActionStep     []string       `json:"action_step"`
+	Dispatch       *PlainDispatch `json:"dispatch"`
+}
+
+// PlainScaffolding is the alternate scaffolding text used by the "plain" prompt style.
+type PlainScaffolding struct {
+	Preamble                   string         `json:"preamble"`
+	AxisInteraction            string         `json:"axis_interaction"`
+	PlanningDirective          string         `json:"planning_directive"`
+	SubjectFraming             string         `json:"subject_framing"`
+	MetaInterpretationGuidance string         `json:"meta_interpretation_guidance"`
+	TokenLoading               string         `json:"token_loading"`
+	CompositionLoading         string         `json:"composition_loading"`
+	Sequence                   *PlainSequence `json:"sequence"`
+}
+
 // Grammar represents the portable prompt grammar payload exported from Python.
 type Grammar struct {
 	SchemaVersion              string
@@ -44,40 +90,41 @@ type Grammar struct {
 	LateralSeedBodySingular    string
 	LateralSeedBodyPlural      string
 	SubjectFraming             string
-	Axes              AxisSection
-	Static        StaticSection
-	Persona       PersonaSection
-	Hierarchy     HierarchySection
+	Plain                      *PlainScaffolding
+	Axes                       AxisSection
+	Static                     StaticSection
+	Persona                    PersonaSection
+	Hierarchy                  HierarchySection
 
-	Sequences     map[string]Sequence // ADR-0225
-	Patterns        []GrammarPattern
-	StarterPacks    []StarterPack
-	Compositions    []Composition // ADR-0227
-	Guides          []GuideEntry  // ADR-0237
-	LateralSeedWords []string     // curated concrete nouns for `bar build --seed-words`
-	axisTokens      map[string]map[string]struct{}
-	axisDocs        map[string]map[string]string
-	axisPriority    []string
-	personaTokens   map[string]map[string]struct{}
-	personaDocs     map[string]map[string]string
-	multiWordFirst  map[string][]multiWordToken
-	canonicalToSlug map[string]string
-	slugToCanonical map[string]string
+	Sequences        map[string]Sequence // ADR-0225
+	Patterns         []GrammarPattern
+	StarterPacks     []StarterPack
+	Compositions     []Composition // ADR-0227
+	Guides           []GuideEntry  // ADR-0237
+	LateralSeedWords []string      // curated concrete nouns for `bar build --seed-words`
+	axisTokens       map[string]map[string]struct{}
+	axisDocs         map[string]map[string]string
+	axisPriority     []string
+	personaTokens    map[string]map[string]struct{}
+	personaDocs      map[string]map[string]string
+	multiWordFirst   map[string][]multiWordToken
+	canonicalToSlug  map[string]string
+	slugToCanonical  map[string]string
 }
 
 type AxisSection struct {
-	Definitions    map[string]map[string]string
-	ListTokens     map[string][]string
-	Labels         map[string]map[string]string // ADR-0109: short CLI-facing selection labels
-	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
-	Categories     map[string]map[string]string // ADR-0144: semantic family groupings for method tokens
-	CategoryOrder  map[string][]string          // ADR-0144: canonical display order for category groups
-	RoutingConcept      map[string]map[string]string            // ADR-0146: distilled routing concept phrases
-	CrossAxisComposition   map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,cautionary}
-	AxisDescriptions       map[string]string                              // axis-level empty-state descriptions
-	AxisHeuristics         map[string][]string                            // axis-level BM25 routing heuristics
-	FormDefaultCompleteness map[string]string                             // ADR-0153: per-form-token completeness override
-	Metadata                map[string]map[string]TaskMetadata            // ADR-0155: structured metadata per axis token
+	Definitions             map[string]map[string]string
+	ListTokens              map[string][]string
+	Labels                  map[string]map[string]string                   // ADR-0109: short CLI-facing selection labels
+	Kanji                   map[string]map[string]string                   // ADR-0143: kanji icons for visual display
+	Categories              map[string]map[string]string                   // ADR-0144: semantic family groupings for method tokens
+	CategoryOrder           map[string][]string                            // ADR-0144: canonical display order for category groups
+	RoutingConcept          map[string]map[string]string                   // ADR-0146: distilled routing concept phrases
+	CrossAxisComposition    map[string]map[string]map[string]CrossAxisPair // ADR-0147: axis_a→token_a→axis_b→{natural,cautionary}
+	AxisDescriptions        map[string]string                              // axis-level empty-state descriptions
+	AxisHeuristics          map[string][]string                            // axis-level BM25 routing heuristics
+	FormDefaultCompleteness map[string]string                              // ADR-0153: per-form-token completeness override
+	Metadata                map[string]map[string]TaskMetadata             // ADR-0155: structured metadata per axis token
 }
 
 // CrossAxisPair holds the natural/cautionary composition data for one axis_a+token_a+axis_b triple (ADR-0147).
@@ -115,11 +162,11 @@ type StaticProfile struct {
 }
 
 type PersonaSection struct {
-	Axes     map[string][]string
-	Docs     map[string]map[string]string
-	Labels   map[string]map[string]string // ADR-0111: short CLI-facing labels per axis token
-	Kanji          map[string]map[string]string // ADR-0143: kanji icons for visual display
-	RoutingConcept map[string]map[string]string // ADR-0146: distilled routing concept phrases
+	Axes           map[string][]string
+	Docs           map[string]map[string]string
+	Labels         map[string]map[string]string       // ADR-0111: short CLI-facing labels per axis token
+	Kanji          map[string]map[string]string       // ADR-0143: kanji icons for visual display
+	RoutingConcept map[string]map[string]string       // ADR-0146: distilled routing concept phrases
 	Metadata       map[string]map[string]TaskMetadata // ADR-0156: structured metadata per persona token
 	Presets        map[string]PersonaPreset
 	Spoken         map[string]string
@@ -180,44 +227,44 @@ type GrammarPattern struct {
 }
 
 type rawGrammar struct {
-	SchemaVersion              string           `json:"schema_version"`
+	SchemaVersion              string                `json:"schema_version"`
 	ReferenceKey               ReferenceKeyContracts `json:"reference_key"`
-	Preamble                   string           `json:"preamble"`
-	AxisInteraction            string           `json:"axis_interaction"`
-	PlanningDirective          string           `json:"planning_directive"`
-	MetaInterpretationGuidance string           `json:"meta_interpretation_guidance"`
-	MutationInstruction        string           `json:"mutation_instruction"`
-	LateralSeedBodySingular    string           `json:"lateral_seed_body_singular"`
-	LateralSeedBodyPlural      string           `json:"lateral_seed_body_plural"`
-	SubjectFraming             string           `json:"subject_framing"`
-	Axes              rawAxisSection   `json:"axes"`
-	Static        rawStatic        `json:"tasks"`
-	Persona       rawPersona       `json:"persona"`
-	Hierarchy     rawHierarchy     `json:"hierarchy"`
-	Slugs         rawSlugSection   `json:"slugs"`
-	Sequences     map[string]Sequence `json:"sequences"` // ADR-0225
-	Patterns      []GrammarPattern    `json:"patterns"`
-	StarterPacks  []StarterPack       `json:"starter_packs"`
-	Compositions  []Composition       `json:"compositions"` // ADR-0227
-	Guidebook     []GuideEntry        `json:"guidebook"`    // ADR-0237
-	LateralSeedWords []string         `json:"lateral_seed_words"`
+	Preamble                   string                `json:"preamble"`
+	AxisInteraction            string                `json:"axis_interaction"`
+	PlanningDirective          string                `json:"planning_directive"`
+	MetaInterpretationGuidance string                `json:"meta_interpretation_guidance"`
+	MutationInstruction        string                `json:"mutation_instruction"`
+	LateralSeedBodySingular    string                `json:"lateral_seed_body_singular"`
+	LateralSeedBodyPlural      string                `json:"lateral_seed_body_plural"`
+	SubjectFraming             string                `json:"subject_framing"`
+	Plain                      *PlainScaffolding     `json:"plain"`
+	Axes                       rawAxisSection        `json:"axes"`
+	Static                     rawStatic             `json:"tasks"`
+	Persona                    rawPersona            `json:"persona"`
+	Hierarchy                  rawHierarchy          `json:"hierarchy"`
+	Slugs                      rawSlugSection        `json:"slugs"`
+	Sequences                  map[string]Sequence   `json:"sequences"` // ADR-0225
+	Patterns                   []GrammarPattern      `json:"patterns"`
+	StarterPacks               []StarterPack         `json:"starter_packs"`
+	Compositions               []Composition         `json:"compositions"` // ADR-0227
+	Guidebook                  []GuideEntry          `json:"guidebook"`    // ADR-0237
+	LateralSeedWords           []string              `json:"lateral_seed_words"`
 }
 
 type rawAxisSection struct {
-	Definitions    map[string]map[string]string `json:"definitions"`
-	ListTokens     map[string][]string          `json:"list_tokens"`
-	Labels         map[string]map[string]string `json:"labels"`           // ADR-0109
-	Kanji          map[string]map[string]string `json:"kanji"`            // ADR-0143
-	Categories     map[string]map[string]string `json:"categories"`        // ADR-0144
-	CategoryOrder  map[string][]string          `json:"category_order"`    // ADR-0144
-	RoutingConcept       map[string]map[string]string                `json:"routing_concept"`        // ADR-0146
-	CrossAxisComposition    map[string]map[string]map[string]CrossAxisPair `json:"cross_axis_composition"`     // ADR-0147
-	AxisDescriptions        map[string]string                              `json:"axis_descriptions"`          // axis-level empty-state descriptions
-	AxisHeuristics          map[string][]string                            `json:"axis_heuristics"`            // axis-level BM25 routing heuristics
-	FormDefaultCompleteness map[string]string                              `json:"form_default_completeness"`  // ADR-0153
-	Metadata                map[string]map[string]TaskMetadata             `json:"metadata"`                   // ADR-0155
+	Definitions             map[string]map[string]string                   `json:"definitions"`
+	ListTokens              map[string][]string                            `json:"list_tokens"`
+	Labels                  map[string]map[string]string                   `json:"labels"`                    // ADR-0109
+	Kanji                   map[string]map[string]string                   `json:"kanji"`                     // ADR-0143
+	Categories              map[string]map[string]string                   `json:"categories"`                // ADR-0144
+	CategoryOrder           map[string][]string                            `json:"category_order"`            // ADR-0144
+	RoutingConcept          map[string]map[string]string                   `json:"routing_concept"`           // ADR-0146
+	CrossAxisComposition    map[string]map[string]map[string]CrossAxisPair `json:"cross_axis_composition"`    // ADR-0147
+	AxisDescriptions        map[string]string                              `json:"axis_descriptions"`         // axis-level empty-state descriptions
+	AxisHeuristics          map[string][]string                            `json:"axis_heuristics"`           // axis-level BM25 routing heuristics
+	FormDefaultCompleteness map[string]string                              `json:"form_default_completeness"` // ADR-0153
+	Metadata                map[string]map[string]TaskMetadata             `json:"metadata"`                  // ADR-0155
 }
-
 
 type rawStatic struct {
 	Catalog struct {
@@ -236,15 +283,15 @@ type rawStatic struct {
 }
 
 type rawPersona struct {
-	Axes     map[string][]string          `json:"axes"`
-	Docs     map[string]map[string]string `json:"docs"`
-	Labels   map[string]map[string]string `json:"labels"`   // ADR-0111
-	Kanji          map[string]map[string]string `json:"kanji"`           // ADR-0143
-	RoutingConcept map[string]map[string]string `json:"routing_concept"` // ADR-0146
-	Metadata       map[string]map[string]TaskMetadata `json:"metadata"` // ADR-0156
-	Presets        map[string]PersonaPreset     `json:"presets"`
-	Spoken   map[string]string            `json:"spoken_map"`
-	Intent   struct {
+	Axes           map[string][]string                `json:"axes"`
+	Docs           map[string]map[string]string       `json:"docs"`
+	Labels         map[string]map[string]string       `json:"labels"`          // ADR-0111
+	Kanji          map[string]map[string]string       `json:"kanji"`           // ADR-0143
+	RoutingConcept map[string]map[string]string       `json:"routing_concept"` // ADR-0146
+	Metadata       map[string]map[string]TaskMetadata `json:"metadata"`        // ADR-0156
+	Presets        map[string]PersonaPreset           `json:"presets"`
+	Spoken         map[string]string                  `json:"spoken_map"`
+	Intent         struct {
 		AxisTokens map[string][]string `json:"axis_tokens"`
 		Docs       map[string]string   `json:"docs"`
 	} `json:"intent"`
@@ -314,20 +361,21 @@ func LoadGrammar(path string) (*Grammar, error) {
 		LateralSeedBodySingular:    raw.LateralSeedBodySingular,
 		LateralSeedBodyPlural:      raw.LateralSeedBodyPlural,
 		SubjectFraming:             raw.SubjectFraming,
-		Sequences:     raw.Sequences,
-		Patterns:          raw.Patterns,
-		StarterPacks:  raw.StarterPacks,
-		Compositions:  raw.Compositions,
-		Guides:        raw.Guidebook,
-		LateralSeedWords: raw.LateralSeedWords,
+		Plain:                      raw.Plain,
+		Sequences:                  raw.Sequences,
+		Patterns:                   raw.Patterns,
+		StarterPacks:               raw.StarterPacks,
+		Compositions:               raw.Compositions,
+		Guides:                     raw.Guidebook,
+		LateralSeedWords:           raw.LateralSeedWords,
 		Axes: AxisSection{
-			Definitions:    raw.Axes.Definitions,
-			ListTokens:     raw.Axes.ListTokens,
-			Labels:         raw.Axes.Labels,
-			Kanji:          raw.Axes.Kanji,
-			Categories:     raw.Axes.Categories,
-			CategoryOrder:  raw.Axes.CategoryOrder,
-			RoutingConcept:       raw.Axes.RoutingConcept,
+			Definitions:             raw.Axes.Definitions,
+			ListTokens:              raw.Axes.ListTokens,
+			Labels:                  raw.Axes.Labels,
+			Kanji:                   raw.Axes.Kanji,
+			Categories:              raw.Axes.Categories,
+			CategoryOrder:           raw.Axes.CategoryOrder,
+			RoutingConcept:          raw.Axes.RoutingConcept,
 			CrossAxisComposition:    raw.Axes.CrossAxisComposition,
 			AxisDescriptions:        raw.Axes.AxisDescriptions,
 			AxisHeuristics:          raw.Axes.AxisHeuristics,
@@ -350,7 +398,7 @@ func LoadGrammar(path string) (*Grammar, error) {
 			RoutingConcept: raw.Persona.RoutingConcept,
 			Metadata:       raw.Persona.Metadata,
 			Presets:        raw.Persona.Presets,
-			Spoken:   personaSpoken,
+			Spoken:         personaSpoken,
 			Intent: IntentSection{
 				AxisTokens: raw.Persona.Intent.AxisTokens,
 				Docs:       raw.Persona.Intent.Docs,

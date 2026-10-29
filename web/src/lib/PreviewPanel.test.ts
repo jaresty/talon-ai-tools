@@ -101,4 +101,24 @@ describe('PreviewPanel', () => {
 		flushSync();
 		expect(onTogglePreview).toHaveBeenCalledOnce();
 	});
+
+	it('prompt style control switches the promptVariant store between plain and standard', async () => {
+		const { get } = await import('svelte/store');
+		const { promptVariant } = await import('./stores.js');
+		promptVariant.set('plain');
+		const { default: PreviewPanel } = await import('./PreviewPanel.svelte');
+		mount(PreviewPanel, { target: container, props: defaultProps });
+		flushSync();
+		const group = container.querySelector('[aria-label="Prompt style toggle"]');
+		expect(group).not.toBeNull();
+		const buttons = Array.from(group!.querySelectorAll('button'));
+		expect(buttons.map((b) => b.textContent?.trim())).toEqual(['Plain', 'Standard']);
+		expect(buttons[0].getAttribute('aria-pressed')).toBe('true');
+		buttons[1].click();
+		flushSync();
+		expect(get(promptVariant)).toBe('standard');
+		buttons[0].click();
+		flushSync();
+		expect(get(promptVariant)).toBe('plain');
+	});
 });

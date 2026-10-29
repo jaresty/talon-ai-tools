@@ -14,7 +14,7 @@ func TestRenderDispatchHelpStep0aWording(t *testing.T) {
 		t.Fatalf("LoadGrammar: %v", err)
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, ""); err != nil {
+	if err := renderDispatchHelp(&buf, g, nil, ""); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
@@ -38,7 +38,7 @@ func TestRenderDispatchHelpBlankShowsInnerSteps(t *testing.T) {
 		t.Fatalf("LoadGrammar: %v", err)
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, ""); err != nil {
+	if err := renderDispatchHelp(&buf, g, nil, ""); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
@@ -61,7 +61,7 @@ func TestRenderDispatchHelpStep0cNamesExactHeading(t *testing.T) {
 		t.Fatalf("LoadGrammar: %v", err)
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, ""); err != nil {
+	if err := renderDispatchHelp(&buf, g, nil, ""); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
@@ -76,7 +76,7 @@ func TestRenderDispatchHelpBlank(t *testing.T) {
 		t.Fatalf("LoadGrammar: %v", err)
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, ""); err != nil {
+	if err := renderDispatchHelp(&buf, g, nil, ""); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
@@ -97,7 +97,7 @@ func TestRenderDispatchHelpNamedSequence(t *testing.T) {
 		t.Fatalf("LoadGrammar: %v", err)
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, "frame-debug"); err != nil {
+	if err := renderDispatchHelp(&buf, g, nil, "frame-debug"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
@@ -118,7 +118,7 @@ func TestRenderDispatchHelpUnknownSequence(t *testing.T) {
 		t.Fatalf("LoadGrammar: %v", err)
 	}
 	var buf strings.Builder
-	err = renderDispatchHelp(&buf, g, "no-such-sequence-xyz")
+	err = renderDispatchHelp(&buf, g, nil, "no-such-sequence-xyz")
 	if err == nil {
 		t.Fatal("expected error for unknown sequence, got nil")
 	}
@@ -141,7 +141,7 @@ func TestRenderDispatchHelpMultipleDispatchSteps(t *testing.T) {
 		},
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, "two-dispatch"); err != nil {
+	if err := renderDispatchHelp(&buf, g, nil, "two-dispatch"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
@@ -172,7 +172,7 @@ func TestDispatchStepBlockDuringDispatchAbsenceClause(t *testing.T) {
 		DuringDispatch: "show form:quiz",
 	}
 	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil)
+	writeDispatchStepBlock(&buf, step, 1, nil, nil)
 	out := buf.String()
 	if !strings.Contains(out, "deferred execution does not satisfy this requirement") {
 		t.Errorf("during_dispatch instruction must contain absence clause 'deferred execution does not satisfy this requirement':\n%s", out)
@@ -191,7 +191,7 @@ func TestDispatchStep0cPermitsCapabilityRequirements(t *testing.T) {
 		t.Fatalf("LoadGrammar: %v", err)
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, ""); err != nil {
+	if err := renderDispatchHelp(&buf, g, nil, ""); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
@@ -235,7 +235,7 @@ func TestDispatchHelpGateDoesNotTargetRendererHeading(t *testing.T) {
 		},
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, "gate-probe"); err != nil {
+	if err := renderDispatchHelp(&buf, g, nil, "gate-probe"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()

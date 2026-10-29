@@ -78,6 +78,7 @@ func TestRunBuildTaskRequiredErrorKeepsExplicitCompleteness(t *testing.T) {
 // LATERAL SEED section to stdout and echoes the resolved seed to stderr (P2a, P5),
 // and that identical (seed, N) inputs are reproducible (P3).
 func TestRunBuildSeedWordsInjectsSection(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on standard-style headings
 	a := runBuildCLI(t, []string{"build", "make", "--seed-words", "2", "--seed", "42"}, nil)
 	if a.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d with stderr: %s", a.Exit, a.Stderr)
@@ -321,6 +322,7 @@ func TestRunBuildSubjectAndInputMutualExclusivity(t *testing.T) {
 }
 
 func TestRunBuildWithAddendumFlag(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on standard-style headings
 	t.Setenv(disableStateEnv, "1")
 
 	result := runBuildCLI(t, []string{"build", "make", "--subject", "some content", "--addendum", "focus on security"}, nil)
@@ -457,6 +459,7 @@ func TestAxisColonTokenScopedToNamedAxis(t *testing.T) {
 }
 
 func TestBuildPackNameExpandsToCommand(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on standard-style headings
 	t.Setenv(disableStateEnv, "1")
 
 	// "debug" is a starter pack → should expand, not error
@@ -474,6 +477,7 @@ func TestBuildPackNameExpandsToCommand(t *testing.T) {
 }
 
 func TestBuildPackNameWithAdditionalTokensExpands(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on standard-style headings
 	t.Setenv(disableStateEnv, "1")
 
 	// "craft" is a starter pack; "aloud" is a valid axis token.

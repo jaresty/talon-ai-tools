@@ -20,6 +20,9 @@ const (
 
 // BuildResult captures the structured output of `bar build`.
 type BuildResult struct {
+	Style               string              `json:"style,omitempty"`
+	TokenLoading        string              `json:"-"`
+	CompositionLoading  string              `json:"-"`
 	SchemaVersion       string              `json:"schema_version"`
 	ReferenceKey               ReferenceKeyContracts `json:"reference_key,omitempty"`
 	Preamble                   string              `json:"preamble,omitempty"`

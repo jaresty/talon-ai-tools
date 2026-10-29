@@ -703,3 +703,55 @@ describe('renderPrompt — mutation (--mutate)', () => {
 		expect(out).not.toContain('MUTATION');
 	});
 });
+
+describe('renderPrompt variants', () => {
+	const withPlain = {
+		...grammar,
+		preamble: 'STANDARD PREAMBLE',
+		plain: {
+			reference_key: grammar.reference_key,
+			preamble: 'PLAIN PREAMBLE',
+			axis_interaction: 'PLAIN AXIS INTERACTION',
+			planning_directive: 'PLAIN PLANNING DIRECTIVE',
+			subject_framing: 'PLAIN SUBJECT FRAMING',
+			meta_interpretation_guidance: 'PLAIN META GUIDANCE'
+		}
+	} as typeof grammar;
+
+	const render = (variant?: 'standard' | 'plain', g = withPlain) =>
+		renderPrompt(g, { method: ['ground'] }, 'x', '', undefined, undefined, undefined, variant);
+
+	it('plain variant uses the plain scaffolding text', () => {
+		const result = render('plain');
+		expect(result).toContain('PLAIN PREAMBLE');
+		expect(result).toContain('PLAIN PLANNING DIRECTIVE');
+		expect(result).toContain('PLAIN META GUIDANCE');
+		expect(result).not.toContain('PLANNING DIRECTIVE TEXT');
+		expect(result).not.toContain('STANDARD PREAMBLE');
+	});
+
+	it('standard variant is unchanged and is the default', () => {
+		for (const result of [render('standard'), render(undefined)]) {
+			expect(result).toContain('STANDARD PREAMBLE');
+			expect(result).toContain('PLANNING DIRECTIVE TEXT');
+			expect(result).not.toContain('PLAIN PLANNING DIRECTIVE');
+		}
+	});
+
+	it('plain variant drops kanji from non-token section labels but keeps it on token labels', () => {
+		const result = render('plain');
+		expect(result).toContain('=== REQUEST ===');
+		expect(result).toContain('=== FORMAT ===');
+		expect(result).not.toContain('依頼');
+		expect(result).not.toContain('形式');
+		expect(result).toContain('軸');
+		expect(result).toContain('役割');
+		expect(result).toContain('定義');
+	});
+
+	it('plain request falls back to standard text when the grammar has no plain block', () => {
+		const result = render('plain', { ...grammar, preamble: 'STANDARD PREAMBLE' } as typeof grammar);
+		expect(result).toContain('STANDARD PREAMBLE');
+		expect(result).toContain('PLANNING DIRECTIVE TEXT');
+	});
+});

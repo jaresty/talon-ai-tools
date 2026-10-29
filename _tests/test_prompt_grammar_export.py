@@ -42,6 +42,34 @@ class PromptGrammarPayloadTests(unittest.TestCase):
     @unittest.skipIf(
         bootstrap is None, "Test harness unavailable outside unittest runs"
     )
+    def test_payload_exposes_plain_variant_alongside_standard(self) -> None:
+        from talon_user.lib import promptGrammar
+
+        payload = promptGrammar.prompt_grammar_payload()
+
+        plain = payload.get("plain")
+        self.assertIsInstance(plain, dict, "payload must carry a 'plain' variant")
+        for key in (
+            "reference_key",
+            "preamble",
+            "axis_interaction",
+            "planning_directive",
+            "subject_framing",
+            "meta_interpretation_guidance",
+            "token_loading",
+            "composition_loading",
+        ):
+            self.assertIn(key, plain)
+            self.assertTrue(plain[key], f"plain.{key} must not be empty")
+        self.assertIsInstance(plain.get("sequence"), dict, "plain.sequence must be exported")
+        self.assertIn("build_gate", plain["sequence"])
+        self.assertNotEqual(plain["planning_directive"], payload["planning_directive"])
+        # Standard fields stay untouched for the CLI and Talon paths.
+        self.assertIn("Token derivations:", payload["planning_directive"])
+
+    @unittest.skipIf(
+        bootstrap is None, "Test harness unavailable outside unittest runs"
+    )
     def test_payload_contains_lateral_seed_words(self) -> None:
         from talon_user.lib import promptGrammar
 

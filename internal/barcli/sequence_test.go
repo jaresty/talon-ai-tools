@@ -464,6 +464,7 @@ func TestHelpLLMDispatchProtocolRequiresAgentConfigBlock(t *testing.T) {
 // Behavior: dispatch protocol (from bar help dispatch) includes a concrete ## Agent Configuration example
 // showing task-context framing (not persona/goal, which come from agent's own bar invocations).
 func TestHelpLLMDispatchProtocolAgentConfigBlockHasExample(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"help", "dispatch"})
 	if code != 0 {
 		t.Fatalf("bar help dispatch exited %d: %s", code, stderr)
@@ -491,6 +492,7 @@ func TestHelpLLMSequencesIncludesDispatchNote(t *testing.T) {
 
 // Behavior 23: `bar sequence show` renders the dispatch execution protocol inline for dispatch steps.
 func TestSequenceShowDispatchProtocolInline(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
@@ -543,6 +545,7 @@ func TestSequenceShowDispatch0bGatesOnAgentConfigBlock(t *testing.T) {
 // path emits "=== REQUEST 依頼 ===". Gating on it silently targets a string the
 // renderer no longer produces (gate-clause self-containment principle).
 func TestSequenceShowStepGateDoesNotTargetRendererHeading(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
 	if code != 0 {
 		t.Fatalf("bar sequence show experiment-cycle exited %d: %s", code, stderr)
@@ -558,6 +561,7 @@ func TestSequenceShowStepGateDoesNotTargetRendererHeading(t *testing.T) {
 // Dim-0c: dispatch protocol 0c must state allow-list (what block may contain) and
 // must not require persona/approach/goal (those come from agent's own bar invocations).
 func TestSequenceShowDispatch0cNamesThreeLabeledFields(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
@@ -572,6 +576,7 @@ func TestSequenceShowDispatch0cNamesThreeLabeledFields(t *testing.T) {
 
 // Dim-4: dispatch protocol step 4 must require Agent call count equals item count.
 func TestSequenceShowDispatch4RequiresCountEquality(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
@@ -582,6 +587,7 @@ func TestSequenceShowDispatch4RequiresCountEquality(t *testing.T) {
 }
 
 func TestSequenceShowDispatch0aSameTurnCoLocation(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
@@ -592,6 +598,7 @@ func TestSequenceShowDispatch0aSameTurnCoLocation(t *testing.T) {
 }
 
 func TestSequenceShowDispatch4AllowListGateEntry(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
@@ -602,6 +609,7 @@ func TestSequenceShowDispatch4AllowListGateEntry(t *testing.T) {
 }
 
 func TestSequenceShowDispatch4DeferralClosureText(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
@@ -728,6 +736,7 @@ func TestHelpLLMSequencesDispatchStepShowsFanOut(t *testing.T) {
 
 // Behavior 31: renderer prints action protocol block for action steps.
 func TestSequenceShowRendersActionStep(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
 	if code != 0 {
 		t.Fatalf("bar sequence show experiment-cycle exited %d: %s", code, stderr)
@@ -943,6 +952,7 @@ func TestSequenceShowDispatchMentionsBarSkills(t *testing.T) {
 
 // Behavior 43: dispatch protocol clause 1 is allow-list (names what orchestrator does, not what it must not do).
 func TestSequenceShowDispatchClause1IsAllowList(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
@@ -957,6 +967,7 @@ func TestSequenceShowDispatchClause1IsAllowList(t *testing.T) {
 
 // Behavior 44: dispatch protocol includes explicit bar command instruction for spawned agents.
 func TestSequenceShowDispatchAgentBarCommand(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
@@ -980,6 +991,7 @@ func TestSequenceShowDispatchPoint5TraceabilityClause(t *testing.T) {
 // Behavior 91: dispatch protocol includes pre-dispatch agent config gate (Criterion G).
 // Before fanning out, the orchestrator must run bar build ... agent and include the output in each subagent prompt.
 func TestDispatchProtocolPreAgentConfigGate(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
@@ -1065,6 +1077,7 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 
 // Behavior 77: dispatch protocol point 4 references pre-dispatch derived config (applies to all dispatch steps).
 func TestDispatchProtocolPoint4ContainsBarAgent(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	for _, seq := range []string{"frame-debug", "frame-eval"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
@@ -1089,6 +1102,7 @@ func TestDispatchProtocolPoint4ContainsBarAgent(t *testing.T) {
 
 // Behavior 75: frame-debug dispatch references pre-dispatch derived agent config.
 func TestFrameDebugInnerDispatchUsesBarAgent(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
@@ -1100,6 +1114,7 @@ func TestFrameDebugInnerDispatchUsesBarAgent(t *testing.T) {
 
 // Behavior 76: frame-debug inner dispatch point 5 requires orchestrator to preserve all Derivation blocks.
 func TestFrameDebugInnerDispatchPreservesDerivationBlocks(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
@@ -1133,6 +1148,7 @@ func TestFrameDebugDispatchPromptHintNamesBarBuildCommands(t *testing.T) {
 
 // Behavior 70: frame-debug dispatch point 3 names observable Agent call contents.
 func TestFrameDebugDispatchPoint3NamesAgentCallContents(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
@@ -1144,6 +1160,7 @@ func TestFrameDebugDispatchPoint3NamesAgentCallContents(t *testing.T) {
 
 // Behavior 71: frame-debug dispatch point 4 says not to batch items.
 func TestFrameDebugDispatchPoint5RequiresBarWorkflowSkill(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
@@ -1332,6 +1349,7 @@ func TestBarAgentNoDiscovery(t *testing.T) {
 
 // Behavior 55: dispatch protocol point 5 requires agents to return a Derivation block and orchestrator to preserve all.
 func TestDispatchProtocolPreservesDerivationBlocks(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
@@ -1360,6 +1378,7 @@ func TestInnerActionProtocolRequiresBash(t *testing.T) {
 
 // Behavior 80: inner dispatch point 5 prohibits token discovery — agents must run only the bar build commands shown.
 func TestInnerDispatchPoint5NoTokenDiscovery(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
@@ -1420,6 +1439,7 @@ func TestPrepVetPromptHintsHaveTaskPrefix(t *testing.T) {
 
 // Behavior 78: non-inner dispatch point 5 tells agents to run bar build with the step token string directly.
 func TestDispatchPoint5TokenString(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
@@ -1463,6 +1483,7 @@ func TestHandoffProtocolBlock(t *testing.T) {
 
 // Behavior 84: bar sequence show renders [cycle protocol — required] block before first inner step when inner mode is cycle.
 func TestInnerCycleProtocolBlock(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	for _, seq := range []string{"frame-explore", "frame-debug"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
@@ -1517,6 +1538,7 @@ func TestFrameEnumerationDepthProhibition(t *testing.T) {
 
 // Behavior 83: bar sequence show renders [bar build gate — required] block for inner non-action steps (prep, vet).
 func TestInnerStepBarBuildGate(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	for _, seq := range []string{"frame-explore", "frame-debug"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
@@ -1613,6 +1635,7 @@ func TestFrameOrbitInnerTraceStep(t *testing.T) {
 
 // Behavior 91: bar sequence show step gate instructs agent to augment step token with additional tokens.
 func TestSequenceShowStepGateInstructsTokenAugmentation(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	for _, seq := range []string{"check-and-rewrite", "make-and-review"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
@@ -1629,6 +1652,7 @@ func TestSequenceShowStepGateInstructsTokenAugmentation(t *testing.T) {
 
 // Fix B: step gate must warn against using sequence name as token
 func TestSequenceShowStepGateNoSequenceNameAsToken(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
 	if code != 0 {
 		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
@@ -1640,6 +1664,7 @@ func TestSequenceShowStepGateNoSequenceNameAsToken(t *testing.T) {
 
 // Fix: bar sequence show must prompt agent to emit ## Sequence Derivation block before step 1
 func TestSequenceShowRequiresDerivationBlock(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
 	if code != 0 {
 		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
@@ -1657,6 +1682,7 @@ func TestSequenceShowRequiresDerivationBlock(t *testing.T) {
 
 // Fix: derivation block insertion prompt must direct agent to re-read the task
 func TestSequenceShowDerivationInsertionPromptReadsTask(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
 	if code != 0 {
 		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
@@ -1667,6 +1693,7 @@ func TestSequenceShowDerivationInsertionPromptReadsTask(t *testing.T) {
 }
 
 func TestSequenceShowDerivationInsertionRequiresTokenString(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
 	if code != 0 {
 		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
@@ -1677,6 +1704,7 @@ func TestSequenceShowDerivationInsertionRequiresTokenString(t *testing.T) {
 }
 
 func TestSequenceShowDerivationInsertionGate(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
 	if code != 0 {
 		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
@@ -1687,6 +1715,7 @@ func TestSequenceShowDerivationInsertionGate(t *testing.T) {
 }
 
 func TestSequenceShowAutonomousModeGate(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
 	if code != 0 {
 		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
@@ -1697,6 +1726,7 @@ func TestSequenceShowAutonomousModeGate(t *testing.T) {
 }
 
 func TestSequenceShowModeGlossaryInShowOutput(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
 	if code != 0 {
 		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
@@ -1713,6 +1743,7 @@ func TestSequenceShowModeGlossaryInShowOutput(t *testing.T) {
 }
 
 func TestSequenceListModeGlossary(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "list"})
 	if code != 0 {
 		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
@@ -1795,7 +1826,7 @@ func TestDispatchStepBlockRendersDuringDispatch(t *testing.T) {
 		DuringDispatch: "explain form:quiz",
 	}
 	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil)
+	writeDispatchStepBlock(&buf, step, 1, nil, nil)
 	out := buf.String()
 	if !strings.Contains(out, "Dispatching N agents:") {
 		t.Errorf("dispatch block must contain cardinality declaration 'Dispatching N agents:' when field is set:\n%s", out)
@@ -1910,7 +1941,7 @@ func TestDispatchStepBlockRunsAgentsInBackgroundWhenDuringDispatchSet(t *testing
 		DuringDispatch: "show form:quiz",
 	}
 	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil)
+	writeDispatchStepBlock(&buf, step, 1, nil, nil)
 	out := buf.String()
 	if !strings.Contains(out, "run_in_background: true") {
 		t.Errorf("dispatch block with during_dispatch must instruct run_in_background: true on Agent calls:\n%s", out)
@@ -1928,7 +1959,7 @@ func TestDispatchStepBlockWaitsForBackgroundNotificationsBeforeJoin(t *testing.T
 		DuringDispatch: "show form:quiz",
 	}
 	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil)
+	writeDispatchStepBlock(&buf, step, 1, nil, nil)
 	out := buf.String()
 	if !strings.Contains(out, "background agent") {
 		t.Errorf("dispatch block with during_dispatch must reference background agents:\n%s", out)
@@ -1949,7 +1980,7 @@ func TestDispatchStepBlockDuringDispatchBeforeAgentSpawn(t *testing.T) {
 		DuringDispatch: "show form:quiz",
 	}
 	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil)
+	writeDispatchStepBlock(&buf, step, 1, nil, nil)
 	out := buf.String()
 	bashIdx := strings.Index(out, "show form:quiz")
 	spawnIdx := strings.Index(out, "Spawn one Agent tool call")
@@ -1975,7 +2006,7 @@ func TestDispatchStepBlockInterruptionContractPresent(t *testing.T) {
 		DuringDispatch: "show form:quiz",
 	}
 	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil)
+	writeDispatchStepBlock(&buf, step, 1, nil, nil)
 	out := buf.String()
 	if !strings.Contains(out, "agents may return") {
 		t.Errorf("dispatch block with during_dispatch must contain interruption contract ('agents may return'):\n%s", out)
@@ -1996,7 +2027,7 @@ func TestDispatchStepBlockInterruptionContractPermitCondition(t *testing.T) {
 		DuringDispatch: "show form:quiz",
 	}
 	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil)
+	writeDispatchStepBlock(&buf, step, 1, nil, nil)
 	out := buf.String()
 	if !strings.Contains(out, "human-turn message appears in the transcript after that prompt") {
 		t.Errorf("during_dispatch stop instruction must name a structural permit-condition ('human-turn message appears in the transcript after that prompt') rather than a semantic phrase:\n%s", out)
@@ -2024,6 +2055,7 @@ func TestFrameDispatchSequencesAreLinear(t *testing.T) {
 
 // Behavior 104: bar sequence list autonomous description states that autonomous sequences contain no requires_user_input steps.
 func TestSequenceListAutonomousNoRequiresUserInput(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "list"})
 	if code != 0 {
 		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
@@ -2046,6 +2078,7 @@ func TestAutonomousModeStepCompleteMarker(t *testing.T) {
 
 // Behavior 106: autonomous mode description requires token string exact-match clause.
 func TestAutonomousModeTokenStringMatch(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "list"})
 	if code != 0 {
 		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
@@ -2068,6 +2101,7 @@ func TestAutonomousModeAgentsComplete(t *testing.T) {
 
 // Behavior 108: autonomous mode description names agents-complete line as transcript-observable.
 func TestAutonomousModeAgentsTranscriptObservable(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "list"})
 	if code != 0 {
 		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
@@ -2319,6 +2353,7 @@ func TestExperimentCyclePrepIncludesVerify(t *testing.T) {
 
 // Behavior 126: inner cycle stop_when check uses allow-list gate naming the Findings block permission condition.
 func TestCycleStopWhenPermissionString(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	for _, seq := range []string{"frame-explore", "frame-debug"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
@@ -2332,6 +2367,7 @@ func TestCycleStopWhenPermissionString(t *testing.T) {
 
 // Behavior 127: inner cycle stop_when check names positional constraint on Findings block.
 func TestCycleStopWhenMustNotAppear(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	for _, seq := range []string{"frame-explore", "frame-debug"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
@@ -2358,6 +2394,7 @@ func TestCycleStopWhenOldStringAbsent(t *testing.T) {
 
 // Behavior 129: inner cycle stop_when check uses token-agnostic language, not token-specific 'vet output'.
 func TestCycleStopWhenNoVetOutputReference(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	for _, seq := range []string{"frame-explore", "frame-debug"} {
 		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
 		if code != 0 {
@@ -2445,7 +2482,7 @@ func TestDispatchDuringDispatchSubjectInstruction(t *testing.T) {
 		DuringDispatch: "show form:quiz",
 	}
 	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil)
+	writeDispatchStepBlock(&buf, step, 1, nil, nil)
 	out := buf.String()
 	if !strings.Contains(out, "pass the enumerated items from the prior step as --subject") {
 		t.Errorf("during_dispatch rendering must instruct orchestrator to pass enumerated items as --subject:\n%s", out)

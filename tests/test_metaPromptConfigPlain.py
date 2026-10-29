@@ -203,3 +203,19 @@ def test_plain_directive_has_no_steps_line():
     d = _plain().PLANNING_DIRECTIVE
     assert "Steps:" not in d and "->" not in d, "the Steps line was dropped: haiku omitted it in most runs"
     assert "for a method token, quote any line" in d.lower(), "the method quote rule stays"
+
+
+def test_plain_token_loading_puts_lookups_before_any_other_tool_call():
+    text = _plain().TOKEN_LOADING
+    low = text.lower()
+    assert "before any other tool call" in low, "lookups must precede every other tool call"
+    assert "reading files" in low and "searching code" in low, "name the task tool calls that must wait"
+    assert "no need to look it up again" not in low, "the skip-if-visible escape lets agents skip the lookups"
+    assert "invalidates" not in low and "does not satisfy" not in low
+
+
+def test_plain_composition_loading_puts_lookups_before_any_other_tool_call():
+    text = _plain().COMPOSITION_LOADING
+    low = text.lower()
+    assert "before any other tool call" in low
+    assert "bar help composition" in text and "Remaining (not loaded)" in text

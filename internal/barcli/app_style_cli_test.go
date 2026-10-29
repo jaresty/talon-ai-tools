@@ -254,3 +254,14 @@ func TestHelpDispatchPlainStyle(t *testing.T) {
 		t.Error("plain help dispatch should still describe the Agent Configuration block")
 	}
 }
+
+func TestPlainStyleLoadsTokensBeforeOtherToolCalls(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	out := runBuildCLI(t, []string{"build", "show", "mean", "--style", "plain"}, nil)
+	if out.Exit != 0 {
+		t.Fatalf("exit %d: %s", out.Exit, out.Stderr)
+	}
+	if !strings.Contains(out.Stdout, "before any other tool call") {
+		t.Errorf("plain TOKENS text must put the lookups before any other tool call:\n%s", out.Stdout)
+	}
+}

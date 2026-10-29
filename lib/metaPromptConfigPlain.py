@@ -79,19 +79,19 @@ META_INTERPRETATION_GUIDANCE: str = (
 # standard token-loading ceremony with a plain lookup instruction; the checkable
 # record is the closing "## Token application" section, not the loading step.
 TOKEN_LOADING: str = (
-    "Before writing the answer, look up the definition of each token in the list below with "
-    "`bar help token <slug>`. Several slugs can go in one call: `bar help token <slug> <slug> ...`. "
-    "If a token's definition is already visible earlier in this conversation, there is no need to look it up again. "
+    "Look up the definition of each token in the list below before any other tool call, including reading files, "
+    "searching code, or running commands. Use `bar help token <slug>`; several slugs can go in one call: "
+    "`bar help token <slug> <slug> ...`. "
     "If the output ends with a `Remaining (not loaded): ...` line, repeat the call with the remaining slugs "
     "until that line no longer appears. "
-    "Once the definitions are in hand, use each token while writing the answer, and finish with the "
+    "Once the definitions are in hand, go ahead with the task, use each token while writing the answer, and finish with the "
     "'## Token application' record described in the format section."
 )
 
 # Used by the Go CLI only. Replaces the composition-loading ceremony.
 COMPOSITION_LOADING: str = (
-    "Some token combinations in this build have extra rules. Look up each composition listed below with "
-    "`bar help composition <slug>`, or several in one call: `bar help composition <slug> <slug> ...`. "
+    "Some token combinations in this build have extra rules. Look up each composition listed below before any other tool call, "
+    "with `bar help composition <slug>`, or several in one call: `bar help composition <slug> <slug> ...`. "
     "If the output ends with a `Remaining (not loaded): ...` line, repeat the call with the remaining names. "
     "The rules apply throughout the answer."
 )

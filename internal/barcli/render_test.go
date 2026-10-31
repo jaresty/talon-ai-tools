@@ -14,36 +14,6 @@ const (
 	lateralSeedPluralFixture   = "Lateral seed: {words}. Let the interplay between these words inform your approach where it productively can — as an angle, metaphor, or association. Do not force them, and do not treat them as part of the request."
 )
 
-func TestTokensInstructionRootCriterionPhrase(t *testing.T) {
-	b, err := os.ReadFile("render.go")
-	if err != nil {
-		t.Fatalf("could not read render.go: %v", err)
-	}
-	if !strings.Contains(string(b), "whose first line is") {
-		t.Error(`render.go missing root criterion phrase "whose first line is"`)
-	}
-}
-
-
-func TestTokensInstructionConsecutiveInOrderPhrase(t *testing.T) {
-	b, err := os.ReadFile("render.go")
-	if err != nil {
-		t.Fatalf("could not read render.go: %v", err)
-	}
-	if !strings.Contains(string(b), "consecutive lines in the next assistant output block") {
-		t.Error(`render.go missing consecutive-in-order phrase`)
-	}
-}
-
-func TestTokensInstructionLoadsVerifiedCountDefinition(t *testing.T) {
-	b, err := os.ReadFile("render.go")
-	if err != nil {
-		t.Fatalf("could not read render.go: %v", err)
-	}
-	if !strings.Contains(string(b), "count of distinct valid") {
-		t.Error(`render.go missing Loads verified count definition "count of distinct valid"`)
-	}
-}
 
 func TestRenderPlainTextSections(t *testing.T) {
 	result := &BuildResult{
@@ -68,7 +38,7 @@ func TestRenderPlainTextSections(t *testing.T) {
 	output := RenderPlainText(result)
 
 	required := []string{
-		"=== REQUEST 依頼 ===",
+		"=== REQUEST ===",
 		"=== AXES 軸 (token types — each governs a different dimension) ===",
 		"=== TOKENS 役割 ===",
 		"Format this as a todo list.",
@@ -111,7 +81,7 @@ func TestRenderPlainTextLateralSeedPresent(t *testing.T) {
 		LateralSeedBodyPlural:   lateralSeedPluralFixture,
 	}
 	output := RenderPlainText(result)
-	if !strings.Contains(output, "=== LATERAL SEED 種 ===") {
+	if !strings.Contains(output, "=== LATERAL SEED ===") {
 		t.Fatalf("expected LATERAL SEED section header, got:\n%s", output)
 	}
 	for _, w := range words {
@@ -471,7 +441,7 @@ func TestRenderPlainText_FormatKanjiSectionPresent(t *testing.T) {
 		PlanningDirective: "Token derivations:\n- deep: goes deep.\nDerived stance complete.",
 	}
 	output := RenderPlainText(result)
-	if !strings.Contains(output, "=== FORMAT 形式 ===") {
+	if !strings.Contains(output, "=== FORMAT ===") {
 		t.Fatalf("expected FORMAT 形式 section header in output, got:\n%s", output)
 	}
 }
@@ -539,84 +509,6 @@ func TestRenderPlainText_TokenDefinitionNotInlineOutput(t *testing.T) {
 	}
 }
 
-// TestRenderPlainText_LoadedArtifactInstruction specifies that the TOKENS section
-// instruction requires a Loaded: artifact line per token and gates Token derivations:.
-func TestRenderPlainText_LoadedArtifactInstruction(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	if !strings.Contains(output, "Loaded:") {
-		t.Fatalf("TOKENS instruction must require 'Loaded:' artifact lines, got:\n%s", output)
-	}
-	if !strings.Contains(output, "→ bar help token") {
-		t.Fatalf("TOKENS instruction must resolve slug via '→' hint, got:\n%s", output)
-	}
-	if !strings.Contains(output, "Token loads complete.") {
-		t.Fatalf("TOKENS instruction must gate Token derivations: on sentinel 'Token loads complete.', got:\n%s", output)
-	}
-}
-
-// TestRenderPlainText_UnconditionalFetchInstruction specifies that the TOKENS section
-// opens with an unconditional fetch instruction with no familiarity exception.
-func TestRenderPlainText_UnconditionalFetchInstruction(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	if strings.Contains(output, "unfamiliar") {
-		t.Fatalf("fetch instruction must not contain 'unfamiliar' (familiarity exception must be removed), got:\n%s", output)
-	}
-	if !strings.Contains(output, "Loaded:") {
-		t.Fatalf("fetch instruction must require Loaded: artifact lines, got:\n%s", output)
-	}
-	if !strings.Contains(output, "Token loads complete.") {
-		t.Fatalf("fetch instruction must gate Token derivations: on sentinel 'Token loads complete.', got:\n%s", output)
-	}
-}
-
-// TestRenderPlainText_LazyLoadTokenHints specifies that TOKEN DEFINITIONS section is absent,
-// each token line carries an inline fetch hint, and the TOKENS section opens with the load instruction.
-func TestRenderPlainText_LazyLoadTokenHints(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "The response goes into substantial depth."},
-		},
-		AxisDescriptions: map[string]string{
-			"completeness": "Depth of coverage — from a quick pass to exhaustive treatment.",
-		},
-	}
-	output := RenderPlainText(result)
-
-	if strings.Contains(output, "=== TOKEN DEFINITIONS") {
-		t.Fatalf("TOKEN DEFINITIONS section must be absent from output, got:\n%s", output)
-	}
-
-	tokensIdx := strings.Index(output, "=== TOKENS")
-	if tokensIdx < 0 {
-		t.Fatal("TOKENS section must be present")
-	}
-	tokensBlock := output[tokensIdx:]
-	formatIdx := strings.Index(tokensBlock, "=== FORMAT")
-	if formatIdx > 0 {
-		tokensBlock = tokensBlock[:formatIdx]
-	}
-
-	if !strings.Contains(tokensBlock, "Loaded:") {
-		t.Fatalf("TOKENS section must contain Loaded: artifact instruction, got block:\n%s", tokensBlock)
-	}
-	if !strings.Contains(tokensBlock, "→ bar help token deep") {
-		t.Fatalf("token line must contain inline fetch hint '→ bar help token deep', got block:\n%s", tokensBlock)
-	}
-}
-
 // TestRenderPlainText_PreamblePrecedesRequest specifies that the preamble constant
 // appears before the REQUEST section in the redesigned output.
 func TestRenderPlainText_PreamblePrecedesRequest(t *testing.T) {
@@ -647,7 +539,7 @@ func TestRenderPlainText_RequestKanjiIsDependency(t *testing.T) {
 		Subject: "my input",
 	}
 	output := RenderPlainText(result)
-	if !strings.Contains(output, "=== REQUEST 依頼 ===") {
+	if !strings.Contains(output, "=== REQUEST ===") {
 		t.Fatalf("expected REQUEST section to use 依頼 kanji, got:\n%s", output)
 	}
 	if strings.Contains(output, "題材") {
@@ -871,8 +763,8 @@ func TestBuildResultAxisInteractionPopulatedFromGrammar(t *testing.T) {
 	axesIdx := strings.Index(rendered, sectionAxes)
 	tokensIdx := strings.Index(rendered, sectionTokens)
 	axesBlock := rendered[axesIdx:tokensIdx]
-	if !strings.Contains(axesBlock, "Axis interaction:") {
-		t.Fatalf("expected 'Axis interaction:' in AXES block, got:\n%s", axesBlock)
+	if !strings.Contains(axesBlock, "How the axes combine:") {
+		t.Fatalf("expected 'How the axes combine:' in AXES block, got:\n%s", axesBlock)
 	}
 }
 
@@ -972,7 +864,7 @@ func TestRenderPlainText_RequestMergesTaskAndSubject(t *testing.T) {
 		Subject: "Fix onboarding flow",
 	}
 	output := RenderPlainText(result)
-	requestIdx := strings.Index(output, "=== REQUEST 依頼 ===")
+	requestIdx := strings.Index(output, "=== REQUEST ===")
 	formatIdx := strings.Index(output, "=== FORMAT")
 	if requestIdx < 0 {
 		t.Fatalf("expected REQUEST section in output, got:\n%s", output)
@@ -1006,432 +898,15 @@ func TestCompositionRulesFetchHintFormat(t *testing.T) {
 	}
 }
 
-// TestCompositionRulesLoadedInstruction verifies that COMPOSITION RULES emits the Loaded: instruction.
-func TestCompositionRulesLoadedInstruction(t *testing.T) {
-	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "falsify", "chain"})
-	if cliErr != nil {
-		t.Fatalf("Build: %v", cliErr)
-	}
-	rendered := RenderPlainText(result)
-	compIdx := strings.Index(rendered, sectionCompositionRules)
-	if compIdx == -1 {
-		t.Fatal("COMPOSITION RULES section must be present")
-	}
-	formatIdx := strings.Index(rendered, sectionFormat)
-	compBlock := rendered[compIdx:formatIdx]
-	if !strings.Contains(compBlock, "Loaded:") {
-		t.Errorf("COMPOSITION RULES must contain 'Loaded:' fetch instruction, got:\n%s", compBlock)
-	}
-}
-
-// TestTokensImmediateDerivationTrigger verifies the TOKENS fetch instruction tells the LLM
-// to write Token derivations immediately once all Loaded: lines are present.
-func TestTokensImmediateDerivationTrigger(t *testing.T) {
-	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "gate"})
-	if cliErr != nil {
-		t.Fatalf("Build: %v", cliErr)
-	}
-	rendered := RenderPlainText(result)
-	tokensIdx := strings.Index(rendered, sectionTokens)
-	compIdx := strings.Index(rendered, sectionCompositionRules)
-	var tokensBlock string
-	if compIdx != -1 {
-		tokensBlock = rendered[tokensIdx:compIdx]
-	} else {
-		formatIdx := strings.Index(rendered, sectionFormat)
-		tokensBlock = rendered[tokensIdx:formatIdx]
-	}
-	if !strings.Contains(tokensBlock, "Token loads complete.") {
-		t.Errorf("TOKENS instruction must contain sentinel 'Token loads complete.' as affirmative trigger, got:\n%s", tokensBlock)
-	}
-}
-
-// TestCompositionRulesImmediateDerivationTrigger verifies the COMPOSITION RULES fetch instruction
-// tells the LLM to write Token derivations only after sentinel "Token loads complete." appears.
-func TestCompositionRulesImmediateDerivationTrigger(t *testing.T) {
-	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "falsify", "chain"})
-	if cliErr != nil {
-		t.Fatalf("Build: %v", cliErr)
-	}
-	rendered := RenderPlainText(result)
-	compIdx := strings.Index(rendered, sectionCompositionRules)
-	if compIdx == -1 {
-		t.Fatal("COMPOSITION RULES section must be present")
-	}
-	formatIdx := strings.Index(rendered, sectionFormat)
-	compBlock := rendered[compIdx:formatIdx]
-	if !strings.Contains(compBlock, "Token loads complete.") {
-		t.Errorf("COMPOSITION RULES instruction must contain sentinel 'Token loads complete.' as affirmative trigger, got:\n%s", compBlock)
-	}
-}
-
-// TestTokensCacheSkipClause verifies the TOKENS instruction includes the cache-skip clause
-// tied to a prior Loaded: line in the transcript rather than self-assessed familiarity.
-func TestTokensCacheSkipClause(t *testing.T) {
-	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "gate"})
-	if cliErr != nil {
-		t.Fatalf("Build: %v", cliErr)
-	}
-	rendered := RenderPlainText(result)
-	tokensIdx := strings.Index(rendered, sectionTokens)
-	compIdx := strings.Index(rendered, sectionCompositionRules)
-	var tokensBlock string
-	if compIdx != -1 {
-		tokensBlock = rendered[tokensIdx:compIdx]
-	} else {
-		formatIdx := strings.Index(rendered, sectionFormat)
-		tokensBlock = rendered[tokensIdx:formatIdx]
-	}
-	if !strings.Contains(tokensBlock, "appears in this transcript above this TOKENS section") {
-		t.Errorf("TOKENS instruction must contain transcript-verifiable cache-skip clause, got:\n%s", tokensBlock)
-	}
-}
 
 
-// TestCompositionRulesBindingConstraintSentence verifies the instruction tells the LLM
-// each composition is a binding constraint that applies throughout the response.
-func TestCompositionRulesBindingConstraintSentence(t *testing.T) {
-	g := loadCompletionGrammar(t)
-	result, cliErr := Build(g, []string{"make", "falsify", "chain"})
-	if cliErr != nil {
-		t.Fatalf("Build: %v", cliErr)
-	}
-	rendered := RenderPlainText(result)
-	compIdx := strings.Index(rendered, sectionCompositionRules)
-	if compIdx == -1 {
-		t.Fatal("COMPOSITION RULES section must be present")
-	}
-	formatIdx := strings.Index(rendered, sectionFormat)
-	compBlock := rendered[compIdx:formatIdx]
-	if !strings.Contains(compBlock, "binding constraint") {
-		t.Errorf("COMPOSITION RULES must contain 'binding constraint', got:\n%s", compBlock)
-	}
-}
-
-// TestTokensSkipConditionRequiresProvenanceCheck verifies that the TOKENS skip condition
-// requires a prior Loaded: line to have been produced with a tool-result block containing
-// "# Token: <slug>" — not merely that the string "Loaded: <slug>" appears verbatim.
-func TestTokensSkipConditionRequiresProvenanceCheck(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "# Token: <slug>") {
-		t.Errorf("TOKENS skip condition must require tool-result block containing '# Token: <slug>' for provenance, got:\n%s", tokensBlock)
-	}
-}
-
-// TestTokensAdjacencyRequiresFirstAssistantText verifies that the TOKENS instruction
-// requires "The first assistant text after that tool-result block must begin with Loaded:"
-// rather than the ambiguous "not immediately preceded by".
-func TestTokensAdjacencyRequiresFirstAssistantText(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "consecutive lines in the next assistant output block") {
-		t.Errorf("TOKENS instruction must require 'next non-empty line of assistant output after that tool-result block', got:\n%s", tokensBlock)
-	}
-}
-
-// TestCompositionRulesSentinelPresent verifies that the COMPOSITION RULES instruction
-// requires the literal sentinel "Token loads complete." before the Token derivations block.
-// Same gap as TOKENS section: without the sentinel a model can skip composition loads.
-func TestCompositionRulesSentinelPresent(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-		ActiveCompositions: []Composition{
-			{Name: "falsify+chain", Prose: "falsify+chain prose"},
-		},
-	}
-	output := RenderPlainText(result)
-	compIdx := strings.Index(output, sectionCompositionRules)
-	formatIdx := strings.Index(output, sectionFormat)
-	if compIdx == -1 {
-		t.Fatal("COMPOSITION RULES section not present in output")
-	}
-	compBlock := output[compIdx:formatIdx]
-	if !strings.Contains(compBlock, "Token loads complete.") {
-		t.Errorf("COMPOSITION RULES instruction must require the sentinel 'Token loads complete.' before the Token derivations block, got:\n%s", compBlock)
-	}
-	if strings.Contains(compBlock, "write the Token derivations block immediately") {
-		t.Errorf("COMPOSITION RULES instruction must not contain 'write the Token derivations block immediately' — sentinel gate replaces this, got:\n%s", compBlock)
-	}
-}
-
-// TestTokensLoadedRequiresHeuristicPhrase verifies that the TOKENS instruction requires
-// the Loaded: line to include a verbatim heuristic trigger phrase from the tool result,
-// using the (when: "...") form. Without this, models can write Loaded: <slug> from
-// pattern memory without having read the tool result content.
-func TestTokensLoadedRequiresHeuristicPhrase(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, `(when: "`) {
-		t.Errorf("TOKENS instruction must require Loaded: <slug> (when: \"<heuristic phrase>\") form, got:\n%s", tokensBlock)
-	}
-	if !strings.Contains(tokensBlock, "verbatim complete semicolon-delimited phrase from the `Heuristics` line") {
-		t.Errorf("TOKENS instruction must state allow-list form: when: phrase must appear verbatim as a complete semicolon-delimited phrase in the Heuristics line, got:\n%s", tokensBlock)
-	}
-}
-
-
-// TestTokensDerivationsCitesLoadedPhrase verifies that the TOKENS instruction requires
-// each Token derivations line to quote the trigger phrase from the corresponding Loaded: line.
-// This closes the context-decay gap: the derivations block must structurally re-anchor the
-// token content loaded earlier in the session.
-func TestTokensDerivationsCitesLoadedPhrase(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "verbatim Heuristics phrase from the tool-result block") {
-		t.Errorf("TOKENS instruction must require derivations lines to quote verbatim phrase from the Heuristics line in the tool-result block, got:\n%s", tokensBlock)
-	}
-	if !strings.Contains(tokensBlock, "does not appear verbatim in that tool-result block") {
-		t.Errorf("TOKENS instruction must state non-compliance when derivations → clause doesn't appear verbatim in tool-result block, got:\n%s", tokensBlock)
-	}
-}
-
-// TestTokensDerivationsRequireDescriptionClause verifies that the TOKENS derivations
-// instruction requires the → effect to quote verbatim text from the Description field,
-// using the "as applied here:" suffix to separate the quoted clause from the application.
-func TestTokensDerivationsRequireDescriptionClause(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "as applied here:") {
-		t.Errorf("TOKENS derivations instruction must require 'as applied here:' suffix for response-specific application, got:\n%s", tokensBlock)
-	}
-}
-
-// TestTokensDerivationsBoundaryRule verifies that the TOKENS derivations instruction
-// specifies the Description field clause boundary as "up to the first ' —' or first period".
-func TestTokensDerivationsBoundaryRule(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "up to the first") {
-		t.Errorf("TOKENS derivations instruction must specify clause boundary with 'up to the first', got:\n%s", tokensBlock)
-	}
-}
-
-// TestTokensDerivationsGateText verifies that the TOKENS derivations instruction
-// includes a non-compliance gate requiring the → quoted clause to appear verbatim
-// in the bar help token tool-result block.
-func TestTokensDerivationsGateText(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "does not appear verbatim in that tool-result block") {
-		t.Errorf("TOKENS derivations instruction must include non-compliance gate 'does not appear verbatim in the', got:\n%s", tokensBlock)
-	}
-}
-
-// TestTokensFirstAssistantTextIsLineDefined verifies that the TOKENS instruction
-// defines "first assistant text" as "next non-empty line", making compliance
-// line-unit checkable rather than prose-interpreted.
-func TestTokensFirstAssistantTextIsLineDefined(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "beginning with the next line of assistant output that is not itself a tool-result block") {
-		t.Errorf("TOKENS instruction must define 'first assistant text' as 'next non-empty line', got:\n%s", tokensBlock)
-	}
-}
-
-// TestTokensHeuristicPhraseIsSemicolonDelimited verifies that the TOKENS instruction
-// requires the when: phrase to be a complete semicolon-delimited phrase, not any
-// substring — closing the semantic loophole where a fragment satisfies the rule.
-func TestTokensHeuristicPhraseIsSemicolonDelimited(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "complete semicolon-delimited phrase") {
-		t.Errorf("TOKENS instruction must require when: phrase to be a 'complete semicolon-delimited phrase', got:\n%s", tokensBlock)
-	}
-}
-
-// TestTokensSkipPathTruncationFallback verifies that the TOKENS instruction includes
-// an explicit fallback for context truncation: if the prior Loaded: line is not
-// visible verbatim in the current transcript window, re-run the tool call.
-func TestTokensSkipPathTruncationFallback(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "Do not skip based on memory or inference") {
-		t.Errorf("TOKENS instruction must include truncation fallback 'not visible verbatim in the current transcript window', got:\n%s", tokensBlock)
-	}
-}
-
-// TestTokensLoadsVerifiedEnumeration verifies that the TOKENS instruction requires
-// a "Loads verified: <slugs> (<N> of <N>)" line before the Token loads complete
-// sentinel, making the count claim externally checkable.
-func TestTokensLoadsVerifiedEnumeration(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "Loads verified:") {
-		t.Errorf("TOKENS instruction must require 'Loads verified:' enumeration line before the sentinel, got:\n%s", tokensBlock)
-	}
-}
-
-// TestTokensDerivationsDirectAnchorAndTruncationFallback verifies that the TOKENS
-// derivations instruction (a) uses the Heuristics line in the tool-result block as
-// the direct anchor (not the Loaded: line), and (b) includes a fallback for
-// Description fields containing neither ' —' nor '.'.
-func TestTokensDerivationsDirectAnchorAndTruncationFallback(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "Heuristics phrase from the tool-result block") {
-		t.Errorf("TOKENS derivations instruction must cite 'Heuristics line in the' tool-result block as direct anchor, got:\n%s", tokensBlock)
-	}
-	if !strings.Contains(tokensBlock, "if neither appears") {
-		t.Errorf("TOKENS derivations instruction must include truncation fallback for Description with 'contains neither', got:\n%s", tokensBlock)
-	}
-}
-
-
-// TestTokensSectionSentinelPresent verifies that the TOKENS instruction requires the
-// literal sentinel "Token loads complete." before the Token derivations block.
-// Gap: without this sentinel a model can skip all bar help token calls and write the
-// derivation block directly — the old "write the Token derivations block immediately"
-// clause has no structural gate.
-func TestTokensSectionSentinelPresent(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "Token loads complete.") {
-		t.Errorf("TOKENS instruction must require the sentinel 'Token loads complete.' before the Token derivations block, got:\n%s", tokensBlock)
-	}
-	if strings.Contains(tokensBlock, "write the Token derivations block immediately") {
-		t.Errorf("TOKENS instruction must not contain 'write the Token derivations block immediately' — sentinel gate replaces this, got:\n%s", tokensBlock)
-	}
-}
-
-// TestTokensContinuityAnchor1 verifies that the TOKENS instruction contains the
-// between-load continuity anchor in allow-list form: the next assistant text after
-// any bar help token tool-result block must be either a Loaded: line or another call.
-func TestTokensContinuityAnchor1(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "consecutive lines in the next assistant output block") {
-		t.Errorf("TOKENS instruction must contain between-load continuity anchor 'must be either a', got:\n%s", tokensBlock)
-	}
-	if !strings.Contains(tokensBlock, "parallel batch") {
-		t.Errorf("TOKENS instruction must contain parallel-calls permission 'simultaneous batch', got:\n%s", tokensBlock)
-	}
-}
 
 // TestRenderTokensParallelBatchInstruction verifies that the TOKENS section instruction
 // tells LLMs to issue all bar help token calls in a single parallel batch.
 func TestRenderTokensParallelBatchInstruction(t *testing.T) {
 	result := &BuildResult{
-		Task: "make something",
+		Task:         "make something",
+		TokenLoading: loadCompletionGrammar(t).TokenLoading,
 		HydratedConstraints: []HydratedPromptlet{
 			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
 		},
@@ -1440,8 +915,8 @@ func TestRenderTokensParallelBatchInstruction(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "before writing any") {
-		t.Errorf("TOKENS instruction must contain 'before writing any' directive, got:\n%s", tokensBlock)
+	if !strings.Contains(tokensBlock, "bar help token <slug> <slug>") {
+		t.Errorf("TOKENS instruction must allow several slugs in one call, got:\n%s", tokensBlock)
 	}
 }
 
@@ -1449,7 +924,8 @@ func TestRenderTokensParallelBatchInstruction(t *testing.T) {
 // instruction tells LLMs to issue all bar help composition calls in a single parallel batch.
 func TestRenderCompositionParallelBatchInstruction(t *testing.T) {
 	result := &BuildResult{
-		Task: "make something",
+		Task:               "make something",
+		CompositionLoading: loadCompletionGrammar(t).CompositionLoading,
 		HydratedConstraints: []HydratedPromptlet{
 			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
 		},
@@ -1464,27 +940,8 @@ func TestRenderCompositionParallelBatchInstruction(t *testing.T) {
 	}
 	formatIdx := strings.Index(output, sectionFormat)
 	compositionBlock := output[compositionIdx:formatIdx]
-	if !strings.Contains(compositionBlock, "single parallel batch") {
-		t.Errorf("COMPOSITION RULES instruction must contain parallel-batch directive, got:\n%s", compositionBlock)
-	}
-}
-
-// TestTokensContinuityAnchor2 verifies that the TOKENS instruction contains the
-// post-completion continuity anchor: Token loads complete. is not a turn-end signal
-// and no user message may appear between it and the Token derivations block.
-func TestTokensContinuityAnchor2(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
-		},
-	}
-	output := RenderPlainText(result)
-	tokensIdx := strings.Index(output, sectionTokens)
-	formatIdx := strings.Index(output, sectionFormat)
-	tokensBlock := output[tokensIdx:formatIdx]
-	if !strings.Contains(tokensBlock, "is not a turn-end signal and no user message may appear between it and the Token derivations block") {
-		t.Errorf("TOKENS instruction must contain post-completion continuity anchor 'is not a turn-end signal and no user message may appear between it and the Token derivations block', got:\n%s", tokensBlock)
+	if !strings.Contains(compositionBlock, "bar help composition <slug> <slug>") {
+		t.Errorf("COMPOSITION RULES instruction must allow several names in one call, got:\n%s", compositionBlock)
 	}
 }
 
@@ -1493,7 +950,8 @@ func TestTokensContinuityAnchor2(t *testing.T) {
 // work done on the task before preparation completes cannot be repaired afterward.
 func TestTokensPreparationPrecedesTask(t *testing.T) {
 	result := &BuildResult{
-		Task: "make something",
+		Task:         "make something",
+		TokenLoading: loadCompletionGrammar(t).TokenLoading,
 		HydratedConstraints: []HydratedPromptlet{
 			{Axis: "completeness", Token: "deep", Description: "Goes deep."},
 		},
@@ -1502,36 +960,10 @@ func TestTokensPreparationPrecedesTask(t *testing.T) {
 	tokensIdx := strings.Index(output, sectionTokens)
 	formatIdx := strings.Index(output, sectionFormat)
 	tokensBlock := output[tokensIdx:formatIdx]
-	for _, want := range []string{
-		"the only tool calls permitted are the `bar help token` and `bar help composition` calls this prompt requires",
-		"does not satisfy a requirement that must precede it",
-	} {
+	for _, want := range []string{"before any other tool call", "whatever the call is for"} {
 		if !strings.Contains(tokensBlock, want) {
 			t.Errorf("TOKENS instruction must contain %q, got:\n%s", want, tokensBlock)
 		}
-	}
-}
-
-func TestCompositionActiveProtocolPresent(t *testing.T) {
-	result := &BuildResult{
-		Task: "make something",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "method", Token: "gate", Description: "Gate."},
-			{Axis: "method", Token: "falsify", Description: "Falsify."},
-		},
-		ActiveCompositions: []Composition{
-			{Name: "falsify+chain", Prose: "falsify+chain prose"},
-		},
-	}
-	output := RenderPlainText(result)
-	compIdx := strings.Index(output, sectionCompositionRules)
-	if compIdx < 0 {
-		t.Fatal("COMPOSITION RULES section absent")
-	}
-	formatIdx := strings.Index(output, sectionFormat)
-	compBlock := output[compIdx:formatIdx]
-	if !strings.Contains(compBlock, "Composition active:") {
-		t.Errorf("COMPOSITION RULES must contain 'Composition active:' protocol, got:\n%s", compBlock)
 	}
 }
 
@@ -1549,18 +981,6 @@ func TestTokensInstructionNoSelfAssessedSkip(t *testing.T) {
 	}
 }
 
-// TestTokensInstructionMentionsSkipFlag specifies that the TOKENS instruction text
-// references the --skip flag (property [6]).
-func TestTokensInstructionMentionsSkipFlag(t *testing.T) {
-	b, err := os.ReadFile("render.go")
-	if err != nil {
-		t.Fatalf("could not read render.go: %v", err)
-	}
-	if !strings.Contains(string(b), "--skip") {
-		t.Error("render.go TOKENS instruction must mention --skip flag")
-	}
-}
-
 // TestCompositionInstructionNoSelfAssessedSkip specifies that the COMPOSITION RULES instruction
 // text does not contain the old skip-confirmed condition (property [7]).
 func TestCompositionInstructionNoSelfAssessedSkip(t *testing.T) {
@@ -1570,55 +990,5 @@ func TestCompositionInstructionNoSelfAssessedSkip(t *testing.T) {
 	}
 	if strings.Contains(string(b), "skip confirmed") {
 		t.Error("render.go COMPOSITION instruction still contains old 'skip confirmed' condition — must be replaced with --skip mechanic")
-	}
-}
-
-// TestTokensBlockClausesReachRenderedOutput guards the TOKENS compliance clauses
-// against the RENDERED prompt rather than against render.go's source text.
-//
-// The pre-existing TestTokensInstruction* guards above read render.go with
-// os.ReadFile and assert substrings of the source. That catches deletion of a
-// literal but not a change that keeps the literal and stops emitting it — the
-// whole block is one string literal written in a single WriteString call, so a
-// refactor that drops the call leaves those guards green. These assertions run
-// against RenderPlainText output, one per clause, so a failure names the clause
-// that regressed instead of diffing ~2400 characters of prose.
-func TestTokensBlockClausesReachRenderedOutput(t *testing.T) {
-	result := &BuildResult{
-		Subject: "Subject text",
-		Task:    "Task:\n  Do the thing.",
-		HydratedConstraints: []HydratedPromptlet{
-			{Axis: "form", Token: "bug", Description: "The response structures ideas as a bug report."},
-		},
-	}
-	output := RenderPlainText(result)
-
-	tokensIdx := strings.Index(output, "=== TOKENS 役割 ===")
-	if tokensIdx == -1 {
-		t.Fatal("TOKENS section absent from rendered output")
-	}
-	tokens := output[tokensIdx:]
-
-	clauses := []struct {
-		name   string
-		phrase string
-	}{
-		{"batch-in-one-call", "in a single Bash tool call before writing any `Loaded:` lines"},
-		{"skip-confirmation-admissible", "Either output satisfies the tool-result requirement."},
-		{"loaded-validity-root-criterion", "whose first line is"},
-		{"loaded-when-not-distinct-phrases", "a different verbatim complete semicolon-delimited phrase"},
-		{"because-declining-is-a-violation", "declines to apply it is a validity violation"},
-		{"no-skip-from-memory", "Do not skip based on memory or inference"},
-		{"parallel-batch-consecutive", "consecutive lines in the next assistant output block"},
-		{"loads-verified-count", "count of distinct valid"},
-		{"derivations-arrow-verbatim", "does not appear verbatim in that tool-result block"},
-		{"reduced-result-insufficient", "a result whose content was reduced before entering the transcript"},
-		{"faithful-retrieval-admissible", "retrieved in full from where it was stored"},
-		{"not-a-turn-end-signal", "is not a turn-end signal"},
-	}
-	for _, c := range clauses {
-		if !strings.Contains(tokens, c.phrase) {
-			t.Errorf("TOKENS clause %q missing from rendered output (phrase: %q)", c.name, c.phrase)
-		}
 	}
 }

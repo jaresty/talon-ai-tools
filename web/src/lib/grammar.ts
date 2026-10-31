@@ -61,17 +61,6 @@ export interface Sequence {
 }
 
 // ADR-0227: Pairwise token composition — activates COMPOSITION RULES section in rendered prompt.
-export type PromptVariant = 'standard' | 'plain';
-
-export interface PlainScaffolding {
-	reference_key?: Grammar['reference_key'];
-	preamble: string;
-	axis_interaction: string;
-	planning_directive: string;
-	subject_framing: string;
-	meta_interpretation_guidance: string;
-}
-
 export interface GrammarComposition {
 	name: string;
 	tokens: string[];
@@ -159,8 +148,6 @@ export interface Grammar {
 	mutation_instruction: string;
 	lateral_seed_body_singular: string;
 	lateral_seed_body_plural: string;
-	/** Alternate scaffolding text; the web renderer prefers it when variant is 'plain'. */
-	plain?: PlainScaffolding;
 	subject_framing: string;
 }
 

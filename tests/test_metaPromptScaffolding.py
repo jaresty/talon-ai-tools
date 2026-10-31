@@ -1,4 +1,4 @@
-"""Tests for the plain web variant of the meta-prompt scaffolding.
+"""Tests for the meta-prompt scaffolding (lib/metaPromptConfig.py).
 
 The plain variant keeps a lightweight, checkable token-application record while
 dropping features that read as reasoning-extraction templates: a pre-answer
@@ -18,19 +18,16 @@ CJK = re.compile(r"[぀-ヿ一-鿿]")
 
 
 def _plain():
-    from lib import metaPromptConfigPlain
+    from lib import metaPromptConfig
 
-    return metaPromptConfigPlain
+    return metaPromptConfig
 
 
-def test_plain_module_exposes_same_names_as_standard():
-    plain = _plain()
-    for name in FIELDS + ("PROMPT_REFERENCE_KEY",):
-        assert hasattr(plain, name), f"missing {name}"
-    from lib.metaPromptConfig import PROMPT_REFERENCE_KEY as std
-
-    assert set(plain.PROMPT_REFERENCE_KEY) == set(std)
-    assert set(plain.PROMPT_REFERENCE_KEY["constraints_axes"]) == set(std["constraints_axes"])
+def test_scaffolding_module_exposes_the_expected_names():
+    scaffolding = _plain()
+    for name in FIELDS + ("PROMPT_REFERENCE_KEY", "TOKEN_LOADING", "COMPOSITION_LOADING", "SEQUENCE"):
+        assert hasattr(scaffolding, name), f"missing {name}"
+    assert {"task", "addendum", "constraints", "constraints_axes", "persona", "subject"} <= set(scaffolding.PROMPT_REFERENCE_KEY)
 
 
 def test_plain_directive_keeps_checkable_record_after_the_answer():
@@ -60,12 +57,6 @@ def test_plain_prose_has_no_cjk():
     plain = _plain()
     for name in FIELDS:
         assert not CJK.search(getattr(plain, name)), name
-
-
-def test_plain_directive_is_shorter_than_standard():
-    from lib.metaPromptConfig import PLANNING_DIRECTIVE as std
-
-    assert len(_plain().PLANNING_DIRECTIVE) < len(std)
 
 
 def test_plain_directive_requires_exact_quotes_for_every_token_including_method():
@@ -209,7 +200,9 @@ def test_plain_token_loading_puts_lookups_before_any_other_tool_call():
     text = _plain().TOKEN_LOADING
     low = text.lower()
     assert "before any other tool call" in low, "lookups must precede every other tool call"
-    assert "reading files" in low and "searching code" in low, "name the task tool calls that must wait"
+    assert "whatever the call is for" in low, "the ordering must not depend on which kind of call it is"
+    for software_term in ("reading files", "searching code", "running commands"):
+        assert software_term not in low, f"domain-specific term {software_term!r} in a gate clause"
     assert "no need to look it up again" not in low, "the skip-if-visible escape lets agents skip the lookups"
     assert "invalidates" not in low and "does not satisfy" not in low
 
@@ -251,3 +244,23 @@ def test_plain_sequence_rewrites_remove_every_gate_clause_from_sequence_hints():
             t = t.replace(old, new)
         remaining += [p for p in GATE_PHRASES if p in t]
     assert not remaining, f"gate clauses left after rewrites: {sorted(set(remaining))}"
+
+
+def test_during_dispatch_text_restores_the_interruption_contract():
+    start = _plain().SEQUENCE["dispatch"]["start_during"]
+    low = start.lower()
+    assert "instruction" in low and "carry it out" in low, "the during-dispatch bar build output is that task's instruction"
+    assert "not user messages" in low, "agent results are not user messages"
+    assert "own stop condition" in low, "the task runs until its own stop condition"
+    assert "after the question" in low, "a step that asks the user is complete only after a user message follows"
+    assert "do not quote" in low, "agent results are not quoted until the task is finished"
+    assert "{cmd}" in start
+
+
+def test_directional_policy_is_not_stated_on_universal_surfaces():
+    scaffolding = _plain()
+    assert "directional" not in scaffolding.META_INTERPRETATION_GUIDANCE.lower(), "token-specific rule on a universal surface"
+    for text in (scaffolding.PROMPT_REFERENCE_KEY["constraints_axes"]["directional"], scaffolding._AXIS_FULL_TEXT["directional"]):
+        low = text.lower()
+        assert "applies globally and implicitly" in low or "applies globally" in low
+        assert "do not name" not in low and "name or label" not in low and "do not describe, name" not in low

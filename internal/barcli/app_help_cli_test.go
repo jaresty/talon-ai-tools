@@ -895,7 +895,7 @@ func TestHelpLLMSequencesFitJustificationDistinctStepPerPhase(t *testing.T) {
 	}
 }
 
-// Fix: acceptance gate must require mode derivation before step 1
+// Fix: acceptance gate must require the one-line Sequence opening before step 1
 func TestHelpLLMSequencesAcceptanceGateRequiresModeDerivation(t *testing.T) {
 	stdout := &bytes.Buffer{}
 	exit := Run([]string{"help", "llm", "--section", "sequences"}, os.Stdin, stdout, &bytes.Buffer{})
@@ -903,8 +903,8 @@ func TestHelpLLMSequencesAcceptanceGateRequiresModeDerivation(t *testing.T) {
 		t.Fatalf("expected exit 0, got %d", exit)
 	}
 	out := stdout.String()
-	if !strings.Contains(out, "## Sequence Derivation") {
-		t.Errorf("sequences acceptance gate must require ## Sequence Derivation block before step 1:\n%s", out)
+	if !strings.Contains(out, "Sequence: <name> (<N> steps, mode: <mode>); extra step:") {
+		t.Errorf("sequences acceptance gate must require the one-line Sequence: opening before step 1:\n%s", out)
 	}
 }
 
@@ -915,7 +915,7 @@ func TestHelpLLMSequencesAcceptanceGateRequiresSequenceShow(t *testing.T) {
 	if exit != 0 {
 		t.Fatalf("expected exit 0, got %d", exit)
 	}
-	if !strings.Contains(stdout.String(), "bar sequence show <name>` Bash tool call result") {
+	if !strings.Contains(stdout.String(), "Run `bar sequence show <name>` after the fit justification and wait for its result before step 1.") {
 		t.Errorf("sequences acceptance gate must require bar sequence show after fit justification")
 	}
 }

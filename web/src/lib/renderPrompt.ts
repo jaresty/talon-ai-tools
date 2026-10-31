@@ -3,7 +3,7 @@
  * Produces the same structured prompt text that `bar build` would output.
  */
 
-import type { Grammar, PromptVariant } from './grammar.js';
+import type { Grammar } from './grammar.js';
 
 const SUBJECT_PLACEHOLDER = '(none provided)';
 
@@ -126,13 +126,8 @@ export function renderPrompt(
 	addendum: string,
 	persona?: PersonaState,
 	seedWords?: SeedWordsOptions,
-	mutate?: MutateOptions,
-	variant: PromptVariant = 'standard'
+	mutate?: MutateOptions
 ): string {
-	const plain = variant === 'plain' && grammar.plain ? grammar.plain : undefined;
-	if (plain) grammar = { ...grammar, ...plain, plain: grammar.plain };
-	// Plain labels drop kanji from section names; labels that identify tokens keep it.
-	const label = (en: string, ja: string) => (plain ? en : `${en} ${ja}`);
 	const parts: string[] = [];
 
 	// Preamble: plain user voice constant precedes all sections.
@@ -179,7 +174,7 @@ export function renderPrompt(
 	if (addendum.trim()) requestParts.push(addendum.trim());
 	if (subject.trim()) requestParts.push(subject.trim());
 	const requestBody = requestParts.join('\n\n') || SUBJECT_PLACEHOLDER;
-	parts.push(writeSection(`=== ${label('REQUEST', '依頼')} ===`, requestBody));
+	parts.push(writeSection(`=== REQUEST ===`, requestBody));
 
 	// AXES: one bullet per active axis with role description.
 	const activeAxes: string[] = [];
@@ -259,7 +254,7 @@ export function renderPrompt(
 			c.tokens.every((t) => allActiveTokens.has(t))
 		);
 		if (activeCompositions.length > 0) {
-			parts.push(`=== ${label('COMPOSITION RULES', '合成')} (CO-PRESENCE) ===\n`);
+			parts.push(`=== COMPOSITION RULES (CO-PRESENCE) ===\n`);
 			parts.push(`↓ [Additional rules that apply because specific token combinations are co-present. Applied on top of CONSTRAINTS.]\n`);
 			for (const comp of activeCompositions) {
 				parts.push(comp.prose.trim() + '\n\n');
@@ -268,7 +263,7 @@ export function renderPrompt(
 	}
 
 	// FORMAT section.
-	parts.push(writeSection(`=== ${label('FORMAT', '形式')} ===`, grammar.planning_directive));
+	parts.push(writeSection(`=== FORMAT ===`, grammar.planning_directive));
 
 	// META INTERPRETATION section.
 	if (grammar.meta_interpretation_guidance?.trim()) {
@@ -286,7 +281,7 @@ export function renderPrompt(
 		if (words.length > 0) {
 			parts.push(
 				writeSection(
-					`=== ${label('LATERAL SEED', '種')} ===`,
+					`=== LATERAL SEED ===`,
 					lateralSeedBody(grammar.lateral_seed_body_singular, grammar.lateral_seed_body_plural, words)
 				)
 			);
@@ -298,7 +293,7 @@ export function renderPrompt(
 	if (mutate?.enabled) {
 		const locus = deriveMutationLocus(selected, mutate.seed);
 		if (locus) {
-			parts.push(writeSection(`=== ${label('MUTATION', '変')} ===`, mutationBody(grammar.mutation_instruction, locus)));
+			parts.push(writeSection(`=== MUTATION ===`, mutationBody(grammar.mutation_instruction, locus)));
 		}
 	}
 

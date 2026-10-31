@@ -174,35 +174,3 @@ func compositionGateParagraph(t *testing.T) string {
 	}
 	return rest
 }
-
-// TestCompositionGateAllowsMultiNameForm specifies that the gate names the multi-name
-// call shape and keeps the batch directive (Ground property 9).
-func TestCompositionGateAllowsMultiNameForm(t *testing.T) {
-	g := compositionGateParagraph(t)
-	if !strings.Contains(g, "bar help composition <slug> <slug>") {
-		t.Fatalf("expected the gate to name the multi-name call shape, got:\n%s", g)
-	}
-	if !strings.Contains(g, "batch") {
-		t.Fatalf("expected the batch directive to remain, got:\n%s", g)
-	}
-}
-
-// TestCompositionGateFooterSentences specifies that the gate calls a batch ending in a
-// footer complete for the printed names, and requires a repeat with the remaining list
-// (Ground properties 10, 11).
-func TestCompositionGateFooterSentences(t *testing.T) {
-	var complete, repeat bool
-	for _, s := range strings.Split(compositionGateParagraph(t), ". ") {
-		if !strings.Contains(s, "Remaining (not loaded)") {
-			continue
-		}
-		complete = complete || strings.Contains(s, "complete")
-		repeat = repeat || (strings.Contains(s, "repeat") && strings.Contains(s, "remaining"))
-	}
-	if !complete {
-		t.Errorf("expected a gate sentence naming the footer and calling the printed names complete")
-	}
-	if !repeat {
-		t.Errorf("expected a gate sentence naming the footer and requiring a repeat with the remaining list")
-	}
-}

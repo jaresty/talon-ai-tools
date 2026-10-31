@@ -143,14 +143,13 @@ func TestDetectCompareTwoMultiAxesError(t *testing.T) {
 
 // C9: compare output includes full prompt (TASK section) for each variant, not just definition
 func TestCompareIncludesTaskSection(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	t.Setenv(disableStateEnv, "1")
 	result := runBuildCLI(t, []string{"build", "probe", "method=diagnose,mapping", "--subject", "x"}, nil)
 	if result.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d\nstderr: %s", result.Exit, result.Stderr)
 	}
 	// Each variant must include the REQUEST section from the full render
-	if strings.Count(result.Stdout, "=== REQUEST 依頼 ===") < 2 {
+	if strings.Count(result.Stdout, "=== REQUEST ===") < 2 {
 		t.Errorf("expected REQUEST section in each variant (at least 2), output:\n%s", result.Stdout)
 	}
 }

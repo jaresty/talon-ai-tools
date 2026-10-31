@@ -9,52 +9,24 @@ import (
 const (
 	subjectPlaceholder      = "(none provided)"
 	sectionReference        = "=== REFERENCE KEY ==="
-	sectionAddendum         = "=== ADDENDUM 追加 (CLARIFICATION) ==="
+	sectionAddendum         = "=== ADDENDUM (CLARIFICATION) ==="
 	sectionAxes             = "=== AXES 軸 (token types — each governs a different dimension) ==="
 	sectionTokens           = "=== TOKENS 役割 ==="
 	sectionTokenDefinitions = "=== TOKEN DEFINITIONS 定義 ==="
 	sectionCompositionRules = "=== COMPOSITION RULES 合成 (CO-PRESENCE) ===" // ADR-0227
-	sectionPersona          = "=== PERSONA 人格 (STANCE) ==="
-	sectionSubject          = "=== REQUEST 依頼 ==="
+	sectionPersona          = "=== PERSONA (STANCE) ==="
+	sectionSubject          = "=== REQUEST ==="
 	sectionExecution        = "=== EXECUTION REMINDER ==="
 	sectionMeta             = "=== META INTERPRETATION ==="
-	sectionFormat           = "=== FORMAT 形式 ==="
-	sectionLateralSeed      = "=== LATERAL SEED 種 ==="
-	sectionMutation         = "=== MUTATION 変 ==="
+	sectionFormat           = "=== FORMAT ==="
+	sectionLateralSeed      = "=== LATERAL SEED ==="
+	sectionMutation         = "=== MUTATION ==="
 	sectionPromptlets       = "Promptlets"
 )
-
-// plainLabels maps section headings to their English-only form for the plain
-// style. Headings that identify tokens (axes, tokens, token definitions) keep
-// their kanji.
-var plainLabels = map[string]string{
-	sectionSubject:          "=== REQUEST ===",
-	sectionFormat:           "=== FORMAT ===",
-	sectionLateralSeed:      "=== LATERAL SEED ===",
-	sectionMutation:         "=== MUTATION ===",
-}
-
-// loadingText returns the plain-style loading instruction when the plain style is
-// active and the grammar supplied one; otherwise the standard text.
-func loadingText(plain bool, plainText, standard string) string {
-	if plain && strings.TrimSpace(plainText) != "" {
-		return strings.TrimSpace(plainText) + "\n"
-	}
-	return standard
-}
 
 // RenderPlainText builds the human-readable output for the CLI.
 func RenderPlainText(result *BuildResult) string {
 	var b strings.Builder
-	plain := result.Style == StylePlain
-	heading := func(h string) string {
-		if plain {
-			if p, ok := plainLabels[h]; ok {
-				return p
-			}
-		}
-		return h
-	}
 
 	// Preamble: plain user voice constant precedes all sections.
 	if p := strings.TrimSpace(result.Preamble); p != "" {
@@ -83,7 +55,7 @@ func RenderPlainText(result *BuildResult) string {
 	if requestBody == "" {
 		requestBody = subjectPlaceholder
 	}
-	writeSection(&b, heading(sectionSubject), requestBody)
+	writeSection(&b, sectionSubject, requestBody)
 
 	// AXES: one bullet per active axis with its role description.
 	b.WriteString(sectionAxes)
@@ -121,7 +93,7 @@ func RenderPlainText(result *BuildResult) string {
 	if len(result.HydratedConstraints) == 0 && result.Persona == (PersonaResult{}) {
 		b.WriteString("(none)\n\n")
 	} else {
-		b.WriteString(loadingText(plain, result.TokenLoading, "Issue all `bar help token <slug>` calls in a single Bash tool call before writing any `Loaded:` lines, as one multi-token call (`bar help token <slug> <slug> ...`). When the output exceeds the call's byte budget, the call ends with a `Remaining (not loaded): ...` line: the blocks above it are complete for the tokens they print, and the call must be repeated with the remaining list until no such line appears. If the output is large enough that the environment truncates it or stores it outside the transcript, issue the calls separately instead, or redirect each to its own file and read those files — a batched call whose result is reduced satisfies nothing, so prefer whatever call shape lands each block whole.\n\nFor each slug in this TOKENS section's bullet list (excluding `persona = (none)`), run `bar help token <slug>` as a Bash tool call. You may append `--skip \"<phrase>\"` where `<phrase>` is a verbatim substring of that token's Definition or Heuristics known from this session — the binary emits a one-line confirmation when the phrase matches, or full output when it does not. Either output satisfies the tool-result requirement. A `Loaded: <slug>` line is valid if and only if a tool-result block whose first line is `# Token: <slug>` or `# Token: <slug> (confirmed: \"...\")` appears in this transcript above this TOKENS section than the `Loaded:` line, and the `Loaded:` line's `when:` value is a verbatim complete semicolon-delimited phrase from the `Heuristics` line of that tool-result block (or the confirmed phrase when a confirmation line appeared), and the `not:` value is a different verbatim complete semicolon-delimited phrase from the same `Heuristics` line.\n\nThe `Loaded:` line form is: `Loaded: <slug> (when: \"<phrase>\" — not: \"<phrase>\" — because: <reason this token applies to this invocation>)`. The `because:` value must name why this token is being applied — a token present in the TOKENS list is always applied; its presence is the decision. A `because:` value that questions applicability, concludes the token is unnecessary, or declines to apply it is a validity violation — the token is mandatory if listed.\n\nDo not skip based on memory or inference — the call is always required.\n\nIn a parallel batch, the `Loaded:` lines for all slugs in the batch must appear as consecutive lines in the next assistant output block — one per slug, in the order their tool-result blocks appeared, beginning with the next line of assistant output that is not itself a tool-result block.\n\nBefore writing `Token loads complete.`, write: `Loads verified: <slug1>, ... (<N> of <N>)` where N is the count of distinct valid `Loaded: <slug>` lines appearing above this line in the transcript, each for a slug in this TOKENS section's bullet list. Then write `Token loads complete.`\n\nIn the Token derivations block, for each active token write: `[slug]: \"[verbatim Heuristics phrase from the tool-result block whose first line is # Token: <slug>, appearing above the valid Loaded: line for this slug]\" → \"[verbatim Description text up to the first ' —' or first '.'; if neither appears, use full Description]\" as applied here: [manifestation in this response]`. A derivations line whose `→` clause does not appear verbatim in that tool-result block does not satisfy this requirement. The tool-result block must be the command's complete output: a result whose content was reduced before entering the transcript — by any line-limiting, paging, or filtering step — is not the block this requirement refers to, and a `Loaded:` or derivations line resting on a reduced result does not satisfy it even when the quoted phrase happens to be present. Where the environment stores a result outside the transcript rather than admitting it whole, the stored result retrieved in full from where it was stored is the command's complete output and does satisfy this requirement; what disqualifies a result is that content was dropped, not that it arrived indirectly. Retrieve it with a file-reading tool that admits the file whole, not by a shell command that prints it — printing it is itself a command whose output the environment will store and reduce the same way, which is a second reduced result rather than the stored one. Exhausting one retrieval path is not evidence that the result is unobtainable: before concluding the requirement cannot be met, try the other retrieval shapes — a direct file read, per-slug calls, or `--skip` confirmations, which are short by construction and always land whole.\n\n`Token loads complete.` is not a turn-end signal and no user message may appear between it and the Token derivations block.\n\nPreparation precedes the task: until `Token loads complete.` and every output an active token requires before task work have been written, the only tool calls permitted are the `bar help token` and `bar help composition` calls this prompt requires. A tool call that gathers or acts on the subject of the task before that point invalidates the run — a derivation or token output written after task work has begun does not satisfy a requirement that must precede it, so restart from token loading rather than supplying it retrospectively.\n"))
+		b.WriteString(strings.TrimSpace(result.TokenLoading) + "\n")
 		for _, constraint := range result.HydratedConstraints {
 			axisKey := strings.ToLower(strings.TrimSpace(constraint.Axis))
 			token := strings.TrimSpace(constraint.Token)
@@ -171,7 +143,7 @@ func RenderPlainText(result *BuildResult) string {
 		b.WriteString(sectionCompositionRules)
 		b.WriteString("\n")
 		b.WriteString("↓ [Additional rules that apply because specific token combinations are co-present. Applied on top of TOKENS.]\n")
-		b.WriteString(loadingText(plain, result.CompositionLoading, "Issue all `bar help composition <slug>` calls in a single parallel batch before writing any `Composition active:` lines, either as separate calls or as one multi-name call (`bar help composition <slug> <slug> ...`). When the combined output exceeds the call's byte budget, the call ends with a `Remaining (not loaded): ...` line: the blocks above it are complete for the names they print, and the call must be repeated with the remaining list until no such line appears.\n\nFor each composition line below, run `bar help composition <slug>` as a tool call. You may append `--skip \"<phrase>\"` where `<phrase>` is a verbatim substring of the composition prose known from this session — the binary emits a one-line confirmation when the phrase matches, or full output when it does not. Either output satisfies the tool-result requirement. The call is always required — do not skip based on memory or inference. After the tool-result block appears, write `Loaded: <slug>` — a `Loaded:` line not preceded by a tool-result block for that slug does not satisfy this requirement. After writing `Loaded: <slug>`, immediately write `Composition active: <slug> (when: \"<verbatim condition from the composition rule body that applies to this invocation>\" — because: <reason this specific invocation activates it>)` — a `Composition active:` line not appearing immediately after a `Loaded: <slug>` line does not satisfy this requirement; a `Composition active:` line whose `when:` value is not a verbatim substring of the composition rule body returned by `bar help composition <slug>` does not satisfy this requirement. All `Loaded:` and `Composition active:` pairs for every slug listed here must appear before the `Token loads complete.` line from the TOKENS section above. Each composition is a binding constraint on this response — its rules apply throughout.\n"))
+		b.WriteString(strings.TrimSpace(result.CompositionLoading) + "\n")
 		for _, comp := range nonEmptyCompositions {
 			name := strings.TrimSpace(comp.Name)
 			fmt.Fprintf(&b, "- %s  → bar help composition %s\n", name, name)
@@ -179,19 +151,19 @@ func RenderPlainText(result *BuildResult) string {
 		b.WriteString("\n")
 	}
 
-	writeSection(&b, heading(sectionFormat), result.PlanningDirective)
+	writeSection(&b, sectionFormat, result.PlanningDirective)
 	writeSection(&b, sectionMeta, result.MetaInterpretationGuidance)
 
 	// LATERAL SEED: opt-in creative seed injected via --seed-words. Emitted only
 	// when words are present, so a build without the flag is byte-identical to before.
 	if len(result.LateralSeed) > 0 {
-		writeSection(&b, heading(sectionLateralSeed), lateralSeedBody(result.LateralSeedBodySingular, result.LateralSeedBodyPlural, result.LateralSeed))
+		writeSection(&b, sectionLateralSeed, lateralSeedBody(result.LateralSeedBodySingular, result.LateralSeedBodyPlural, result.LateralSeed))
 	}
 
 	// MUTATION: opt-in stance perturbation injected via --mutate. Emitted only
 	// when a locus is present, so a build without the flag is byte-identical to before.
 	if result.Mutation != "" {
-		writeSection(&b, heading(sectionMutation), mutationBody(result.MutationInstruction, result.Mutation))
+		writeSection(&b, sectionMutation, mutationBody(result.MutationInstruction, result.Mutation))
 	}
 
 	return strings.TrimRight(b.String(), "\n") + "\n"

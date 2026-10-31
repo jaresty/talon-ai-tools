@@ -461,22 +461,6 @@ func TestHelpLLMDispatchProtocolRequiresAgentConfigBlock(t *testing.T) {
 	}
 }
 
-// Behavior: dispatch protocol (from bar help dispatch) includes a concrete ## Agent Configuration example
-// showing task-context framing (not persona/goal, which come from agent's own bar invocations).
-func TestHelpLLMDispatchProtocolAgentConfigBlockHasExample(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"help", "dispatch"})
-	if code != 0 {
-		t.Fatalf("bar help dispatch exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "## Agent Configuration") {
-		t.Errorf("expected dispatch protocol to include ## Agent Configuration example:\n%s", out)
-	}
-	if !strings.Contains(out, "agent's own bar build invocations") {
-		t.Errorf("expected dispatch protocol to clarify persona/approach come from agent's bar build:\n%s", out)
-	}
-}
-
 func TestHelpLLMSequencesIncludesDispatchNote(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"help", "llm", "--section", "sequences"})
 	if code != 0 {
@@ -487,30 +471,6 @@ func TestHelpLLMSequencesIncludesDispatchNote(t *testing.T) {
 	}
 	if strings.Contains(out, "autonomous` (all steps run cold) | `linear` (pause for user input) | `cycle` (repeat until user ends) | `dispatch`") {
 		t.Errorf("dispatch must not appear as a sequence execution mode in the modes line:\n%s", out)
-	}
-}
-
-// Behavior 23: `bar sequence show` renders the dispatch execution protocol inline for dispatch steps.
-func TestSequenceShowDispatchProtocolInline(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
-	}
-	checks := []string{
-		"[dispatch protocol — required]",
-		"1. The orchestrator spawns Agent tool calls only",
-		"2. fan_out: enumerate",
-		"3. isolation: true",
-		"4. [DISPATCH GATE]",
-		"5. Each agent receives the step token string",
-		"6. join: all",
-		"7. Before running bar build for the next step: reproduce each ## Derivation block",
-	}
-	for _, want := range checks {
-		if !strings.Contains(out, want) {
-			t.Errorf("bar sequence show frame-eval missing dispatch protocol line %q:\n%s", want, out)
-		}
 	}
 }
 
@@ -536,86 +496,6 @@ func TestSequenceShowDispatch0bGatesOnAgentConfigBlock(t *testing.T) {
 	}
 	if !strings.Contains(out, "## Agent Configuration") {
 		t.Errorf("dispatch 0b gate must reference '## Agent Configuration' as discriminator:\n%s", out)
-	}
-}
-
-// The linear-step completion gate must bind to the presence of a bar build
-// tool-call result, not to the renderer heading "=== TASK 任務 (DO THIS) ===".
-// That heading was dropped when TASK merged into REQUEST (ADR-0227); the build
-// path emits "=== REQUEST 依頼 ===". Gating on it silently targets a string the
-// renderer no longer produces (gate-clause self-containment principle).
-func TestSequenceShowStepGateDoesNotTargetRendererHeading(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
-	if code != 0 {
-		t.Fatalf("bar sequence show experiment-cycle exited %d: %s", code, stderr)
-	}
-	if strings.Contains(out, "=== TASK 任務 (DO THIS) ===") {
-		t.Errorf("linear step gate must not target the renderer heading '=== TASK 任務 (DO THIS) ===' (stale bar-format vocabulary; build path emits '=== REQUEST 依頼 ==='):\n%s", out)
-	}
-	if !strings.Contains(out, "bar build tool-call result") {
-		t.Errorf("linear step gate must bind completion to the presence of a bar build tool-call result, not a heading string:\n%s", out)
-	}
-}
-
-// Dim-0c: dispatch protocol 0c must state allow-list (what block may contain) and
-// must not require persona/approach/goal (those come from agent's own bar invocations).
-func TestSequenceShowDispatch0cNamesThreeLabeledFields(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "agent's own bar build invocations") {
-		t.Errorf("dispatch 0c must state that persona/approach/goal come from agent's own bar build invocations:\n%s", out)
-	}
-	if !strings.Contains(out, "assigned item") {
-		t.Errorf("dispatch 0c must name 'assigned item' as permitted content:\n%s", out)
-	}
-}
-
-// Dim-4: dispatch protocol step 4 must require Agent call count equals item count.
-func TestSequenceShowDispatch4RequiresCountEquality(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "number of Agent tool calls") {
-		t.Errorf("dispatch step 4 must state count-equality requirement ('number of Agent tool calls'):\n%s", out)
-	}
-}
-
-func TestSequenceShowDispatch0aSameTurnCoLocation(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "first Agent tool call must appear in the same response turn as that Bash result block") {
-		t.Errorf("dispatch step 0a must state same-turn co-location requirement:\n%s", out)
-	}
-}
-
-func TestSequenceShowDispatch4AllowListGateEntry(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "satisfies this step only when it contains at least one Agent tool call") {
-		t.Errorf("dispatch step 4 must state allow-list gate at entry ('satisfies this step only when it contains at least one Agent tool call'):\n%s", out)
-	}
-}
-
-func TestSequenceShowDispatch4DeferralClosureText(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "Proceed to the Agent tool calls without announcing them first") {
-		t.Errorf("dispatch step 4 must contain deferral closure text ('Proceed to the Agent tool calls without announcing them first'):\n%s", out)
 	}
 }
 
@@ -731,25 +611,6 @@ func TestHelpLLMSequencesDispatchStepShowsFanOut(t *testing.T) {
 	}
 	if !strings.Contains(out, "dispatch[enumerate→all]") {
 		t.Errorf("expected frame-eval step summary to contain \"dispatch[enumerate→all]\":\n%s", out)
-	}
-}
-
-// Behavior 31: renderer prints action protocol block for action steps.
-func TestSequenceShowRendersActionStep(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "experiment-cycle"})
-	if code != 0 {
-		t.Fatalf("bar sequence show experiment-cycle exited %d: %s", code, stderr)
-	}
-	checks := []string{
-		"[action protocol — required]",
-		"Do NOT run bar build for this step.",
-		"Execute the actions",
-	}
-	for _, want := range checks {
-		if !strings.Contains(out, want) {
-			t.Errorf("bar sequence show experiment-cycle missing action rendering %q:\n%s", want, out)
-		}
 	}
 }
 
@@ -950,33 +811,6 @@ func TestSequenceShowDispatchMentionsBarSkills(t *testing.T) {
 	}
 }
 
-// Behavior 43: dispatch protocol clause 1 is allow-list (names what orchestrator does, not what it must not do).
-func TestSequenceShowDispatchClause1IsAllowList(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
-	}
-	if strings.Contains(out, "Do NOT run bar build for this step") {
-		t.Errorf("dispatch protocol clause 1 must not be a deny-list; found deny-list form:\n%s", out)
-	}
-	if !strings.Contains(out, "spawns Agent tool calls only") {
-		t.Errorf("dispatch protocol clause 1 must contain 'spawns Agent tool calls only':\n%s", out)
-	}
-}
-
-// Behavior 44: dispatch protocol includes explicit bar command instruction for spawned agents.
-func TestSequenceShowDispatchAgentBarCommand(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "Each agent receives the step token string") {
-		t.Errorf("dispatch protocol must contain 'Each agent receives the step token string' instruction:\n%s", out)
-	}
-}
-
 // Behavior 45: dispatch protocol point 5 names the bar build command form with step token string.
 func TestSequenceShowDispatchPoint5TraceabilityClause(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
@@ -985,31 +819,6 @@ func TestSequenceShowDispatchPoint5TraceabilityClause(t *testing.T) {
 	}
 	if !strings.Contains(out, "bar build <step-token-string>") {
 		t.Errorf("dispatch protocol point 5 must name 'bar build <step-token-string>' command form:\n%s", out)
-	}
-}
-
-// Behavior 91: dispatch protocol includes pre-dispatch agent config gate (Criterion G).
-// Before fanning out, the orchestrator must run bar build ... agent and include the output in each subagent prompt.
-func TestDispatchProtocolPreAgentConfigGate(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "[pre-dispatch agent config gate — required]") {
-		t.Errorf("dispatch protocol must contain '[pre-dispatch agent config gate — required]' block:\n%s", out)
-	}
-	if !strings.Contains(out, "bar build [tokens") {
-		t.Errorf("dispatch protocol pre-dispatch gate must name 'bar build [tokens...]' as the required action:\n%s", out)
-	}
-	if !strings.Contains(out, "## Agent Configuration") {
-		t.Errorf("dispatch protocol pre-dispatch gate must use '## Agent Configuration' as the observable discriminator:\n%s", out)
-	}
-	if !strings.Contains(out, "same response turn") {
-		t.Errorf("dispatch protocol pre-dispatch gate must specify 'same response turn' as the structural position:\n%s", out)
-	}
-	if !strings.Contains(out, "agent's own bar build invocations") {
-		t.Errorf("dispatch protocol pre-dispatch 0c must state persona/approach come from agent's own bar build:\n%s", out)
 	}
 }
 
@@ -1075,55 +884,6 @@ func TestFrameWorkAdversarialReadsDerivations(t *testing.T) {
 	}
 }
 
-// Behavior 77: dispatch protocol point 4 references pre-dispatch derived config (applies to all dispatch steps).
-func TestDispatchProtocolPoint4ContainsBarAgent(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	for _, seq := range []string{"frame-debug", "frame-eval"} {
-		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
-		if code != 0 {
-			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
-		}
-		var point4Line string
-		for _, line := range strings.Split(out, "\n") {
-			if strings.Contains(line, "4.") && strings.Contains(line, "Spawn") {
-				point4Line = line
-				break
-			}
-		}
-		if point4Line == "" {
-			t.Errorf("%s: could not find point 4 (Spawn) line in output", seq)
-			continue
-		}
-		if !strings.Contains(point4Line, "general-purpose") {
-			t.Errorf("%s: point 4 must specify subagent_type: general-purpose, got: %s", seq, point4Line)
-		}
-	}
-}
-
-// Behavior 75: frame-debug dispatch references pre-dispatch derived agent config.
-func TestFrameDebugInnerDispatchUsesBarAgent(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "pre-dispatch agent config gate") {
-		t.Errorf("frame-debug dispatch must include pre-dispatch agent config gate:\n%s", out)
-	}
-}
-
-// Behavior 76: frame-debug inner dispatch point 5 requires orchestrator to preserve all Derivation blocks.
-func TestFrameDebugInnerDispatchPreservesDerivationBlocks(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "## Derivation block per agent") {
-		t.Errorf("frame-debug inner dispatch point 5 must require orchestrator to preserve one '## Derivation block per agent':\n%s", out)
-	}
-}
-
 // Behavior 68: frame-debug step 1 names observable frame name criteria (no verb, no causal claim).
 func TestFrameDebugStep1NamesObservableFrameNameCriteria(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
@@ -1143,30 +903,6 @@ func TestFrameDebugDispatchPromptHintNamesBarBuildCommands(t *testing.T) {
 	}
 	if !strings.Contains(out, "bar build make form:prep") {
 		t.Errorf("frame-debug dispatch prompt_hint must name literal 'bar build make form:prep' command:\n%s", out)
-	}
-}
-
-// Behavior 70: frame-debug dispatch point 3 names observable Agent call contents.
-func TestFrameDebugDispatchPoint3NamesAgentCallContents(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "must not contain") && !strings.Contains(out, "must include only") {
-		t.Errorf("frame-debug dispatch point 3 must name Agent call contents ('must not contain' or 'must include only'):\n%s", out)
-	}
-}
-
-// Behavior 71: frame-debug dispatch point 4 says not to batch items.
-func TestFrameDebugDispatchPoint5RequiresBarWorkflowSkill(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "number of Agent tool calls in this turn must equal") {
-		t.Errorf("frame-debug dispatch step 4 must state count-equality requirement:\n%s", out)
 	}
 }
 
@@ -1347,21 +1083,6 @@ func TestBarAgentNoDiscovery(t *testing.T) {
 	}
 }
 
-// Behavior 55: dispatch protocol point 5 requires agents to return a Derivation block and orchestrator to preserve all.
-func TestDispatchProtocolPreservesDerivationBlocks(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "## Derivation") {
-		t.Errorf("dispatch protocol point 5 must require agents to return a '## Derivation' block:\n%s", out)
-	}
-	if !strings.Contains(out, "## Derivation block per agent") {
-		t.Errorf("dispatch protocol point 5 must require orchestrator to preserve one '## Derivation block per agent':\n%s", out)
-	}
-}
-
 // Behavior 79: inner action protocol block explicitly requires structural gate condition (not just "tools").
 func TestInnerActionProtocolRequiresBash(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
@@ -1373,18 +1094,6 @@ func TestInnerActionProtocolRequiresBash(t *testing.T) {
 	}
 	if !strings.Contains(out, "output that could not exist in the repository at rest") {
 		t.Errorf("inner action protocol must require live output via permit condition 'output that could not exist in the repository at rest':\n%s", out)
-	}
-}
-
-// Behavior 80: inner dispatch point 5 prohibits token discovery — agents must run only the bar build commands shown.
-func TestInnerDispatchPoint5NoTokenDiscovery(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "do not run bar help llm") {
-		t.Errorf("inner dispatch point 5 must say 'do not run bar help llm':\n%s", out)
 	}
 }
 
@@ -1437,21 +1146,6 @@ func TestPrepVetPromptHintsHaveTaskPrefix(t *testing.T) {
 	}
 }
 
-// Behavior 78: non-inner dispatch point 5 tells agents to run bar build with the step token string directly.
-func TestDispatchPoint5TokenString(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
-	}
-	if strings.Contains(out, "The orchestrator must construct and include this exact command") {
-		t.Errorf("dispatch protocol point 5 must not contain orchestrator-constructs-literal-command prescription:\n%s", out)
-	}
-	if !strings.Contains(out, "Each agent receives the step token string") {
-		t.Errorf("dispatch protocol point 5 must say 'Each agent receives the step token string':\n%s", out)
-	}
-}
-
 // Behavior 85: bar sequence show renders [handoff protocol — required] block on requires_user_input (⏸) steps.
 func TestHandoffProtocolBlock(t *testing.T) {
 	for _, seq := range []string{"experiment-cycle", "probe-and-plan", "simulate-and-review"} {
@@ -1481,38 +1175,6 @@ func TestHandoffProtocolBlock(t *testing.T) {
 	}
 }
 
-// Behavior 84: bar sequence show renders [cycle protocol — required] block before first inner step when inner mode is cycle.
-func TestInnerCycleProtocolBlock(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	for _, seq := range []string{"frame-explore", "frame-debug"} {
-		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
-		if code != 0 {
-			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
-		}
-		// The rendered inner step line has format: "\n          → make form:prep       <role>\n"
-		// The leading newline+indent distinguishes the actual step line from cycle protocol prose that also mentions "→ make form:prep"
-		prepIdx := strings.Index(out, "\n          → make form:prep")
-		if prepIdx < 0 {
-			t.Errorf("bar sequence show %s missing inner step line '→ make form:prep'", seq)
-			continue
-		}
-		// Cycle protocol block must appear between inner stop_when and first → step
-		innerStopIdx := strings.Index(out, "inner stop_when:")
-		if innerStopIdx < 0 {
-			t.Errorf("bar sequence show %s missing 'inner stop_when:'", seq)
-			continue
-		}
-		between := out[innerStopIdx:prepIdx]
-		if !strings.Contains(between, "[cycle protocol — required]") {
-			t.Errorf("bar sequence show %s: '[cycle protocol — required]' must appear between 'inner stop_when:' and '→ make form:prep':\n%s", seq, between)
-		}
-		// Cycle protocol must name the falsifiable completion condition
-		if !strings.Contains(between, "bar build check form:vet") {
-			t.Errorf("bar sequence show %s: cycle protocol must name 'bar build check form:vet' as falsifiable completion condition:\n%s", seq, between)
-		}
-	}
-}
-
 // Behavior 86: all prism-step sequences prohibit backtick-wrapped text and specific tool invocations in frame descriptions.
 func TestFrameEnumerationDepthProhibition(t *testing.T) {
 	for _, seq := range []string{"frame-explore", "frame-debug", "frame-eval", "frame-synthesis", "frame-work", "frame-orbit"} {
@@ -1532,47 +1194,6 @@ func TestFrameEnumerationDepthProhibition(t *testing.T) {
 		}
 		if !strings.Contains(strings.ToLower(step1), "no backtick-wrapped text") {
 			t.Errorf("bar sequence show %s step 1 must contain 'no backtick-wrapped text' (case-insensitive):\n%s", seq, step1)
-		}
-	}
-}
-
-// Behavior 83: bar sequence show renders [bar build gate — required] block for inner non-action steps (prep, vet).
-func TestInnerStepBarBuildGate(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	for _, seq := range []string{"frame-explore", "frame-debug"} {
-		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
-		if code != 0 {
-			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
-		}
-		prepIdx := strings.Index(out, "→ make form:prep")
-		vetIdx := strings.Index(out, "→ check form:vet")
-		if prepIdx < 0 {
-			t.Errorf("bar sequence show %s missing '→ make form:prep' inner step", seq)
-			continue
-		}
-		if vetIdx < 0 {
-			t.Errorf("bar sequence show %s missing '→ check form:vet' inner step", seq)
-			continue
-		}
-		// Gate block must appear in the substring after → make form:prep (i.e., inside the prep inner step section)
-		afterPrep := out[prepIdx:]
-		if !strings.Contains(afterPrep, "[bar build gate — required]") {
-			t.Errorf("bar sequence show %s: '[bar build gate — required]' must appear after '→ make form:prep':\n%s", seq, out)
-		}
-		// Gate block must appear in the substring after → check form:vet (i.e., inside the vet inner step section)
-		afterVet := out[vetIdx:]
-		if !strings.Contains(afterVet, "[bar build gate — required]") {
-			t.Errorf("bar sequence show %s: '[bar build gate — required]' must appear after '→ check form:vet':\n%s", seq, out)
-		}
-		// Experiment execution step uses probe survive ghost and gets the bar build gate
-		probeIdx := strings.Index(out, "→ probe survive ghost")
-		if probeIdx < 0 {
-			t.Errorf("bar sequence show %s missing inner step '→ probe survive ghost':\n%s", seq, out)
-			continue
-		}
-		afterProbe := out[probeIdx:]
-		if !strings.Contains(afterProbe, "[bar build gate — required]") {
-			t.Errorf("bar sequence show %s: '[bar build gate — required]' must appear after '→ probe survive ghost':\n%s", seq, afterProbe[:min(len(afterProbe), 500)])
 		}
 	}
 }
@@ -1633,134 +1254,6 @@ func TestFrameOrbitInnerTraceStep(t *testing.T) {
 	}
 }
 
-// Behavior 91: bar sequence show step gate instructs agent to augment step token with additional tokens.
-func TestSequenceShowStepGateInstructsTokenAugmentation(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	for _, seq := range []string{"check-and-rewrite", "make-and-review"} {
-		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
-		if code != 0 {
-			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
-		}
-		if !strings.Contains(out, "at least one token from method/scope/completeness/form axes") {
-			t.Errorf("bar sequence show %s: step gate must instruct token augmentation:\n%s", seq, out)
-		}
-		if !strings.Contains(out, "starting point") {
-			t.Errorf("bar sequence show %s: step gate must describe step token as 'starting point':\n%s", seq, out)
-		}
-	}
-}
-
-// Fix B: step gate must warn against using sequence name as token
-func TestSequenceShowStepGateNoSequenceNameAsToken(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
-	if code != 0 {
-		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "Do not use the sequence name as a token") {
-		t.Errorf("bar sequence show step gate must warn against using sequence name as token:\n%s", out)
-	}
-}
-
-// Fix: bar sequence show must prompt agent to emit ## Sequence Derivation block before step 1
-func TestSequenceShowRequiresDerivationBlock(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
-	if code != 0 {
-		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
-	}
-	for _, want := range []string{
-		"## Sequence Derivation",
-		"Before executing step 1",
-		"Mode means:",
-	} {
-		if !strings.Contains(out, want) {
-			t.Errorf("bar sequence show must instruct agent to emit derivation block; missing %q:\n%s", want, out)
-		}
-	}
-}
-
-// Fix: derivation block insertion prompt must direct agent to re-read the task
-func TestSequenceShowDerivationInsertionPromptReadsTask(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
-	if code != 0 {
-		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "re-read the task") {
-		t.Errorf("bar sequence show derivation block must direct agent to re-read the task for missing inputs:\n%s", out)
-	}
-}
-
-func TestSequenceShowDerivationInsertionRequiresTokenString(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
-	if code != 0 {
-		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "name the bar build token string for it") {
-		t.Errorf("bar sequence show derivation block must require a bar build token string for the inserted step:\n%s", out)
-	}
-}
-
-func TestSequenceShowDerivationInsertionGate(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
-	if code != 0 {
-		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "A bar build containing that token must appear in the transcript before") {
-		t.Errorf("bar sequence show must gate inserted step execution: require bar build for it before canonical step:\n%s", out)
-	}
-}
-
-func TestSequenceShowAutonomousModeGate(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
-	if code != 0 {
-		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "A response turn satisfies autonomous mode for a non-final step only when it contains") {
-		t.Errorf("bar sequence show autonomous mode must gate inter-step continuation:\n%s", out)
-	}
-}
-
-func TestSequenceShowModeGlossaryInShowOutput(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "make-and-review"})
-	if code != 0 {
-		t.Fatalf("bar sequence show exited %d: %s", code, stderr)
-	}
-	for _, want := range []string{
-		"autonomous",
-		"all steps run without stopping",
-		"proceed to the next step in the same response turn immediately",
-	} {
-		if !strings.Contains(out, want) {
-			t.Errorf("bar sequence show: mode glossary must contain %q:\n%s", want, out)
-		}
-	}
-}
-
-func TestSequenceListModeGlossary(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "list"})
-	if code != 0 {
-		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
-	}
-	for _, want := range []string{
-		"Execution modes:",
-		"autonomous",
-		"proceed to the next step in the same response turn immediately after completing",
-		"linear",
-		"cycle",
-	} {
-		if !strings.Contains(out, want) {
-			t.Errorf("bar sequence list: glossary must contain %q:\n%s", want, out)
-		}
-	}
-}
-
 // Behavior 90: frame-synthesis final step uses probe method:converge, not pick method:converge.
 func TestFrameSynthesisFinalStepUsesProbeConverge(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-synthesis"})
@@ -1812,33 +1305,6 @@ func TestSequenceStepDuringDispatchFieldParsed(t *testing.T) {
 	}
 	if step.DuringDispatch != "explain form:quiz" {
 		t.Errorf("DuringDispatch: got %q, want %q", step.DuringDispatch, "explain form:quiz")
-	}
-}
-
-// Behavior 95: writeDispatchStepBlock renders during_dispatch instruction when field is set.
-func TestDispatchStepBlockRendersDuringDispatch(t *testing.T) {
-	step := SequenceStep{
-		Token:         "prism",
-		Role:          "dispatch frames",
-		Type:          "dispatch",
-		FanOut:        "enumerate",
-		Join:          "all",
-		DuringDispatch: "explain form:quiz",
-	}
-	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil, nil)
-	out := buf.String()
-	if !strings.Contains(out, "Dispatching N agents:") {
-		t.Errorf("dispatch block must contain cardinality declaration 'Dispatching N agents:' when field is set:\n%s", out)
-	}
-	if !strings.Contains(out, "explain form:quiz") {
-		t.Errorf("dispatch block must contain the during_dispatch command 'explain form:quiz':\n%s", out)
-	}
-	if !strings.Contains(out, "After spawning all agents") {
-		t.Errorf("dispatch block must instruct LLM to run during_dispatch after spawning agents:\n%s", out)
-	}
-	if !strings.Contains(out, "result block for each Agent tool call") {
-		t.Errorf("dispatch block must instruct waiting via result block presence before joining:\n%s", out)
 	}
 }
 
@@ -1930,110 +1396,6 @@ func TestFrameSynthesisDispatchStepHasDuringDispatch(t *testing.T) {
 	t.Error("frame-synthesis has no dispatch step")
 }
 
-// Behavior 101: when DuringDispatch is set, dispatch gate instructs run_in_background: true on Agent calls.
-func TestDispatchStepBlockRunsAgentsInBackgroundWhenDuringDispatchSet(t *testing.T) {
-	step := SequenceStep{
-		Token:          "prism",
-		Role:           "dispatch frames",
-		Type:           "dispatch",
-		FanOut:         "enumerate",
-		Join:           "all",
-		DuringDispatch: "show form:quiz",
-	}
-	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil, nil)
-	out := buf.String()
-	if !strings.Contains(out, "run_in_background: true") {
-		t.Errorf("dispatch block with during_dispatch must instruct run_in_background: true on Agent calls:\n%s", out)
-	}
-}
-
-// Behavior 102: when DuringDispatch is set, during_dispatch instruction tells LLM to wait for all background agents before joining.
-func TestDispatchStepBlockWaitsForBackgroundNotificationsBeforeJoin(t *testing.T) {
-	step := SequenceStep{
-		Token:          "prism",
-		Role:           "dispatch frames",
-		Type:           "dispatch",
-		FanOut:         "enumerate",
-		Join:           "all",
-		DuringDispatch: "show form:quiz",
-	}
-	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil, nil)
-	out := buf.String()
-	if !strings.Contains(out, "background agent") {
-		t.Errorf("dispatch block with during_dispatch must reference background agents:\n%s", out)
-	}
-	if !strings.Contains(out, "result block for each Agent tool call") {
-		t.Errorf("dispatch block with during_dispatch must instruct waiting via result block presence:\n%s", out)
-	}
-}
-
-// Behavior 103: when DuringDispatch is set, during_dispatch Bash instruction appears before Agent spawning instruction.
-func TestDispatchStepBlockDuringDispatchBeforeAgentSpawn(t *testing.T) {
-	step := SequenceStep{
-		Token:          "prism",
-		Role:           "dispatch frames",
-		Type:           "dispatch",
-		FanOut:         "enumerate",
-		Join:           "all",
-		DuringDispatch: "show form:quiz",
-	}
-	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil, nil)
-	out := buf.String()
-	bashIdx := strings.Index(out, "show form:quiz")
-	spawnIdx := strings.Index(out, "Spawn one Agent tool call")
-	if bashIdx == -1 {
-		t.Fatalf("dispatch block must contain during_dispatch command 'show form:quiz':\n%s", out)
-	}
-	if spawnIdx == -1 {
-		t.Fatalf("dispatch block must contain Agent spawning instruction 'Spawn one Agent tool call':\n%s", out)
-	}
-	if spawnIdx > bashIdx {
-		t.Errorf("Agent spawning instruction must appear before during_dispatch Bash instruction: spawnIdx=%d bashIdx=%d\n%s", spawnIdx, bashIdx, out)
-	}
-}
-
-// Behavior 106: when DuringDispatch is set, dispatch block contains explicit interruption contract — agents returning mid-task is expected.
-func TestDispatchStepBlockInterruptionContractPresent(t *testing.T) {
-	step := SequenceStep{
-		Token:          "prism",
-		Role:           "dispatch frames",
-		Type:           "dispatch",
-		FanOut:         "enumerate",
-		Join:           "all",
-		DuringDispatch: "show form:quiz",
-	}
-	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil, nil)
-	out := buf.String()
-	if !strings.Contains(out, "agents may return") {
-		t.Errorf("dispatch block with during_dispatch must contain interruption contract ('agents may return'):\n%s", out)
-	}
-	if !strings.Contains(out, "human-turn message appears in the transcript after that prompt") {
-		t.Errorf("dispatch block with during_dispatch must instruct waiting for human-turn message before marking step complete:\n%s", out)
-	}
-}
-
-// Behavior 108: when DuringDispatch is set, the stop instruction names a structural permit-condition (human-turn message) rather than a semantic phrase or unconditional stop command.
-func TestDispatchStepBlockInterruptionContractPermitCondition(t *testing.T) {
-	step := SequenceStep{
-		Token:          "prism",
-		Role:           "dispatch frames",
-		Type:           "dispatch",
-		FanOut:         "enumerate",
-		Join:           "all",
-		DuringDispatch: "show form:quiz",
-	}
-	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil, nil)
-	out := buf.String()
-	if !strings.Contains(out, "human-turn message appears in the transcript after that prompt") {
-		t.Errorf("during_dispatch stop instruction must name a structural permit-condition ('human-turn message appears in the transcript after that prompt') rather than a semantic phrase:\n%s", out)
-	}
-}
-
 // Behavior 107: frame dispatch sequences (frame-eval, frame-explore, frame-synthesis, frame-debug) have mode linear, not autonomous — they contain during_dispatch steps which are user-interactive.
 func TestFrameDispatchSequencesAreLinear(t *testing.T) {
 	t.Setenv(envGrammarPath, "")
@@ -2053,18 +1415,6 @@ func TestFrameDispatchSequencesAreLinear(t *testing.T) {
 	}
 }
 
-// Behavior 104: bar sequence list autonomous description states that autonomous sequences contain no requires_user_input steps.
-func TestSequenceListAutonomousNoRequiresUserInput(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "list"})
-	if code != 0 {
-		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "no requires_user_input steps") {
-		t.Errorf("bar sequence list autonomous description must state 'no requires_user_input steps':\n%s", out)
-	}
-}
-
 // Behavior 105: autonomous mode description requires literal "Step N complete." step-completion marker.
 func TestAutonomousModeStepCompleteMarker(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "list"})
@@ -2076,18 +1426,6 @@ func TestAutonomousModeStepCompleteMarker(t *testing.T) {
 	}
 }
 
-// Behavior 106: autonomous mode description requires token string exact-match clause.
-func TestAutonomousModeTokenStringMatch(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "list"})
-	if code != 0 {
-		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "exactly matches the token string shown for step N+1") {
-		t.Errorf("autonomous mode description must contain exact-match clause for next step token string:\n%s", out)
-	}
-}
-
 // Behavior 107: autonomous mode description requires "Agents complete: N of N." dispatch observable.
 func TestAutonomousModeAgentsComplete(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "list"})
@@ -2096,18 +1434,6 @@ func TestAutonomousModeAgentsComplete(t *testing.T) {
 	}
 	if !strings.Contains(out, `"Agents complete: N of N."`) {
 		t.Errorf("autonomous mode description must contain \"Agents complete: N of N.\" dispatch observable:\n%s", out)
-	}
-}
-
-// Behavior 108: autonomous mode description names agents-complete line as transcript-observable.
-func TestAutonomousModeAgentsTranscriptObservable(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "list"})
-	if code != 0 {
-		t.Fatalf("bar sequence list exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "transcript-observable that marks all agents returned") {
-		t.Errorf("autonomous mode description must name agents-complete line as transcript-observable:\n%s", out)
 	}
 }
 
@@ -2125,21 +1451,6 @@ func TestFrameExploreFinalStepUsesProbeConverge(t *testing.T) {
 	}
 }
 
-// Behavior 108: frame-explore inner stop_when gates on literal string "Goal condition: met" in vet output.
-func TestFrameExploreInnerStopWhenGatesOnLiteralString(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "Goal condition: met") {
-		t.Errorf("frame-explore inner stop_when must gate on literal string 'Goal condition: met':\n%s", out)
-	}
-	if !strings.Contains(out, "does not contain this exact string") {
-		t.Errorf("frame-explore inner stop_when must name the absent-string consequence:\n%s", out)
-	}
-}
-
 // Behavior 109: frame-explore vet prompt_hint requires ending with "Goal condition: met" or "Goal condition: unmet".
 func TestFrameExploreVetPromptHintRequiresGoalConditionString(t *testing.T) {
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
@@ -2148,21 +1459,6 @@ func TestFrameExploreVetPromptHintRequiresGoalConditionString(t *testing.T) {
 	}
 	if !strings.Contains(out, "Goal condition: unmet") {
 		t.Errorf("frame-explore vet prompt_hint must require 'Goal condition: unmet' output when not met:\n%s", out)
-	}
-}
-
-// Behavior 110: frame-debug inner stop_when gates on literal string "Root cause: confirmed" in vet output.
-func TestFrameDebugInnerStopWhenGatesOnLiteralString(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "Root cause: confirmed") {
-		t.Errorf("frame-debug inner stop_when must gate on literal string 'Root cause: confirmed':\n%s", out)
-	}
-	if !strings.Contains(out, "does not contain this exact string") {
-		t.Errorf("frame-debug inner stop_when must name the absent-string consequence:\n%s", out)
 	}
 }
 
@@ -2353,34 +1649,6 @@ func TestExperimentCyclePrepIncludesVerify(t *testing.T) {
 	}
 }
 
-// Behavior 126: inner cycle stop_when check uses allow-list gate naming the Findings block permission condition.
-func TestCycleStopWhenPermissionString(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	for _, seq := range []string{"frame-explore", "frame-debug"} {
-		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
-		if code != 0 {
-			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
-		}
-		if !strings.Contains(out, "The Findings block is permitted only when") {
-			t.Errorf("bar sequence show %s: cycle stop_when check must contain 'The Findings block is permitted only when':\n%s", seq, out)
-		}
-	}
-}
-
-// Behavior 127: inner cycle stop_when check names positional constraint on Findings block.
-func TestCycleStopWhenMustNotAppear(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	for _, seq := range []string{"frame-explore", "frame-debug"} {
-		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
-		if code != 0 {
-			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
-		}
-		if !strings.Contains(out, "must not appear before the literal stop_when string") {
-			t.Errorf("bar sequence show %s: cycle stop_when check must contain 'must not appear before the literal stop_when string':\n%s", seq, out)
-		}
-	}
-}
-
 // Behavior 128: inner cycle stop_when check does not use the old deny-list re-entry clause.
 func TestCycleStopWhenOldStringAbsent(t *testing.T) {
 	for _, seq := range []string{"frame-explore", "frame-debug"} {
@@ -2390,28 +1658,6 @@ func TestCycleStopWhenOldStringAbsent(t *testing.T) {
 		}
 		if strings.Contains(out, "If stop_when is not met, begin a new cycle") {
 			t.Errorf("bar sequence show %s: cycle stop_when check must not contain old deny-list clause 'If stop_when is not met, begin a new cycle':\n%s", seq, out)
-		}
-	}
-}
-
-// Behavior 129: inner cycle stop_when check uses token-agnostic language, not token-specific 'vet output'.
-func TestCycleStopWhenNoVetOutputReference(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	for _, seq := range []string{"frame-explore", "frame-debug"} {
-		out, stderr, code := runCLI(t, []string{"sequence", "show", seq})
-		if code != 0 {
-			t.Fatalf("bar sequence show %s exited %d: %s", seq, code, stderr)
-		}
-		// Locate only the cycle protocol block — starts at [cycle protocol — required], ends before the first inner step line.
-		cycleProtoIdx := strings.Index(out, "[cycle protocol — required]")
-		firstStepIdx := strings.Index(out, "\n          → ")
-		if cycleProtoIdx < 0 || firstStepIdx < 0 || firstStepIdx < cycleProtoIdx {
-			t.Errorf("bar sequence show %s: could not locate cycle protocol block", seq)
-			continue
-		}
-		cycleBlock := out[cycleProtoIdx:firstStepIdx]
-		if strings.Contains(cycleBlock, "vet output") || strings.Contains(cycleBlock, "vet tool call result") {
-			t.Errorf("bar sequence show %s: cycle stop_when block must not contain token-specific 'vet output' or 'vet tool call result':\n%s", seq, cycleBlock)
 		}
 	}
 }
@@ -2470,24 +1716,6 @@ func TestFramePrismPreExistingFileRejection(t *testing.T) {
 		if !strings.Contains(hint, "not present in the repository as a pre-existing file, recording, or snapshot") {
 			t.Errorf("%s prism prompt_hint must contain 'not present in the repository as a pre-existing file, recording, or snapshot', got: %q", name, hint)
 		}
-	}
-}
-
-// Behavior 122: during_dispatch rendering instructs orchestrator to pass enumerated items as --subject to scope the task.
-func TestDispatchDuringDispatchSubjectInstruction(t *testing.T) {
-	step := SequenceStep{
-		Token:          "prism",
-		Role:           "dispatch frames",
-		Type:           "dispatch",
-		FanOut:         "enumerate",
-		Join:           "all",
-		DuringDispatch: "show form:quiz",
-	}
-	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil, nil)
-	out := buf.String()
-	if !strings.Contains(out, "pass the enumerated items from the prior step as --subject") {
-		t.Errorf("during_dispatch rendering must instruct orchestrator to pass enumerated items as --subject:\n%s", out)
 	}
 }
 

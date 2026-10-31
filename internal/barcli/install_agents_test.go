@@ -48,18 +48,6 @@ func TestAppRoutesInstallAgents(t *testing.T) {
 	}
 }
 
-// Behavior 49: dispatch protocol includes pre-dispatch agent config gate.
-func TestDispatchProtocolNamesBarAgent(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
-	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-eval"})
-	if code != 0 {
-		t.Fatalf("bar sequence show frame-eval exited %d: %s", code, stderr)
-	}
-	if !strings.Contains(out, "pre-dispatch agent config gate") {
-		t.Errorf("dispatch protocol must include pre-dispatch agent config gate:\n%s", out)
-	}
-}
-
 // Behavior 50: bar-agent.md description mentions bar-autopilot.
 func TestBarAgentDescriptionMentionsAutopilot(t *testing.T) {
 	dir := t.TempDir()

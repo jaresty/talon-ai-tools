@@ -95,7 +95,7 @@ describe('renderPrompt', () => {
 		const result = renderPrompt(grammar, { task: ['show'] }, 'hello', '');
 		expect(result).not.toContain('=== TASK 任務 (DO THIS) ===');
 		expect(result).toContain('Reveal the structure');
-		expect(result).toContain('=== REQUEST 依頼 ===');
+		expect(result).toContain('=== REQUEST ===');
 	});
 
 	it('section is named REQUEST not SUBJECT', () => {
@@ -118,7 +118,7 @@ describe('renderPrompt', () => {
 	it('addendum text appears in REQUEST section when provided', () => {
 		const result = renderPrompt(grammar, {}, 'subject', 'Focus on security');
 		expect(result).not.toContain('=== ADDENDUM 追加 (CLARIFICATION) ===');
-		const requestIdx = result.indexOf('=== REQUEST 依頼 ===');
+		const requestIdx = result.indexOf('=== REQUEST ===');
 		const axesIdx = result.indexOf('=== AXES');
 		const requestBlock = result.slice(requestIdx, axesIdx);
 		expect(requestBlock).toContain('Focus on security');
@@ -493,9 +493,9 @@ describe('renderPrompt — AXES/TOKENS/TOKEN DEFINITIONS/FORMAT redesign', () =>
 		expect(result).toContain('=== TOKEN DEFINITIONS 定義 ===');
 	});
 
-	it('renders FORMAT 形式 section header with kanji', () => {
+	it('renders FORMAT section header', () => {
 		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
-		expect(result).toContain('=== FORMAT 形式 ===');
+		expect(result).toContain('=== FORMAT ===');
 	});
 
 	it('does not render CONSTRAINTS 制約 (GUARDRAILS) section header', () => {
@@ -533,7 +533,7 @@ describe('renderPrompt — AXES/TOKENS/TOKEN DEFINITIONS/FORMAT redesign', () =>
 
 	it('REQUEST section uses 依頼 kanji not 題材', () => {
 		const result = renderPrompt(grammarWithAxisDescriptions, { completeness: ['full'] }, 'show', '');
-		expect(result).toContain('=== REQUEST 依頼 ===');
+		expect(result).toContain('=== REQUEST ===');
 		expect(result).not.toContain('題材');
 	});
 
@@ -602,7 +602,7 @@ describe('renderPrompt — AXES/TOKENS/TOKEN DEFINITIONS/FORMAT redesign', () =>
 
 	it('REQUEST section merges task token desc and subject', () => {
 		const result = renderPrompt(grammarWithAxisDescriptions, { task: ['show'], completeness: ['full'] }, 'my subject text', '');
-		const requestIdx = result.indexOf('=== REQUEST 依頼 ===');
+		const requestIdx = result.indexOf('=== REQUEST ===');
 		const axesIdx = result.indexOf('=== AXES');
 		const requestBlock = result.slice(requestIdx, axesIdx);
 		expect(requestBlock).toContain('my subject text');
@@ -624,7 +624,7 @@ describe('renderPrompt — lateral seed (--seed-words)', () => {
 
 	it('N>0 renders the section with exactly N words — Ground W2a/W2b', () => {
 		const out = renderPrompt(seedGrammar, { task: ['show'] }, 'x', '', undefined, { count: 3, seed: 42 });
-		expect(out).toContain('=== LATERAL SEED 種 ===');
+		expect(out).toContain('=== LATERAL SEED ===');
 		const seedList = seedGrammar.lateral_seed_words!;
 		const present = seedList.filter((w) => out.includes(w));
 		expect(present.length).toBe(3);
@@ -669,7 +669,7 @@ describe('renderPrompt — mutation (--mutate)', () => {
 
 	it('enabled renders the MUTATION section naming a locus — SP2', () => {
 		const out = renderPrompt(grammar, sel, 'x', '', undefined, undefined, { enabled: true, seed: 42 });
-		expect(out).toContain('=== MUTATION 変 ===');
+		expect(out).toContain('=== MUTATION ===');
 		expect(out).toContain('Mutation (locus:');
 	});
 
@@ -701,57 +701,5 @@ describe('renderPrompt — mutation (--mutate)', () => {
 			seed: 1,
 		});
 		expect(out).not.toContain('MUTATION');
-	});
-});
-
-describe('renderPrompt variants', () => {
-	const withPlain = {
-		...grammar,
-		preamble: 'STANDARD PREAMBLE',
-		plain: {
-			reference_key: grammar.reference_key,
-			preamble: 'PLAIN PREAMBLE',
-			axis_interaction: 'PLAIN AXIS INTERACTION',
-			planning_directive: 'PLAIN PLANNING DIRECTIVE',
-			subject_framing: 'PLAIN SUBJECT FRAMING',
-			meta_interpretation_guidance: 'PLAIN META GUIDANCE'
-		}
-	} as typeof grammar;
-
-	const render = (variant?: 'standard' | 'plain', g = withPlain) =>
-		renderPrompt(g, { method: ['ground'] }, 'x', '', undefined, undefined, undefined, variant);
-
-	it('plain variant uses the plain scaffolding text', () => {
-		const result = render('plain');
-		expect(result).toContain('PLAIN PREAMBLE');
-		expect(result).toContain('PLAIN PLANNING DIRECTIVE');
-		expect(result).toContain('PLAIN META GUIDANCE');
-		expect(result).not.toContain('PLANNING DIRECTIVE TEXT');
-		expect(result).not.toContain('STANDARD PREAMBLE');
-	});
-
-	it('standard variant is unchanged and is the default', () => {
-		for (const result of [render('standard'), render(undefined)]) {
-			expect(result).toContain('STANDARD PREAMBLE');
-			expect(result).toContain('PLANNING DIRECTIVE TEXT');
-			expect(result).not.toContain('PLAIN PLANNING DIRECTIVE');
-		}
-	});
-
-	it('plain variant drops kanji from non-token section labels but keeps it on token labels', () => {
-		const result = render('plain');
-		expect(result).toContain('=== REQUEST ===');
-		expect(result).toContain('=== FORMAT ===');
-		expect(result).not.toContain('依頼');
-		expect(result).not.toContain('形式');
-		expect(result).toContain('軸');
-		expect(result).toContain('役割');
-		expect(result).toContain('定義');
-	});
-
-	it('plain request falls back to standard text when the grammar has no plain block', () => {
-		const result = render('plain', { ...grammar, preamble: 'STANDARD PREAMBLE' } as typeof grammar);
-		expect(result).toContain('STANDARD PREAMBLE');
-		expect(result).toContain('PLANNING DIRECTIVE TEXT');
 	});
 });

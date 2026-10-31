@@ -345,7 +345,6 @@ func TestGeneralHelpUsesSubjectAndAddendumFlags(t *testing.T) {
 }
 
 func TestRunPresetUseBuildsRecipe(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	configDir := t.TempDir()
 	t.Setenv(configDirEnv, configDir)
 
@@ -372,7 +371,7 @@ func TestRunPresetUseBuildsRecipe(t *testing.T) {
 	if !strings.Contains(output, "Fresh subject") {
 		t.Fatalf("expected preset use output to include new subject, got:\n%s", output)
 	}
-	if !strings.Contains(output, "=== REQUEST 依頼 ===") {
+	if !strings.Contains(output, "=== REQUEST ===") {
 		t.Fatalf("expected preset use output to include REQUEST section, got:\n%s", output)
 	}
 

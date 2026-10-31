@@ -52,7 +52,7 @@ func DetectCompare(tokens []string) (axis string, variants []string, cleaned []s
 //
 // baseTokens must not contain the multi-value entry (use cleaned from DetectCompare).
 // subject and addendum are the raw user inputs.
-func BuildCompare(g *Grammar, baseTokens []string, axis string, variants []string, subject, addendum, style string) (string, *CLIError) {
+func BuildCompare(g *Grammar, baseTokens []string, axis string, variants []string, subject, addendum string) (string, *CLIError) {
 	var b strings.Builder
 
 	b.WriteString("=== COMPARISON 比較 ===\n")
@@ -72,7 +72,7 @@ func BuildCompare(g *Grammar, baseTokens []string, axis string, variants []strin
 		}
 		result.Subject = subject
 		result.Addendum = addendum
-		result.PlainText = RenderStyled(result, g, style)
+		result.PlainText = RenderPlainText(result)
 
 		b.WriteString("\n---\n\n")
 		b.WriteString(fmt.Sprintf("## Variant: %s=%s\n\n", axis, canonical))

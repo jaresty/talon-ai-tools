@@ -5,99 +5,13 @@ import (
 	"testing"
 )
 
-// TestRenderDispatchHelpStep0aWording verifies that step 0a names bar build as the
-// primary mandatory action and /bar-dictionary as optional token lookup assistance,
-// with no reference to /bar-autopilot.
-func TestRenderDispatchHelpStep0aWording(t *testing.T) {
-	g, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("LoadGrammar: %v", err)
-	}
-	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, nil, ""); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	out := buf.String()
-	if strings.Contains(out, "/bar-autopilot") {
-		t.Errorf("0a should not reference /bar-autopilot; got:\n%s", out)
-	}
-	if !strings.Contains(out, "bar build") {
-		t.Errorf("0a should name bar build as the primary action; got:\n%s", out)
-	}
-	if !strings.Contains(out, "/bar-dictionary") {
-		t.Errorf("0a should reference /bar-dictionary as optional token lookup; got:\n%s", out)
-	}
-}
-
-// TestRenderDispatchHelpBlankShowsInnerSteps verifies that the blank template
-// includes placeholder inner step lines with bar build gate text, so agents
-// have a concrete model when authoring ad hoc inner cycles.
-func TestRenderDispatchHelpBlankShowsInnerSteps(t *testing.T) {
-	g, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("LoadGrammar: %v", err)
-	}
-	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, nil, ""); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	out := buf.String()
-	for _, want := range []string{
-		"[bar build gate — required]",
-		"→ ",
-	} {
-		if !strings.Contains(out, want) {
-			t.Errorf("blank template: want %q in output (inner step gate format)\ngot:\n%s", want, out)
-		}
-	}
-}
-
-// TestRenderDispatchHelpStep0cNamesExactHeading verifies that 0c prescribes
-// the exact heading text "## Agent Configuration" to prevent agents from
-// using alternate headings like "## Assigned Endpoint".
-func TestRenderDispatchHelpStep0cNamesExactHeading(t *testing.T) {
-	g, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("LoadGrammar: %v", err)
-	}
-	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, nil, ""); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	out := buf.String()
-	if !strings.Contains(out, "exactly `## Agent Configuration`") {
-		t.Errorf("0c should prescribe exact heading 'exactly `## Agent Configuration`'\ngot:\n%s", out)
-	}
-}
-
-func TestRenderDispatchHelpBlank(t *testing.T) {
-	g, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("LoadGrammar: %v", err)
-	}
-	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, nil, ""); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	out := buf.String()
-	for _, want := range []string{
-		"[dispatch protocol — required]",
-		"fan_out:",
-		"join:",
-	} {
-		if !strings.Contains(out, want) {
-			t.Errorf("blank template: want %q in output\ngot:\n%s", want, out)
-		}
-	}
-}
-
 func TestRenderDispatchHelpNamedSequence(t *testing.T) {
 	g, err := LoadGrammar("")
 	if err != nil {
 		t.Fatalf("LoadGrammar: %v", err)
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, nil, "frame-debug"); err != nil {
+	if err := renderDispatchHelp(&buf, g, "frame-debug"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
@@ -118,7 +32,7 @@ func TestRenderDispatchHelpUnknownSequence(t *testing.T) {
 		t.Fatalf("LoadGrammar: %v", err)
 	}
 	var buf strings.Builder
-	err = renderDispatchHelp(&buf, g, nil, "no-such-sequence-xyz")
+	err = renderDispatchHelp(&buf, g, "no-such-sequence-xyz")
 	if err == nil {
 		t.Fatal("expected error for unknown sequence, got nil")
 	}
@@ -130,6 +44,7 @@ func TestRenderDispatchHelpUnknownSequence(t *testing.T) {
 func TestRenderDispatchHelpMultipleDispatchSteps(t *testing.T) {
 	// Build a minimal Grammar with a sequence containing two dispatch steps.
 	g := &Grammar{
+		SequenceText: loadCompletionGrammar(t).SequenceText,
 		Sequences: map[string]Sequence{
 			"two-dispatch": {
 				Description: "test sequence with two dispatch steps",
@@ -141,7 +56,7 @@ func TestRenderDispatchHelpMultipleDispatchSteps(t *testing.T) {
 		},
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, nil, "two-dispatch"); err != nil {
+	if err := renderDispatchHelp(&buf, g, "two-dispatch"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
@@ -153,66 +68,23 @@ func TestRenderDispatchHelpMultipleDispatchSteps(t *testing.T) {
 		t.Errorf("two-dispatch: want 'replicate' in output\ngot:\n%s", out)
 	}
 	// Both dispatch protocol headers should appear.
-	count := strings.Count(out, "[dispatch protocol — required]")
+	count := strings.Count(out, "[dispatch step]")
 	if count != 2 {
-		t.Errorf("two-dispatch: want 2 '[dispatch protocol — required]' blocks, got %d\nout:\n%s", count, out)
-	}
-}
-
-// TestDispatchStepBlockDuringDispatchAbsenceClause asserts that the during_dispatch
-// instruction names the non-compliant state explicitly and removes the conflicting
-// "same response turn as the Agent tool calls" phrase.
-func TestDispatchStepBlockDuringDispatchAbsenceClause(t *testing.T) {
-	step := SequenceStep{
-		Token:          "prism",
-		Role:           "dispatch frames",
-		Type:           "dispatch",
-		FanOut:         "enumerate",
-		Join:           "all",
-		DuringDispatch: "show form:quiz",
-	}
-	var buf strings.Builder
-	writeDispatchStepBlock(&buf, step, 1, nil, nil)
-	out := buf.String()
-	if !strings.Contains(out, "deferred execution does not satisfy this requirement") {
-		t.Errorf("during_dispatch instruction must contain absence clause 'deferred execution does not satisfy this requirement':\n%s", out)
-	}
-	if strings.Contains(out, "in the same response turn as the Agent tool calls") {
-		t.Errorf("during_dispatch instruction must not contain conflicting phrase 'in the same response turn as the Agent tool calls' — it permits deferred execution:\n%s", out)
-	}
-}
-
-// TestDispatchStep0cPermitsCapabilityRequirements verifies that step 0c names
-// capability requirements as permitted content in the Agent Configuration block,
-// with a Bash access example, so orchestrators can signal tool requirements to agents.
-func TestDispatchStep0cPermitsCapabilityRequirements(t *testing.T) {
-	g, err := LoadGrammar("")
-	if err != nil {
-		t.Fatalf("LoadGrammar: %v", err)
-	}
-	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, nil, ""); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	out := buf.String()
-	if !strings.Contains(out, "capability requirements") {
-		t.Errorf("step 0c must name 'capability requirements' as permitted content in ## Agent Configuration block:\n%s", out)
-	}
-	if !strings.Contains(out, "Bash tool call access") {
-		t.Errorf("step 0c must include 'Bash tool call access' as a concrete capability example:\n%s", out)
+		t.Errorf("two-dispatch: want 2 '[dispatch step]' blocks, got %d\nout:\n%s", count, out)
 	}
 }
 
 // TestDispatchHelpGateDoesNotTargetRendererHeading verifies that no dispatch-help
 // step gates completion on the renderer heading string "=== TASK 任務 (DO THIS) ===".
 // That heading is bar-format vocabulary owned by render.go; the build path emits
-// "=== REQUEST 依頼 ===" instead, so gating on it silently targets a string the
+// "=== REQUEST ===" instead, so gating on it silently targets a string the
 // renderer no longer produces (self-containment principle: gate clauses must not
 // reference bar-format vocabulary). The gate must instead bind to the presence of a
 // bar build tool-call result. Covers both the during_dispatch path and the
 // inner-step gate path.
 func TestDispatchHelpGateDoesNotTargetRendererHeading(t *testing.T) {
 	g := &Grammar{
+		SequenceText: loadCompletionGrammar(t).SequenceText,
 		Sequences: map[string]Sequence{
 			"gate-probe": {
 				Description: "test sequence exercising during_dispatch and inner-step gates",
@@ -235,17 +107,17 @@ func TestDispatchHelpGateDoesNotTargetRendererHeading(t *testing.T) {
 		},
 	}
 	var buf strings.Builder
-	if err := renderDispatchHelp(&buf, g, nil, "gate-probe"); err != nil {
+	if err := renderDispatchHelp(&buf, g, "gate-probe"); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 	out := buf.String()
 	// property [1]: the stale renderer heading must not appear anywhere in the help.
 	if strings.Contains(out, "=== TASK 任務 (DO THIS) ===") {
-		t.Errorf("dispatch help must not target the renderer heading '=== TASK 任務 (DO THIS) ===' (stale bar-format vocabulary; build path emits '=== REQUEST 依頼 ==='):\n%s", out)
+		t.Errorf("dispatch help must not target the renderer heading '=== TASK 任務 (DO THIS) ===' (stale bar-format vocabulary; build path emits '=== REQUEST ==='):\n%s", out)
 	}
 	// property [2]: the inner-step completion gate must bind to a bar build
 	// tool-call result being present, not to a heading string.
-	if !strings.Contains(out, "bar build tool-call result") && !strings.Contains(out, "bar build tool call result") {
+	if !strings.Contains(out, "its `bar build` result is in the conversation") {
 		t.Errorf("inner-step gate must bind completion to the presence of a bar build tool-call result, not a heading string:\n%s", out)
 	}
 }

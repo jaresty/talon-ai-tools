@@ -20,7 +20,6 @@ const (
 
 // BuildResult captures the structured output of `bar build`.
 type BuildResult struct {
-	Style               string              `json:"style,omitempty"`
 	TokenLoading        string              `json:"-"`
 	CompositionLoading  string              `json:"-"`
 	SchemaVersion       string              `json:"schema_version"`
@@ -1151,6 +1150,8 @@ func (s *buildState) toResult() *BuildResult {
 		LateralSeedBodySingular:    s.grammar.LateralSeedBodySingular,
 		LateralSeedBodyPlural:      s.grammar.LateralSeedBodyPlural,
 		SubjectFraming:             s.grammar.SubjectFraming,
+		TokenLoading:               s.grammar.TokenLoading,
+		CompositionLoading:         s.grammar.CompositionLoading,
 		Task:          task,
 		Constraints:   constraints,
 		Axes: AxesResult{

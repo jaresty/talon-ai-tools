@@ -9,7 +9,11 @@ import (
 // renderDispatchHelp renders the dispatch step protocol for bar help dispatch.
 // With no sequenceName, renders a blank template with placeholders.
 // With a sequenceName, renders each dispatch step found in that sequence.
-func renderDispatchHelp(w io.Writer, grammar *Grammar, plainSeq *PlainSequence, sequenceName string) error {
+func renderDispatchHelp(w io.Writer, grammar *Grammar, sequenceName string) error {
+	st := grammar.SequenceText
+	if st == nil {
+		return fmt.Errorf("grammar is missing sequence_text; regenerate it with make")
+	}
 	if sequenceName == "" {
 		fmt.Fprintln(w, "Dispatch step template — fill in fan_out, join, isolation, and inner for your use case.")
 		fmt.Fprintln(w)
@@ -28,7 +32,7 @@ func renderDispatchHelp(w io.Writer, grammar *Grammar, plainSeq *PlainSequence, 
 				},
 			},
 		}
-		writeDispatchStepBlock(w, placeholder, 0, grammar, plainSeq)
+		writeDispatchStepBlock(w, placeholder, st)
 		return nil
 	}
 	seq, ok := grammar.Sequences[sequenceName]
@@ -46,7 +50,7 @@ func renderDispatchHelp(w io.Writer, grammar *Grammar, plainSeq *PlainSequence, 
 		}
 		fmt.Fprintf(w, "Dispatch step %d of sequence %q (sequence step %d — %s)\n", dispatchNum, sequenceName, i+1, step.Role)
 		fmt.Fprintln(w)
-		writeDispatchStepBlock(w, step, i+1, grammar, plainSeq)
+		writeDispatchStepBlock(w, step, st)
 	}
 	if dispatchNum == 0 {
 		fmt.Fprintf(w, "No dispatch steps found in sequence %q.\n", sequenceName)
@@ -54,108 +58,11 @@ func renderDispatchHelp(w io.Writer, grammar *Grammar, plainSeq *PlainSequence, 
 	return nil
 }
 
-// writeDispatchStepBlock renders the dispatch protocol block for a single dispatch step.
-// Mirrors the dispatch rendering in runSequenceShow so both stay structurally in sync.
-func writeDispatchStepBlock(w io.Writer, step SequenceStep, _ int, _ *Grammar, plainSeq *PlainSequence) {
-	if plainSeq != nil && plainSeq.Dispatch != nil {
-		writePlainDispatchStepBlock(w, step, plainSeq)
-		return
-	}
-	fmt.Fprintf(w, "          [dispatch protocol — required]\n")
-	fmt.Fprintf(w, "          [pre-dispatch agent config gate — required]\n")
-	fmt.Fprintf(w, "          Before spawning any Agent tool call at this dispatch step:\n")
-	fmt.Fprintf(w, "          0a. Run `bar build [tokens matching this dispatch step's role and task domain]` as a Bash tool call (no channel token — do not append `agent` or `skill`). Consider adding `topology:relay` to structure the output for agent handoff — relay makes schemas, contracts, and terminology explicit so each agent can continue without prior context. Use `/bar-dictionary` to look up tokens by intent if needed (e.g. `bar lookup \"<role intent>\"`). Read the bar build output and use it to write the `## Agent Configuration` block. The first Agent tool call must appear in the same response turn as that Bash result block — an Agent tool call appearing in a response turn that contains no bar build Bash result block does not satisfy this step.\n")
-	fmt.Fprintf(w, "          0b. Gate: a `## Agent Configuration` block must appear in the transcript in the same response turn as the first Agent tool call, written after the bar build tool call result from 0a. The block must contain the literal string `subagent_type: general-purpose` — a block that omits this string does not satisfy this gate. A response turn that spawns an Agent tool call without a preceding `## Agent Configuration` block containing that literal string does not satisfy this gate.\n")
-	fmt.Fprintf(w, "          0c. Write a block using exactly `## Agent Configuration` as the heading and pass it inline in each Agent tool call prompt. The block must contain only: (1) capability requirements — REQUIRED: include the literal string `subagent_type: general-purpose`; agents at this dispatch step require Bash tool call access to run bar commands; an ## Agent Configuration block that omits this string does not satisfy this step; (2) the assigned item — the verbatim text of the item this agent is processing from the enumerated list; (3) factual statements about the task domain traceable to the orchestrator's prior output. A block is compliant only when every sentence in it can be matched to one of these three categories by an evaluator reading the transcript — persona, behavioral stance, reasoning style, and approach come from each agent's own bar build invocations and must not appear here; a sentence naming any of these makes the block non-compliant.\n")
-	fmt.Fprintf(w, "          1. The orchestrator spawns Agent tool calls only for this step — do not run bar build in the orchestrator turn.\n")
-	fanOutDesc := step.FanOut
-	if step.FanOut == "enumerate" {
-		fanOutDesc = "enumerate — treat prior output as a list; send one item per agent"
-	} else if step.FanOut == "replicate" {
-		fanOutDesc = "replicate — send full prior output to every agent unchanged"
-	}
-	fmt.Fprintf(w, "          2. fan_out: %s\n", fanOutDesc)
-	isolationContext := "its assigned item + prompt_hint"
-	if step.Inner != nil {
-		isolationContext = "its assigned item, the inner steps, and inner stop_when. The Agent tool call must include only: (a) the assigned item text, (b) the inner steps below, (c) the inner stop_when. It must not contain the full enumerated list of all items or context from other agents"
-	}
-	if step.Isolation {
-		fmt.Fprintf(w, "          3. isolation: true — each agent receives only %s; no shared history\n", isolationContext)
-		fmt.Fprintf(w, "             isolation withholds sibling context, but the assigned item still carries whatever inherited framing shaped it. Add `shoshin` to the step 0a bar build so its disposition + Forwarded: audit fires while building the agent config: declare which inherited frames are inadmissible for these agents, and confirm no inadmissible frame rides along in the assigned item or the `## Agent Configuration` block (present it as an open question, not an assumption). This audits the parent→agent handoff, the boundary isolation alone does not cover.\n")
-	} else {
-		fmt.Fprintf(w, "          3. isolation: false — agents share conversation context\n")
-	}
-	if step.DuringDispatch != "" {
-		fmt.Fprintf(w, "          4. [DISPATCH GATE] A response turn at this dispatch step satisfies this step only when it contains at least one Agent tool call. An evaluator determines whether a turn is the dispatch turn by locating the literal string `[DISPATCH GATE]` in the assistant's text output in that turn. Emit a line of the form `Dispatching N agents:` where N equals the count of items in the enumerated list. Spawn one Agent tool call per item — all in this same response turn. Set run_in_background: true on every Agent tool call. The number of Agent tool calls in this turn must equal N. An evaluator determines required Agent call count by reading N from the first `Dispatching N agents:` line in the turn. Each Agent tool call prompt must contain the `## Agent Configuration` block from step 0c. Use subagent_type: general-purpose (has Bash access and can run bar commands). Proceed to the Agent tool calls without announcing them first. After spawning all agents, immediately run `%s` as a Bash tool call in this same response turn, and pass the enumerated items from the prior step as --subject so the during_dispatch task is scoped to the specific items being dispatched — this is the during_dispatch task and runs concurrently while background agents execute. A turn in which the Bash tool call for this command does not appear in the same turn as the Agent tool calls does not satisfy this step — deferred execution does not satisfy this requirement. The bar build output is a task instruction — execute that task now. Background agents may return while you are executing the during_dispatch task. The during_dispatch task continues until its own stop condition is met — the stop condition is satisfied only when a human-turn message (not a tool-call result block) appears in the transcript for each step of the task that issues a prompt requiring a user response. An agent-return tool-call result block is not a human-turn message and does not satisfy any step's stop condition. A step of the during_dispatch task that issued a prompt requiring a user response is complete only when a human-turn message appears in the transcript after that prompt — an evaluator determines compliance by locating the prompt text and confirming the next human-turn message in the transcript appears after it. During the quiz phase — from the point the first quiz question is emitted until the stop condition is met — a response turn must not contain any verbatim string from an agent-return tool-call result block; agent result content is permitted only in response turns that appear after the quiz stop condition is satisfied. After all steps of the during_dispatch task have reached their stop condition, proceed to the join step. Do not proceed to the join step until every background agent has returned a result — an evaluator determines compliance by confirming that a result block for each Agent tool call spawned in this step appears in the transcript before step 6 output.\n", step.DuringDispatch)
-	} else {
-		fmt.Fprintf(w, "          4. [DISPATCH GATE] A response turn at this dispatch step satisfies this step only when it contains at least one Agent tool call. An evaluator determines whether a turn is the dispatch turn by locating the literal string `[DISPATCH GATE]` in the assistant's text output in that turn. Before spawning agents, emit a line of the form `Dispatching N agents:` where N equals the count of items in the enumerated list. Spawn one Agent tool call per item — all in this same response turn. Set run_in_background: true on every Agent tool call. The number of Agent tool calls in this turn must equal N. An evaluator determines required Agent call count by reading N from the first `Dispatching N agents:` line in the turn. Each Agent tool call prompt must contain the `## Agent Configuration` block from step 0c. Use subagent_type: general-purpose (has Bash access and can run bar commands). Proceed to the Agent tool calls without announcing them first. Do not proceed to step 6 until every background agent has returned a result — an evaluator determines compliance by confirming that a result block for each Agent tool call spawned in this step appears in the transcript before step 6 output.\n")
-	}
-	if step.Inner != nil {
-		fmt.Fprintf(w, "          5. The Agent tool call text must contain: (1) for each inner prompt step shown below, the literal `bar build <token>` command the agent must run; (2) the instruction that each `bar build` output is the agent's task instruction for that step — a response written before the `bar build` output appears does not satisfy this requirement. Run only the bar build commands shown — do not run bar help llm or discover tokens. Each agent must return a ## Derivation block. The join result must contain one ## Derivation block per agent, appearing verbatim as returned. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the count equals the number of agents — a join result containing fewer ## Derivation headings than agents does not satisfy this gate.\n")
-	} else {
-		fmt.Fprintf(w, "          5. Each agent receives the step token string. Run: `bar build <step-token-string> --subject '<assigned-item>' --addendum '<prompt_hint>'` where step-token-string is the token string shown in this step. Each agent must return a ## Derivation block naming: bar tokens applied, governing goal, behavioral dimensions. The join result must contain one ## Derivation block per agent, appearing verbatim as returned. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the count equals the number of agents — a join result containing fewer ## Derivation headings than agents does not satisfy this gate.\n")
-	}
-	joinDesc := step.Join
-	switch step.Join {
-	case "all":
-		joinDesc = "all — wait for every agent; fail if any fail"
-	case "first":
-		joinDesc = "first — take the first successful result; remaining agents may still complete. Each Agent tool call prompt must contain: (a) an instruction to return the finding immediately upon confirming the result, and (b) a statement that its result will be taken as the join answer if it is first to confirm. An evaluator determines compliance by locating each Agent tool call prompt and checking whether both clauses are present as distinct sentences — a prompt containing neither clause does not satisfy this gate."
-	case "merge":
-		joinDesc = "merge — collect all results into an array"
-	}
-	fmt.Fprintf(w, "          6. join: %s\n", joinDesc)
-	fmt.Fprintf(w, "          7. Before running bar build for the next step: reproduce each ## Derivation block from the join result verbatim in the output. An evaluator determines compliance by counting ## Derivation headings in the join result passed as --subject and confirming the same count appears in the output before the first bar build call for the next step — a count mismatch does not satisfy this gate. Then run bar build with the full join result as --subject.\n")
-	if step.Inner != nil {
-		fmt.Fprintf(w, "          inner mode: %s\n", step.Inner.Mode)
-		if step.Inner.StopWhen != "" {
-			fmt.Fprintf(w, "          inner stop_when: %s\n", step.Inner.StopWhen)
-		}
-		if step.Inner.Mode == "cycle" {
-			fmt.Fprintf(w, "          [cycle protocol — required]\n")
-			fmt.Fprintf(w, "          All steps below form one cycle — execute them in order before checking stop_when.\n")
-			var lastPromptToken string
-			for ci, is := range step.Inner.Steps {
-				if is.Type == "action" {
-					fmt.Fprintf(w, "          %d. Run → [action] (action protocol applies — Bash only, no bar build).\n", ci+1)
-				} else {
-					if is.PromptHint != "" {
-						fmt.Fprintf(w, "          %d. Run → %s (bar build gate applies — run bar build %s first). %s\n", ci+1, is.Token, is.Token, is.PromptHint)
-					} else {
-						fmt.Fprintf(w, "          %d. Run → %s (bar build gate applies — run bar build %s first).\n", ci+1, is.Token, is.Token)
-					}
-					lastPromptToken = is.Token
-				}
-			}
-			fmt.Fprintf(w, "          %d. Check stop_when. A cycle is complete only when a bar build %s tool call result appears in the transcript for this cycle. The Findings block is permitted only when the final step result for this cycle contains the literal stop_when string. A final step result that does not contain that literal string requires a new cycle beginning from step 1 — the Findings block must not appear before the literal stop_when string appears in a bar build %s tool call result.\n", len(step.Inner.Steps)+1, lastPromptToken, lastPromptToken)
-		}
-		for _, is := range step.Inner.Steps {
-			innerToken := is.Token
-			if is.Type == "action" {
-				innerToken = "[action]"
-			}
-			fmt.Fprintf(w, "          → %-20s %s\n", innerToken, is.Role)
-			if is.PromptHint != "" {
-				fmt.Fprintf(w, "            %s\n", is.PromptHint)
-			}
-			if is.Type == "action" {
-				fmt.Fprintf(w, "            [action protocol — required] Do NOT run bar build. Exercise the subject under investigation live — invoke it, run it, or send it a request using Bash. This step is complete only when a Bash tool call result appears in the transcript showing output from the running subject — a Bash call that only reads files does not satisfy this requirement. Record the output before proceeding.\n")
-			} else {
-				fmt.Fprintf(w, "            [bar build gate — required]\n")
-				fmt.Fprintf(w, "            Run bar build before producing output for this step.\n")
-				fmt.Fprintf(w, "            1. Execute: bar build %s using the token string shown above for this step.\n", innerToken)
-				fmt.Fprintf(w, "            2. The bar build output is your task instruction — a response written before bar build output appears in the transcript does not satisfy this gate.\n")
-				fmt.Fprintf(w, "            3. This step is complete only when a bar build tool-call result block for this step appears in the transcript — prose that mentions bar build, or a response written before that result block appears, does not satisfy this gate.\n")
-			}
-		}
-	}
-}
-
-// writePlainDispatchStepBlock renders a dispatch step with the grammar's plain wording.
+// writeDispatchStepBlock renders a dispatch step from the grammar's sequence text.
 // It keeps the same functional requirements as the standard block (Agent Configuration,
 // the Dispatching line, background agents, Derivation blocks, join and isolation
 // behavior) without the gate-by-gate compliance language.
-func writePlainDispatchStepBlock(w io.Writer, step SequenceStep, ps *PlainSequence) {
+func writeDispatchStepBlock(w io.Writer, step SequenceStep, ps *SequenceText) {
 	d := ps.Dispatch
 	line := func(s string) { fmt.Fprintf(w, "          %s\n", s) }
 	line(d.Header)
@@ -206,7 +113,7 @@ func writePlainDispatchStepBlock(w io.Writer, step SequenceStep, ps *PlainSequen
 	}
 	line("inner mode: " + step.Inner.Mode)
 	if step.Inner.StopWhen != "" {
-		line("inner stop_when: " + plainRewrite(ps, step.Inner.StopWhen))
+		line("inner stop_when: " + rewriteHint(ps, step.Inner.StopWhen))
 	}
 	if step.Inner.Mode == "cycle" {
 		line(d.CycleIntro)
@@ -218,7 +125,7 @@ func writePlainDispatchStepBlock(w io.Writer, step SequenceStep, ps *PlainSequen
 			}
 			text := fmt.Sprintf("%d. Run → %s (run `bar build %s` first).", ci+1, is.Token, is.Token)
 			if is.PromptHint != "" {
-				text += " " + plainRewrite(ps, is.PromptHint)
+				text += " " + rewriteHint(ps, is.PromptHint)
 			}
 			line(text)
 			lastPromptToken = is.Token
@@ -232,7 +139,7 @@ func writePlainDispatchStepBlock(w io.Writer, step SequenceStep, ps *PlainSequen
 		}
 		fmt.Fprintf(w, "          → %-20s %s\n", innerToken, is.Role)
 		if is.PromptHint != "" {
-			fmt.Fprintf(w, "            %s\n", plainRewrite(ps, is.PromptHint))
+			fmt.Fprintf(w, "            %s\n", rewriteHint(ps, is.PromptHint))
 		}
 		if is.Type == "action" {
 			fmt.Fprintf(w, "            %s\n", d.InnerAction)

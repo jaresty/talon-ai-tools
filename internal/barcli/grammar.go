@@ -32,9 +32,9 @@ type ReferenceKeyContracts struct {
 	Subject         string            `json:"subject"`
 }
 
-// PlainDispatch is the plain-style text for dispatch steps and inner cycles.
+// DispatchText is the plain-style text for dispatch steps and inner cycles.
 // Placeholders: {ctx} isolation context, {cmd} during-dispatch command, {tok} last cycle token.
-type PlainDispatch struct {
+type DispatchText struct {
 	Header           string   `json:"header"`
 	Preflight        []string `json:"preflight"`
 	OrchestratorOnly string   `json:"orchestrator_only"`
@@ -55,29 +55,18 @@ type PlainDispatch struct {
 	InnerAction      string   `json:"inner_action"`
 }
 
-// PlainSequence is the plain-style text for `bar sequence show` and `bar sequence list`.
-type PlainSequence struct {
+// SequenceText is the plain-style text for `bar sequence show` and `bar sequence list`.
+type SequenceText struct {
 	ModeAutonomous string         `json:"mode_autonomous"`
 	ModeLinear     string         `json:"mode_linear"`
 	ModeCycle      string         `json:"mode_cycle"`
 	Opening        string         `json:"opening"`
 	BuildGate      []string       `json:"build_gate"`
 	ActionStep     []string       `json:"action_step"`
-	Dispatch       *PlainDispatch `json:"dispatch"`
+	Dispatch       *DispatchText `json:"dispatch"`
 	Rewrites       [][]string     `json:"rewrites"`
 }
 
-// PlainScaffolding is the alternate scaffolding text used by the "plain" prompt style.
-type PlainScaffolding struct {
-	Preamble                   string         `json:"preamble"`
-	AxisInteraction            string         `json:"axis_interaction"`
-	PlanningDirective          string         `json:"planning_directive"`
-	SubjectFraming             string         `json:"subject_framing"`
-	MetaInterpretationGuidance string         `json:"meta_interpretation_guidance"`
-	TokenLoading               string         `json:"token_loading"`
-	CompositionLoading         string         `json:"composition_loading"`
-	Sequence                   *PlainSequence `json:"sequence"`
-}
 
 // Grammar represents the portable prompt grammar payload exported from Python.
 type Grammar struct {
@@ -91,7 +80,9 @@ type Grammar struct {
 	LateralSeedBodySingular    string
 	LateralSeedBodyPlural      string
 	SubjectFraming             string
-	Plain                      *PlainScaffolding
+	TokenLoading               string
+	CompositionLoading         string
+	SequenceText               *SequenceText
 	Axes                       AxisSection
 	Static                     StaticSection
 	Persona                    PersonaSection
@@ -238,7 +229,9 @@ type rawGrammar struct {
 	LateralSeedBodySingular    string                `json:"lateral_seed_body_singular"`
 	LateralSeedBodyPlural      string                `json:"lateral_seed_body_plural"`
 	SubjectFraming             string                `json:"subject_framing"`
-	Plain                      *PlainScaffolding     `json:"plain"`
+	TokenLoading               string                `json:"token_loading"`
+	CompositionLoading         string                `json:"composition_loading"`
+	SequenceText               *SequenceText         `json:"sequence_text"`
 	Axes                       rawAxisSection        `json:"axes"`
 	Static                     rawStatic             `json:"tasks"`
 	Persona                    rawPersona            `json:"persona"`
@@ -362,7 +355,9 @@ func LoadGrammar(path string) (*Grammar, error) {
 		LateralSeedBodySingular:    raw.LateralSeedBodySingular,
 		LateralSeedBodyPlural:      raw.LateralSeedBodyPlural,
 		SubjectFraming:             raw.SubjectFraming,
-		Plain:                      raw.Plain,
+		TokenLoading:               raw.TokenLoading,
+		CompositionLoading:         raw.CompositionLoading,
+		SequenceText:               raw.SequenceText,
 		Sequences:                  raw.Sequences,
 		Patterns:                   raw.Patterns,
 		StarterPacks:               raw.StarterPacks,

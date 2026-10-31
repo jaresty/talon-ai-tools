@@ -42,30 +42,20 @@ class PromptGrammarPayloadTests(unittest.TestCase):
     @unittest.skipIf(
         bootstrap is None, "Test harness unavailable outside unittest runs"
     )
-    def test_payload_exposes_plain_variant_alongside_standard(self) -> None:
+    def test_payload_exposes_loading_and_sequence_text(self) -> None:
         from talon_user.lib import promptGrammar
 
         payload = promptGrammar.prompt_grammar_payload()
 
-        plain = payload.get("plain")
-        self.assertIsInstance(plain, dict, "payload must carry a 'plain' variant")
-        for key in (
-            "reference_key",
-            "preamble",
-            "axis_interaction",
-            "planning_directive",
-            "subject_framing",
-            "meta_interpretation_guidance",
-            "token_loading",
-            "composition_loading",
-        ):
-            self.assertIn(key, plain)
-            self.assertTrue(plain[key], f"plain.{key} must not be empty")
-        self.assertIsInstance(plain.get("sequence"), dict, "plain.sequence must be exported")
-        self.assertIn("build_gate", plain["sequence"])
-        self.assertNotEqual(plain["planning_directive"], payload["planning_directive"])
-        # Standard fields stay untouched for the CLI and Talon paths.
-        self.assertIn("Token derivations:", payload["planning_directive"])
+        self.assertNotIn("plain", payload, "there is one style now; no separate plain block")
+        for key in ("token_loading", "composition_loading"):
+            self.assertTrue(payload.get(key), f"payload.{key} must not be empty")
+        sequence_text = payload.get("sequence_text")
+        self.assertIsInstance(sequence_text, dict)
+        for key in ("mode_autonomous", "opening", "build_gate", "action_step", "dispatch", "rewrites"):
+            self.assertIn(key, sequence_text)
+        self.assertIn("Token application", payload["planning_directive"])
+        self.assertNotIn("Token derivations:", payload["planning_directive"])
 
     @unittest.skipIf(
         bootstrap is None, "Test harness unavailable outside unittest runs"
@@ -180,9 +170,9 @@ class PromptGrammarCliTests(unittest.TestCase):
             "meta_interpretation_guidance must not use 'focus' as an example token — it is not a valid bar token",
         )
         self.assertIn(
-            "token catalog",
+            "appears earlier in this transcript",
             meta_guidance,
-            "meta_interpretation_guidance must include a conditional guard requiring access to the bar token catalog before suggesting tokens",
+            "meta_interpretation_guidance must include a conditional guard requiring the token definition to be visible before suggesting tokens",
         )
         # Issue 3: "non-pasteable" is undefined jargon — must be replaced with behavioural instruction
         self.assertNotIn(
@@ -190,11 +180,11 @@ class PromptGrammarCliTests(unittest.TestCase):
             meta_guidance,
             "meta_interpretation_guidance must not use undefined jargon 'non-pasteable'",
         )
-        # Issue 2: directional carve-out — meta must acknowledge the directional naming prohibition
-        self.assertIn(
+        # Directional policy lives with the directional tokens, not on a universal surface.
+        self.assertNotIn(
             "directional",
-            meta_guidance,
-            "meta_interpretation_guidance must include a carve-out for the directional 'do not name' rule",
+            meta_guidance.lower(),
+            "meta_interpretation_guidance must not carry token-specific directional rules",
         )
         # Issue 5: retrospective reasoning — avoid claiming to explain live reasoning
         self.assertNotIn(

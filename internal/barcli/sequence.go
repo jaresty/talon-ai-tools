@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"sort"
 	"strings"
 
@@ -65,12 +64,11 @@ func runSequence(opts *cli.Config, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	style, styleErr := ResolveStyle(opts.Style, os.Getenv(styleEnv))
-	if styleErr != nil {
-		writeError(stderr, styleErr.Error())
+	st := grammar.SequenceText
+	if st == nil {
+		writeError(stderr, "grammar is missing sequence_text; regenerate it with make")
 		return 1
 	}
-	plainSeq := plainSequenceText(grammar, style)
 
 	sub := ""
 	name := ""
@@ -83,20 +81,20 @@ func runSequence(opts *cli.Config, stdout, stderr io.Writer) int {
 
 	switch sub {
 	case "list":
-		return runSequenceList(grammar, plainSeq, opts.JSON, stdout, stderr)
+		return runSequenceList(grammar, st, opts.JSON, stdout, stderr)
 	case "show":
 		if name == "" {
 			writeError(stderr, "usage: bar sequence show <name>")
 			return 1
 		}
-		return runSequenceShow(grammar, plainSeq, name, opts.JSON, stdout, stderr)
+		return runSequenceShow(grammar, st, name, opts.JSON, stdout, stderr)
 	default:
 		writeError(stderr, "usage: bar sequence [list|show <name>] [--json]")
 		return 1
 	}
 }
 
-func runSequenceList(g *Grammar, plainSeq *PlainSequence, asJSON bool, stdout, stderr io.Writer) int {
+func runSequenceList(g *Grammar, st *SequenceText, asJSON bool, stdout, stderr io.Writer) int {
 	// Sorted for deterministic output.
 	names := make([]string, 0, len(g.Sequences))
 	for k := range g.Sequences {
@@ -124,11 +122,7 @@ func runSequenceList(g *Grammar, plainSeq *PlainSequence, asJSON bool, stdout, s
 	}
 
 	fmt.Fprintf(stdout, "Execution modes:\n")
-	writeExecutionModes(stdout, plainSeq,
-		"  autonomous  all steps run without stopping — autonomous sequences contain no requires_user_input steps; proceed to the next step in the same response turn immediately after completing each step's substantive response. A response turn satisfies autonomous mode for a non-final step only when it contains, in order: the literal line \"Step N complete.\" (where N is the current step number), then a bar build call whose token string exactly matches the token string shown for step N+1 in the sequence definition — a bar build call that does not contain that token string does not satisfy this requirement. Exception: dispatch steps suspend the response turn while background agents run; before proceeding, write the literal line \"Agents complete: N of N.\" (where N is the count of agents spawned) immediately after reproducing all agent Derivation blocks — this line is the transcript-observable that marks all agents returned; the bar build call for the step following the dispatch step must appear in the same response turn as that line, before any other content.\n",
-		"  linear      pause after each step for user input before continuing — may contain requires_user_input steps that require real-world action\n",
-		"  cycle       repeat the step sequence until a stop condition is met\n",
-	)
+	writeExecutionModes(stdout, st)
 	fmt.Fprintln(stdout)
 	for _, n := range names {
 		fmt.Fprintf(stdout, "%-24s %s\n", n, g.Sequences[n].Description)
@@ -136,7 +130,7 @@ func runSequenceList(g *Grammar, plainSeq *PlainSequence, asJSON bool, stdout, s
 	return 0
 }
 
-func runSequenceShow(g *Grammar, plainSeq *PlainSequence, name string, asJSON bool, stdout, stderr io.Writer) int {
+func runSequenceShow(g *Grammar, st *SequenceText, name string, asJSON bool, stdout, stderr io.Writer) int {
 	seq, ok := g.Sequences[name]
 	if !ok {
 		writeError(stderr, fmt.Sprintf("unknown sequence %q; use 'bar sequence list' to see available sequences", name))
@@ -186,25 +180,12 @@ func runSequenceShow(g *Grammar, plainSeq *PlainSequence, name string, asJSON bo
 		fmt.Fprintf(stdout, "mode: %s\n", seq.Mode)
 	}
 	if seq.StopWhen != "" {
-		fmt.Fprintf(stdout, "stop_when: %s\n", plainRewrite(plainSeq, seq.StopWhen))
+		fmt.Fprintf(stdout, "stop_when: %s\n", rewriteHint(st, seq.StopWhen))
 	}
 	fmt.Fprintf(stdout, "Execution modes:\n")
-	writeExecutionModes(stdout, plainSeq,
-		"  autonomous  all steps run without stopping — autonomous sequences contain no requires_user_input steps; proceed to the next step in the same response turn immediately after completing each step's substantive response. A response turn satisfies autonomous mode for a non-final step only when it contains, in order: the literal line \"Step N complete.\" (where N is the current step number), then a bar build call whose token string exactly matches the token string shown for step N+1 in the sequence definition — a bar build call that does not contain that token string does not satisfy this requirement. Exception: dispatch steps suspend the response turn while background agents run; before proceeding, write the literal line \"Agents complete: N of N.\" (where N is the count of agents spawned) immediately after reproducing all agent Derivation blocks — this line is the transcript-observable that marks all agents returned; the bar build call for the step following the dispatch step must appear in the same response turn as that line, before any other content.\n",
-		"  linear      pause after each step for user input before continuing — linear sequences may contain requires_user_input steps that require real-world action by the user before the sequence can continue\n",
-		"  cycle       repeat the step sequence until a stop condition is met\n",
-	)
+	writeExecutionModes(stdout, st)
 	fmt.Fprintln(stdout)
-	if plainSeq != nil {
-		fmt.Fprintf(stdout, "%s\n", plainSeq.Opening)
-	} else {
-		fmt.Fprintf(stdout, "Before executing step 1, emit a ## Sequence Derivation block:\n")
-		fmt.Fprintf(stdout, "  - Sequence: %s (%d steps, mode: %s)\n", name, len(seq.Steps), seq.Mode)
-		fmt.Fprintf(stdout, "  - Mode means: <restate what this mode requires of you for execution>\n")
-		fmt.Fprintf(stdout, "  - Insertion needed: re-read the task now — does it require any step not covered by the canonical sequence? If yes, name the bar build token string for it (e.g., task:gather) and state where the insertion goes. If no, write none.\n")
-		fmt.Fprintf(stdout, "A transcript that begins step 1 without a ## Sequence Derivation block has not derived the sequence rules and does not satisfy this gate.\n")
-		fmt.Fprintf(stdout, "If Insertion needed names a token (not 'none'): A bar build containing that token must appear in the transcript before the first canonical step's bar build — a transcript that names an insertion but proceeds directly to step 1 without running bar build for it does not satisfy this gate.\n")
-	}
+	fmt.Fprintf(stdout, "%s\n", st.Opening)
 	fmt.Fprintln(stdout)
 	for i, step := range seq.Steps {
 		marker := "  "
@@ -226,17 +207,10 @@ func runSequenceShow(g *Grammar, plainSeq *PlainSequence, name string, asJSON bo
 		}
 		fmt.Fprintf(stdout, "%sStep %d  %-40s — %s\n", marker, i+1, tokenCol, step.Role)
 		if step.PromptHint != "" {
-			fmt.Fprintf(stdout, "          %s\n", plainRewrite(plainSeq, step.PromptHint))
+			fmt.Fprintf(stdout, "          %s\n", rewriteHint(st, step.PromptHint))
 		}
 		if step.Type == "action" {
-			if plainSeq != nil {
-				writePlainLines(stdout, plainSeq.ActionStep)
-			} else {
-				fmt.Fprintf(stdout, "          [action protocol — required]\n")
-				fmt.Fprintf(stdout, "          Do NOT run bar build for this step.\n")
-				fmt.Fprintf(stdout, "          Execute the actions named in the prior step's output using available tools.\n")
-				fmt.Fprintf(stdout, "          Record results before proceeding to the next step.\n")
-			}
+			writePlainLines(stdout, st.ActionStep)
 		}
 		if step.Type != "dispatch" && step.Type != "action" {
 			hasTask := false
@@ -253,18 +227,10 @@ func runSequenceShow(g *Grammar, plainSeq *PlainSequence, name string, asJSON bo
 			if !hasTask {
 				fmt.Fprintf(stdout, "          [no task token — add one before running bar build: show, make, check, fix, probe, plan, or sim]\n")
 			}
-			if plainSeq != nil {
-				writePlainLines(stdout, plainSeq.BuildGate)
-			} else {
-				fmt.Fprintf(stdout, "          [bar build gate — required]\n")
-				fmt.Fprintf(stdout, "          Run bar build before producing output for this step.\n")
-				fmt.Fprintf(stdout, "          1. Execute: bar build <token-string> [+ at least one token from method/scope/completeness/form axes that reflects this step's specific task] using the token string shown above as the starting point — a bar build containing only the step token shown has not satisfied this gate. Do not use the sequence name as a token — the sequence name is not a valid bar build token; use the step token string shown above.\n")
-				fmt.Fprintf(stdout, "          2. The bar build output is your task instruction — a response written before bar build output appears in the transcript does not satisfy this gate.\n")
-				fmt.Fprintf(stdout, "          3. This step is complete only when a bar build tool-call result block for this step appears in the transcript — prose that mentions bar build, or a response written before that result block appears, does not satisfy this gate.\n")
-			}
+			writePlainLines(stdout, st.BuildGate)
 		}
 		if step.Type == "dispatch" {
-			writeDispatchStepBlock(stdout, step, i+1, g, plainSeq)
+			writeDispatchStepBlock(stdout, step, st)
 		}
 		if step.Optional {
 			fmt.Fprintf(stdout, "          [optional — skip this step if knowledge transfer is not needed for this run]\n")
@@ -279,9 +245,6 @@ func runSequenceShow(g *Grammar, plainSeq *PlainSequence, name string, asJSON bo
 				}
 				return "next step"
 			}())
-			if plainSeq == nil {
-				fmt.Fprintf(stdout, "          This step is complete only when the string \"When you have results, paste them here\" appears in your response — a different phrasing does not satisfy this requirement.\n")
-			}
 			fmt.Fprintf(stdout, "          Do not produce any further content after this line in the same response.\n")
 		}
 		fmt.Fprintln(stdout)
@@ -312,31 +275,15 @@ func (g *Grammar) SequencesForToken(axisSlug string) []SequenceMembership {
 	return memberships
 }
 
-// writeExecutionModes prints the three mode lines. With plain text it uses the
-// grammar's plain wording; otherwise the supplied standard lines.
-func writeExecutionModes(w io.Writer, plainSeq *PlainSequence, autonomous, linear, cycle string) {
-	if plainSeq != nil {
-		fmt.Fprintf(w, "  autonomous  %s\n", plainSeq.ModeAutonomous)
-		fmt.Fprintf(w, "  linear      %s\n", plainSeq.ModeLinear)
-		fmt.Fprintf(w, "  cycle       %s\n", plainSeq.ModeCycle)
-		return
-	}
-	fmt.Fprint(w, autonomous)
-	fmt.Fprint(w, linear)
-	fmt.Fprint(w, cycle)
+// writeExecutionModes prints the three mode lines from the grammar's sequence text.
+func writeExecutionModes(w io.Writer, st *SequenceText) {
+	fmt.Fprintf(w, "  autonomous  %s\n", st.ModeAutonomous)
+	fmt.Fprintf(w, "  linear      %s\n", st.ModeLinear)
+	fmt.Fprintf(w, "  cycle       %s\n", st.ModeCycle)
 }
 
 func writePlainLines(w io.Writer, lines []string) {
 	for _, line := range lines {
 		fmt.Fprintf(w, "          %s\n", line)
 	}
-}
-
-// plainSequenceText returns the plain sequence text when the plain style is
-// selected and the grammar carries it; nil means render the standard text.
-func plainSequenceText(g *Grammar, style string) *PlainSequence {
-	if style != StylePlain || g == nil || g.Plain == nil || g.Plain.Sequence == nil {
-		return nil
-	}
-	return g.Plain.Sequence
 }

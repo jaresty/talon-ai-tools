@@ -62,19 +62,3 @@ if bootstrap is not None:
                 "topology", text.lower(),
                 "topology axis missing from prompt_reference_key_as_text() output",
             )
-
-        def test_M5_planning_directive_contains_token_derivations_marker(self) -> None:
-            """PLANNING_DIRECTIVE must open the derivation block with 'Token derivations:'."""
-            self.assertIn(
-                "Token derivations:",
-                PLANNING_DIRECTIVE,
-                "PLANNING_DIRECTIVE must begin derivation block with 'Token derivations:'",
-            )
-
-        def test_M6_planning_directive_contains_derived_stance_complete_marker(self) -> None:
-            """PLANNING_DIRECTIVE must close the derivation block with 'Derived stance complete.'."""
-            self.assertIn(
-                "Derived stance complete.",
-                PLANNING_DIRECTIVE,
-                "PLANNING_DIRECTIVE must close derivation block with 'Derived stance complete.'",
-            )

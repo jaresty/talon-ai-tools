@@ -33,7 +33,6 @@ Options:
   --input FILE          Read the subject from a file.
   --addendum TEXT       Task clarification applied alongside the subject.
   --seed-words N        Inject N random concrete nouns as a lateral creative seed (default 0 = off).
-  --style S             Prompt scaffolding: plain (default) or standard. Also set via BAR_PROMPT_STYLE.
   --mutate              Perturb one random active non-task token's stance to generate a variant (off by default).
   --seed S              Seed for a reproducible --seed-words / --mutate selection (echoed to stderr).
   --output FILE         Write the prompt to a file instead of stdout.
@@ -367,15 +366,8 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
-	style, styleErr := ResolveStyle(options.Style, os.Getenv(styleEnv))
-	if styleErr != nil {
-		cliErr := &CLIError{Type: "validation", Message: styleErr.Error()}
-		emitError(cliErr, options.JSON, stdout, stderr)
-		return 1
-	}
-
 	if compareAxis != "" {
-		compareText, compareErr := BuildCompare(grammar, cleanedTokens, compareAxis, compareVariants, promptBody, strings.TrimSpace(options.Addendum), style)
+		compareText, compareErr := BuildCompare(grammar, cleanedTokens, compareAxis, compareVariants, promptBody, strings.TrimSpace(options.Addendum))
 		if compareErr != nil {
 			emitError(compareErr, options.JSON, stdout, stderr)
 			return 1
@@ -453,8 +445,6 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 			fmt.Fprintf(stderr, "mutation: %d (%s)\n", seed, result.Mutation)
 		}
 	}
-
-	ApplyStyle(result, grammar, style)
 
 	result.PlainText = RenderPlainText(result)
 
@@ -796,12 +786,7 @@ func runHelp(opts *cli.Config, stdout, stderr io.Writer) int {
 			writeError(stderr, err.Error())
 			return 1
 		}
-		style, styleErr := ResolveStyle(opts.Style, os.Getenv(styleEnv))
-		if styleErr != nil {
-			writeError(stderr, styleErr.Error())
-			return 1
-		}
-		if err := renderDispatchHelp(stdout, grammar, plainSequenceText(grammar, style), sequenceName); err != nil {
+		if err := renderDispatchHelp(stdout, grammar, sequenceName); err != nil {
 			writeError(stderr, err.Error())
 			return 1
 		}
@@ -990,14 +975,9 @@ func runPreset(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int 
 			return 1
 		}
 
-		presetStyle, presetStyleErr := styleFromConfig(opts)
-		if presetStyleErr != nil {
-			writeError(stderr, presetStyleErr.Error())
-			return 1
-		}
 		result.Subject = promptBody
 		result.Tokens = append([]string(nil), preset.Tokens...)
-		result.PlainText = RenderStyled(result, grammar, presetStyle)
+		result.PlainText = RenderPlainText(result)
 
 		if err := saveLastBuild(result, preset.Tokens); err != nil && !errors.Is(err, errStateDisabled) {
 			fmt.Fprintf(stderr, "warning: failed to cache last build: %v\n", err)
@@ -1060,13 +1040,7 @@ func runShuffle(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int
 		return 1
 	}
 
-	shuffleStyle, shuffleStyleErr := styleFromConfig(opts)
-	if shuffleStyleErr != nil {
-		writeError(stderr, shuffleStyleErr.Error())
-		return 1
-	}
 	shuffleOpts := ShuffleOptions{
-		Style:   shuffleStyle,
 		Seed:    opts.Seed,
 		Include: opts.Include,
 		Exclude: opts.Exclude,

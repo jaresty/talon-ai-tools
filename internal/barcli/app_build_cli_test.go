@@ -78,12 +78,11 @@ func TestRunBuildTaskRequiredErrorKeepsExplicitCompleteness(t *testing.T) {
 // LATERAL SEED section to stdout and echoes the resolved seed to stderr (P2a, P5),
 // and that identical (seed, N) inputs are reproducible (P3).
 func TestRunBuildSeedWordsInjectsSection(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on standard-style headings
 	a := runBuildCLI(t, []string{"build", "make", "--seed-words", "2", "--seed", "42"}, nil)
 	if a.Exit != 0 {
 		t.Fatalf("expected exit 0, got %d with stderr: %s", a.Exit, a.Stderr)
 	}
-	if !strings.Contains(a.Stdout, "=== LATERAL SEED 種 ===") {
+	if !strings.Contains(a.Stdout, "=== LATERAL SEED ===") {
 		t.Fatalf("expected LATERAL SEED section in stdout, got:\n%s", a.Stdout)
 	}
 	if !strings.Contains(a.Stderr, "42") || !strings.Contains(strings.ToLower(a.Stderr), "seed") {
@@ -322,7 +321,6 @@ func TestRunBuildSubjectAndInputMutualExclusivity(t *testing.T) {
 }
 
 func TestRunBuildWithAddendumFlag(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on standard-style headings
 	t.Setenv(disableStateEnv, "1")
 
 	result := runBuildCLI(t, []string{"build", "make", "--subject", "some content", "--addendum", "focus on security"}, nil)
@@ -334,7 +332,7 @@ func TestRunBuildWithAddendumFlag(t *testing.T) {
 		t.Fatalf("expected stdout to include addendum text, got: %s", result.Stdout)
 	}
 	// Addendum text is merged into REQUEST section in redesigned output.
-	if !strings.Contains(result.Stdout, "=== REQUEST 依頼 ===") {
+	if !strings.Contains(result.Stdout, "=== REQUEST ===") {
 		t.Fatalf("expected REQUEST section heading in output, got: %s", result.Stdout)
 	}
 }
@@ -459,7 +457,6 @@ func TestAxisColonTokenScopedToNamedAxis(t *testing.T) {
 }
 
 func TestBuildPackNameExpandsToCommand(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on standard-style headings
 	t.Setenv(disableStateEnv, "1")
 
 	// "debug" is a starter pack → should expand, not error
@@ -471,13 +468,12 @@ func TestBuildPackNameExpandsToCommand(t *testing.T) {
 	if !strings.Contains(result.Stderr, "Expanding pack: debug") {
 		t.Errorf("expected 'Expanding pack: debug' on stderr, got:\n%s", result.Stderr)
 	}
-	if !strings.Contains(result.Stdout, "=== REQUEST 依頼 ===") {
+	if !strings.Contains(result.Stdout, "=== REQUEST ===") {
 		t.Errorf("expected prompt output after expansion, got:\n%s", result.Stdout)
 	}
 }
 
 func TestBuildPackNameWithAdditionalTokensExpands(t *testing.T) {
-	t.Setenv(styleEnv, StyleStandard) // asserts on standard-style headings
 	t.Setenv(disableStateEnv, "1")
 
 	// "craft" is a starter pack; "aloud" is a valid axis token.
@@ -490,7 +486,7 @@ func TestBuildPackNameWithAdditionalTokensExpands(t *testing.T) {
 	if !strings.Contains(result.Stderr, "Expanding pack: craft") {
 		t.Errorf("expected 'Expanding pack: craft' on stderr, got:\n%s", result.Stderr)
 	}
-	if !strings.Contains(result.Stdout, "=== REQUEST 依頼 ===") {
+	if !strings.Contains(result.Stdout, "=== REQUEST ===") {
 		t.Errorf("expected prompt output after expansion, got:\n%s", result.Stdout)
 	}
 }

@@ -222,6 +222,9 @@ SUBJECT_FRAMING: str = (
 PLANNING_DIRECTIVE: str = (
     "Write the response with every active token in mind, so each one shapes the structure and content "
     "of the answer itself rather than being added afterward. "
+    "When the channel allows only the artifact itself (a diagram, a script, code), the artifact comes first; "
+    "write the Token application and Model interpretation sections after it as plain text outside the artifact, "
+    "and put any reasoning the tokens call for in the artifact's own comments where its syntax has them. "
     "After the answer, add a section headed '## Token application'. "
     "In it, write one line for each token, labeled with the token's own name: "
     "'[token-name]: \"[quote]\" - [what the token did there]'. "

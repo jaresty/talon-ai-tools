@@ -222,9 +222,10 @@ SUBJECT_FRAMING: str = (
 PLANNING_DIRECTIVE: str = (
     "Write the response with every active token in mind, so each one shapes the structure and content "
     "of the answer itself rather than being added afterward. "
-    "When the channel allows only the artifact itself (a diagram, a script, code), the artifact comes first; "
-    "write the Token application and Model interpretation sections after it as plain text outside the artifact, "
-    "and put any reasoning the tokens call for in the artifact's own comments where its syntax has them. "
+    "When the channel allows only the artifact itself, the artifact comes first and the two closing sections follow it as plain text. "
+    "Put the reasoning the tokens call for in the channel's own output where the channel can carry it. "
+    "Where the channel and a token cannot both be satisfied, follow the channel, leave out what it cannot carry, "
+    "and name the conflict and the reason in the Model interpretation section. "
     "After the answer, add a section headed '## Token application'. "
     "In it, write one line for each token, labeled with the token's own name: "
     "'[token-name]: \"[quote]\" - [what the token did there]'. "
@@ -238,7 +239,7 @@ PLANNING_DIRECTIVE: str = (
 META_INTERPRETATION_GUIDANCE: str = (
     "After the Token application section, add a section headed '## Model interpretation'. "
     "It covers: the interpretive choices made, key assumptions as short bullets, "
-    "gaps and up to three items worth verifying, and one improved framing sentence. "
+    "any conflict between a token and the channel, gaps and up to three items worth verifying, and one improved framing sentence. "
     "It may end with one line of the form 'Suggestion: <axis>=<token>', using a single existing axis and token; it is for future prompts, not a critique of the current constraints. "
     "Include the Suggestion line only when that token's definition appears earlier in this transcript, "
     "for example in `bar help` or `bar lookup` output; when heuristics and distinctions are available, "

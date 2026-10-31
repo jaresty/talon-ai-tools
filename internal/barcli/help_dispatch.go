@@ -206,7 +206,7 @@ func writePlainDispatchStepBlock(w io.Writer, step SequenceStep, ps *PlainSequen
 	}
 	line("inner mode: " + step.Inner.Mode)
 	if step.Inner.StopWhen != "" {
-		line("inner stop_when: " + step.Inner.StopWhen)
+		line("inner stop_when: " + plainRewrite(ps, step.Inner.StopWhen))
 	}
 	if step.Inner.Mode == "cycle" {
 		line(d.CycleIntro)
@@ -218,7 +218,7 @@ func writePlainDispatchStepBlock(w io.Writer, step SequenceStep, ps *PlainSequen
 			}
 			text := fmt.Sprintf("%d. Run → %s (run `bar build %s` first).", ci+1, is.Token, is.Token)
 			if is.PromptHint != "" {
-				text += " " + is.PromptHint
+				text += " " + plainRewrite(ps, is.PromptHint)
 			}
 			line(text)
 			lastPromptToken = is.Token
@@ -232,7 +232,7 @@ func writePlainDispatchStepBlock(w io.Writer, step SequenceStep, ps *PlainSequen
 		}
 		fmt.Fprintf(w, "          → %-20s %s\n", innerToken, is.Role)
 		if is.PromptHint != "" {
-			fmt.Fprintf(w, "            %s\n", is.PromptHint)
+			fmt.Fprintf(w, "            %s\n", plainRewrite(ps, is.PromptHint))
 		}
 		if is.Type == "action" {
 			fmt.Fprintf(w, "            %s\n", d.InnerAction)

@@ -194,4 +194,36 @@ SEQUENCE: dict = {
             "Record the Bash result before moving on."
         ),
     },
+    # Plain-only replacements for gate wording in lib/sequenceConfig.py step hints. Each keeps the
+    # rule and drops the compliance language; the standard text is untouched.
+    "rewrites": [
+        [
+            'An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate.',
+            'Check that the output has the same number of ## Derivation headings as the join result before the bar build call.',
+        ],
+        [
+            'A frame description that references a pre-existing file (recording, log, snapshot) as its evidence source, or that requires credentials or running external services, does not satisfy criterion (5) and must be rewritten or replaced.',
+            'A frame description that relies on a pre-existing file (recording, log, snapshot) as its evidence source, or that needs credentials or running external services, fails criterion (5) and should be rewritten or replaced.',
+        ],
+        [
+            "The vet output for this cycle contains the literal string 'Goal condition: met' — a vet output that does not contain this exact string does not satisfy stop_when and a new cycle must begin.",
+            "The vet output for this cycle contains the literal string 'Goal condition: met'. If it does not, start a new cycle.",
+        ],
+        [
+            'A Bash call using cat, head, tail, sed, awk, or equivalent file-reading operations does not satisfy this step regardless of the tool type used.',
+            'A Bash call that only reads files (cat, head, tail, sed, awk, or equivalent) does not count for this step, whatever the tool type.',
+        ],
+        [
+            "The vet output for this cycle contains the literal string 'Root cause: confirmed' — a vet output that does not contain this exact string does not satisfy stop_when and a new cycle must begin.",
+            "The vet output for this cycle contains the literal string 'Root cause: confirmed'. If it does not, start a new cycle.",
+        ],
+        [
+            'a vet rejection is complete only when followed by a new bar build make form:prep verify for the next hypothesis; a vet rejection with no subsequent prep step does not satisfy this requirement.',
+            'follow every vet rejection with a new bar build make form:prep verify for the next hypothesis.',
+        ],
+        [
+            ' — a claim artifact written after any file-modifying call does not satisfy this gate.',
+            ' — a claim written after a file-modifying call is too late.',
+        ],
+    ],
 }

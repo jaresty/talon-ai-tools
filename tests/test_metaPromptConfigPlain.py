@@ -219,3 +219,35 @@ def test_plain_composition_loading_puts_lookups_before_any_other_tool_call():
     low = text.lower()
     assert "before any other tool call" in low
     assert "bar help composition" in text and "Remaining (not loaded)" in text
+
+
+GATE_PHRASES = ("does not satisfy", "An evaluator", "evaluator determines")
+
+
+def _all_strings(node):
+    if isinstance(node, str):
+        yield node
+    elif isinstance(node, dict):
+        for v in node.values():
+            yield from _all_strings(v)
+    elif isinstance(node, (list, tuple)):
+        for v in node:
+            yield from _all_strings(v)
+
+
+def test_plain_sequence_rewrites_remove_every_gate_clause_from_sequence_hints():
+    from lib.sequenceConfig import SEQUENCES
+
+    rewrites = _plain().SEQUENCE.get("rewrites", [])
+    assert rewrites, "plain.sequence.rewrites must exist"
+    texts = list(_all_strings(SEQUENCES))
+    for old, new in rewrites:
+        assert any(old in t for t in texts), f"rewrite source no longer found in sequenceConfig: {old[:60]!r}"
+        for phrase in GATE_PHRASES:
+            assert phrase not in new, f"rewrite still contains {phrase!r}: {new[:60]!r}"
+    remaining = []
+    for t in texts:
+        for old, new in rewrites:
+            t = t.replace(old, new)
+        remaining += [p for p in GATE_PHRASES if p in t]
+    assert not remaining, f"gate clauses left after rewrites: {sorted(set(remaining))}"

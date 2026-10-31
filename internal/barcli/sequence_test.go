@@ -2127,6 +2127,7 @@ func TestFrameExploreFinalStepUsesProbeConverge(t *testing.T) {
 
 // Behavior 108: frame-explore inner stop_when gates on literal string "Goal condition: met" in vet output.
 func TestFrameExploreInnerStopWhenGatesOnLiteralString(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-explore"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-explore exited %d: %s", code, stderr)
@@ -2152,6 +2153,7 @@ func TestFrameExploreVetPromptHintRequiresGoalConditionString(t *testing.T) {
 
 // Behavior 110: frame-debug inner stop_when gates on literal string "Root cause: confirmed" in vet output.
 func TestFrameDebugInnerStopWhenGatesOnLiteralString(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	out, stderr, code := runCLI(t, []string{"sequence", "show", "frame-debug"})
 	if code != 0 {
 		t.Fatalf("bar sequence show frame-debug exited %d: %s", code, stderr)

@@ -360,3 +360,50 @@ func TestTUIPreviewHonorsPromptStyle(t *testing.T) {
 	}
 	assertStandard(t, "tui preview standard", std)
 }
+
+func TestPlainSequenceShowHasNoGateClausesInAnySequence(t *testing.T) {
+	t.Setenv(styleEnv, "")
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for name := range g.Sequences {
+		out, stderr, code := runCLI(t, []string{"sequence", "show", name})
+		if code != 0 {
+			t.Fatalf("sequence show %s: exit %d: %s", name, code, stderr)
+		}
+		for _, phrase := range []string{"does not satisfy", "An evaluator", "evaluator determines"} {
+			if strings.Contains(out, phrase) {
+				t.Errorf("plain `sequence show %s` should not contain %q", name, phrase)
+			}
+		}
+	}
+}
+
+func TestPlainSequenceRewritesKeepTheRules(t *testing.T) {
+	t.Setenv(styleEnv, "")
+	out, _, _ := runCLI(t, []string{"sequence", "show", "token-rewrite"})
+	if !strings.Contains(out, "## Derivation") {
+		t.Errorf("plain token-rewrite should still require reproducing the Derivation blocks")
+	}
+	std, _, _ := runCLI(t, []string{"sequence", "show", "token-rewrite", "--style", "standard"})
+	if !strings.Contains(std, "does not satisfy") {
+		t.Errorf("standard sequence show must keep the original gate wording")
+	}
+}
+
+func TestPlainStopWhenKeepsTheLiteralStringAndTheConsequence(t *testing.T) {
+	t.Setenv(styleEnv, "")
+	for name, literal := range map[string]string{"frame-explore": "Goal condition: met", "frame-debug": "Root cause: confirmed"} {
+		out, _, code := runCLI(t, []string{"sequence", "show", name})
+		if code != 0 {
+			t.Fatalf("%s: exit %d", name, code)
+		}
+		if !strings.Contains(out, literal) {
+			t.Errorf("%s: plain stop_when must still gate on the literal string %q", name, literal)
+		}
+		if !strings.Contains(out, "If it does not, start a new cycle.") {
+			t.Errorf("%s: plain stop_when must still say what happens when the string is absent", name)
+		}
+	}
+}

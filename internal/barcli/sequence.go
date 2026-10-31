@@ -186,7 +186,7 @@ func runSequenceShow(g *Grammar, plainSeq *PlainSequence, name string, asJSON bo
 		fmt.Fprintf(stdout, "mode: %s\n", seq.Mode)
 	}
 	if seq.StopWhen != "" {
-		fmt.Fprintf(stdout, "stop_when: %s\n", seq.StopWhen)
+		fmt.Fprintf(stdout, "stop_when: %s\n", plainRewrite(plainSeq, seq.StopWhen))
 	}
 	fmt.Fprintf(stdout, "Execution modes:\n")
 	writeExecutionModes(stdout, plainSeq,
@@ -226,7 +226,7 @@ func runSequenceShow(g *Grammar, plainSeq *PlainSequence, name string, asJSON bo
 		}
 		fmt.Fprintf(stdout, "%sStep %d  %-40s — %s\n", marker, i+1, tokenCol, step.Role)
 		if step.PromptHint != "" {
-			fmt.Fprintf(stdout, "          %s\n", step.PromptHint)
+			fmt.Fprintf(stdout, "          %s\n", plainRewrite(plainSeq, step.PromptHint))
 		}
 		if step.Type == "action" {
 			if plainSeq != nil {

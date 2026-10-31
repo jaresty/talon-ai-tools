@@ -64,3 +64,17 @@ func RenderStyled(result *BuildResult, g *Grammar, style string) string {
 	ApplyStyle(result, g, style)
 	return RenderPlainText(result)
 }
+
+// plainRewrite applies the plain style's wording rewrites (gate language in step
+// hints and stop conditions) to s. With no plain sequence text it returns s unchanged.
+func plainRewrite(ps *PlainSequence, s string) string {
+	if ps == nil {
+		return s
+	}
+	for _, pair := range ps.Rewrites {
+		if len(pair) == 2 {
+			s = strings.ReplaceAll(s, pair[0], pair[1])
+		}
+	}
+	return s
+}

@@ -64,6 +64,7 @@ type PlainSequence struct {
 	BuildGate      []string       `json:"build_gate"`
 	ActionStep     []string       `json:"action_step"`
 	Dispatch       *PlainDispatch `json:"dispatch"`
+	Rewrites       [][]string     `json:"rewrites"`
 }
 
 // PlainScaffolding is the alternate scaffolding text used by the "plain" prompt style.

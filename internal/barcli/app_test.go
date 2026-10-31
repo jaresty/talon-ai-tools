@@ -345,6 +345,7 @@ func TestGeneralHelpUsesSubjectAndAddendumFlags(t *testing.T) {
 }
 
 func TestRunPresetUseBuildsRecipe(t *testing.T) {
+	t.Setenv(styleEnv, StyleStandard) // asserts on the standard-style text
 	configDir := t.TempDir()
 	t.Setenv(configDirEnv, configDir)
 

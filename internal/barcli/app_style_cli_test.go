@@ -1,6 +1,7 @@
 package barcli
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 )
@@ -264,4 +265,98 @@ func TestPlainStyleLoadsTokensBeforeOtherToolCalls(t *testing.T) {
 	if !strings.Contains(out.Stdout, "before any other tool call") {
 		t.Errorf("plain TOKENS text must put the lookups before any other tool call:\n%s", out.Stdout)
 	}
+}
+
+// Every command that renders a prompt must honor the prompt style, not just `build`.
+
+func assertPlain(t *testing.T, what, out string) {
+	t.Helper()
+	if !strings.Contains(out, "=== REQUEST ===") {
+		t.Errorf("%s: expected plain headings (=== REQUEST ===), got:\n%.400s", what, out)
+	}
+	for _, unwanted := range []string{"依頼", "Token derivations:", "Loaded: <slug>", "verbatim and authoritative"} {
+		if strings.Contains(out, unwanted) {
+			t.Errorf("%s: plain output should not contain %q", what, unwanted)
+		}
+	}
+}
+
+func assertStandard(t *testing.T, what, out string) {
+	t.Helper()
+	if !strings.Contains(out, "=== REQUEST 依頼 ===") || !strings.Contains(out, "Token derivations:") {
+		t.Errorf("%s: expected standard scaffolding, got:\n%.400s", what, out)
+	}
+}
+
+func TestShuffleHonorsPromptStyle(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	t.Setenv(styleEnv, "")
+	out, stderr, code := runCLI(t, []string{"shuffle", "--seed", "7"})
+	if code != 0 {
+		t.Fatalf("exit %d: %s", code, stderr)
+	}
+	assertPlain(t, "shuffle default", out)
+	out, _, code = runCLI(t, []string{"shuffle", "--seed", "7", "--style", "standard"})
+	if code != 0 {
+		t.Fatalf("exit %d", code)
+	}
+	assertStandard(t, "shuffle --style standard", out)
+	t.Setenv(styleEnv, "standard")
+	out, _, _ = runCLI(t, []string{"shuffle", "--seed", "7"})
+	assertStandard(t, "shuffle env standard", out)
+}
+
+func TestShuffleRejectsUnknownStyle(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	_, stderr, code := runCLI(t, []string{"shuffle", "--seed", "7", "--style", "fancy"})
+	if code == 0 || !strings.Contains(stderr, "plain") {
+		t.Errorf("expected a non-zero exit naming the valid styles, got exit %d stderr %q", code, stderr)
+	}
+}
+
+func TestBuildCompareHonorsPromptStyle(t *testing.T) {
+	t.Setenv(disableStateEnv, "1")
+	t.Setenv(styleEnv, "")
+	out := runBuildCLI(t, []string{"build", "show", "method=diagnose,hollow", "--subject", "x"}, nil)
+	if out.Exit != 0 {
+		t.Fatalf("exit %d: %s", out.Exit, out.Stderr)
+	}
+	assertPlain(t, "compare default", out.Stdout)
+	out = runBuildCLI(t, []string{"build", "show", "method=diagnose,hollow", "--subject", "x", "--style", "standard"}, nil)
+	assertStandard(t, "compare --style standard", out.Stdout)
+}
+
+func TestPresetUseHonorsPromptStyle(t *testing.T) {
+	t.Setenv(configDirEnv, t.TempDir())
+	t.Setenv(styleEnv, "")
+	if exit := Run([]string{"build", "make", "struct", "--subject", "Initial"}, strings.NewReader(""), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
+		t.Fatalf("build exit %d", exit)
+	}
+	if exit := Run([]string{"preset", "save", "style-test"}, strings.NewReader(""), &bytes.Buffer{}, &bytes.Buffer{}); exit != 0 {
+		t.Fatalf("preset save exit %d", exit)
+	}
+	out, stderr, code := runCLI(t, []string{"preset", "use", "style-test", "--subject", "Fresh"})
+	if code != 0 {
+		t.Fatalf("preset use exit %d: %s", code, stderr)
+	}
+	assertPlain(t, "preset use default", out)
+	out, _, _ = runCLI(t, []string{"preset", "use", "style-test", "--subject", "Fresh", "--style", "standard"})
+	assertStandard(t, "preset use --style standard", out)
+}
+
+func TestTUIPreviewHonorsPromptStyle(t *testing.T) {
+	g, err := LoadGrammar("")
+	if err != nil {
+		t.Fatal(err)
+	}
+	plain, err := buildPreviewPrompt(g, []string{"show", "mean"}, "x", "", StylePlain)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertPlain(t, "tui preview plain", plain)
+	std, err := buildPreviewPrompt(g, []string{"show", "mean"}, "x", "", StyleStandard)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assertStandard(t, "tui preview standard", std)
 }

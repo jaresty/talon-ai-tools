@@ -53,18 +53,17 @@ func runTUI2(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	style, styleErr := styleFromConfig(opts)
+	if styleErr != nil {
+		writeError(stderr, styleErr.Error())
+		return 1
+	}
+
 	tokenCategories := BuildTokenCategories(grammar)
 	tokens := append([]string(nil), opts.Tokens...)
 
 	preview := func(subject string, addendum string, tokenSet []string) (string, error) {
-		result, buildErr := Build(grammar, tokenSet)
-		if buildErr != nil {
-			return "", fmt.Errorf("build prompt: %s", buildErr.Message)
-		}
-		result.Subject = subject
-		result.Addendum = addendum
-		result.PlainText = RenderPlainText(result)
-		return result.PlainText, nil
+		return buildPreviewPrompt(grammar, tokenSet, subject, addendum, style)
 	}
 
 	runCommand := func(ctx context.Context, command string, stdin string) (string, string, error) {
@@ -158,4 +157,16 @@ func SetTUI2Starter(starter func(bartui2.Options) error) func() {
 	return func() {
 		startTUI2 = previous
 	}
+}
+
+// buildPreviewPrompt renders the prompt shown in the TUI preview for a token set.
+func buildPreviewPrompt(grammar *Grammar, tokenSet []string, subject, addendum, style string) (string, error) {
+	result, buildErr := Build(grammar, tokenSet)
+	if buildErr != nil {
+		return "", fmt.Errorf("build prompt: %s", buildErr.Message)
+	}
+	result.Subject = subject
+	result.Addendum = addendum
+	result.PlainText = RenderStyled(result, grammar, style)
+	return result.PlainText, nil
 }

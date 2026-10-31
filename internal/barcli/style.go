@@ -2,7 +2,10 @@ package barcli
 
 import (
 	"fmt"
+	"os"
 	"strings"
+
+	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
 )
 
 // Prompt styles for `bar build`. "plain" is the default; "standard" restores the
@@ -47,4 +50,17 @@ func ApplyStyle(result *BuildResult, g *Grammar, style string) {
 	result.MetaInterpretationGuidance = p.MetaInterpretationGuidance
 	result.TokenLoading = p.TokenLoading
 	result.CompositionLoading = p.CompositionLoading
+}
+
+// styleFromConfig resolves the prompt style from the --style flag, then the
+// BAR_PROMPT_STYLE environment variable, then the default (plain).
+func styleFromConfig(opts *cli.Config) (string, error) {
+	return ResolveStyle(opts.Style, os.Getenv(styleEnv))
+}
+
+// RenderStyled applies the style to the result and renders it. An empty or
+// "standard" style renders the original text.
+func RenderStyled(result *BuildResult, g *Grammar, style string) string {
+	ApplyStyle(result, g, style)
+	return RenderPlainText(result)
 }

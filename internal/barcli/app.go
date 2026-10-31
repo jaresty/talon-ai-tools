@@ -367,8 +367,15 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		return 1
 	}
 
+	style, styleErr := ResolveStyle(options.Style, os.Getenv(styleEnv))
+	if styleErr != nil {
+		cliErr := &CLIError{Type: "validation", Message: styleErr.Error()}
+		emitError(cliErr, options.JSON, stdout, stderr)
+		return 1
+	}
+
 	if compareAxis != "" {
-		compareText, compareErr := BuildCompare(grammar, cleanedTokens, compareAxis, compareVariants, promptBody, strings.TrimSpace(options.Addendum))
+		compareText, compareErr := BuildCompare(grammar, cleanedTokens, compareAxis, compareVariants, promptBody, strings.TrimSpace(options.Addendum), style)
 		if compareErr != nil {
 			emitError(compareErr, options.JSON, stdout, stderr)
 			return 1
@@ -447,12 +454,6 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 		}
 	}
 
-	style, styleErr := ResolveStyle(options.Style, os.Getenv(styleEnv))
-	if styleErr != nil {
-		cliErr := &CLIError{Type: "validation", Message: styleErr.Error()}
-		emitError(cliErr, options.JSON, stdout, stderr)
-		return 1
-	}
 	ApplyStyle(result, grammar, style)
 
 	result.PlainText = RenderPlainText(result)
@@ -989,9 +990,14 @@ func runPreset(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int 
 			return 1
 		}
 
+		presetStyle, presetStyleErr := styleFromConfig(opts)
+		if presetStyleErr != nil {
+			writeError(stderr, presetStyleErr.Error())
+			return 1
+		}
 		result.Subject = promptBody
 		result.Tokens = append([]string(nil), preset.Tokens...)
-		result.PlainText = RenderPlainText(result)
+		result.PlainText = RenderStyled(result, grammar, presetStyle)
 
 		if err := saveLastBuild(result, preset.Tokens); err != nil && !errors.Is(err, errStateDisabled) {
 			fmt.Fprintf(stderr, "warning: failed to cache last build: %v\n", err)
@@ -1054,7 +1060,13 @@ func runShuffle(opts *cli.Config, stdin io.Reader, stdout, stderr io.Writer) int
 		return 1
 	}
 
+	shuffleStyle, shuffleStyleErr := styleFromConfig(opts)
+	if shuffleStyleErr != nil {
+		writeError(stderr, shuffleStyleErr.Error())
+		return 1
+	}
 	shuffleOpts := ShuffleOptions{
+		Style:   shuffleStyle,
 		Seed:    opts.Seed,
 		Include: opts.Include,
 		Exclude: opts.Exclude,

@@ -13,6 +13,7 @@ type ShuffleOptions struct {
 	Exclude []string
 	Fill    float64
 	Subject string
+	Style   string // resolved prompt style (plain|standard); empty renders the standard text
 }
 
 // shuffleStageOrder defines the category order for shuffle, matching TUI2's sequence.
@@ -87,7 +88,7 @@ func Shuffle(g *Grammar, opts ShuffleOptions) (*BuildResult, *CLIError) {
 	result.Subject = opts.Subject
 	result.Tokens = tokens
 	result.ReferenceKey = g.ReferenceKey
-	result.PlainText = RenderPlainText(result)
+	result.PlainText = RenderStyled(result, g, opts.Style)
 
 	return result, nil
 }

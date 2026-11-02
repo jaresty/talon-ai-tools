@@ -263,15 +263,15 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "or 'Con:'. Every node other than a root Question is nested under a parent: an Idea under the Question it answers, a Pro or Con under the Idea it supports or opposes, and a "
         "Question under any node whose content raised it. A reply to a Pro or Con is a Question nested under that Pro or Con, with the reply as an Idea beneath that Question. Each distinct "
         "contribution of the subject appears as exactly one node; a move that only manages the exchange of contributions, such as calling for closure, signalling agreement, or deferring a "
-        "topic, is not a contribution and has no node. No node ranks, selects, or concludes among Ideas — the map records the deliberation and does not decide it. The last line is 'Open:' "
-        "followed by every Question with no Idea nested under it and every Idea with no Pro or Con nested under it, or 'Open: none' when there are none.",
+        "topic, is not a contribution and has no node. No node ranks, selects, or concludes among Ideas — the map records the deliberation and does not decide it. The map's final line is "
+        "'Open:'followed by every Question with no Idea nested under it and every Idea with no Pro or Con nested under it, or 'Open: none' when there are none.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response acts to advance the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully "
-        "model the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and ends with a "
-        "prompt that itself names at least one of those inputs. The named current state may be carried by whatever the response produces — including an artifact whose format another "
-        "token governs — in which case the available inputs are the points in that artifact the other side can act on, and the closing prompt accompanies the artifact rather than "
-        "replacing it. The response does not assert that any named input produces a named system state — causal claims of the form 'input → state' are withheld until the user acts, "
-        "whether asserted in prose or encoded in the artifact.",
+        "model the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and its "
+        "interactive content ends with a prompt that itself names at least one of those inputs. The named current state may be carried by whatever the response produces — including "
+        "an artifact whose format another token governs — in which case the available inputs are the points in that artifact the other side can act on, and the closing prompt "
+        "accompanies the artifact rather than replacing it. The response does not assert that any named input produces a named system state — causal claims of the form 'input → "
+        "state' are withheld until the user acts, whether asserted in prose or encoded in the artifact.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
@@ -292,7 +292,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "evaluating rather than unaided production; in that context, test source selection, hallucination detection, prioritization, and recommendation review rather than unaided recall of "
         'templates or checklists. (5) Learner-safety — a human message turn containing "pass", "skip", or "I don\'t know" in response to a question is treated as a diagnostic response '
         "equivalent to an incorrect prediction; the reveal is produced in the next response turn without gap-reveal comparison; no additional questions on that concept are required; a pass "
-        'or unknown response satisfies the prediction requirement for that concept. (6) Bounded-round — the response begins with a literal "Quiz purpose:" line and a literal "Stopping '
+        'or unknown response satisfies the prediction requirement for that concept. (6) Bounded-round — the quiz begins with a literal "Quiz purpose:" line and a literal "Stopping '
         'condition:" line before the first question; the stopping condition names the transcript-inspectable state whose presence closes the round, not a question count; when every concept '
         "in the opening list has either a ✓ marker, a gap-reveal sentence, or a pass/unknown response in the transcript, the round is complete; the terminal declaration may be omitted when "
         'the stopping condition has been satisfied and a "Round complete:" line appears naming that condition. Before generating any question, name the concepts to be covered as a numbered '
@@ -318,8 +318,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "that concept's name from the opening list (for the first concept, use the format '#N (Name): [relationship]' naming the opening-list number and name of the first concept whose "
         "understanding it enables). emit '✓ [concept name]' only when the Predict: line states the complete and correct answer with no correction, addition, or nuance needed — if any gap "
         "exists between the prediction and the answer, write a gap-reveal sentence instead of '✓'. Continue until every concept in the opening list has either a '✓ [concept name]' marker "
-        "or a gap-reveal sentence in the transcript, or the user explicitly declines to continue; then close with a terminal declaration containing the verbatim name of every concept from "
-        "the opening list — an evaluator determines completeness by comparing the terminal declaration against the opening list and confirming every name appears.",
+        "or a gap-reveal sentence in the transcript, or the user explicitly declines to continue; then close the quiz with a terminal declaration containing the verbatim name of every "
+        "concept from the opening list — an evaluator determines completeness by comparing the terminal declaration against the opening list and confirming every name appears.",
         "recipe": "The response expresses the answer as a recipe that includes a custom, clearly explained mini-language and a short key for understanding it.",
         "reel": "The response is an animated scene specification: each scene record names an ordinal, a scene name, a duration (a number and time unit such as 2s or 400ms), and a narrative label "
         "as the final field; each motion entry names an element identifier, a state — absent, entering, holding, or exiting — and, when entering or exiting, a curve token; each scene "
@@ -327,10 +327,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "reference": "The response is arranged for direct retrieval: each unit of content is introduced by a short label naming what that unit covers, and the units are ordered or grouped so a "
         "reader can locate a specific one without reading the others in sequence. The medium of each unit is unconstrained — a unit may be a line, a short paragraph, a table row, or a "
         "diagram — provided its label makes it independently findable.",
-        "runbook": "The response is a procedure for an operator to perform, which the response issues and does not carry out itself. It opens with 'Operator: <who performs the steps>', then states "
-        "the preconditions, then gives the steps, each naming the action, the observation that shows it worked, and the action to take instead if the observation differs, and ends with "
-        "a verification step and a way to abort. When the operator is the person the response is addressed to and a human turn can follow the response, it gives one step at a time, "
-        "stopping after each step the next depends on to wait for the operator's report; otherwise it gives every step in order.",
+        "runbook": "The response is a procedure for an operator to perform, which the response issues and does not carry out itself. The procedure opens with 'Operator: <who performs the steps>', "
+        "then states the preconditions, then gives the steps, each naming the action, the observation that shows it worked, and the action to take instead if the observation differs, "
+        "and ends with a verification step and a way to abort. When the operator is the person the response is addressed to and a human turn can follow the response, it gives one step "
+        "at a time, stopping after each step the next depends on to wait for the operator's report; otherwise it gives every step in order.",
         "scaffold": "The response explains with scaffolding: it starts from first principles, introduces ideas gradually, uses concrete examples and analogies, and revisits key points so a learner "
         "can follow and retain the concepts. Most effective with learning-oriented audiences (student, entry-level engineer). May conflict with expert-level or brevity-first personas "
         "where first-principles exposition contradicts assumed expertise.",
@@ -342,8 +342,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "this point. Forward-oriented — captures where things stand for later pickup, not what happened during the work.",
         "socratic": "The response interrogates the user's stated or implied position. Before producing any question, name the specific claim, belief, or reasoning step from the user's input that "
         "will be examined — if no such claim is identifiable in the user's input, state this before proceeding. Each question must quote or name a specific phrase from the user's input "
-        "that it targets. This response contains no declarative sentence asserting the agent's position on the subject — withholding judgment in favor of questions directed at the "
-        "user's claim. The response ends with an explicit invitation for the user to respond, not with any conclusion, summary, verdict, or recommendation.",
+        "that it targets. The questions contain no declarative sentence asserting the agent's position on the subject — withholding judgment in favor of questions directed at the "
+        "user's claim. The questioning ends with an explicit invitation for the user to respond, not with any conclusion, summary, verdict, or recommendation.",
         "spike": "The response formats the backlog item as a research spike: it starts with a brief problem or decision statement, lists the key questions the spike should answer, and stays "
         "focused on questions and learning rather than implementation tasks.",
         "stage": "The response presents a named-state sequence: each state is a named block whose name appears in at least one transition source or target field; each transition is a separate "
@@ -352,9 +352,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "criteria in plain prose but avoids Gherkin or test-case syntax.",
         "storyboard": "The response structures the subject as a sequence of numbered panels. Each panel contains: a Scene line (an observable state or artifact — what could appear in a screenshot "
         "or document at this moment, not an inferred or cognitive state); a Narration line (the text that accompanies this panel); and an optional Bridge line (a single line naming "
-        "the transition or context shift from the preceding panel). No text appears outside the panel sequence except a single optional title line before panel 1. Panels are visually "
-        "delimited by a blank line, horizontal rule, or equivalent panel boundary marker appropriate to the output medium. No panel references an entity, event, or transition that "
-        "has not been introduced in that panel or an earlier panel.",
+        "the transition or context shift from the preceding panel). The storyboard contains no text outside the panel sequence except a single optional title line before panel 1. "
+        "Panels are visually delimited by a blank line, horizontal rule, or equivalent panel boundary marker appropriate to the output medium. No panel references an entity, event, "
+        "or transition that has not been introduced in that panel or an earlier panel.",
         "table": "The response presents the main answer as a Markdown table when feasible, keeping columns and rows compact.",
         "taxonomy": "The response organizes the main content as a classification system, type hierarchy, or category taxonomy, defining types, their relationships, and distinguishing attributes "
         "clearly. A code or notation channel renders the hierarchy as a type system of interfaces, enums and hierarchies; a channel with a nesting construct as nested structure.",

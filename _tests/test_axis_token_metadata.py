@@ -425,6 +425,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "faq",
         "formats",
         "ghost",
+        "ibis",
         "indirect",
         "interactive",
         "log",

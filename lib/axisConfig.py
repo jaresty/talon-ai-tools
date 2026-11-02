@@ -259,6 +259,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
         "trace: action taken, result observed, next action, result observed.",
+        "ibis": "The response is a deliberation map: a tree of typed nodes rooted at one or more Question nodes. Each node is one line opening with its type label — 'Question:', 'Idea:', 'Pro:', "
+        "or 'Con:'. Every node other than a root Question is nested under a parent: an Idea under the Question it answers, a Pro or Con under the Idea it supports or opposes, and a "
+        "Question under any node whose content raised it. Each distinct contribution of the subject appears as exactly one node. No node ranks, selects, or concludes among Ideas — the map "
+        "records the deliberation and does not decide it. The last line is 'Open:' followed by every Question with no Idea nested under it and every Idea with no Pro or Con nested under "
+        "it, or 'Open: none' when there are none.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response acts to advance the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully "
         "model the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and ends with a "
@@ -1213,6 +1218,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "faq": "Question-and-answer format",
         "formats": "Document types and writing formats",
         "ghost": "Workflow execution trace",
+        "ibis": "Typed map of questions, ideas, and arguments",
         "indirect": "Background first, conclusion last",
         "interactive": "Multi-turn exchange",
         "log": "Work or research log entry",
@@ -1490,6 +1496,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "faq": "質",
         "formats": "様",
         "ghost": "幽",
+        "ibis": "議",
         "indirect": "間",
         "interactive": "対",
         "log": "誌",
@@ -1984,6 +1991,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "faq": "FAQ format",
         "formats": "Format comparison",
         "ghost": "Workflow execution trace",
+        "ibis": "Deliberation map",
         "indirect": "Background then conclusion",
         "interactive": "Multi-turn exchange",
         "log": "Work log entry",
@@ -5085,6 +5093,38 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what actions were taken and what happened",
                 "trace of work performed",
                 "autonomous workflow execution",
+            ],
+        },
+        "ibis": {
+            "distinctions": [
+                {
+                    "note": "argue (method) = structure the reasoning as claims, premises, warrants and rebuttals toward a position; ibis (form) = record a deliberation as typed "
+                    "Question, Idea, Pro and Con nodes without choosing among the Ideas",
+                    "token": "argue",
+                },
+                {
+                    "note": "dialogue = turns assigned to named speakers; ibis = contributions typed by their role in the deliberation, whoever made them",
+                    "token": "dialogue",
+                },
+                {
+                    "note": "taxonomy = classification of things by type and distinguishing attribute; ibis = map of a deliberation, organized by what answers or supports what",
+                    "token": "taxonomy",
+                },
+                {
+                    "note": "case = builds evidence and objection handling toward a recommendation; ibis = records options and arguments and ends on what is still open, with no "
+                    "recommendation",
+                    "token": "case",
+                },
+            ],
+            "heuristics": [
+                "map this discussion",
+                "dialogue mapping",
+                "issue map",
+                "capture the debate as questions, options, and arguments",
+                "what are the open questions and the options for each",
+                "pros and cons under each option without deciding",
+                "turn this meeting transcript into a decision map",
+                "IBIS",
             ],
         },
         "indirect": {

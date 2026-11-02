@@ -68,9 +68,11 @@ class IbisOpenLineTests(unittest.TestCase):
 
     def test_definition_requires_closing_open_line(self):
         definition = _definition()
-        self.assertIn("The map's final line is 'Open:'", definition)
+        self.assertIn(
+            "The map ends with a line 'Open:' followed by every Question", definition
+        )
         self.assertNotIn("The last line is", definition)
-        self.assertIn("'Open:' followed by every Question", definition)
+        self.assertNotIn("final line is", definition)
         self.assertIn("'Open: none'", definition)
 
 

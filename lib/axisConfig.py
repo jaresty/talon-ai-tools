@@ -159,14 +159,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "part it is taking up before covering it, and does not reopen a completed part to extend it once the next has begun.",
         "fixpoint": "The response applies the active method instructions again to its own output, treating that output as the subject they apply to, and its first production is not a pass. "
         "Before pass 1 it states 'Inventory: <the finite list of items the passes range over>', which includes every item the subject names; an instance is a span within that "
-        "inventory, a finding outside it is listed as 'Out of inventory: <finding>' and starts no pass, and where no finite list can be named no pass runs and the response ends "
-        "'Unprocessed: no finite inventory'. Each pass opens with 'Pass N:' and lists one pair per instance as 'Before: \"<verbatim span of the task content>\" → After: "
+        "inventory, a finding outside it is listed as 'Out of inventory: <finding>' and starts no pass, and where no finite list can be named no pass runs and the pass output "
+        "ends 'Unprocessed: no finite inventory'. Each pass opens with 'Pass N:' and lists one pair per instance as 'Before: \"<verbatim span of the task content>\" → After: "
         "\"<replacement span>\"', where Before is drawn from the task content as changed by pass N-1, or from the first production when N is 1, never from the 'Pass' lines or "
         "any other line this instruction requires, and After is a change the active method instructions call for. A pass that lists no pair reads 'Pass N: none (checked: "
         '<instruction checked>: "<quoted span>"; ...)\', with one quoted span of the output per active method instruction, each a span that instruction would act on and that '
         "already satisfies it, or a tool-executed result earlier in the transcript for any other artifact; a pass that lists a pair is never the 'Pass N: none' pass. Where "
-        "neither is available the pass reads 'Pass N: unobserved' and is not a none-pass. The last line is 'Fixpoint reached over the inventory after N passes' directly after "
-        "the 'Pass N: none' line, or 'Unprocessed: <Before spans left, or what could not be observed>' when the response ends before one appears.",
+        "neither is available the pass reads 'Pass N: unobserved' and is not a none-pass. The last line of the pass output is 'Fixpoint reached over the inventory after N "
+        "passes' directly after the 'Pass N: none' line, or 'Unprocessed: <Before spans left, or what could not be observed>' when the response ends before one appears.",
         "full": "The response addresses every named element of the subject at one level of depth — naming each element and its role or behavior — without expanding into the sub-elements of "
         "each.",
         "gist": "The response offers a short but complete answer or summary that touches the main points once without exploring every detail.",
@@ -178,9 +178,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mirror": "The response names the reference whose content or behavior is to be matched, then lists the classes in scope, such as the kinds of input, section, claim, or effect the "
         "reference has, as numbered 'Class N:' lines before judging any of them, splitting until each class can take a single verdict. It gives each class exactly one verdict: "
         "match, differ, or not checked, stating for match and differ what was compared and for not checked what was left untried. A class that was not checked is never counted as "
-        "a match, and a verdict is only as strong as the stated basis for it. It also names anything in the subject that has no counterpart in the reference. It ends with 'Not "
-        "checked: <classes>' or 'Not checked: none', which may also name dimensions deliberately left out of the comparison. For a code port the classes are input kinds and "
-        "effects; for a translation or revision they are sections or claims.",
+        "a match, and a verdict is only as strong as the stated basis for it. It also names anything in the subject that has no counterpart in the reference. The comparison ends "
+        "with 'Not checked: <classes>' or 'Not checked: none', which may also name dimensions deliberately left out of the comparison. For a code port the classes are input kinds "
+        "and effects; for a translation or revision they are sections or claims.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "prime": "The response ranks the subject's concepts by learning leverage — the ratio of understanding unlocked to learning effort required — naming this ranking criterion before "
         "covering any concept. It covers only the highest-leverage subset. After naming that subset, it writes a closure statement declaring coverage complete at the functional "
@@ -264,7 +264,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "Question under any node whose content raised it. A reply to a Pro or Con is a Question nested under that Pro or Con, with the reply as an Idea beneath that Question. Each distinct "
         "contribution of the subject appears as exactly one node; a move that only manages the exchange of contributions, such as calling for closure, signalling agreement, or deferring a "
         "topic, is not a contribution and has no node. No node ranks, selects, or concludes among Ideas — the map records the deliberation and does not decide it. The map's final line is "
-        "'Open:'followed by every Question with no Idea nested under it and every Idea with no Pro or Con nested under it, or 'Open: none' when there are none.",
+        "'Open:' followed by every Question with no Idea nested under it and every Idea with no Pro or Con nested under it, or 'Open: none' when there are none.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response acts to advance the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully "
         "model the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and its "
@@ -456,8 +456,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "eliminate": "The response enhances the task by enumerating a closed set of competing candidate claims, each introduced as a labeled item, with N stated as a numeral equal to the item "
         "count. Within each candidate's item, the response either strikes it — naming a specific defeater (the evidence or argument that removes it) and labeling that defeater "
         "rebutting, undermining, or undercutting — or marks it surviving with the reason no defeater applies. The response then reports eliminated and surviving counts, where the "
-        "eliminated count equals the number of items bearing a typed defeater and eliminated plus surviving equals N. The response closes with either 'exhaustive:' followed by the "
-        "argument the set admits no further rivals, or 'non-exhaustive:' followed by at least one named rival class not yet enumerated. For each candidate marked surviving, the "
+        "eliminated count equals the number of items bearing a typed defeater and eliminated plus surviving equals N. The elimination closes with either 'exhaustive:' followed by "
+        "the argument the set admits no further rivals, or 'non-exhaustive:' followed by at least one named rival class not yet enumerated. For each candidate marked surviving, the "
         "response attempts to construct a defeater that would strike it: if one is found, the candidate is re-struck and the counts revised; if none is found for any surviving "
         "candidate, the elimination is complete. A candidate lacking its own labeled item, a defeater without one of the three type labels, a count not matching the item tally, or a "
         "surviving candidate with no attempted-defeater check does not satisfy this requirement.",
@@ -833,8 +833,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "lazy": "The response resolves a choice only at the step that first needs its result. Until then the choice is recorded as 'Pending: <choice> — needed by <step>', and a pending choice "
         "stays closed to every other instruction until its step is reached. Every step after the one being taken states its choices only as 'Pending:' lines and the dependencies it will "
         "need resolved, not the resolutions. A choice is needed by a step when that step cannot be stated without it. A step is reached when its first action is taken or a result it "
-        "depends on exists; re-examining the output does not reach a step. When a step is reached, its pending choices are resolved with the evidence then available. The closing lines "
-        "list each choice still pending with the step that reaches it.",
+        "depends on exists; re-examining the output does not reach a step. When a step is reached, its pending choices are resolved with the evidence then available. The final lines of "
+        "the step sequence list each choice still pending with the step that reaches it.",
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a structure where each relationship between elements is shown as "
         "a named connection between two named nodes, rather than as a position in a sequence.",
         "mark": "The response captures checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression. Each checkpoint is headed by "
@@ -867,7 +867,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "norm": "The response names the purpose the subject serves and the established practice that already serves that purpose, or states 'Established practice: none identified'. For each "
         "point where the subject departs from that practice, it states 'Departure: <what differs> — Reason: <why the established practice does not serve the purpose here>', writing 'none "
         "stated' as the reason when the subject gives none. It classifies each departure as warranted when the established practice cannot satisfy something the purpose requires, and as "
-        "unwarranted when the departure rebuilds what the established practice already provides. The closing line states 'Unwarranted departures: <count>'.",
+        "unwarranted when the departure rebuilds what the established practice already provides. The final line of the classification states 'Unwarranted departures: <count>'.",
         "objectivity": "The response enhances the task by marking each claim as either grounded in cited evidence or in the responder's assessment, and supporting cited-evidence claims with "
         "named sources.",
         "operations": "The response enhances the task by naming the objective being optimized, the constraints that bound it, and the tradeoffs that must be navigated — making the structural "
@@ -893,7 +893,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "taking the option would resolve, per unit of time until that resolution can be observed. Before the first step it lists each open uncertainty as 'Unknown: <what is not yet "
         "known> — observable at <step or event> — Rate: <high | medium | low>', or 'Unknown: none' when none remains, and carries out the steps in descending order of the stated rate. "
         "Where two options are otherwise equal, it takes the one whose result can be observed sooner. When a result is observed, the response re-ranks the remaining unknowns with it and "
-        "drops any the result has settled, naming that result. The closing lines state each result that changed the order, or 'No reordering' when none did.",
+        "drops any the result has settled, naming that result. The final lines of the step sequence state each result that changed the order, or 'No reordering' when none did.",
         "pin": "The response enhances the task by tying each claim about the subject under study to a recorded observation of that subject, what was done or presented to it and what was seen, "
         "quoted where the claim is made, and labelling each claim observed, inferred, or hypothesized; a claim that is partly observed and partly inferred is split and each part labelled. "
         "An absence across the whole subject counts as an observation. A claim with no recorded observation is labelled inferred or hypothesized and is never stated as fact. It earns its "

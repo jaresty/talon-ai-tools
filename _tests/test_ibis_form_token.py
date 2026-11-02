@@ -72,6 +72,25 @@ class IbisOpenLineTests(unittest.TestCase):
         self.assertIn("'Open: none'", definition)
 
 
+class IbisExchangeManagementTests(unittest.TestCase):
+    """property [7]"""
+
+    def test_definition_gives_exchange_management_moves_no_node(self):
+        self.assertIn(
+            "is not a contribution and has no node", _definition()
+        )
+
+
+class IbisReplyRoutingTests(unittest.TestCase):
+    """property [8]"""
+
+    def test_definition_routes_reply_to_argument_through_a_question(self):
+        self.assertIn(
+            "A reply to a Pro or Con is a Question nested under that Pro or Con",
+            _definition(),
+        )
+
+
 class IbisCatalogEntryTests(unittest.TestCase):
     """property [5]"""
 

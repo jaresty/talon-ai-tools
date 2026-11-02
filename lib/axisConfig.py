@@ -259,12 +259,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
         "trace: action taken, result observed, next action, result observed.",
-        "ibis": "The response is a deliberation map: a tree of typed nodes rooted at one or more Question nodes. Each node is one line opening with its type label — 'Question:', 'Idea:', 'Pro:', "
-        "or 'Con:'. Every node other than a root Question is nested under a parent: an Idea under the Question it answers, a Pro or Con under the Idea it supports or opposes, and a "
-        "Question under any node whose content raised it. A reply to a Pro or Con is a Question nested under that Pro or Con, with the reply as an Idea beneath that Question. Each distinct "
-        "contribution of the subject appears as exactly one node; a move that only manages the exchange of contributions, such as calling for closure, signalling agreement, or deferring a "
-        "topic, is not a contribution and has no node. No node ranks, selects, or concludes among Ideas — the map records the deliberation and does not decide it. The map ends with a line "
-        "'Open:' followed by every Question with no Idea nested under it and every Idea with no Pro or Con nested under it, or 'Open: none' when there are none.",
+        "ibis": "The response is a deliberation map: a tree of typed nodes rooted at one or more Question nodes. Each node is one line opening with its type label — 'Question:', 'Question "
+        "(implied):', 'Idea:', 'Pro:', or 'Con:'. Every node other than a root Question is nested under a parent: an Idea under the Question it answers, a Pro or Con under the Idea it "
+        "supports or opposes, and a Question under any node whose content raised it. A reply to a Pro or Con is a Question nested under that Pro or Con, with the reply as an Idea beneath "
+        "that Question. A Question the subject poses is labelled 'Question:'; a Question the subject does not pose but that joins a reply to what it answers is labelled 'Question "
+        "(implied):' and always has an Idea nested under it. Every Idea, Pro and Con is stated in the subject, never implied. Each distinct contribution of the subject appears as exactly "
+        "one node; a move that only manages the exchange of contributions, such as calling for closure, signalling agreement, or deferring a topic, is not a contribution and has no node. "
+        "No node ranks, selects, or concludes among Ideas — the map records the deliberation and does not decide it. The map ends with a line 'Open:' followed by the text of each stated "
+        "Question that has no Idea nested under it and of each Idea that has no Pro or Con nested under it, separated by semicolons, and nothing else, or 'Open: none' when there are none.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response acts to advance the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully "
         "model the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and its "

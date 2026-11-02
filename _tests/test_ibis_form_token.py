@@ -47,8 +47,8 @@ class IbisResolvesTests(unittest.TestCase):
 class IbisTypedTreeTests(unittest.TestCase):
     """property [2]"""
 
-    def test_definition_names_all_four_node_labels(self):
-        for label in ("Question:", "Idea:", "Pro:", "Con:"):
+    def test_definition_names_all_five_node_labels(self):
+        for label in ("Question:", "Question (implied):", "Idea:", "Pro:", "Con:"):
             with self.subTest(label=label):
                 self.assertIn(label, _definition())
 
@@ -69,11 +69,30 @@ class IbisOpenLineTests(unittest.TestCase):
     def test_definition_requires_closing_open_line(self):
         definition = _definition()
         self.assertIn(
-            "The map ends with a line 'Open:' followed by every Question", definition
+            "The map ends with a line 'Open:' followed by the text of each stated "
+            "Question that has no Idea nested under it",
+            definition,
         )
+        self.assertIn("and nothing else", definition)
         self.assertNotIn("The last line is", definition)
         self.assertNotIn("final line is", definition)
         self.assertIn("'Open: none'", definition)
+
+
+class IbisImpliedQuestionTests(unittest.TestCase):
+    """property [11]"""
+
+    def test_implied_question_is_labelled_and_always_has_an_idea(self):
+        self.assertIn(
+            "'Question (implied):' and always has an Idea nested under it",
+            _definition(),
+        )
+
+    def test_ideas_pros_and_cons_are_never_implied(self):
+        self.assertIn(
+            "Every Idea, Pro and Con is stated in the subject, never implied",
+            _definition(),
+        )
 
 
 class IbisExchangeManagementTests(unittest.TestCase):

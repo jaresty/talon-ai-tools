@@ -2,14 +2,22 @@
 
 Each test must FAIL before the corresponding entries are added to
 axisConfig.py and the grammar is regenerated, and PASS after. The tests map
-one-to-one onto the retained properties:
+onto the retained properties:
 
-    [1] ibis resolves as a form token
-    [2] the definition requires typed, nested nodes
-    [3] the definition forbids verdicts
-    [4] the definition requires a closing Open line
-    [5] the catalog entry is complete (label, kanji, routing concept, guidebook)
-    [6] every committed grammar copy carries ibis
+    [1]  ibis resolves as a form token
+    [2]  the definition names the node types, that each node names its type,
+         and that each non-root node shows its parent
+    [3]  the map records the deliberation and does not decide it
+    [4]  the open items sit under a label and nothing else
+    [5]  the catalog entry is complete (label, kanji, routing concept, guidebook)
+    [6]  every committed grammar copy carries ibis
+    [7]  moves that only manage the exchange have no node
+    [8]  a reply to a Pro or Con attaches through a Question
+    [11] each node names the span it records; a node with no span is an
+         implied Question that has an Idea answering it
+    [12] the definition fixes no rendering syntax
+    [13] every span that poses a question or states an option, support or
+         objection has one node, including one the speaker defers
 """
 
 import json
@@ -47,13 +55,16 @@ class IbisResolvesTests(unittest.TestCase):
 class IbisTypedTreeTests(unittest.TestCase):
     """property [2]"""
 
-    def test_definition_names_all_five_node_labels(self):
-        for label in ("Question:", "Question (implied):", "Idea:", "Pro:", "Con:"):
-            with self.subTest(label=label):
-                self.assertIn(label, _definition())
-
     def test_definition_names_the_node_types(self):
         self.assertIn("The node types are Question, Idea, Pro and Con", _definition())
+
+    def test_definition_requires_each_node_to_name_its_type(self):
+        self.assertIn("Each node names its type", _definition())
+
+    def test_definition_requires_each_non_root_node_to_show_its_parent(self):
+        self.assertIn(
+            "each node other than a root Question shows its parent", _definition()
+        )
 
     def test_definition_names_the_relations(self):
         self.assertIn(
@@ -61,68 +72,60 @@ class IbisTypedTreeTests(unittest.TestCase):
             _definition(),
         )
 
-    def test_definition_attaches_every_node_to_one_parent(self):
-        self.assertIn("attaches to one parent by one relation", _definition())
-
-
-class IbisMediumNeutralTests(unittest.TestCase):
-    """property [12]: structure is defined; rendering belongs to the medium"""
-
-    def test_definition_leaves_rendering_to_the_medium(self):
-        definition = _definition()
-        self.assertIn("in whatever form the medium offers", definition)
-        self.assertIn("where the medium offers nothing better", definition)
-
-    def test_definition_fixes_no_unconditional_line_syntax(self):
-        definition = _definition()
-        self.assertNotIn("Each node is one line opening with its type label", definition)
-        self.assertNotIn("The map ends with a line", definition)
-        self.assertNotIn("separated by semicolons", definition)
-
 
 class IbisNoVerdictTests(unittest.TestCase):
     """property [3]"""
 
-    def test_definition_forbids_ranking_selecting_and_concluding(self):
-        self.assertIn("No node ranks, selects, or concludes", _definition())
+    def test_definition_says_the_map_does_not_decide(self):
+        self.assertIn(
+            "The map records the deliberation and does not decide it", _definition()
+        )
 
 
-class IbisOpenLineTests(unittest.TestCase):
+class IbisOpenItemsTests(unittest.TestCase):
     """property [4]"""
 
-    def test_definition_requires_the_open_items_to_be_identified(self):
+    def test_definition_states_open_items_under_a_label(self):
         definition = _definition()
-        self.assertIn("The map also identifies the open items", definition)
-        self.assertIn("each stated Question that has no Idea answering it", definition)
-        self.assertIn("each Idea that has no Pro or Con", definition)
-        self.assertIn("names no other item", definition)
-        self.assertIn("or states that none remain", definition)
+        self.assertIn("The map states its open items under the label 'Open'", definition)
+        self.assertIn("each stated Question with no Idea answering it", definition)
+        self.assertIn("each Idea with no Pro or Con", definition)
+        self.assertIn("or 'Open: none', and no other item", definition)
         self.assertNotIn("The last line is", definition)
         self.assertNotIn("final line is", definition)
 
 
-class IbisImpliedQuestionTests(unittest.TestCase):
+class IbisSpanLinkTests(unittest.TestCase):
     """property [11]"""
 
-    def test_implied_question_is_shown_as_implied_and_always_has_an_idea(self):
+    def test_each_node_names_the_span_it_records(self):
         self.assertIn(
-            "shown as implied and always having an Idea answering it",
-            _definition(),
+            "names its type and the span of the subject it records", _definition()
         )
 
-    def test_ideas_pros_and_cons_are_never_implied(self):
+    def test_a_node_with_no_span_is_an_implied_question_with_an_idea(self):
+        definition = _definition()
+        self.assertIn("A node that records no span is an implied Question", definition)
+        self.assertIn("it has an Idea answering it", definition)
+        self.assertIn("every other node records a span", definition)
+
+    def test_definition_uses_no_deny_list_for_ideas_pros_and_cons(self):
+        self.assertNotIn("never implied", _definition())
+
+
+class IbisCoverageTests(unittest.TestCase):
+    """properties [7] and [13]"""
+
+    def test_a_deferred_span_keeps_its_node(self):
         self.assertIn(
-            "Every Idea, Pro and Con is stated in the subject, never implied",
-            _definition(),
+            "has exactly one node, including one the speaker defers", _definition()
         )
 
-
-class IbisExchangeManagementTests(unittest.TestCase):
-    """property [7]"""
-
-    def test_definition_gives_exchange_management_moves_no_node(self):
+    def test_exchange_management_spans_have_no_node(self):
         self.assertIn(
-            "is not a contribution and has no node", _definition()
+            "a span that only manages the exchange, such as calling for closure, "
+            "signalling agreement, or deferring a topic, has none",
+            _definition(),
         )
 
 
@@ -135,6 +138,23 @@ class IbisReplyRoutingTests(unittest.TestCase):
             "with the reply as an Idea answering it",
             _definition(),
         )
+
+
+class IbisMediumNeutralTests(unittest.TestCase):
+    """property [12]: structure is defined; rendering belongs to the medium"""
+
+    def test_definition_fixes_no_rendering_syntax(self):
+        definition = _definition()
+        for phrase in (
+            "Each node is one line opening with its type label",
+            "line opening with its type name and a colon",
+            "The map ends with a line",
+            "separated by semicolons",
+            "nothing better",
+            "whatever form the medium offers",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertNotIn(phrase, definition)
 
 
 class IbisCatalogEntryTests(unittest.TestCase):

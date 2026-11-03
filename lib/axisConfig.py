@@ -259,15 +259,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
         "trace: action taken, result observed, next action, result observed.",
-        "ibis": "The response is a deliberation map: a tree of typed nodes. The node types are Question, Idea, Pro and Con. A Question the subject poses is a stated Question; a Question the "
-        "subject does not pose but that joins a reply to what it answers is an implied Question, shown as implied and always having an Idea answering it. Every Idea, Pro and Con is stated "
-        "in the subject, never implied. Every node other than a root Question attaches to one parent by one relation: an Idea answers a Question, a Pro supports an Idea, a Con opposes an "
-        "Idea, and a Question is raised by any node whose content prompted it; a reply to a Pro or Con attaches through a Question that node raised, with the reply as an Idea answering it. "
-        "Each node shows its type, and the tree shows what attaches to what, in whatever form the medium offers; where the medium offers nothing better, each node is a line opening with "
-        "its type name and a colon ('Question:', 'Question (implied):', 'Idea:', 'Pro:', 'Con:') and indentation shows the parent. Each distinct contribution of the subject appears as "
-        "exactly one node; a move that only manages the exchange of contributions, such as calling for closure, signalling agreement, or deferring a topic, is not a contribution and has no "
-        "node. No node ranks, selects, or concludes among Ideas — the map records the deliberation and does not decide it. The map also identifies the open items — each stated Question "
-        "that has no Idea answering it and each Idea that has no Pro or Con — and names no other item, or states that none remain.",
+        "ibis": "The response is a deliberation map: a tree of typed nodes. The node types are Question, Idea, Pro and Con. Each node names its type and the span of the subject it records, and "
+        "each node other than a root Question shows its parent. A node that records no span is an implied Question: it is shown as implied, it joins a reply to what it answers, and it has "
+        "an Idea answering it; every other node records a span. A parent relation is one of: an Idea answers a Question, a Pro supports an Idea, a Con opposes an Idea, a Question is raised "
+        "by a node whose span prompted it, and a reply to a Pro or Con attaches through a Question that node raised, with the reply as an Idea answering it. Each span that poses a question "
+        "or states an option, a support or an objection has exactly one node, including one the speaker defers; a span that only manages the exchange, such as calling for closure, "
+        "signalling agreement, or deferring a topic, has none. The map records the deliberation and does not decide it. The map states its open items under the label 'Open' — each stated "
+        "Question with no Idea answering it and each Idea with no Pro or Con — or 'Open: none', and no other item.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response acts to advance the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully "
         "model the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and its "

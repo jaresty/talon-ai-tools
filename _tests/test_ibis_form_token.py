@@ -13,11 +13,12 @@ onto the retained properties:
     [6]  every committed grammar copy carries ibis
     [7]  moves that only manage the exchange have no node
     [8]  a reply to a Pro or Con attaches through a Question
-    [11] each node names the span it records; a node with no span is an
-         implied Question that has an Idea answering it
     [12] the definition fixes no rendering syntax
-    [13] every span that poses a question or states an option, support or
-         objection has one node, including one the speaker defers
+    [13] every contribution that poses a question or states an option, support
+         or objection has one node, including one the speaker defers
+    [14] the definition carries no evidence-provenance concept: which nodes the
+         subject states and which are inferred belongs to ``pin``, and the
+         guidebook entry says so
 """
 
 import json
@@ -88,43 +89,25 @@ class IbisOpenItemsTests(unittest.TestCase):
     def test_definition_states_open_items_under_a_label(self):
         definition = _definition()
         self.assertIn("The map states its open items under the label 'Open'", definition)
-        self.assertIn("each stated Question with no Idea answering it", definition)
+        self.assertIn("each Question with no Idea answering it", definition)
         self.assertIn("each Idea with no Pro or Con", definition)
         self.assertIn("or 'Open: none', and no other item", definition)
         self.assertNotIn("The last line is", definition)
         self.assertNotIn("final line is", definition)
 
 
-class IbisSpanLinkTests(unittest.TestCase):
-    """property [11]"""
-
-    def test_each_node_names_the_span_it_records(self):
-        self.assertIn(
-            "names its type and the span of the subject it records", _definition()
-        )
-
-    def test_a_node_with_no_span_is_an_implied_question_with_an_idea(self):
-        definition = _definition()
-        self.assertIn("A node that records no span is an implied Question", definition)
-        self.assertIn("it has an Idea answering it", definition)
-        self.assertIn("every other node records a span", definition)
-
-    def test_definition_uses_no_deny_list_for_ideas_pros_and_cons(self):
-        self.assertNotIn("never implied", _definition())
-
-
 class IbisCoverageTests(unittest.TestCase):
     """properties [7] and [13]"""
 
-    def test_a_deferred_span_keeps_its_node(self):
+    def test_a_deferred_contribution_keeps_its_node(self):
         self.assertIn(
             "has exactly one node, including one the speaker defers", _definition()
         )
 
-    def test_exchange_management_spans_have_no_node(self):
+    def test_exchange_management_moves_have_no_node(self):
         self.assertIn(
-            "a span that only manages the exchange, such as calling for closure, "
-            "signalling agreement, or deferring a topic, has none",
+            "a move that only manages the exchange of contributions, such as calling "
+            "for closure, signalling agreement, or deferring a topic, has no node",
             _definition(),
         )
 
@@ -155,6 +138,27 @@ class IbisMediumNeutralTests(unittest.TestCase):
         ):
             with self.subTest(phrase=phrase):
                 self.assertNotIn(phrase, definition)
+
+
+class IbisOrthogonalityTests(unittest.TestCase):
+    """property [14]: provenance belongs to pin, not to this form"""
+
+    def test_definition_carries_no_provenance_concept(self):
+        definition = _definition()
+        for phrase in (
+            "span of the subject",
+            "records no span",
+            "implied Question",
+            "stated Question",
+            "never implied",
+        ):
+            with self.subTest(phrase=phrase):
+                self.assertNotIn(phrase, definition)
+
+    def test_guidebook_routes_provenance_to_pin(self):
+        entry = axis_token_metadata().get("form", {}).get("ibis", {})
+        tokens = [d.get("token") for d in entry.get("distinctions", [])]
+        self.assertIn("pin", tokens)
 
 
 class IbisCatalogEntryTests(unittest.TestCase):

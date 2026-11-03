@@ -259,12 +259,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
         "trace: action taken, result observed, next action, result observed.",
-        "ibis": "The response is a deliberation map: a tree of typed nodes. The node types are Question, Idea, Pro and Con. Each node names its type and the span of the subject it records, and "
-        "each node other than a root Question shows its parent. A node that records no span is an implied Question: it is shown as implied, it joins a reply to what it answers, and it has "
-        "an Idea answering it; every other node records a span. A parent relation is one of: an Idea answers a Question, a Pro supports an Idea, a Con opposes an Idea, a Question is raised "
-        "by a node whose span prompted it, and a reply to a Pro or Con attaches through a Question that node raised, with the reply as an Idea answering it. Each span that poses a question "
-        "or states an option, a support or an objection has exactly one node, including one the speaker defers; a span that only manages the exchange, such as calling for closure, "
-        "signalling agreement, or deferring a topic, has none. The map records the deliberation and does not decide it. The map states its open items under the label 'Open' — each stated "
+        "ibis": "The response is a deliberation map: a tree of typed nodes. The node types are Question, Idea, Pro and Con. Each node names its type, and each node other than a root Question shows "
+        "its parent. A parent relation is one of: an Idea answers a Question, a Pro supports an Idea, a Con opposes an Idea, and a Question is raised by a node whose content prompted it; a "
+        "reply to a Pro or Con attaches through a Question that node raised, with the reply as an Idea answering it. Each contribution of the subject that poses a question or states an "
+        "option, a support or an objection has exactly one node, including one the speaker defers; a move that only manages the exchange of contributions, such as calling for closure, "
+        "signalling agreement, or deferring a topic, has no node. The map records the deliberation and does not decide it. The map states its open items under the label 'Open' — each "
         "Question with no Idea answering it and each Idea with no Pro or Con — or 'Open: none', and no other item.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response acts to advance the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully "
@@ -5116,6 +5115,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "case = builds evidence and objection handling toward a recommendation; ibis = records options and arguments and ends on what is still open, with no "
                     "recommendation",
                     "token": "case",
+                },
+                {
+                    "note": "pin (method) = tie each claim about the subject to a quoted observation and label it observed, inferred or hypothesized; ibis (form) = the shape of a "
+                    "deliberation as typed nodes and parent relations. Use both to see which nodes the subject states and which are inferred",
+                    "token": "pin",
                 },
             ],
             "heuristics": [

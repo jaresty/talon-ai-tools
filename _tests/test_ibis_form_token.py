@@ -52,8 +52,32 @@ class IbisTypedTreeTests(unittest.TestCase):
             with self.subTest(label=label):
                 self.assertIn(label, _definition())
 
-    def test_definition_requires_nesting_under_a_parent(self):
-        self.assertIn("nested under", _definition())
+    def test_definition_names_the_node_types(self):
+        self.assertIn("The node types are Question, Idea, Pro and Con", _definition())
+
+    def test_definition_names_the_relations(self):
+        self.assertIn(
+            "an Idea answers a Question, a Pro supports an Idea, a Con opposes an Idea",
+            _definition(),
+        )
+
+    def test_definition_attaches_every_node_to_one_parent(self):
+        self.assertIn("attaches to one parent by one relation", _definition())
+
+
+class IbisMediumNeutralTests(unittest.TestCase):
+    """property [12]: structure is defined; rendering belongs to the medium"""
+
+    def test_definition_leaves_rendering_to_the_medium(self):
+        definition = _definition()
+        self.assertIn("in whatever form the medium offers", definition)
+        self.assertIn("where the medium offers nothing better", definition)
+
+    def test_definition_fixes_no_unconditional_line_syntax(self):
+        definition = _definition()
+        self.assertNotIn("Each node is one line opening with its type label", definition)
+        self.assertNotIn("The map ends with a line", definition)
+        self.assertNotIn("separated by semicolons", definition)
 
 
 class IbisNoVerdictTests(unittest.TestCase):
@@ -66,25 +90,23 @@ class IbisNoVerdictTests(unittest.TestCase):
 class IbisOpenLineTests(unittest.TestCase):
     """property [4]"""
 
-    def test_definition_requires_closing_open_line(self):
+    def test_definition_requires_the_open_items_to_be_identified(self):
         definition = _definition()
-        self.assertIn(
-            "The map ends with a line 'Open:' followed by the text of each stated "
-            "Question that has no Idea nested under it",
-            definition,
-        )
-        self.assertIn("and nothing else", definition)
+        self.assertIn("The map also identifies the open items", definition)
+        self.assertIn("each stated Question that has no Idea answering it", definition)
+        self.assertIn("each Idea that has no Pro or Con", definition)
+        self.assertIn("names no other item", definition)
+        self.assertIn("or states that none remain", definition)
         self.assertNotIn("The last line is", definition)
         self.assertNotIn("final line is", definition)
-        self.assertIn("'Open: none'", definition)
 
 
 class IbisImpliedQuestionTests(unittest.TestCase):
     """property [11]"""
 
-    def test_implied_question_is_labelled_and_always_has_an_idea(self):
+    def test_implied_question_is_shown_as_implied_and_always_has_an_idea(self):
         self.assertIn(
-            "'Question (implied):' and always has an Idea nested under it",
+            "shown as implied and always having an Idea answering it",
             _definition(),
         )
 
@@ -109,7 +131,8 @@ class IbisReplyRoutingTests(unittest.TestCase):
 
     def test_definition_routes_reply_to_argument_through_a_question(self):
         self.assertIn(
-            "A reply to a Pro or Con is a Question nested under that Pro or Con",
+            "a reply to a Pro or Con attaches through a Question that node raised, "
+            "with the reply as an Idea answering it",
             _definition(),
         )
 

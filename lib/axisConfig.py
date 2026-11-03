@@ -263,8 +263,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "its parent. A parent relation is one of: an Idea answers a Question, a Pro supports an Idea, a Con opposes an Idea, and a Question is raised by a node whose content prompted it; a "
         "reply to a Pro or Con attaches through a Question that node raised, with the reply as an Idea answering it. Each contribution of the subject that poses a question or states an "
         "option, a support or an objection has exactly one node, including one the speaker defers; a move that only manages the exchange of contributions, such as calling for closure, "
-        "signalling agreement, or deferring a topic, has no node. The map records the deliberation and does not decide it. The map states its open items under the label 'Open' — each "
-        "Question with no Idea answering it and each Idea with no Pro or Con — or 'Open: none', and no other item.",
+        "signalling agreement, or deferring a topic, has no node and appears nowhere in the map. The map records the deliberation and does not decide it. The map holds its nodes and its "
+        "open items and nothing else. The map states its open items under the label 'Open', each as the text of a node of the map — every Question with no Idea answering it and every Idea "
+        "with no Pro or Con — or 'Open: none'; an item that is not a node of the map is not listed.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response acts to advance the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully "
         "model the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and its "

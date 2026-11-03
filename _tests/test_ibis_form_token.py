@@ -88,10 +88,19 @@ class IbisOpenItemsTests(unittest.TestCase):
 
     def test_definition_states_open_items_under_a_label(self):
         definition = _definition()
-        self.assertIn("The map states its open items under the label 'Open'", definition)
-        self.assertIn("each Question with no Idea answering it", definition)
-        self.assertIn("each Idea with no Pro or Con", definition)
-        self.assertIn("or 'Open: none', and no other item", definition)
+        self.assertIn(
+            "The map states its open items under the label 'Open', each as the text "
+            "of a node of the map",
+            definition,
+        )
+        self.assertIn(
+            "every Question with no Idea answering it and every Idea with no Pro or Con",
+            definition,
+        )
+        self.assertIn(
+            "or 'Open: none'; an item that is not a node of the map is not listed",
+            definition,
+        )
         self.assertNotIn("The last line is", definition)
         self.assertNotIn("final line is", definition)
 
@@ -104,10 +113,17 @@ class IbisCoverageTests(unittest.TestCase):
             "has exactly one node, including one the speaker defers", _definition()
         )
 
-    def test_exchange_management_moves_have_no_node(self):
+    def test_exchange_management_moves_have_no_node_and_appear_nowhere(self):
         self.assertIn(
             "a move that only manages the exchange of contributions, such as calling "
-            "for closure, signalling agreement, or deferring a topic, has no node",
+            "for closure, signalling agreement, or deferring a topic, has no node and "
+            "appears nowhere in the map",
+            _definition(),
+        )
+
+    def test_the_map_holds_nodes_and_open_items_and_nothing_else(self):
+        self.assertIn(
+            "The map holds its nodes and its open items and nothing else",
             _definition(),
         )
 

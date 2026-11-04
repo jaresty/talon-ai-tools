@@ -21,18 +21,18 @@ func TestGitHubAPIClient(t *testing.T) {
 	}{
 		{
 			name:  "successful release fetch",
-			owner: "talonvoice",
+			owner: "jaresty",
 			repo:  "talon-ai-tools",
 			mockResponse: map[string]interface{}{
 				"tag_name": "v1.2.3",
 				"assets": []map[string]interface{}{
 					{
 						"name":                 "bar-darwin-amd64",
-						"browser_download_url": "https://github.com/talonvoice/talon-ai-tools/releases/download/v1.2.3/bar-darwin-amd64",
+						"browser_download_url": "https://github.com/jaresty/talon-ai-tools/releases/download/v1.2.3/bar-darwin-amd64",
 					},
 					{
 						"name":                 "bar-linux-amd64",
-						"browser_download_url": "https://github.com/talonvoice/talon-ai-tools/releases/download/v1.2.3/bar-linux-amd64",
+						"browser_download_url": "https://github.com/jaresty/talon-ai-tools/releases/download/v1.2.3/bar-linux-amd64",
 					},
 				},
 			},
@@ -43,7 +43,7 @@ func TestGitHubAPIClient(t *testing.T) {
 		},
 		{
 			name:         "no releases",
-			owner:        "talonvoice",
+			owner:        "jaresty",
 			repo:         "talon-ai-tools",
 			mockResponse: map[string]interface{}{"message": "Not Found"},
 			mockStatus:   http.StatusNotFound,
@@ -51,7 +51,7 @@ func TestGitHubAPIClient(t *testing.T) {
 		},
 		{
 			name:  "release with no assets",
-			owner: "talonvoice",
+			owner: "jaresty",
 			repo:  "talon-ai-tools",
 			mockResponse: map[string]interface{}{
 				"tag_name": "v1.0.0",

@@ -65,7 +65,7 @@ func TestReleaseDiscovery(t *testing.T) {
 			checker := &UpdateChecker{
 				Client:         client,
 				CurrentVersion: tt.currentVersion,
-				Owner:          "talonvoice",
+				Owner:          "jaresty",
 				Repo:           "talon-ai-tools",
 			}
 

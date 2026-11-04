@@ -8,7 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
+	"github.com/jaresty/talon-ai-tools/internal/barcli/cli"
 )
 
 // runSkills implements the `bar skills` subcommand.

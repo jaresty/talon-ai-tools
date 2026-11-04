@@ -5,9 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli"
-	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
-	"github.com/talonvoice/talon-ai-tools/internal/bartui2"
+	"github.com/jaresty/talon-ai-tools/internal/barcli"
+	"github.com/jaresty/talon-ai-tools/internal/barcli/cli"
+	"github.com/jaresty/talon-ai-tools/internal/bartui2"
 )
 
 // TestTUI2CommandSeedsInitialCommand verifies that --command seeds InitialCommand

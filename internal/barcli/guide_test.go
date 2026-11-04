@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
+	"github.com/jaresty/talon-ai-tools/internal/barcli/cli"
 )
 
 // ADR-0237: Token Guidebook — Go-layer tests.

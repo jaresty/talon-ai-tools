@@ -206,7 +206,7 @@ Pair the sentinel with normal completions to fast-forward through stages. For in
    ```bash
    python3 -m unittest _tests.test_readme_portable_cli
    ```
-   This guardrail ensures the README quickstart stays in sync with the exported grammar commands.
+   This guardrail ensures the README quickstart stays in sync with the exported grammar commands, and that the `go install` path, the installer's `REPO`, and the updater's owner/repo defaults all match the module declared in `go.mod`.
 
 #### Keeping bar up to date
 

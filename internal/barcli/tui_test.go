@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/talonvoice/talon-ai-tools/internal/bartui2"
+	"github.com/jaresty/talon-ai-tools/internal/bartui2"
 )
 
 // TestTUITokenCategoriesUseShortLabels specifies that BuildTokenCategories returns

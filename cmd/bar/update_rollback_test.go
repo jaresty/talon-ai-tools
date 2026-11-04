@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli"
+	"github.com/jaresty/talon-ai-tools/internal/barcli"
 )
 
 func TestUpdateRollbackIntegration(t *testing.T) {

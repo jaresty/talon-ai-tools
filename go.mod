@@ -1,4 +1,4 @@
-module github.com/talonvoice/talon-ai-tools
+module github.com/jaresty/talon-ai-tools
 
 go 1.24.2
 

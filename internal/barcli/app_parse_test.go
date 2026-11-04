@@ -4,7 +4,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
+	"github.com/jaresty/talon-ai-tools/internal/barcli/cli"
 )
 
 func TestParseArgsBuildCommand(t *testing.T) {

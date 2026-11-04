@@ -7,8 +7,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli"
-	"github.com/talonvoice/talon-ai-tools/internal/updater"
+	"github.com/jaresty/talon-ai-tools/internal/barcli"
+	"github.com/jaresty/talon-ai-tools/internal/updater"
 )
 
 func TestUpdateInstallIntegration(t *testing.T) {

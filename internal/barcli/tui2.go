@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/atotto/clipboard"
-	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
-	"github.com/talonvoice/talon-ai-tools/internal/bartui2"
+	"github.com/jaresty/talon-ai-tools/internal/barcli/cli"
+	"github.com/jaresty/talon-ai-tools/internal/bartui2"
 )
 
 var startTUI2 = defaultTUI2Starter

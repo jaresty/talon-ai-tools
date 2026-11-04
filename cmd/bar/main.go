@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli"
+	"github.com/jaresty/talon-ai-tools/internal/barcli"
 )
 
 // barVersion is set at build time via -ldflags "-X main.barVersion=x.y.z"

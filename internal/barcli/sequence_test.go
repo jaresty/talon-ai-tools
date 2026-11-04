@@ -12,7 +12,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/talonvoice/talon-ai-tools/internal/bartui2"
+	"github.com/jaresty/talon-ai-tools/internal/bartui2"
 )
 
 // Behavior 1: Grammar has a non-empty Sequences map after loading.

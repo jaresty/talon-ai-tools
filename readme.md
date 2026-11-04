@@ -87,7 +87,7 @@ The `bar` CLI consumes the exported prompt grammar so you can assemble recipes o
    ```bash
    python3 -m prompts.export --output build/prompt-grammar.json --embed-path internal/barcli/embed/prompt-grammar.json
    ```
-2. Install the CLI with Go (`go install github.com/talonvoice/talon-ai-tools/cmd/bar@latest`) or use the `scripts/install-bar.sh` helper to fetch a release binary.
+2. Install the CLI with Go (`go install github.com/jaresty/talon-ai-tools/cmd/bar@latest`) or use the `scripts/install-bar.sh` helper to fetch a release binary.
    ```bash
    curl -fsSL https://raw.githubusercontent.com/jaresty/talon-ai-tools/main/scripts/install-bar.sh | bash
    ```
@@ -206,7 +206,7 @@ Pair the sentinel with normal completions to fast-forward through stages. For in
    ```bash
    python3 -m unittest _tests.test_readme_portable_cli
    ```
-   This guardrail ensures the README quickstart stays in sync with the exported grammar commands.
+   This guardrail ensures the README quickstart stays in sync with the exported grammar commands, and that the `go install` path, the installer's `REPO`, and the updater's owner/repo defaults all match the module declared in `go.mod`.
 
 #### Keeping bar up to date
 

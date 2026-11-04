@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
+	"github.com/jaresty/talon-ai-tools/internal/barcli/cli"
 )
 
 const bashCompletionTemplate = `# Bash completion for bar generated from the portable grammar CLI.

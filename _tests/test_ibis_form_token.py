@@ -59,12 +59,15 @@ class IbisTypedTreeTests(unittest.TestCase):
     def test_definition_names_the_node_types(self):
         self.assertIn("The node types are Question, Idea, Pro and Con", _definition())
 
-    def test_definition_requires_each_node_to_name_its_type(self):
-        self.assertIn("Each node names its type", _definition())
-
-    def test_definition_requires_each_non_root_node_to_show_its_parent(self):
+    def test_definition_requires_each_node_to_name_its_type_and_carry_an_id(self):
         self.assertIn(
-            "each node other than a root Question shows its parent", _definition()
+            "Each node names its type and carries an identifier", _definition()
+        )
+
+    def test_definition_requires_each_non_root_node_to_name_its_parent_id(self):
+        self.assertIn(
+            "each node other than a root Question names its parent's identifier",
+            _definition(),
         )
 
     def test_definition_names_the_relations(self):
@@ -89,8 +92,8 @@ class IbisOpenItemsTests(unittest.TestCase):
     def test_definition_states_open_items_under_a_label(self):
         definition = _definition()
         self.assertIn(
-            "The map states its open items under the label 'Open', each as the text "
-            "of a node of the map",
+            "The map states its open items under the label 'Open', each as the "
+            "identifier and text of a node of the map",
             definition,
         )
         self.assertIn(
@@ -108,10 +111,26 @@ class IbisOpenItemsTests(unittest.TestCase):
 class IbisCoverageTests(unittest.TestCase):
     """properties [7] and [13]"""
 
-    def test_a_deferred_contribution_keeps_its_node(self):
+    def test_a_node_records_one_distinct_contribution_and_restatements_share_it(self):
+        definition = _definition()
         self.assertIn(
-            "has exactly one node, including one the speaker defers", _definition()
+            "Each node records one distinct question, option, support or objection",
+            definition,
         )
+        self.assertIn(
+            "a restatement of it is recorded on that node and not as a new one",
+            definition,
+        )
+
+    def test_a_deferred_question_is_mapped_like_any_other(self):
+        self.assertIn(
+            "a question the speaker defers is mapped like any other", _definition()
+        )
+
+    def test_definition_makes_no_exhaustiveness_claim(self):
+        definition = _definition()
+        self.assertNotIn("has exactly one node", definition)
+        self.assertNotIn("including one the speaker defers", definition)
 
     def test_exchange_management_moves_have_no_node_and_appear_nowhere(self):
         self.assertIn(
@@ -175,6 +194,12 @@ class IbisOrthogonalityTests(unittest.TestCase):
         entry = axis_token_metadata().get("form", {}).get("ibis", {})
         tokens = [d.get("token") for d in entry.get("distinctions", [])]
         self.assertIn("pin", tokens)
+
+    def test_guidebook_routes_depth_to_completeness(self):
+        entry = axis_token_metadata().get("form", {}).get("ibis", {})
+        notes = {d.get("token"): d.get("note", "") for d in entry.get("distinctions", [])}
+        self.assertIn("max", notes)
+        self.assertIn("gist", notes.get("max", ""))
 
 
 class IbisCatalogEntryTests(unittest.TestCase):

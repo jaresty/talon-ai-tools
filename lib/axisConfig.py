@@ -259,13 +259,14 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "formats": "The response structures ideas by focusing on document types, writing formats, or structural templates and their suitability.",
         "ghost": "The response structures itself as a sequence of autonomous actions with their observed results, rather than as explanation or planning. The response presents a workflow execution "
         "trace: action taken, result observed, next action, result observed.",
-        "ibis": "The response is a deliberation map: a tree of typed nodes. The node types are Question, Idea, Pro and Con. Each node names its type, and each node other than a root Question shows "
-        "its parent. A parent relation is one of: an Idea answers a Question, a Pro supports an Idea, a Con opposes an Idea, and a Question is raised by a node whose content prompted it; a "
-        "reply to a Pro or Con attaches through a Question that node raised, with the reply as an Idea answering it. Each contribution of the subject that poses a question or states an "
-        "option, a support or an objection has exactly one node, including one the speaker defers; a move that only manages the exchange of contributions, such as calling for closure, "
-        "signalling agreement, or deferring a topic, has no node and appears nowhere in the map. The map records the deliberation and does not decide it. The map holds its nodes and its "
-        "open items and nothing else. The map states its open items under the label 'Open', each as the text of a node of the map — every Question with no Idea answering it and every Idea "
-        "with no Pro or Con — or 'Open: none'; an item that is not a node of the map is not listed.",
+        "ibis": "The response is a deliberation map: a tree of typed nodes. The node types are Question, Idea, Pro and Con. Each node names its type and carries an identifier, and each node other "
+        "than a root Question names its parent's identifier. A parent relation is one of: an Idea answers a Question, a Pro supports an Idea, a Con opposes an Idea, and a Question is "
+        "raised by a node whose content prompted it; a reply to a Pro or Con attaches through a Question that node raised, with the reply as an Idea answering it. Each node records one "
+        "distinct question, option, support or objection, and a restatement of it is recorded on that node and not as a new one; a question the speaker defers is mapped like any other; a "
+        "move that only manages the exchange of contributions, such as calling for closure, signalling agreement, or deferring a topic, has no node and appears nowhere in the map. The map "
+        "records the deliberation and does not decide it. The map holds its nodes and its open items and nothing else. The map states its open items under the label 'Open', each as the "
+        "identifier and text of a node of the map — every Question with no Idea answering it and every Idea with no Pro or Con — or 'Open: none'; an item that is not a node of the map is "
+        "not listed.",
         "indirect": "The response begins with brief background, reasoning, and trade-offs and finishes with a clear bottom-line point or recommendation that ties them together.",
         "interactive": "The response acts to advance the shared epistemic state incrementally rather than resolving the interaction unilaterally — interaction exists because one side cannot fully "
         "model the other's state, goals, or constraints from a single message. The response names a current state and at least one available input from that state, and its "
@@ -5121,6 +5122,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "pin (method) = tie each claim about the subject to a quoted observation and label it observed, inferred or hypothesized; ibis (form) = the shape of a "
                     "deliberation as typed nodes and parent relations. Use both to see which nodes the subject states and which are inferred",
                     "token": "pin",
+                },
+                {
+                    "note": "max (completeness) = every distinct question, option, support and objection gets a node, omissions are errors; ibis (form) = the shape of the map. Use "
+                    "max for a map of every distinct argument, or gist for a compact one",
+                    "token": "max",
                 },
             ],
             "heuristics": [

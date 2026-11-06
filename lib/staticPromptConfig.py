@@ -241,12 +241,19 @@ _TASK_METADATA: dict[str, TaskMetadata] = {
             "evaluate against",
             "review for compliance",
             "does X meet criteria Y",
+            "assess the quality",
+            "is this actually good",
+            "what works and what does not",
         ],
         "distinctions": [
             {
                 "token": "probe",
                 "note": "probe = analyze broadly; check = evaluate against a condition",
-            }
+            },
+            {
+                "token": "good",
+                "note": "check = verify against given criteria, pass/fail; when quality needs judgment, add good (criteria for the purpose) and sense (overall impression)",
+            },
         ],
     },
     "plan": {

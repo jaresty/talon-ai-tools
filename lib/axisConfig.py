@@ -1081,7 +1081,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "inside versus outside a defined scope.",
         "fail": "The response focuses on breakdowns, stress, uncertainty, or limits by examining how and under what conditions something stops working—risks, edge cases, fragility, or failure "
         "modes.",
-        "good": "The response focuses on the criteria, metrics, standards, or values by which the subject is judged — assuming a framing for what counts as success.",
+        "good": "The response focuses on the criteria, metrics, standards, or values by which the subject is judged — assuming a framing for what counts as success, drawn from the subject's "
+        "purpose, audience, and context rather than generic standards.",
         "jobs": "The response focuses on the outcomes the subject is trying to achieve and the pressures that would persist even if every current solution were removed — the pressures that make "
         "the outcome non-negotiable rather than merely convenient. Any finding that depends on the features of a specific product or system is about the product, not the outcome, and does "
         "not satisfy this requirement.",
@@ -6415,7 +6416,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "converge = narrow from exploration to recommendation; compare = explicit criteria-based evaluation of specified alternatives",
                     "token": "converge",
-                }
+                },
+                {
+                    "note": "compare = judge alternatives relative to one another; a single subject is judged on its own terms with good, sense, and check",
+                    "token": "check",
+                },
             ],
             "heuristics": [
                 "compare X and Y",
@@ -7528,6 +7533,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "subject and test where it holds",
                     "token": "analog",
                 },
+                {
+                    "note": "norm = classify departures as warranted or not, treating conventionality as no virtue in itself; good = the criteria by which the whole subject is "
+                    "judged, which a warranted departure can improve",
+                    "token": "good",
+                },
             ],
             "heuristics": [
                 "are we reinventing something",
@@ -7540,6 +7550,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what's the established approach here",
                 "is this departure justified",
                 "does a standard solution already cover this",
+                "is this breaking convention on purpose",
+                "identify productive rule-breaking",
             ],
         },
         "objectivity": {
@@ -8278,6 +8290,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "release = loosen attachment to an outcome; sense = surface the weighted impression before it is analytically unpacked",
                     "token": "release",
                 },
+                {
+                    "note": "sense = the impression held before criteria are applied; check = the verdict against stated criteria (sense then check when quality is not pass/fail)",
+                    "token": "check",
+                },
+                {
+                    "note": "sense = the overall effect of the subject as a whole; norm = classify each departure from established practice as warranted or not",
+                    "token": "norm",
+                },
             ],
             "heuristics": [
                 "what does this feel like",
@@ -8288,6 +8308,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "hold the uncertainty",
                 "pre-reductive judgment",
                 "compressed impression",
+                "explain why this feels wrong",
+                "gut check on quality",
+                "first impression of this design",
+                "what works and what does not",
             ],
         },
         "sever": {
@@ -8938,6 +8962,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "good = the criteria by which the subject is judged; view = how the subject appears from a specific vantage point",
                     "token": "view",
                 },
+                {
+                    "note": "good = state the criteria for the subject's purpose and context; check = apply given criteria to the subject (pair them when the criteria themselves "
+                    "are open)",
+                    "token": "check",
+                },
+                {
+                    "note": "good = the criteria a judgment rests on; sense = the holistic impression held before criteria are applied",
+                    "token": "sense",
+                },
             ],
             "heuristics": [
                 "quality criteria",
@@ -8948,6 +8981,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what good looks like",
                 "standards for",
                 "what does success look like",
+                "is this actually good",
+                "judge this in context",
+                "assess the quality",
+                "assess the craft",
             ],
         },
         "jobs": {

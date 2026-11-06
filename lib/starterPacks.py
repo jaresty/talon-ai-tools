@@ -41,7 +41,13 @@ STARTER_PACKS: list[StarterPack] = [
         name="review",
         framing="Code or document review",
         command="bar build check adversarial fail verify",
-        heuristics=("review this", "code review", "review my PR", "check this code", "critique this", "find problems with", "review the document", "peer review"),
+        heuristics=("review this", "code review", "review my PR", "check this code", "find problems with", "review the document", "peer review"),
+    ),
+    StarterPack(
+        name="critique",
+        framing="Balanced judgment of an artifact's quality in its context",
+        command="bar build show good sense norm prioritize case",
+        heuristics=("critique this", "design critique", "give an expert judgment", "what works and what does not", "assess the craft", "evaluate this as a whole", "give me honest feedback", "strengths and weaknesses", "what are the strengths and weaknesses", "how good is this", "judge this in context", "is this actually good"),
     ),
     StarterPack(
         name="dissect",

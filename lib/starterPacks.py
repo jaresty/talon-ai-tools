@@ -56,6 +56,12 @@ STARTER_PACKS: list[StarterPack] = [
         heuristics=("why is this confusing", "where will users get confused", "why did I misread this", "what will a newcomer misunderstand", "first impression of this interface", "explain my confusion", "usability review", "where does this contradict what people expect"),
     ),
     StarterPack(
+        name="pare",
+        framing="Audit what can be removed without losing what the thing is for",
+        command="bar build check jobs inversion full",
+        heuristics=("what can I remove", "what can be cut", "is this overbuilt", "simplify this", "what is unnecessary", "strip this down", "what earns its place", "reduce this to essentials", "minimalist design", "is any of this dead weight"),
+    ),
+    StarterPack(
         name="dissect",
         framing="Deep structural understanding of a system",
         command="bar build probe analysis mapping depends",

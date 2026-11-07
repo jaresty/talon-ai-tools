@@ -872,6 +872,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "presume",
         "prioritize",
         "probability",
+        "prune",
         "pulse",
         "reify",
         "rebase",

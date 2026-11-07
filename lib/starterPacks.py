@@ -57,8 +57,8 @@ STARTER_PACKS: list[StarterPack] = [
     ),
     StarterPack(
         name="pare",
-        framing="Audit what can be removed, tracing each removal to the failure it would cause",
-        command="bar build check jobs inversion full",
+        framing="Audit what can be removed, keeping only what uniquely serves the purpose or guards against a named failure",
+        command="bar build check prune inversion full",
         heuristics=("what can I remove", "what can be cut", "is this overbuilt", "simplify this", "what is unnecessary", "strip this down", "what earns its place", "reduce this to essentials", "minimalist design", "is any of this dead weight"),
     ),
     StarterPack(

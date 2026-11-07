@@ -927,6 +927,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "approaches, methods, or investigation paths does not satisfy this requirement. The enumeration is a precondition: no frame may be applied until all N frames are named. A "
         "response that applies frames without first enumerating them, or that produces a count of headed output blocks not equal to N, does not satisfy this requirement.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
+        "prune": "The response states the purpose the subject exists to serve, then treats every element of the subject as removable until it names a function that element performs toward that "
+        "purpose and that no other retained element performs. An element that performs no such function, or whose function a retained element already performs, is listed as removed "
+        "together with the function it was tested against. The response ends with the retained set, stated as the smallest set of elements that still serves the stated purpose.",
         "pulse": "The response models the transfer being analyzed using communication theory: it distinguishes what is being conveyed from the medium that carries it, names the properties of "
         "that medium that bear on the subject — such as fidelity, reach, timing, persistence, or the demand it places on the recipient's attention — and identifies how those properties "
         "change what arrives, whether by distortion, loss, delay, restriction of who receives it, or displacement of other content. It specifies what mechanism — if any — detects and "
@@ -1349,6 +1352,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "prioritize": "Rank items by importance or impact",
         "prism": "Multi-frame enumeration",
         "probability": "Probabilistic and statistical reasoning",
+        "prune": "Presume removable; retain only what uniquely serves the purpose",
         "pulse": "Content vs medium; how the medium changes what arrives",
         "rebase": "Re-express in alternative basis",
         "redact": "Rewrite for general consumption",
@@ -1628,6 +1632,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "prioritize": "優",
         "prism": "稜",
         "probability": "確",
+        "prune": "削",
         "pulse": "伝",
         "rebase": "換",
         "redact": "消",
@@ -1858,6 +1863,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "prioritize": "Comparative",
         "prism": "Generative",
         "probability": "Reasoning",
+        "prune": "Comparative",
         "pulse": "Temporal/Dynamic",
         "rebase": "Generative",
         "reify": "Generative",
@@ -2125,6 +2131,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "prioritize": "Rank by importance",
         "prism": "Enumerate frames then apply each",
         "probability": "Statistical reasoning",
+        "prune": "Presume removable; keep what uniquely serves",
         "pulse": "Content/medium separation and the medium's effect on delivery",
         "rebase": "Alternative basis re-expression",
         "redact": "Criteria-governed content removal for general audience",
@@ -4246,7 +4253,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "minimal = smallest valid answer to the request; narrow = restrict to a small topic slice",
                     "token": "narrow",
-                }
+                },
+                {
+                    "note": "minimal = the smallest answer that satisfies the request; prune = the smallest subject that still serves its stated purpose",
+                    "token": "prune",
+                },
             ],
             "heuristics": [
                 "minimal change",
@@ -6418,7 +6429,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "cluster = group items by shared characteristics without altering the items themselves; collapse = identify redundant or equivalent representations "
                     "and unify them into a minimal form",
                     "token": "cluster",
-                }
+                },
+                {
+                    "note": "collapse = unify equivalent representations so that nothing asserted before is lost; prune = remove elements that perform no function toward a "
+                    "stated purpose or duplicate one a retained element performs",
+                    "token": "prune",
+                },
             ],
             "heuristics": [
                 "minimize redundant forms",
@@ -6507,7 +6523,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "compare = evaluate alternatives side by side; converge = narrow exploration toward a single recommendation",
                     "token": "compare",
-                }
+                },
+                {
+                    "note": "converge = narrow a set of options toward a recommendation, naming each option not carried forward; prune = test each existing element of a "
+                    "subject against a stated purpose, presuming it removable",
+                    "token": "prune",
+                },
             ],
             "heuristics": [
                 "narrow it down",
@@ -8029,6 +8050,42 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "estimate the probability of this edge case occurring",
             ],
         },
+        "prune": {
+            "distinctions": [
+                {
+                    "note": "prune = presume each element of the subject removable and keep the smallest set that still serves its stated purpose; minimal = the smallest answer "
+                    "that satisfies the request",
+                    "token": "minimal",
+                },
+                {
+                    "note": "prune = remove elements that perform no function toward a stated purpose or duplicate one a retained element performs; collapse = unify equivalent "
+                    "representations so that nothing asserted before is lost",
+                    "token": "collapse",
+                },
+                {
+                    "note": "prune = presume each existing element removable and require it to name a function no other retained element performs; winnow = choose among candidate "
+                    "work by value over cost, with taking no action always a candidate",
+                    "token": "winnow",
+                },
+                {
+                    "note": "prune = test each existing element of a subject against a stated purpose, presuming it removable; converge = narrow a set of options toward a "
+                    "recommendation, naming each option not carried forward",
+                    "token": "converge",
+                },
+            ],
+            "heuristics": [
+                "what can I cut",
+                "what can be removed",
+                "strip this down to essentials",
+                "smallest version that still works",
+                "is anything here unnecessary",
+                "is this overbuilt",
+                "what earns its place",
+                "what is dead weight",
+                "minimalist version",
+                "remove everything that does not serve the goal",
+            ],
+        },
         "pulse": {
             "distinctions": [
                 {
@@ -8845,6 +8902,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "winnow = resizes candidates and keeps the best decision-value per cost; pilot = orders by uncertainty resolved per unit of time",
                     "token": "pilot",
+                },
+                {
+                    "note": "winnow = choose among candidate work by value over cost, with taking no action always a candidate; prune = presume each existing element removable "
+                    "and require it to name a function no other retained element performs",
+                    "token": "prune",
                 },
             ],
             "heuristics": [

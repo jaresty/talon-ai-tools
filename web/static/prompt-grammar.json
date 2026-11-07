@@ -139664,7 +139664,7 @@
     },
     {
       "name": "pare",
-      "framing": "Audit what can be removed without losing what the thing is for",
+      "framing": "Audit what can be removed, tracing each removal to the failure it would cause",
       "command": "bar build check jobs inversion full",
       "heuristics": [
         "what can I remove",
@@ -142470,7 +142470,7 @@
     "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",
     "slugs": "22d39616506a23d78a64923ee8c46ab14ac7abbc49f8a5f6d41488ee9f09fb9a",
     "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
-    "starter_packs": "94010fa891414629e9b198f00e84b41a928643c9fa1449ea9ef4d7c58ec0d92e",
+    "starter_packs": "8e93d19207a1d5fadc5f6710ef98f232dcb79dbe95278ad4384b7d3d57e63762",
     "sequences": "b65870391a29bbb1e5627470fee316e6ae4d20a3db56f0cd3085354e97afdde7",
     "compositions": "603dd45f54ca1bcea191dcc3e5f60b5dd5193dfaab082a1273a4a656811ca8c6",
     "guidebook": "026f41564203cdfb11aeec1510d8862b9677877c6a865806543ff28af76fce51",

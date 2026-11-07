@@ -1043,6 +1043,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "the response's conclusion, before evaluating and pruning alternatives.",
         "square": "The response enhances the task by mapping the full semantic field of a binary opposition: surfacing the original pair, their negations, and the four relational positions "
         "(contrariety, contradiction, complementarity) that arise between them. Concepts suppressed or invisible in the original framing appear as explicit positions in the field.",
+        "stumble": "The response enhances the task by modeling the existing understanding of a stated or named reader — what that reader already knows, assumes, or expects of the subject — then "
+        "naming the categories of misreading it will examine, each nameable as a type (e.g. a term taken in its everyday sense, an assumption carried over from a familiar case, a "
+        "convention expected but absent), and for each named category, naming at least one specific misreading found in the subject, the assumption that produces it, the point where "
+        "the subject contradicts that assumption, and the distinction or change that resolves it. Each misreading is labelled grounded when its assumption is stated or evidenced in "
+        "the material, speculative when it rests on a plausible assumption the material does not evidence, and unknown when the reader's background does not allow a judgment. When no "
+        "reader is stated, the response first names the reader it assumes. A confusion the requester reports having had is recorded as observed, and the assumption that produced it is "
+        "traced the same way.",
         "survive": "The response enhances the task by treating claims, designs, or implementations as provisional until exposed to live conditions whose uncontrolled variation can preserve, "
         "distort, or overturn prior validation, distinguishing staged confirmation from environmental survival and requiring that observed behavior under deployment conditions "
         "determine what remains credible.",
@@ -1363,6 +1370,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "split": "Decompose into parts or components",
         "spur": "Parallel reasoning paths",
         "square": "Map semantic opposition field",
+        "stumble": "Predict and explain where a reader stumbles",
         "survive": "Environmental survival of claims",
         "sweep": "Enumerate option space without evaluating",
         "systemic": "Interacting whole and feedback loops",
@@ -1641,6 +1649,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "split": "分",
         "spur": "枝",
         "square": "矩",
+        "stumble": "誤",
         "survive": "存",
         "sweep": "探",
         "systemic": "系",
@@ -1869,6 +1878,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "split": "Exploration",
         "spur": "Exploration",
         "square": "Structural",
+        "stumble": "Diagnostic",
         "survive": "Diagnostic",
         "sweep": "Exploration",
         "systemic": "Temporal/Dynamic",
@@ -2137,6 +2147,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "split": "Decompose in isolation",
         "spur": "Multiple paths",
         "square": "Semantic opposition map",
+        "stumble": "Reader stumbles",
         "survive": "Environmental arbitration",
         "sweep": "Enumerate option space",
         "systemic": "System as whole",
@@ -5947,7 +5958,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "scope=fail = focus on failure modes and fragility; adversarial = actively stress-test by constructing attacks and counterexamples",
                     "token": "fail",
-                }
+                },
+                {
+                    "note": "adversarial = failures of the subject itself, found by category; stumble = failures of understanding in a named reader, each traced to the "
+                    "assumption that produces it",
+                    "token": "stumble",
+                },
             ],
             "heuristics": [
                 "what could go wrong",
@@ -6582,7 +6598,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "abduce = generate and compare competing hypotheses; diagnose = narrow to single most likely cause via falsification",
                     "token": "abduce",
-                }
+                },
+                {
+                    "note": "diagnose = narrow to the cause of one observed symptom; stumble = enumerate the ways a reader could go wrong across the subject, with a confidence "
+                    "tier for each",
+                    "token": "stumble",
+                },
             ],
             "heuristics": [
                 "what is causing this",
@@ -6903,7 +6924,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "assume (scope) = restrict analysis to the premises domain; gap (method) = identify where implicit is treated as explicit",
                     "token": "assume",
-                }
+                },
+                {
+                    "note": "gap = assumptions the subject treats as explicit but leaves implicit, whoever reads it; stumble = a named reader's existing understanding set against "
+                    "the subject",
+                    "token": "stumble",
+                },
             ],
             "heuristics": [
                 "what's assumed but not stated",
@@ -7542,6 +7568,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "norm = classify departures as warranted or not, treating conventionality as no virtue in itself; good = the criteria by which the whole subject is "
                     "judged, which a warranted departure can improve",
                     "token": "good",
+                },
+                {
+                    "note": "norm = the subject set against established practice, whether or not any reader expected it; stumble = a reader's expectation set against the subject, "
+                    "including expectations no established practice supports",
+                    "token": "stumble",
                 },
             ],
             "heuristics": [
@@ -8544,6 +8575,49 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what four positions does this opposition generate",
             ],
         },
+        "stumble": {
+            "distinctions": [
+                {
+                    "note": "stumble = model a reader's existing understanding and name where the subject contradicts it; gap = find assumptions the subject treats as explicit "
+                    "but leaves implicit, whoever reads it",
+                    "token": "gap",
+                },
+                {
+                    "note": "stumble = failures of understanding in a named reader, each traced to the assumption that produces it; adversarial = failures of the subject "
+                    "itself, found by category",
+                    "token": "adversarial",
+                },
+                {
+                    "note": "stumble = a reader's expectation set against the subject, including expectations no established practice supports; norm = the subject set against "
+                    "established practice, whether or not any reader expected it",
+                    "token": "norm",
+                },
+                {
+                    "note": "stumble = enumerate the ways a reader could go wrong across the subject, with a confidence tier for each; diagnose = narrow to the cause of one "
+                    "observed symptom (use a reported confusion as that symptom when the cause is wanted)",
+                    "token": "diagnose",
+                },
+                {
+                    "note": "stumble = what a named reader would take the subject to mean; unknowns = what has not been considered or named, regardless of who is reading",
+                    "token": "unknowns",
+                },
+            ],
+            "heuristics": [
+                "where will the reader get confused",
+                "why was this confusing",
+                "why did I misread this",
+                "what will someone misunderstand",
+                "what would a newcomer assume",
+                "predict confusion",
+                "where does this contradict what they expect",
+                "what will a first-time user get wrong",
+                "hidden assumptions a reader brings",
+                "misleading names or labels",
+                "anticipate misunderstanding",
+                "explain my confusion at first glance",
+                "what does the user expect here",
+            ],
+        },
         "survive": {
             "distinctions": [
                 {
@@ -8668,7 +8742,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "assume (scope) = restrict analysis to the premises domain; unknowns (method) = surface what has not yet been considered or named",
                     "token": "assume",
-                }
+                },
+                {
+                    "note": "unknowns = what has not been considered or named, regardless of who is reading; stumble = what a named reader would take the subject to mean",
+                    "token": "stumble",
+                },
             ],
             "heuristics": [
                 "what are we missing",

@@ -50,6 +50,12 @@ STARTER_PACKS: list[StarterPack] = [
         heuristics=("critique this", "design critique", "give an expert judgment", "what works and what does not", "assess the craft", "evaluate this as a whole", "give me honest feedback", "strengths and weaknesses", "what are the strengths and weaknesses", "how good is this", "judge this in context", "is this actually good"),
     ),
     StarterPack(
+        name="muddle",
+        framing="Find where a reader or user would get confused, and why",
+        command="bar build probe stumble sense norm afford pin",
+        heuristics=("why is this confusing", "where will users get confused", "why did I misread this", "what will a newcomer misunderstand", "first impression of this interface", "explain my confusion", "usability review", "where does this contradict what people expect"),
+    ),
+    StarterPack(
         name="dissect",
         framing="Deep structural understanding of a system",
         command="bar build probe analysis mapping depends",

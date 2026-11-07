@@ -897,6 +897,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "split",
         "square",
         "spur",
+        "stumble",
         "survive",
         "sweep",
         "systemic",

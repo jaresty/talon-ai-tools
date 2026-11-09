@@ -148,6 +148,33 @@ own piece of work. Open question to settle first: some closing clauses were adde
 close escape routes found by hollow audits, so each needs an allow-list restatement that keeps the
 observable requirement.
 
+
+### Progress: topology six done (2026-11-08)
+
+Ran the token-rewrite sequence on `audit`, `blind`, `live`, `relay`, `solo` and `witness`. In all six the
+closing "does not satisfy this requirement" sentence was the contrapositive of the universal sentence
+before it, so removing it loses no observable requirement and closes two clashes (`blind`: the closer's
+trigger "when prior context is in play" differed from the opening's "section that uses ... context";
+`audit`: claim/conclusion). `solo`'s "includes an intermediate step only when ..." was restated
+affirmatively as "The response names, in the opening sentence of each intermediate step it includes, ...".
+`_tests/test_topology_definitions.py` pins both and checks each definition keeps its observable anchors.
+Behavioral check: three isolated haiku agents applied `audit`, `solo` and `relay` to three diverse
+subjects (nn integration receipt `20261109012420-8107`, partially adopted). It shows the new text is
+followable; it has no baseline against the old text, so it does not show the closers were needed or not.
+
+Findings deferred, not fixed here:
+- `live` contains a clash: "precedes or accompanies each paragraph" versus "appears within the same
+  paragraph". It was finalized by an August hollow audit, so it needs a decision.
+- `solo` ends with "Output depth is governed by the completeness token independently", which names
+  another token and breaks the orthogonality protocol (`20260715194839-8169`).
+- `relay` can be satisfied nominally: the agent's response listed generic labels and its verdict claimed
+  a "dependency relationships" definition that its own text did not contain. The weakness is in the
+  definition's wording and predates the closer's removal.
+- Remaining "does not satisfy" (12 definitions): scope `jobs`; method `eliminate`, `falsify`, `gate`,
+  `ground`, `mark`, `own`, `prism`, `redact`, `shoshin`; form `quiz`; channel `zettel`. Many of these
+  carry the same redundant-closer shape and may go through the same sequence; `falsify` and `ground` wait
+  on the design work in their nn notes.
+
 ## Consequences
 
 - Fixes 1-3 are data-only and low risk. Fix 4 touches the largest definitions and needs the

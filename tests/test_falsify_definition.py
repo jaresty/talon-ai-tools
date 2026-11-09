@@ -57,12 +57,13 @@ def test_falsify_p2_gate_1_minimization_present():
 
 
 def test_falsify_p2_overreach_requires_executed_attempt():
-    """P2: 'Overreach: not found' requires an executed reduction attempt — a bare claim does not satisfy."""
+    """P2: 'Overreach: not found' is valid after an attempted reduction, and Gate 1 ends with an Overreach verdict line."""
     defn = _defn()
     assert "Overreach: found" in defn
     assert "Overreach: not found" in defn
     assert "Always attempt the simpler artifact" in defn
-    assert "A bare 'Overreach: not found' with no" in defn
+    assert "is valid only after an attempted reduction" in defn
+    assert "Gate 1 ends with an 'Overreach: found" in defn
 
 
 # --- P3: witness-every-assertion gate ---
@@ -287,9 +288,9 @@ def test_falsify_p24_unwitnessed_third_state():
 
 
 def test_falsify_p24_unwitnessed_blocks_coverage():
-    """P24: an Unwitnessed assertion leaves coverage incomplete."""
+    """P24: an assertion carrying an Unwitnessed line is open and takes Coverage: incomplete."""
     defn = _defn()
-    assert "'Unwitnessed: … — observation unavailable' assertion leaves coverage incomplete" in defn
+    assert "line is open and takes 'Coverage: incomplete — observation unavailable'" in defn
 
 
 # --- P25: uniform execution-unavailable state at every gate (untested != not-found/false/unobservable) ---
@@ -332,9 +333,9 @@ def test_falsify_p9_verdict_cites_tool_result():
 
 
 def test_falsify_p9_verdict_not_from_description_alone():
-    """P9: a verdict emitted from description/analysis alone, not a preceding tool-result, does not satisfy the token."""
+    """P9: a verdict is valid only when it cites a qualifying result record."""
     defn = _defn()
-    assert "from description or analysis alone" in defn
+    assert "a verdict is valid only when it cites a qualifying result record" in defn
 
 
 def test_falsify_p9_fresh_execution_conditioned_on_record_absence_and_capability():
@@ -375,7 +376,7 @@ def test_falsify_p11_binding_by_verbatim_identity():
     """P11 (the 1-of-6 fix): every enumerated Assertion must receive its own verbatim-matching Failure/Unobservable before Coverage."""
     defn = _defn()
     assert "binding is by verbatim identity" in defn
-    assert "an enumerated assertion with no matching outcome line leaves coverage incomplete" in defn
+    assert "coverage is complete exactly when every enumerated Assertion line has a matching outcome line" in defn
 
 
 def test_falsify_p18_explicit_witness_loop_transition():

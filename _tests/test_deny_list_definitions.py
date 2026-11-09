@@ -65,6 +65,8 @@ CLEARED = {
         "if the request is ambiguous and no Interpretation: line is present, emit one now.",
         "must appear again inside the candidate relaxation.",
         "The 'Retained properties:' line lists every retained property and quotes each canonical formal definition; '§ ground complete' follows it immediately.",
+        "Each property has its '§ minimality:' line, in one of these two forms, before Step 2 begins; if that line has not appeared, emit it before introducing any provisional sub-property.",
+        "may the response emit '§ properties complete? yes', which appears after a '§ completeness check:' line for the retained set;",
     ),
     ("method", "mark"): (
         "## Step N",
@@ -79,8 +81,8 @@ CLEARED = {
 # Empty now: prism's was the one case, and it was removed once a wording that names a
 # transcript-observable (sentence openings) reproduced it (ADR-0241).
 ALLOWED_DENY_SENTENCES = {
-    # ground: five closing sentences remain, each to be converted and measured on its own (ADR-0241).
-    ("method", "ground"): 5,
+    # ground: three closing sentences remain, each to be converted and measured on its own (ADR-0241).
+    ("method", "ground"): 3,
 }
 
 

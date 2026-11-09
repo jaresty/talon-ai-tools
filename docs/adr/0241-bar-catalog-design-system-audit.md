@@ -496,3 +496,16 @@ Reading: the existing `ground` and `ground+falsify` rules, which already require
 The source of truth for `ground` is `lib/groundPrompt.py`, not `lib/axisConfig.py`; `make bar-grammar-update` regenerates `axisConfig.py` from it, so an edit made there is silently overwritten. The edit was made at the source with a line-preserving editor (9-line diff).
 
 Craft-pack eval (ADR-0239; haiku; sentinel extractor as judge; each transcript checked for the new wording): 5 of 5 PASS (scenario A three times, B once, C once). Local checks: 414 tests in `tests/` plus the deny-list test, the catalog validator, and the grammar sync check. Limits: five runs, no same-day baseline arm run (the new arm met the maximum a baseline could, and the earlier regression showed in the new arm on scenario A).
+
+### ground — closing deny sentences, batch 2a (`[64]`, `[99]`; six of nine now converted)
+
+| Index | Before | After |
+|---|---|---|
+| 64 | "A property that reaches Step 2 without an emitted '§ minimality:' line … does not satisfy this protocol; if the line has not appeared, emit it before introducing any provisional sub-property." | "Each property has its '§ minimality:' line, in one of these two forms, before Step 2 begins; if that line has not appeared, emit it before introducing any provisional sub-property." |
+| 99 | "… may the response emit '§ properties complete? yes' — a '§ properties complete? yes' line without a preceding completeness check does not satisfy this protocol; …" | "… may the response emit '§ properties complete? yes', which appears after a '§ completeness check:' line for the retained set; …" |
+
+`tests/test_ground_predecessor_sentinel_gates.py` pinned the old `[99]` closer verbatim; it now pins the affirmative wording (written first, confirmed failing, then the edit). Edits made at `lib/groundPrompt.py`.
+
+Hollow probe on the drafts (haiku; its hand-back ended in an API error but the analysis text was intact): treated as a hypothesis. For `[64]` it found the draft preserves the requirement but misdescribed "Step 2" as a string in the transcript (it is a step name inside the definition; the observable is the following clause, the `§ minimality:` line preceding any provisional sub-property). For `[99]` it contradicted itself (said the draft tightens, then said it loses); the same-set rule is already carried by the next clause ("certifies completeness only for the retained set existing immediately before that check; any subsequently committed removal or merge voids that result"), so nothing is lost and the draft was kept.
+
+Craft-pack eval (ADR-0239; haiku; sentinel extractor; each transcript checked for the new wording): 6 of 6 valid runs PASS (scenario A three times, B once, C twice). One scenario-C run never loaded the `ground` definition (loaded=0) and was excluded and rerun. Local: 414 tests in `tests/`, the deny-list test, the validator, the grammar sync check. Remaining closers: `[62]` (bare `minimal` verdict), `[96]` (completeness-check line), `[122]` (task work before `§ ground complete`).

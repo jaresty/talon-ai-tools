@@ -81,10 +81,10 @@ def test_properties_complete_no_sentinel():
 
 
 def test_properties_complete_yes_sentinel():
-    """§ properties complete? yes gates completion — requires preceding completeness check."""
+    """§ properties complete? yes gates completion — it appears after a completeness check for the retained set."""
     core = _core()
     assert "§ properties complete? yes" in core
-    assert "a '§ properties complete? yes' line without a preceding completeness check does not satisfy this protocol" in core
+    assert "which appears after a '§ completeness check:' line for the retained set" in core
 
 
 def test_observational_independence_check():

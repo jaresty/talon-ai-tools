@@ -477,3 +477,22 @@ Both Sonnet completeness checks quoted the request verbatim with "on the product
 Two further Sonnet runs (gS-3, gS-4) were stopped by a safety classifier after 8 and 9 tool calls spent loading definitions; each left an unchanged `slug.py` and no other files, and is excluded. The cause of the stops is not known and was not worked around. Attrition is not random with respect to behavior: the excluded runs might have behaved differently, so two valid runs is a thin basis.
 
 Reading: the existing `ground` and `ground+falsify` rules, which already require a verbatim completeness check and a per-property adequacy verdict, produced the intended handling in a stronger model and were not followed by Haiku. That supports treating the production-timing gap as a model-compliance gap against rules the definitions already state, not as a missing clause. No definition change was made for it. Limits: one scenario, 3 Haiku and 2 Sonnet valid runs.
+
+### ground — closing deny sentences, batch 1 of 2 (four of nine converted)
+
+`ground` has nine closing "does not satisfy this protocol" sentences. Classified by whether an adjacent affirmative clause already states the requirement:
+
+| Index | Closer | Class | Action |
+|---|---|---|---|
+| 2 | a `property [N]:` line without a preceding `Interpretation:` line | redundant: the same sentence says to verify the `Interpretation:` line appears above it | tail dropped |
+| 61 | a candidate relaxation that lacks the sub-term string | redundant: the preceding clause says the string "must appear again inside the candidate relaxation" | tail dropped |
+| 115, 116 | `Retained properties:` / `§ ground complete` adjacency, stated twice | redundant | folded into one sentence: "The 'Retained properties:' line lists every retained property and quotes each canonical formal definition; '§ ground complete' follows it immediately." |
+| 62 | a bare `minimal` verdict | carries behavior | batch 2, measured |
+| 64 | a property reaching Step 2 without a `§ minimality:` line | likely carries behavior | batch 2 |
+| 96 | a `§ completeness check:` line that omits constraints or properties | carries behavior (this is where the production qualifier was lost) | batch 2 |
+| 99 | `§ properties complete? yes` without a preceding completeness check | carries behavior; pinned by `tests/test_ground_predecessor_sentinel_gates.py:87` | batch 2 |
+| 122 | task work before `§ ground complete` | carries behavior (ordering) | batch 2 |
+
+The source of truth for `ground` is `lib/groundPrompt.py`, not `lib/axisConfig.py`; `make bar-grammar-update` regenerates `axisConfig.py` from it, so an edit made there is silently overwritten. The edit was made at the source with a line-preserving editor (9-line diff).
+
+Craft-pack eval (ADR-0239; haiku; sentinel extractor as judge; each transcript checked for the new wording): 5 of 5 PASS (scenario A three times, B once, C once). Local checks: 414 tests in `tests/` plus the deny-list test, the catalog validator, and the grammar sync check. Limits: five runs, no same-day baseline arm run (the new arm met the maximum a baseline could, and the earlier regression showed in the new arm on scenario A).

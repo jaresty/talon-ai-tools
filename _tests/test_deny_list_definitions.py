@@ -61,6 +61,11 @@ CLEARED = {
         "Gate 1 ends with an 'Overreach: found — <modification or path>', 'Overreach: not found', or 'Overreach: untested — observation unavailable' line, which appears in the transcript before 'Coverage:'.",
         "an assertion carrying an 'Unwitnessed: assertion \"<verbatim assertion>\" — observation unavailable' line is open and takes 'Coverage: incomplete — observation unavailable'",
     ),
+    ("method", "ground"): (
+        "if the request is ambiguous and no Interpretation: line is present, emit one now.",
+        "must appear again inside the candidate relaxation.",
+        "The 'Retained properties:' line lists every retained property and quotes each canonical formal definition; '§ ground complete' follows it immediately.",
+    ),
     ("method", "mark"): (
         "## Step N",
         "Governing:",
@@ -73,7 +78,10 @@ CLEARED = {
 # "does not satisfy" sentence may be kept on purpose: (axis, token) -> allowed occurrences.
 # Empty now: prism's was the one case, and it was removed once a wording that names a
 # transcript-observable (sentence openings) reproduced it (ADR-0241).
-ALLOWED_DENY_SENTENCES = {}
+ALLOWED_DENY_SENTENCES = {
+    # ground: five closing sentences remain, each to be converted and measured on its own (ADR-0241).
+    ("method", "ground"): 5,
+}
 
 
 def _definition(axis, token):

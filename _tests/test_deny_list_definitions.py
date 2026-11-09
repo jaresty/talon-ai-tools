@@ -53,6 +53,13 @@ CLEARED = {
         "Every item entering an isolated context",
         "A response in which a point meets the trigger emits an invocation whose disposition lines establish that its frame set was chosen rather than inherited.",
     ),
+    ("method", "falsify"): (
+        "'Overreach: not found' is a claim that no such reduction exists, so it is valid only after an attempted reduction",
+        "completeness is read from the matching of each enumerated Assertion line to its outcome line",
+        "coverage is complete exactly when every enumerated Assertion line has a matching outcome line",
+        "a verdict is valid only when it cites a qualifying result record",
+        "an assertion carrying an 'Unwitnessed: assertion \"<verbatim assertion>\" — observation unavailable' line is open and takes 'Coverage: incomplete — observation unavailable'",
+    ),
     ("method", "mark"): (
         "## Step N",
         "Governing:",

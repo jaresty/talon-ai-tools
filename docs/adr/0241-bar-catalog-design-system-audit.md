@@ -371,3 +371,11 @@ The `Construal:` clause now requires a sentence whose grammatical subject is the
 Open escape hatches, not closed by this wording:
 - one database run copied the whole question as the "subject" ("How should a small team decide … is a problem of …");
 - some database lines were not "is a" statements ("is constrained by …", "must align with …").
+
+### falsify — four closing deny sentences converted
+
+Four "does not satisfy this token" sentences in `falsify` were rewritten: the bare `Overreach: not found` closer was dropped (the preceding sentence already states the allow-list condition: valid only after an attempted reduction); the self-declared-count clause became "completeness is read from the matching of each enumerated Assertion line to its outcome line"; the two coverage closers became "coverage is complete exactly when every enumerated Assertion line has a matching outcome line" and "an assertion carrying an 'Unwitnessed: …' line is open and takes 'Coverage: incomplete — observation unavailable'"; the provenance closer became "a verdict is valid only when it cites a qualifying result record". The ~66 other negation-bearing sentences are inline contrasts and were left alone.
+
+Probe (haiku, 2 runs per arm, scenario: slugify with one assertion about production timing the agent cannot access; arms confirmed from transcripts — original arm saw the old closers, new arm the new wording): 4 of 4 runs ended `Coverage: complete`, 0 of 4 emitted `Unwitnessed` for the production-timing assertion. Two runs substituted a local timing for it; two labelled it `Unobservable — structural`. The rewrite is neutral on this scenario.
+
+Open, found by the probe and present in both arms: an assertion about an inaccessible system is witnessed by a local stand-in or labelled structural, and coverage is claimed complete. The rules that should catch it (the Unwitnessed state; the capability-relative observation clause) were not touched by this change and did not carry the behavior in either arm. The probe does not exercise the rewritten closers, so it shows no regression, not that each rewritten clause carries its old behavior.

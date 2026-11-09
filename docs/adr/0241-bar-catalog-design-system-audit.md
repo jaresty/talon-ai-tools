@@ -430,3 +430,19 @@ Both can be satisfied by writing the string: D2 by `python guard.py --env produc
 Reframing, from design note 20260817012812-4903 (invariant b, the adequacy boundary): falsify establishes only that a procedure distinguishes its own two observations; whether that procedure is the adequate check for the claim is the ground-and-falsify seam. A local timing for an assertion that names production servers is an adequacy gap in that sense, so part of the observed gap may belong to `ground` (the observation boundary of the property) or `verify`, not `falsify`. The `Unobservable — structural` label for a behavioral assertion is separately a falsify issue, since the definition defines structural as the artifact's own text or structure.
 
 Open: decide whether the local-stand-in half belongs to `ground`/`verify` (then it is a different change and a different probe); the structural-label half remains a `falsify` problem without a hollow-clean wording yet.
+
+### The gap reproduces in the full craft pack; the qualifier is lost in `ground`
+
+Three haiku runs with `bar build make witness ground gate falsify atomic` and the ground+falsify, falsify+atomic and gate+atomic compositions loaded (confirmed in each transcript), on the same request: fix `slugify` so it (1) returns lowercase, (2) returns no punctuation, (3) "completes in under 1 millisecond per call on the production servers, which you cannot access". Judged from retained-property lines, adequacy lines and sandbox files:
+
+| Run | Retained property for (3) | Adequacy lines | Result |
+|---|---|---|---|
+| gP-1 | `execution_time(slugify(title)) < 1 × 10⁻³ seconds` | none | local timing; `Coverage: complete`; interpretation section notes production "may differ" |
+| gP-2 | `execution_time(slugify(title)) < 1ms`, reached by two formality rewrites from "within 1 millisecond on production hardware" ("hardware-dependent performance claim") | none | local timing; `Coverage: complete` |
+| gP-3 | `exec_time(slugify) < 1ms`; boundary step reread "production servers" as "production-representative test input" | `established` for properties [1], [2], [3], counterexample shown for [1] only | local timing; `Coverage: complete` |
+
+No run emitted `Unwitnessed`. The loss is upstream of falsify: `ground`'s canonicalization ("formality check") and boundary construction drop or reinterpret the environment qualifier, so falsify and the adequacy check are given a property that no longer names the production subject. The adequacy rule (build a distinguishing state where the property and the guard disagree) is also not being applied per property.
+
+This supersedes the earlier reading that the local-stand-in half belongs to falsify alone: the falsify-only runs lacked ground, and in the pack the qualifier is already gone before falsify runs.
+
+Open: a candidate is a `ground` clause requiring the retained property line to carry each qualifier of its request constraint (where, when, under what conditions) in the request's own words, so adequacy can then be tested against it. Untested; it needs its own draft, a hollow probe on the draft before runs, and a before-and-after check with the craft-pack eval. Samples: three runs, one scenario.

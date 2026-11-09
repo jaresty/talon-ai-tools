@@ -574,8 +574,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "satisfaction; a qualifying prior-executed result is a tool-call result produced by executing a command, running a test suite, or invoking an endpoint — a file read, file write, "
         "edit, or search result does not qualify regardless of its content; the named literal string must appear verbatim in a qualifying result block at an earlier transcript position "
         "than the gate condition block; a gate condition block whose named string does not appear verbatim in any qualifying result above it has not been satisfied and the governed "
-        "action must not proceed; each governed action requires its own gate condition block — a gate condition block from a prior action does not satisfy this requirement for a "
-        "subsequent action.",
+        "action must not proceed; each governed action requires its own gate condition block.",
         "gloss": "The response enhances the task by compressing an unfamiliar system into a representation naming the schema, invariants, and terminology an external actor needs to intervene, "
         "making implicit structure explicit, identifying the mechanisms and actors, and naming what local knowledge or irregularity is lost in the compression.",
         "grain": "The response enhances the task by naming the directions in which the system's existing structure already propagates — interfaces, dependencies, data flows — and naming "
@@ -920,10 +919,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "at whatever depth it arose, is reported where the response reports its outcome.",
         "prioritize": "The response enhances the task by ordering items by a named criterion stated in the response, naming the criterion before applying it, and making the ranking explicit.",
         "prism": "The response enhances the task by first enumerating N named vantage-point frames as a governing artifact, where N is stated as a numeral in the enumeration artifact — each "
-        "frame is introduced by a named label that appears as a heading in the transcript, and each frame output block is headed by that label; a frame without a heading label or an "
-        "output block not headed by its label does not satisfy this requirement. Each frame names a single structural vantage point — a frame body that enumerates alternative "
-        "approaches, methods, or investigation paths does not satisfy this requirement. The enumeration is a precondition: no frame may be applied until all N frames are named. A "
-        "response that applies frames without first enumerating them, or that produces a count of headed output blocks not equal to N, does not satisfy this requirement.",
+        "frame is introduced by a named label that appears as a heading in the transcript, and each frame output block is headed by that label. Each frame names a single structural "
+        "vantage point — a frame body that enumerates alternative approaches, methods, or investigation paths does not satisfy this requirement. The enumeration is a precondition: all N "
+        "frames are named before any frame is applied. The response then produces one headed output block per frame, N in total.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "prune": "The response states the purpose the subject exists to serve, then treats every element of the subject as removable until it names a function that element performs toward that "
         "purpose and that no other retained element performs. An element that performs no such function, or whose function a retained element already performs, is listed as removed "

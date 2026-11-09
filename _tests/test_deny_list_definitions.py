@@ -25,12 +25,29 @@ CLEARED = {
         "Quiz purpose:",
         "Stopping condition:",
     ),
+    ("method", "gate"): (
+        "Gate condition:",
+        "qualifying prior-executed result",
+        "each governed action requires its own gate condition block.",
+    ),
+    ("method", "prism"): (
+        "named before any frame is applied",
+        "single structural vantage point",
+        "a frame body that enumerates alternative approaches, methods, or investigation paths does not satisfy this requirement",
+        "one headed output block per frame, N in total",
+    ),
     ("method", "mark"): (
         "## Step N",
         "Governing:",
         "each satisfied by their own named artifacts",
     ),
 }
+
+
+# Where a prohibition carried measured behavior that no affirmative wording reproduced, one
+# "does not satisfy" sentence is kept on purpose: (axis, token) -> allowed occurrences.
+# prism: frame bodies that list approaches (3 rewordings, 5 runs, all lists; original 2 runs, none).
+ALLOWED_DENY_SENTENCES = {("method", "prism"): 1}
 
 
 def _definition(axis, token):
@@ -43,7 +60,11 @@ class ClearedDefinitionTests(unittest.TestCase):
     def test_no_cleared_definition_contains_a_deny_list_sentence(self) -> None:
         """A cleared definition states what the response contains; it has no does-not-satisfy sentence."""
 
-        offenders = [k for k in CLEARED if "does not satisfy" in _definition(*k)]
+        offenders = [
+            k
+            for k in CLEARED
+            if _definition(*k).count("does not satisfy") > ALLOWED_DENY_SENTENCES.get(k, 0)
+        ]
         self.assertEqual(offenders, [], f"deny-list sentences remain in: {offenders}")
 
     def test_each_cleared_definition_keeps_its_anchors(self) -> None:
@@ -80,6 +101,17 @@ class ClearedDefinitionTests(unittest.TestCase):
         text = _definition("form", "quiz")
         self.assertIn("A Predict: line satisfies the gate when it appears in a human message turn.", text)
         self.assertIn("The answer appears in the response turn after a human message containing a Predict: line.", text)
+
+
+    def test_prism_states_frames_as_one_vantage_point_each(self) -> None:
+        """prism keeps the one prohibition that measurably stops frame bodies from listing approaches."""
+
+        text = _definition("method", "prism")
+        self.assertIn(
+            "a frame body that enumerates alternative approaches, methods, or investigation paths does not satisfy this requirement",
+            text,
+        )
+        self.assertEqual(text.count("does not satisfy"), 1)
 
 
     def test_redact_placeholders_are_optional(self) -> None:

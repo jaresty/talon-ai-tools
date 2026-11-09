@@ -207,8 +207,31 @@ FAIL on the same model-written placeholder line that the original passed, so it 
 original passed on two runs and the minimal form on one. That minimal-form run wrote two questions where
 the originals wrote one: treated as variance, not checked further. Replacing a value by regex failed on
 `quiz` (adjacent string literals), so the edit used the `ast` module's source positions.
-- Remaining "does not satisfy" (6 definitions): method `gate`, `prism`, `shoshin`, plus `falsify` and
-  `ground` (blocked on their design notes); channel `zettel`.
+### Progress: batch 3 (2026-11-08)
+
+`gate` and `prism` (receipt `20261109015020-4404`). `gate`: dropped "a gate condition block from a prior
+action does not satisfy this requirement for a subsequent action"; with and without it each governed
+action got its own block, and the clause is implied by "each governed action requires its own gate
+condition block". `prism`: two of its three closers are gone (frame headings and block counts, which every
+rewrite run still met). The third stays: "a frame body that enumerates alternative approaches, methods,
+or investigation paths does not satisfy this requirement". Original runs (2) wrote descriptive frames;
+every run of three rewordings (5 runs: a definition, "its body works from that one vantage point", and
+"describes the subject as seen from that vantage point in statements about the subject") wrote frame
+bodies that list things to evaluate, and each agent reported PASS on its own list. Here the prohibition
+carried the behavior at this model size, so `_tests/test_deny_list_definitions.py` records it in
+`ALLOWED_DENY_SENTENCES` (one allowed occurrence, with the evidence).
+
+Across the three batches: a closer that restates the preceding sentence can go (topology six, redact,
+eliminate, gate, prism's first and third); one that adds a decision rule must be restated as a rule and
+checked against a baseline of the original (`own` took three wordings, `quiz` two); and `prism`'s is the
+one so far no affirmative wording reproduced. All of this is haiku on one or two subjects per token.
+
+New finding, not fixed: in both `gate` runs each agent satisfied its gate by `echo`-ing the exact string
+it then named in the gate block, so a gate can be met by text the agent just produced. That is a gap in
+`gate`'s definition independent of this change.
+- Remaining "does not satisfy" (5 definitions): method `shoshin` (12.5 KB, 2 occurrences), plus
+  `falsify` and `ground` (blocked on their design notes); channel `zettel` (2); `prism` keeps one by
+  design.
 
 ## Consequences
 

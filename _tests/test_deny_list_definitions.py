@@ -34,8 +34,8 @@ CLEARED = {
         "listed before any frame is applied",
         "enumerating N named cognitive frames",
         "numbered list of the shared facts of the subject",
-        "'Construal:'",
-        "'Presupposes:'",
+        "'Construal:' followed by a sentence beginning 'The subject is taken to be'",
+        "'Presupposes:' naming the roles present under that frame, what each expects, and what normally happens next",
         "'Reads fact K:'",
         "reads it differently from every other frame's",
         "one headed output block per frame, N in total",
@@ -117,6 +117,7 @@ class ClearedDefinitionTests(unittest.TestCase):
             text,
         )
         self.assertIn("one 'Reads fact K:' line per shared fact K", text)
+        self.assertNotIn("naming the background the frame supplies without it being stated", text)
         self.assertNotIn("Foregrounds", text)
         self.assertNotIn("opens with a noun phrase", text)
         self.assertNotIn("does not satisfy", text)

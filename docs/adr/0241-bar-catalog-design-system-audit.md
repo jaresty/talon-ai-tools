@@ -268,6 +268,21 @@ the construals and readings; frames lack the `Foregrounds:`/`Backgrounds:` lines
 implication, left out on purpose. The `spur`/`prism` and `shoshin`/`prism` distinction notes now say
 "cognitive frames". The sentence-opening wording and its caveat above are superseded.
 
+Tightening of the cognitive-frame wording (receipt `20261109021150-5445`): the owner asked whether the
+frames were cognitive. In the first cognitive-frame sample the `Construal:` lines mostly said what the
+question was about ("The question concerns competitive advantage ..."), and `Presupposes:` gave beliefs, not
+the roles and sequence a frame supplies (the "restaurant" frame brings menus, waitstaff, ordering, paying).
+`Construal:` now must begin "The subject is taken to be" and name a kind of thing or problem, and
+`Presupposes:` must name the roles present under the frame, what each expects, and what normally happens
+next. Four runs on two subjects: `Presupposes:` gave roles, expectations and a "Normally, ..." sequence in
+three of four runs (it gave beliefs in none of the four before), often with a success criterion; the
+readings of shared facts were unchanged (20 `Reads` lines per run, word overlap 0.20 or less between
+frames); `Construal:` moved from "the question concerns X" to problem schemas ("a logistical
+optimization problem for moving people and goods through constrained urban space", "a binding-constraint
+capability challenge"). Still open: construals name problem types, not what the subject is; none wrote
+"a commons" or "a conduit", so the commons-versus-corridor kind of schema still appears only inside a
+`Reads` line; one database run fell back to noun lists in `Presupposes:`.
+
 New finding, not fixed: in both `gate` runs each agent satisfied its gate by `echo`-ing the exact string
 it then named in the gate block, so a gate can be met by text the agent just produced. That is a gap in
 `gate`'s definition independent of this change.

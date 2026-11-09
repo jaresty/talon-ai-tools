@@ -273,7 +273,7 @@ Axis multiplicity:
     - "Output as shellscript" + "output as slide deck" = impossible requirement
     - "ADR document structure" + "session plan structure" = conflicting structures
     - Platform wrappers (slack, jira) conflict with format tokens (e.g., `html` + `slack`)
-  - **Enforcement:** Talon voice grammar allows speaking only one channel/form per command; Go's `bar build` validates and rejects multiple channel tokens with error: "channel accepts a single token"
+  - **Enforcement:** Talon voice grammar allows speaking only one channel/form per command; Go's `bar build` accepts up to the channel soft cap in `hierarchy.axis_soft_caps` (3) and rejects more with error: "channel supports at most 3 tokens"
   - For example:
     - `model describe actions edges structure flow story jira fog`
       - Static prompt: `describe`.

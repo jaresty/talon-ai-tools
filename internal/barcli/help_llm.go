@@ -967,7 +967,7 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 
 	if compact {
 		fmt.Fprintf(w, "- Order: see Grammar Architecture\n")
-		fmt.Fprintf(w, "- Caps: scope 0-2, method 0-5, others 0-1\n")
+		fmt.Fprintf(w, "- Caps: %s\n", softCapSummary(grammar))
 		if len(grammar.Hierarchy.AxisIncompatibilities) > 0 {
 			fmt.Fprintf(w, "- Incompatibilities exist (see full reference)\n")
 		}
@@ -1091,7 +1091,7 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 		fmt.Fprintf(w, "None currently. All documented incompatibilities (channel+task, form+completeness, "+
 			"channel+audience) are advisory only — the grammar permits them but guidance notes in "+
 			"\"Guidance for specific tokens\" above apply. Grammar restrictions enforce only axis "+
-			"capacity limits (one channel, one directional, etc.).\n")
+			"capacity limits (one form, one directional, up to %d channels, etc.).\n", grammar.AxisSoftCap("channel"))
 	}
 	fmt.Fprintf(w, "\n")
 
@@ -1710,4 +1710,17 @@ func renderLLMSequencesSection(w io.Writer, grammar *Grammar, compact bool) {
 		fmt.Fprintf(w, "  Steps: %s\n", stepSummary)
 	}
 	fmt.Fprintf(w, "\n")
+}
+
+// softCapSummary lists the axes that take more than one token, in axis priority order, from the
+// grammar's soft-cap table; every other axis takes at most one.
+func softCapSummary(grammar *Grammar) string {
+	parts := []string{}
+	for _, axis := range grammar.Hierarchy.AxisPriority {
+		if cap := grammar.AxisSoftCap(axis); cap > 1 {
+			parts = append(parts, fmt.Sprintf("%s 0-%d", axis, cap))
+		}
+	}
+	parts = append(parts, "others 0-1")
+	return strings.Join(parts, ", ")
 }

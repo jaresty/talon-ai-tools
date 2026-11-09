@@ -372,6 +372,12 @@ func (s *buildState) applyOverrideToken(token string) *CLIError {
 			return nil
 		},
 		SetChannel: func(value string) error {
+			if contains(s.channel, value) {
+				return nil
+			}
+			if cap := s.axisCap("channel"); cap > 0 && len(s.channel) >= cap {
+				return s.errorf(errorConflict, "channel supports at most %d tokens", cap)
+			}
 			s.channel = append(s.channel, value)
 			return nil
 		},
@@ -428,6 +434,13 @@ func (s *buildState) applyShorthandAxis(axis, token string) *CLIError {
 		}
 		s.form = append(s.form, token)
 	case "channel":
+		if contains(s.channel, token) {
+			return nil
+		}
+		cap := s.axisCap(axis)
+		if cap > 0 && len(s.channel) >= cap {
+			return s.errorf(errorConflict, "channel supports at most %d tokens", cap)
+		}
 		s.channel = append(s.channel, token)
 	case "directional":
 		if s.directional != "" {

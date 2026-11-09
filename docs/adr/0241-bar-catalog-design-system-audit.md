@@ -96,11 +96,20 @@ horizontal {none, rog, ong, bog}, with `jog` the null cell.
   never saw; the earlier note here that a missing cap "means no cap" was wrong. TUI and web already
   defaulted a missing cap to 1, so only Python's `_canonicalise_axis_tokens` changed behavior (it now
   keeps the latest token, as it already did for form and directional).
-- Open: `bar build` reads the table only for scope and method; form, directional, topology and
-  completeness are hardcoded single-token errors, and channel (table value 3, Python enforces it) has no
-  check in Go at all: four channels were accepted. `bar help llm` also hardcodes "others 0-1", which is
-  wrong for channel. Decide whether channel's cap is intentional, then have Go enforce the table for
-  every axis.
+- Channel cap made consistent: multi-channel was intended (`8ee51840`, "allow multiple channel
+  tokens"), which raised the table to 3 and removed Go's single-channel check, but Go never enforced
+  the cap and accepted four channels. `bar build` now enforces the table's channel cap on the shorthand
+  path (`channel supports at most 3 tokens`), and the `bar help llm --compact` caps line is generated
+  from the table instead of the hardcoded "others 0-1". `TestSoftCapTableMatchesBuild` runs every axis
+  in the table through `bar build` at cap and cap+1, so the table cannot drift from build again.
+- Still stale or unchecked (left alone because tests pin some of the wording and the voice surface may
+  genuinely be narrower than `bar build`): Python voice-surface strings say "channel=1" and
+  "method <= 3" (`lib/helpHub.py:556`, `GPT/gpt.py:521,2028`, `lib/modelHelpCanvas.py:1834`,
+  `GPT/readme.md` method line) while the table says channel 3 and method 5; the readme's claim that the
+  Talon grammar speaks one channel per command is unverified. Separately, the `channel=a,b` and repeated
+  `channel=` override syntax behaves oddly (`channel=html,svg` lists html three times; four repeated
+  `channel=` keys fail with "channel accepts a single token", `internal/barcli/tokens/overrides.go`);
+  not touched here.
 - Not done: reciprocal mirroring of the remaining one-way distinctions (~289 before this change),
   `directional` absent from `axis_priority` and persona absent from the hierarchy, and the items below.
 

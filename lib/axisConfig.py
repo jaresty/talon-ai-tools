@@ -308,9 +308,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "question only when the current response is producing a static document or terminal sequence artifact — meaning no human turn is pending and no Predict: line is expected from the "
         "reader before this response ends; in that case the answer follows the question immediately and the Predict: requirement is suspended. When the current response is not in static "
         "document or terminal artifact mode: write only the question followed by the literal line 'Predict: [your expectation before reading the answer]'. Do not write the answer in this "
-        "turn. A Predict: line satisfies the gate only when it appears in a human message turn — a Predict: line appearing in the model's own response text in the same turn as the "
-        "question, or appearing inside a tool result block, does not satisfy this gate. The answer appears in the response turn after a human message containing a Predict: line. After each "
-        "answer: a gap-reveal sentence comparing what the Predict: line stated against what is correct or complete; then for every concept except the first and the last, a Hook: line "
+        "turn. A Predict: line satisfies the gate when it appears in a human message turn. The answer appears in the response turn after a human message containing a Predict: line. After "
+        "each answer: a gap-reveal sentence comparing what the Predict: line stated against what is correct or complete; then for every concept except the first and the last, a Hook: line "
         "quoting a specific phrase from the current answer and naming the implication it leaves unresolved — the question the next concept answers; a Hook: line is compliant only when it "
         "appears after the gap-reveal sentence for this concept and before the Following from: line of the next concept (evaluator check: the quoted phrase appears verbatim in the current "
         "answer); a Hook: line must not appear after the last concept's answer; then a Misconception: line and Why: line — compliant only when they appear in the answer block of that named "
@@ -461,8 +460,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "eliminated count equals the number of items bearing a typed defeater and eliminated plus surviving equals N. The elimination closes with either 'exhaustive:' followed by "
         "the argument the set admits no further rivals, or 'non-exhaustive:' followed by at least one named rival class not yet enumerated. For each candidate marked surviving, the "
         "response attempts to construct a defeater that would strike it: if one is found, the candidate is re-struck and the counts revised; if none is found for any surviving "
-        "candidate, the elimination is complete. A candidate lacking its own labeled item, a defeater without one of the three type labels, a count not matching the item tally, or a "
-        "surviving candidate with no attempted-defeater check does not satisfy this requirement.",
+        "candidate, the elimination is complete.",
         "enforce": "The response identifies requirements that name an action to perform without naming the artifact whose presence in the transcript marks the action complete, and converts them "
         "to structural dependencies — when a requirement can be met by describing what to do rather than actually doing it, the response restructures it as a precondition that gates "
         "subsequent steps, requiring actual output as a predecessor for the next step. Each step cannot proceed without the real artifact.",
@@ -1093,8 +1091,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "good": "The response focuses on the criteria, metrics, standards, or values by which the subject is judged — assuming a framing for what counts as success, drawn from the subject's "
         "purpose, audience, and context rather than generic standards.",
         "jobs": "The response focuses on the outcomes the subject is trying to achieve and the pressures that would persist even if every current solution were removed — the pressures that make "
-        "the outcome non-negotiable rather than merely convenient. Any finding that depends on the features of a specific product or system is about the product, not the outcome, and does "
-        "not satisfy this requirement.",
+        "the outcome non-negotiable rather than merely convenient.",
         "lever": "The response focuses on intervention points—places in the system where applied force shifts equilibrium; identifying feedback loops, constraints, delays, rules, or parameters "
         "whose change propagates to alter which stable states the system settles into. Includes load-bearing elements whose change disproportionately alters the outcome, even before any "
         "deliberate intervention.",

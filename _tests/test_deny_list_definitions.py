@@ -12,6 +12,19 @@ CLEARED = {
         "states each category of content being excluded",
         "absent from the rewritten output",
     ),
+    ("method", "eliminate"): (
+        "marks it surviving",
+        "attempts to construct a defeater",
+        "eliminated plus surviving equals N",
+    ),
+    ("scope", "jobs"): (
+        "non-negotiable rather than merely convenient",
+    ),
+    ("form", "quiz"): (
+        "A Predict: line satisfies the gate when it appears in a human message turn.",
+        "Quiz purpose:",
+        "Stopping condition:",
+    ),
     ("method", "mark"): (
         "## Step N",
         "Governing:",
@@ -54,6 +67,20 @@ class ClearedDefinitionTests(unittest.TestCase):
         text = _definition("method", "own")
         self.assertTrue(text.startswith("The response contains only"))
         self.assertIn("An artifact is accessible to others when a single transmission step could share it.", text)
+
+    def test_jobs_names_no_sibling_scope_domain(self) -> None:
+        """jobs states its own focus; product features are a sibling scope's domain (distinctions hold the boundary)."""
+
+        text = _definition("scope", "jobs")
+        self.assertNotIn("specific product", text)
+
+    def test_quiz_states_the_predict_source_as_a_test(self) -> None:
+        """quiz says a satisfying Predict: line appears in a human message turn."""
+
+        text = _definition("form", "quiz")
+        self.assertIn("A Predict: line satisfies the gate when it appears in a human message turn.", text)
+        self.assertIn("The answer appears in the response turn after a human message containing a Predict: line.", text)
+
 
     def test_redact_placeholders_are_optional(self) -> None:
         """redact states placeholder markers as optional, not as 'no ... required'."""

@@ -192,8 +192,23 @@ sentence can go; one that adds a decision rule must be restated as the rule, and
 baseline run of the original, not only against the new text. Limits: one subject per token, haiku only;
 `mark`'s anti-escape clause was not exercised (no gate in the subject); the `own` check reads "single
 transmission" mostly as automatic sync.
-- Remaining "does not satisfy" (9 definitions): scope `jobs`; method `eliminate`, `gate`, `prism`,
-  `shoshin`, plus `falsify` and `ground` (blocked on their design notes); form `quiz`; channel `zettel`.
+### Progress: batch 2 (2026-11-08)
+
+`eliminate`, `jobs` and `quiz` rewritten (receipt `20261109014331-9692`), each tested as original versus
+rewrite on the same subject, eight agent runs in all. `eliminate`: both versions met every requirement
+with consistent counts, so its closer was redundant and is gone. `jobs`: no behavioral difference between
+versions (the agent partitioned the response between `jobs` and `product` either way); the closer named a
+sibling scope's domain ("a specific product ... is about the product"), which `product` plus `jobs`
+permits to contradict, so it is removed on the principle in nn `20261009190642`, and the boundary already
+lives in the two `jobs`/`product` distinctions. `quiz`: the closer is a decision rule, so it was kept as a
+test, in its minimal form "A Predict: line satisfies the gate when it appears in a human message turn."
+My first rewording ("comes from the reader ... records no reader expectation") made a haiku agent rule
+FAIL on the same model-written placeholder line that the original passed, so it was rejected; the
+original passed on two runs and the minimal form on one. That minimal-form run wrote two questions where
+the originals wrote one: treated as variance, not checked further. Replacing a value by regex failed on
+`quiz` (adjacent string literals), so the edit used the `ast` module's source positions.
+- Remaining "does not satisfy" (6 definitions): method `gate`, `prism`, `shoshin`, plus `falsify` and
+  `ground` (blocked on their design notes); channel `zettel`.
 
 ## Consequences
 

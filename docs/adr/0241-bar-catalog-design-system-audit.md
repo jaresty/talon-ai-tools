@@ -462,3 +462,18 @@ What the transcripts support: the production subject is not represented in any r
 What the three full-pack runs did at that step: gP-1 quoted the constraint truncated to "(3) slugify completes in under 1 millisecond per call" (qualifier absent; not verbatim); gP-3 wrote "lowercase output, no punctuation, sub-millisecond execution" (a paraphrase; not verbatim); gP-2 quoted "slugify completes in under 1 millisecond per call on the production servers" and then wrote "Every explicit constraint is logically entailed", having retained `execution_time(slugify(title)) < 1ms`. The adequacy step (whose distinctions "derive from the property's own semantics", per the ground+falsify coverage gate) tests the retained property, so with the qualifier absent from the property it would test the 1 ms boundary, not production versus local.
 
 Reading the transcripts against the text: two of three runs broke a mechanical rule of the existing definition (verbatim quoting); the third relied on a semantic judgment (an environment-agnostic formal property entails a production-qualified constraint). Under the reading that `exec_time` implicitly means production time, the adequacy step owed `Adequacy: untested — execution unavailable` for that property; under the reading that it means local time, the completeness entailment fails. Either way one of the pack's own checks should have flagged it; none did. This is compliance by a haiku-class agent with an existing definition, not evidence of a missing clause. Three runs, one scenario.
+
+#### Model comparison on the production-timing scenario (full pack)
+
+Same request, same build, same prompt (`make witness ground gate falsify atomic`, compositions loaded; verified from each transcript), run on a stronger model (Sonnet) after the three Haiku runs above:
+
+| Model | Valid runs | Production qualifier in the retained property | `Unwitnessed` for it | Adequacy for it | Final coverage line |
+|---|---|---|---|---|---|
+| Haiku | 3 | 0 of 3 | 0 of 3 | none, or `established` without a counterexample | `Coverage: complete` ×3 |
+| Sonnet | 2 | 2 of 2 (`∀ calls k of slugify on production servers: t(k) < 1ms`; `∀t∈Str: T_prod(slugify(t)) < 1 ms`) | 2 of 2 | `untested — execution unavailable` ×2; counterexamples built for properties [1] and [2], including a real guard weakness found and strengthened in gS-2 | `Coverage: incomplete — observation unavailable` ×2 |
+
+Both Sonnet completeness checks quoted the request verbatim with "on the production servers". Neither wrote a local-timing witness (gS-2's guard computes a local figure but labels it `A-UNOBSERVABLE … a proxy, not a witness`). gS-1 declined to emit `Audit: implementation complete` over an unresolved surplus item.
+
+Two further Sonnet runs (gS-3, gS-4) were stopped by a safety classifier after 8 and 9 tool calls spent loading definitions; each left an unchanged `slug.py` and no other files, and is excluded. The cause of the stops is not known and was not worked around. Attrition is not random with respect to behavior: the excluded runs might have behaved differently, so two valid runs is a thin basis.
+
+Reading: the existing `ground` and `ground+falsify` rules, which already require a verbatim completeness check and a per-property adequacy verdict, produced the intended handling in a stronger model and were not followed by Haiku. That supports treating the production-timing gap as a model-compliance gap against rules the definitions already state, not as a missing clause. No definition change was made for it. Limits: one scenario, 3 Haiku and 2 Sonnet valid runs.

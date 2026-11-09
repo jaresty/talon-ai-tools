@@ -247,6 +247,27 @@ Method note: this suggests the rule for the rest, that a decision-rule closer co
 rewrite names something visible in the response's own text (a sentence opening, a literal string, an
 operational test like `own`'s single transmission step), not a stance.
 
+Correction to the `prism` follow-up above (receipt `20261109020538-9050`): the sentence-opening rule
+(wording E) was the wrong target. It enforced the grammar of sentences inside each frame and nothing
+about what `prism` is for. The catalog's heuristics ("think about this as a regulator, then as a user,
+then as an engineer", "force structurally different restatements") and distinctions ("complementary
+frames ... surface what each independently reveals") describe cognitive frames, and so does the
+reference the owner supplied: a schema that simplifies and organizes information, supplies background
+understanding that is never stated, and makes the same information read differently (the framing
+effect). Under E and under the original, every run produced topic areas (Technical, Financial, Team,
+Risk; Economic, Environmental, Mobility, Social) with no frame construing the subject differently,
+nothing unstated, and no shared facts read two ways. `prism` now requires, per frame block, `Construal:`
+(what the subject is taken to be), `Presupposes:` (background supplied unstated) and one `Reads fact K:`
+line per shared fact in a numbered list stated once in the enumeration artifact, with at least one fact
+read differently by every frame. Four runs on two subjects: construals differ in kind, readings of the
+same fact differ (word overlap of readings 0.25 or less; on the pollution fact one frame reads
+"the direct primary benefit" and another "secondary to the economic cost"), and `Presupposes:` carried
+real assumptions. The E baseline on the city subject gave four topic areas with no readings. Limits:
+haiku only, two subjects; city-subject labels still sound like topics, and what makes them frames is
+the construals and readings; frames lack the `Foregrounds:`/`Backgrounds:` lines and any decision
+implication, left out on purpose. The `spur`/`prism` and `shoshin`/`prism` distinction notes now say
+"cognitive frames". The sentence-opening wording and its caveat above are superseded.
+
 New finding, not fixed: in both `gate` runs each agent satisfied its gate by `echo`-ing the exact string
 it then named in the gate block, so a gate can be met by text the agent just produced. That is a gap in
 `gate`'s definition independent of this change.

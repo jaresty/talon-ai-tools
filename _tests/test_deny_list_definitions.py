@@ -31,9 +31,13 @@ CLEARED = {
         "each governed action requires its own gate condition block.",
     ),
     ("method", "prism"): (
-        "named before any frame is applied",
-        "single structural vantage point",
-        "opens with a noun phrase naming part of the subject",
+        "listed before any frame is applied",
+        "enumerating N named cognitive frames",
+        "numbered list of the shared facts of the subject",
+        "'Construal:'",
+        "'Presupposes:'",
+        "'Reads fact K:'",
+        "reads it differently from every other frame's",
         "one headed output block per frame, N in total",
     ),
     ("method", "mark"): (
@@ -104,16 +108,18 @@ class ClearedDefinitionTests(unittest.TestCase):
         self.assertIn("The answer appears in the response turn after a human message containing a Predict: line.", text)
 
 
-    def test_prism_states_frames_as_one_vantage_point_each(self) -> None:
-        """prism states frame bodies by a transcript-observable: each sentence opens with a noun phrase."""
+    def test_prism_frames_are_cognitive_frames_with_observable_lines(self) -> None:
+        """prism: a frame construes the subject, brings unstated background, and reads shared facts its own way."""
 
         text = _definition("method", "prism")
         self.assertIn(
-            "each sentence in its body opens with a noun phrase naming part of the subject and states a property of that part as seen from that vantage point",
+            "a cognitive frame is a way of construing the subject that fixes what it is taken to be, what unstated background it brings, and how the same facts read under it",
             text,
         )
+        self.assertIn("one 'Reads fact K:' line per shared fact K", text)
+        self.assertNotIn("Foregrounds", text)
+        self.assertNotIn("opens with a noun phrase", text)
         self.assertNotIn("does not satisfy", text)
-
 
     def test_redact_placeholders_are_optional(self) -> None:
         """redact states placeholder markers as optional, not as 'no ... required'."""

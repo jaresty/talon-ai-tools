@@ -918,10 +918,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "and the part that does is produced only in a form removable with no effect beyond what the response itself produced, closed by 'Withdrawn by: <means>'. Every Deferred choice, "
         "at whatever depth it arose, is reported where the response reports its outcome.",
         "prioritize": "The response enhances the task by ordering items by a named criterion stated in the response, naming the criterion before applying it, and making the ranking explicit.",
-        "prism": "The response enhances the task by first enumerating N named vantage-point frames as a governing artifact, where N is stated as a numeral in the enumeration artifact — each "
-        "frame is introduced by a named label that appears as a heading in the transcript, and each frame output block is headed by that label. Each frame names a single structural "
-        "vantage point, and each sentence in its body opens with a noun phrase naming part of the subject and states a property of that part as seen from that vantage point. The "
-        "enumeration is a precondition: all N frames are named before any frame is applied. The response then produces one headed output block per frame, N in total.",
+        "prism": "The response enhances the task by first enumerating N named cognitive frames as a governing artifact, where N is stated as a numeral in the enumeration artifact, followed by a "
+        "numbered list of the shared facts of the subject that every frame will read — a cognitive frame is a way of construing the subject that fixes what it is taken to be, what "
+        "unstated background it brings, and how the same facts read under it; each frame is introduced by a named label that appears as a heading in the transcript, and each frame "
+        "output block is headed by that label. Each frame output block opens with 'Construal:' naming the kind of thing or problem the subject is taken to be under that frame, "
+        "'Presupposes:' naming the background the frame supplies without it being stated, and one 'Reads fact K:' line per shared fact K giving how that frame reads it. For at least one "
+        "shared fact, every frame's 'Reads fact K:' line reads it differently from every other frame's. The enumeration is a precondition: all N frames and the shared facts are listed "
+        "before any frame is applied. The response then produces one headed output block per frame, N in total, applying that frame to the subject after its opening lines.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "prune": "The response states the purpose the subject exists to serve, then treats every element of the subject as removable until it names a function that element performs toward that "
         "purpose and that no other retained element performs. An element that performs no such function, or whose function a retained element already performs, is listed as removed "
@@ -8976,7 +8979,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "sweep",
                 },
                 {
-                    "note": "spur = fork on a key assumption and pursue each branch; prism = enumerate named vantage-point frames as a precondition, then apply each",
+                    "note": "spur = fork on a key assumption and pursue each branch; prism = enumerate named cognitive frames as a precondition, then apply each",
                     "token": "spur",
                 },
                 {
@@ -8989,7 +8992,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "eliminate",
                 },
                 {
-                    "note": "prism = enumerate N vantage frames and apply each in parallel; shoshin = sort the frames in play into admit/exclude/default and reason under one "
+                    "note": "prism = enumerate N cognitive frames and apply each in parallel; shoshin = sort the frames in play into admit/exclude/default and reason under one "
                     "selection guarded by a leak check. prism multiplies lenses and keeps them all; shoshin removes and imports frames deliberately and audits reuse of "
                     "excluded ones.",
                     "token": "shoshin",
@@ -9554,7 +9557,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "shift",
                 },
                 {
-                    "note": "prism = enumerate N vantage frames and apply each in parallel; shoshin = sort the frames in play into admit/exclude/default and reason under one "
+                    "note": "prism = enumerate N cognitive frames and apply each in parallel; shoshin = sort the frames in play into admit/exclude/default and reason under one "
                     "selection guarded by a leak check. prism multiplies lenses and keeps them all; shoshin removes and imports frames deliberately and audits reuse of "
                     "excluded ones.",
                     "token": "prism",
@@ -9673,7 +9676,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "lateral",
                 },
                 {
-                    "note": "spur = fork on a key assumption and pursue each branch; prism = enumerate named vantage-point frames as a precondition, then apply each",
+                    "note": "spur = fork on a key assumption and pursue each branch; prism = enumerate named cognitive frames as a precondition, then apply each",
                     "token": "prism",
                 },
             ],

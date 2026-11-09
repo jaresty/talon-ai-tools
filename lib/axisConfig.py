@@ -145,13 +145,12 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "zettel": "The response is structured as one or more Zettelkasten notes in nn format. Each note body must contain exactly one claim: the body has no coordinating conjunction (and, but, "
         "or) joining two independent sentences — a body that does is two notes. When the content to capture arrives as a composite unit — a snapshot, a context package, a review, or "
         "any structure whose parts are meant to be read together — it is decomposed rather than captured whole: each constituent claim becomes its own note, and one entry note carries "
-        "the cross-cutting part (the frame, the pointer, or the context the others depend on) and links them. A single body carrying more than one of the composite's parts does not "
-        "satisfy the one-claim rule, and a note set with no entry note carrying the cross-cutting part does not preserve what the composite conveyed. Each note title is a complete "
-        "declarative sentence (subject + finite verb + object or predicate, ending in a period). Choose --type from: concept | argument | model | hypothesis | observation | question | "
-        "protocol; use protocol when every sentence in the body is imperative (begins with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE "
-        "--content '...' --no-edit --status draft`; (2) the returned ID must appear as the literal argument to the next command — a response where the ID appears only in prose does "
-        "not satisfy this requirement; (3) run `nn suggest-links <id>`; (4) if the suggest-links output contains at least one candidate not already marked (already linked), run `nn "
-        "bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: skipped — zero qualifying suggestions` in the transcript.",
+        "the cross-cutting part (the frame, the pointer, or the context the others depend on) and links them. Each note title is a complete declarative sentence (subject + finite verb "
+        "+ object or predicate, ending in a period). Choose --type from: concept | argument | model | hypothesis | observation | question | protocol; use protocol when every sentence "
+        "in the body is imperative (begins with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE --content '...' --no-edit --status draft`; (2) the "
+        "returned ID must appear as the literal argument to the next command; (3) run `nn suggest-links <id>`; (4) if the suggest-links output contains at least one candidate not "
+        "already marked (already linked), run `nn bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: skipped — zero qualifying suggestions` in the "
+        "transcript.",
     },
     "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",

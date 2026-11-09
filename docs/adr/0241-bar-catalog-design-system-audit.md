@@ -286,8 +286,22 @@ capability challenge"). Still open: construals name problem types, not what the 
 New finding, not fixed: in both `gate` runs each agent satisfied its gate by `echo`-ing the exact string
 it then named in the gate block, so a gate can be met by text the agent just produced. That is a gap in
 `gate`'s definition independent of this change.
-- Remaining "does not satisfy" (4 definitions): method `shoshin` (12.5 KB, 2 occurrences), plus
-  `falsify` and `ground` (blocked on their design notes); channel `zettel` (2).
+### Progress: zettel (2026-11-08)
+
+`zettel` (receipt `20261109021722-9653`) lost both closers: "A single body carrying more than one of the
+composite's parts does not satisfy the one-claim rule, and a note set with no entry note ... does not
+preserve what the composite conveyed", and "a response where the ID appears only in prose does not satisfy
+this requirement". Tested original versus rewrite, two runs each, with a stub `nn` that logs every
+command and returns fake IDs, so no real notes were written (`zbin/nn` in the session scratchpad); judged from
+the command logs. All four runs made six notes (an entry note plus five single-claim notes) and ran
+`nn suggest-links` on IDs the stub returned. The only run that did not follow each `nn new` with its own
+`suggest-links` was an original run. n=2 per arm, one subject, haiku only.
+
+Gap found, not fixed: only one of four runs linked the entry note to the claim notes; the other three
+bulk-linked each note to the stub's single suggestion. The definition says the entry note "links them" but
+its step list gives no command or observable for that link.
+- Remaining "does not satisfy" (3 definitions): method `shoshin` (12.5 KB, 2 occurrences), plus `falsify`
+  and `ground`, which are blocked on their design notes.
 
 ## Consequences
 

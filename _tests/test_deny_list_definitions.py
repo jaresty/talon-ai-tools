@@ -40,6 +40,12 @@ CLEARED = {
         "reads it differently from every other frame's",
         "one headed output block per frame, N in total",
     ),
+    ("channel", "zettel"): (
+        "Each note body must contain exactly one claim",
+        "each constituent claim becomes its own note, and one entry note carries the cross-cutting part",
+        "(2) the returned ID must appear as the literal argument to the next command;",
+        "nn bulk-link: skipped",
+    ),
     ("method", "mark"): (
         "## Step N",
         "Governing:",

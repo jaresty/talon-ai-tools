@@ -379,3 +379,26 @@ Four "does not satisfy this token" sentences in `falsify` were rewritten: the ba
 Probe (haiku, 2 runs per arm, scenario: slugify with one assertion about production timing the agent cannot access; arms confirmed from transcripts — original arm saw the old closers, new arm the new wording): 4 of 4 runs ended `Coverage: complete`, 0 of 4 emitted `Unwitnessed` for the production-timing assertion. Two runs substituted a local timing for it; two labelled it `Unobservable — structural`. The rewrite is neutral on this scenario.
 
 Open, found by the probe and present in both arms: an assertion about an inaccessible system is witnessed by a local stand-in or labelled structural, and coverage is claimed complete. The rules that should catch it (the Unwitnessed state; the capability-relative observation clause) were not touched by this change and did not carry the behavior in either arm. The probe does not exercise the rewritten closers, so it shows no regression, not that each rewritten clause carries its old behavior.
+
+### falsify — craft-pack eval found a regression; affirmative Overreach line fixes it
+
+Craft-pack eval (ADR-0239 scenarios A, B, C; haiku; sentinel extractor as the judge; arms confirmed from transcripts):
+
+| Scenario A | Result |
+|---|---|
+| original definition | 3 of 3 PASS |
+| four-closer rewrite (02ef6899) | 1 of 3 PASS — both failures implemented, ran one passing test, and emitted `Coverage: complete` with no Overreach verdict and no audit line |
+| rewrite + deleted Overreach closer restored | 3 of 3 PASS (one with a missing-label warning) |
+| rewrite + affirmative sentence (adopted) | 3 of 3 PASS |
+
+B and C passed on the original and on the rewrite; B passed once and C once (valid run) on the adopted wording.
+
+Cause: the deleted closer, "A bare 'Overreach: not found' with no attempted reduction does not satisfy this token", was the only text that made an Overreach verdict line something the response must contain. The surviving clauses describe when `not found` is valid, not that a verdict line must appear. The probe in the previous section could not see this: it exercises closers that were never reached.
+
+Fix (affirmative, names a present-state observable): "Gate 1 ends with an 'Overreach: found — <modification or path>', 'Overreach: not found', or 'Overreach: untested — observation unavailable' line, which appears in the transcript before 'Coverage:'."
+
+Hollow probe (haiku, `bar build probe hollow full`) on the rewrite pointed at the same clause, but its report had the criterion backwards (it called the deny-list closer "valid" and said the closer "required" a verdict line, which it did not). The ablation, not the probe, settled the cause.
+
+Invalid runs excluded: two scenario-C runs on the adopted build never called `bar help token` (3 tool calls, no definition loaded). The system prompt is byte-identical across the original, rewrite and adopted builds because definitions are fetched later, so the wording cannot have caused the skip. This is a craft-pack skip on a trivial task, not a falsify result.
+
+Open: the sample is 3 runs per arm on one scenario; the original-versus-rewrite gap (3/3 vs 1/3) is not statistically strong on its own, and the ablation arms are what make the cause credible.

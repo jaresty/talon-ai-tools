@@ -58,6 +58,7 @@ CLEARED = {
         "completeness is read from the matching of each enumerated Assertion line to its outcome line",
         "coverage is complete exactly when every enumerated Assertion line has a matching outcome line",
         "a verdict is valid only when it cites a qualifying result record",
+        "Gate 1 ends with an 'Overreach: found — <modification or path>', 'Overreach: not found', or 'Overreach: untested — observation unavailable' line, which appears in the transcript before 'Coverage:'.",
         "an assertion carrying an 'Unwitnessed: assertion \"<verbatim assertion>\" — observation unavailable' line is open and takes 'Coverage: incomplete — observation unavailable'",
     ),
     ("method", "mark"): (

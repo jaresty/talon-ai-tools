@@ -544,3 +544,18 @@ The test was contaminated by the harness and by me. Agents explored the shared s
 The arms are not separated: the control flips on both clauses, and the variant marked the anchored control NOT VALID on addressability grounds ("the guard's own output requires semantic inference"), not through the new sentence. No clean variant run cited the new sentence as the basis for its verdict. Not adopted; `hollow` is unchanged.
 
 For a retry: isolate the probe (binaries and a bare subject in an otherwise empty directory; pass the clause with `--subject`; no spec files or earlier probe output reachable), and use more runs per cell. A single-run example (`gV1-3`) remains the only direct evidence of the self-declaration gap; the draft has not shown that a sentence fixes it. Limits: haiku; seven clean runs.
+
+#### hollow anchoring sentence, isolated retry (20 haiku runs, 19 clean): not adopted
+
+Retry of the previous test with the flaws removed: the two binaries (control, and variant with the anchoring sentence) in a new directory outside the scratchpad containing nothing else; each agent allowed only `bar` commands, told to audit exactly the text between marker lines, with the clause passed in the prompt; five runs per clause per arm. Criterion fixed beforehand: adopt only if the variant says NOT VALID on the self-declared clause (T1) at least 40 percentage points more often than the control, and VALID on the anchored control (T2) at least as often as the control. Validity rules (checked per transcript): the binary path matches the arm, the arm's own text was loaded, every tool call was a `bar` command, the verdict quotes the given clause, and a `VERDICT:` line is present. One run (control T1 r2) ran a non-`bar` command and was excluded.
+
+| Clause | Control | Variant |
+|---|---|---|
+| T1, self-declared `Property subject:` label (should be flagged) | 3 NOT VALID, 1 VALID of 4 | 4 NOT VALID, 1 VALID of 5 |
+| T2, anchored `Failure:` quote from a tool-result block (should be valid) | 5 NOT VALID, 0 VALID of 5 | 5 NOT VALID, 0 VALID of 5 |
+
+Criterion not met: the T1 gap is 5 points against the 40 required. The T2 condition is met only trivially (0 against 0). Not adopted; `hollow` is unchanged.
+
+What the result shows about the measurement: a clause built to be anchored was judged NOT VALID in 10 of 10 clean runs on both arms, usually on the grounds that "the guard's own output" or "tool-result block" needs semantic inference; the baseline NOT VALID rate on the self-declared clause was already 75%. One variant run quoted the new sentence verbatim in its verdict and still rejected the anchored clause. With a ceiling like this, a binary verdict from haiku cannot detect an improvement in hollow's wording. A comparison would need a graded measure (for example, which of two clauses is judged more addressable) or a stronger model, not a VALID/NOT VALID count. This also bears on how much weight to give any single hollow verdict in this audit: where a haiku probe called a clause valid or invalid, the call was not reliable evidence by itself, which is why every conversion here was decided by the craft-pack eval.
+
+The two limits in design note 20261109154046-3214 stand, and the self-declared-string gap still rests on one run (`gV1-3`).

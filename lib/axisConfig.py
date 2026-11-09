@@ -840,8 +840,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mapping": "The response enhances the task by surfacing elements, relationships, and structure, then organising them into a structure where each relationship between elements is shown as "
         "a named connection between two named nodes, rather than as a position in a sequence.",
         "mark": "The response captures checkpoints and evidence as a process runs — recording what was observed at each stage rather than narrating the progression. Each checkpoint is headed by "
-        "'## Step N' (N incrementing from 1); when the checkpoint derives from a prior artifact, the header appends ' — Governing: <brief citation>'. The step marker is purely structural "
-        "— it does not satisfy any protocol requirement, gate condition, or artifact precondition.",
+        "'## Step N' (N incrementing from 1); when the checkpoint derives from a prior artifact, the header appends ' — Governing: <brief citation>'. The step marker is purely "
+        "structural: protocol requirements, gate conditions, and artifact preconditions are each satisfied by their own named artifacts.",
         "meld": "The response enhances the task by reasoning about combinations, overlaps, balances, and constraints between elements.",
         "melody": "The response rates a seam or coupling using three coupling pressure dimensions. Visibility: how explicit and discoverable the contract is — named orchestrators, typed "
         "interfaces, and documented invariants present: high; scattered helpers or implicit state with no explicit contract: low. Scope: how widely a change at this seam propagates "
@@ -884,9 +884,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "thecriteria and scheme driving the sequencing rather than merely producing the sorted result — consider whether the distinction is needed.",
         "origin": "The response enhances the task by naming the prior decisions or events that produced the subject's current form, and for at least one named prior decision or event, naming a "
         "specific present-state property it produced that would be absent if that decision or event had not occurred.",
-        "own": "The response contains no path, command, instruction, or recommendation whose execution would affect any artifact that is shared with or accessible to others — whether or not the "
-        "effect has been transmitted yet. An artifact satisfies this constraint only if it is entirely private to the operator and no action the operator could take would make it visible "
-        "to another party without first creating a new artifact. An artifact that could be shared by a single transmission step does not satisfy this constraint.",
+        "own": "The response contains only paths, commands, instructions, and recommendations whose execution affects artifacts that are entirely private to the operator — artifacts that no "
+        "action available to the operator could make visible to another party without first creating a new artifact, whether or not any transmission has happened yet. An artifact is "
+        "accessible to others when a single transmission step could share it.",
         "paradox": "The response holds the subject as an unresolved generative tension rather than converging toward explanation or conclusion. It names what resists analysis without "
         "substituting a reframing that dissolves the resistance. Synthesis, resolution, and explanation are not valid closing moves.",
         "perturb": "The response deliberately introduces controlled variations or faults into a system in order to observe its response and evaluate the adequacy of its safeguards, assumptions, "
@@ -939,8 +939,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "must appear in the re-expression, placed within the new basis — not mentioned alongside it. After re-expressing all items, the response names what structural relationship or "
         "priority became visible, using the label 'What this reveals:' — a response that omits this label has not satisfied this requirement.",
         "redact": "The response rewrites the subject for a general audience by applying a named criteria list. Before producing the rewritten output, it states each category of content being "
-        "excluded. The rewritten output contains no content matching any named category — a rewrite where a named category is present in the output does not satisfy this requirement. "
-        "Content is removed or paraphrased naturally; no placeholder markers are required.",
+        "excluded. Every named category is absent from the rewritten output. Content is removed or paraphrased naturally; placeholder markers are optional.",
         "reify": "The response enhances the task by identifying implicit patterns, assumptions, or relationships and making them explicit as formal entities, distinctions, or rules that "
         "constrain reasoning.",
         "release": "The response reduces distortion by de-weighting contingent or temporary features of the situation — asking which concerns would dissolve if the current state changed; "

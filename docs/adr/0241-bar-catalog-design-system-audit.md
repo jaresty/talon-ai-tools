@@ -176,10 +176,24 @@ Findings deferred from that run, now resolved (2026-11-08, receipt `202611090130
   produced five labeled sections, all before the dependent section.
   `_tests/test_topology_definitions.py` pins all three. Behavioral checks are one haiku run per token
   on one subject each with no baseline against the old text.
-- Remaining "does not satisfy" (12 definitions): scope `jobs`; method `eliminate`, `falsify`, `gate`,
-  `ground`, `mark`, `own`, `prism`, `redact`, `shoshin`; form `quiz`; channel `zettel`. Many of these
-  carry the same redundant-closer shape and may go through the same sequence; `falsify` and `ground` wait
-  on the design work in their nn notes.
+### Progress: batch 1 of the remaining closers (2026-11-08)
+
+`own`, `redact` and `mark` rewritten (receipt `20261109013729-2303`; `_tests/test_deny_list_definitions.py`
+holds a `CLEARED` table later batches extend). `redact` and `mark` were redundant or anti-escape closers
+and became affirmative statements ("Every named category is absent from the rewritten output";
+"protocol requirements, gate conditions, and artifact preconditions are each satisfied by their own named
+artifacts"). `own` is the cautionary case: I deleted its closer as redundant, and a haiku agent then passed
+every recommendation by treating "uploading" as "creating a new artifact". A baseline run of the original
+definition reasoned about single-step sharing and avoided synced directories; my first affirmative
+replacement ("suffices to share an artifact that already exists") did not reproduce that, and a third
+form that states the test ("An artifact is accessible to others when a single transmission step could
+share it.") did. Lesson for the remaining batches: a closer that is the contrapositive of the preceding
+sentence can go; one that adds a decision rule must be restated as the rule, and checked against a
+baseline run of the original, not only against the new text. Limits: one subject per token, haiku only;
+`mark`'s anti-escape clause was not exercised (no gate in the subject); the `own` check reads "single
+transmission" mostly as automatic sync.
+- Remaining "does not satisfy" (9 definitions): scope `jobs`; method `eliminate`, `gate`, `prism`,
+  `shoshin`, plus `falsify` and `ground` (blocked on their design notes); form `quiz`; channel `zettel`.
 
 ## Consequences
 

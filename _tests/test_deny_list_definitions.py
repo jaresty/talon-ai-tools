@@ -1,0 +1,67 @@
+import unittest
+
+# Definitions rewritten to state what the output contains, not what fails (ADR-0241).
+# Each batch appends here: (axis, token) -> literal text the definition must keep.
+CLEARED = {
+    ("method", "own"): (
+        "entirely private to the operator",
+        "first creating a new artifact",
+        "is accessible to others when a single transmission step could share it",
+    ),
+    ("method", "redact"): (
+        "states each category of content being excluded",
+        "absent from the rewritten output",
+    ),
+    ("method", "mark"): (
+        "## Step N",
+        "Governing:",
+        "each satisfied by their own named artifacts",
+    ),
+}
+
+
+def _definition(axis, token):
+    from lib.axisConfig import AXIS_KEY_TO_VALUE
+
+    return AXIS_KEY_TO_VALUE[axis][token]
+
+
+class ClearedDefinitionTests(unittest.TestCase):
+    def test_no_cleared_definition_contains_a_deny_list_sentence(self) -> None:
+        """A cleared definition states what the response contains; it has no does-not-satisfy sentence."""
+
+        offenders = [k for k in CLEARED if "does not satisfy" in _definition(*k)]
+        self.assertEqual(offenders, [], f"deny-list sentences remain in: {offenders}")
+
+    def test_each_cleared_definition_keeps_its_anchors(self) -> None:
+        """Rewriting keeps the literal text each token's requirement rests on."""
+
+        for key, anchors in CLEARED.items():
+            for anchor in anchors:
+                with self.subTest(token=key, anchor=anchor):
+                    self.assertIn(anchor, _definition(*key))
+
+    def test_each_cleared_definition_opens_with_the_response(self) -> None:
+        """The catalog convention: every definition starts 'The response'."""
+
+        for key in CLEARED:
+            with self.subTest(token=key):
+                self.assertTrue(_definition(*key).startswith("The response"))
+
+    def test_own_states_privacy_affirmatively(self) -> None:
+        """own requires every effect to land on private artifacts, not merely forbids shared ones."""
+
+        text = _definition("method", "own")
+        self.assertTrue(text.startswith("The response contains only"))
+        self.assertIn("An artifact is accessible to others when a single transmission step could share it.", text)
+
+    def test_redact_placeholders_are_optional(self) -> None:
+        """redact states placeholder markers as optional, not as 'no ... required'."""
+
+        text = _definition("method", "redact")
+        self.assertIn("placeholder markers are optional", text)
+        self.assertNotIn("no placeholder markers are required", text)
+
+
+if __name__ == "__main__":
+    unittest.main()

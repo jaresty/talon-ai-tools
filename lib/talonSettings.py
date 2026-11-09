@@ -131,7 +131,10 @@ class AxisValues(TypedDict):
 
 
 _AXIS_SOFT_CAPS: dict[str, int] = {
-    # Completeness remains scalar and is capped by construction.
+    # Topology and completeness are single-valued; `bar build` rejects a second
+    # token on either, and the table says so for every consumer that reads it.
+    "topology": 1,
+    "completeness": 1,
     "scope": 2,
     "method": 5,
     "form": 1,

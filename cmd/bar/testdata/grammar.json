@@ -138493,6 +138493,8 @@
       "channel"
     ],
     "axis_soft_caps": {
+      "topology": 1,
+      "completeness": 1,
       "scope": 2,
       "method": 5,
       "form": 1,
@@ -143490,7 +143492,7 @@
     "axes": "7ad1af351489883e82685ef5aaa67c7ca075b7586e7cb3edbb018b077175dbd2",
     "tasks": "17b53149581655638a1b3288fe2b2821fc73ffc689e3e8accf42841ebb0428ad",
     "persona": "ebb5421aba177b74804f81a94e2fea361140b951a158ac66688d7d274acfd392",
-    "hierarchy": "1e2e19ac235be41603120dadab809a779609c6f31dcba9b6f76ffc60bbab66f5",
+    "hierarchy": "f5109c1a918d3d9b6d9d4809847570ecdd1acd284ec16d7502d1035467c0a46f",
     "slugs": "9b578148cb095a8e59d68ef445980515df6c9d1483068000f5a0f7f287060b13",
     "patterns": "d0c8ae6c632d91600e940142ed96286dd23b1c5650152a7db267693f2eb62194",
     "starter_packs": "691d199557c630403629fdfef7e4389fb25658fc35ad7bedfef303a210468be5",

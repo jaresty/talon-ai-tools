@@ -91,10 +91,18 @@ horizontal {none, rog, ong, bog}, with `jog` the null cell.
   checks that each of the 9 compounds plus `fig` and `bog` states distinctions against exactly its two
   components, which is the only record that the flat compound tokens are built from two parts.
 - Decided not to split `directional`; the compound check above is the mitigation.
-- Not done: reciprocal mirroring of the remaining one-way distinctions (~289 before this change), the
-  hierarchy gaps (`directional` absent from `axis_priority`, persona absent from the hierarchy, no soft
-  cap for topology and completeness; a missing cap means no cap, so this is a documentation decision),
-  and the items below.
+- Soft caps: `topology` and `completeness` added to `_AXIS_SOFT_CAPS` (both 1). They were already
+  single-valued (`bar build` rejects a second token on either), but through hardcoded checks the table
+  never saw; the earlier note here that a missing cap "means no cap" was wrong. TUI and web already
+  defaulted a missing cap to 1, so only Python's `_canonicalise_axis_tokens` changed behavior (it now
+  keeps the latest token, as it already did for form and directional).
+- Open: `bar build` reads the table only for scope and method; form, directional, topology and
+  completeness are hardcoded single-token errors, and channel (table value 3, Python enforces it) has no
+  check in Go at all: four channels were accepted. `bar help llm` also hardcodes "others 0-1", which is
+  wrong for channel. Decide whether channel's cap is intentional, then have Go enforce the table for
+  every axis.
+- Not done: reciprocal mirroring of the remaining one-way distinctions (~289 before this change),
+  `directional` absent from `axis_priority` and persona absent from the hierarchy, and the items below.
 
 ## Follow-up: deny-list phrasing in definitions
 

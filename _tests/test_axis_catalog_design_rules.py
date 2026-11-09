@@ -251,6 +251,50 @@ if not TYPE_CHECKING:
                     f"jog text does not describe orientation: {text!r}",
                 )
 
+    class SoftCapTableTests(unittest.TestCase):
+        def _talon_settings(self):
+            try:
+                from bootstrap import bootstrap
+
+                bootstrap()
+                from talon_user.lib import talonSettings
+            except Exception as exc:  # pragma: no cover - environment dependent
+                self.skipTest(f"talonSettings not importable here: {exc}")
+            return talonSettings
+
+        def test_single_valued_axes_are_in_the_cap_table(self) -> None:
+            """topology and completeness are single-valued, and the table says so."""
+
+            caps = self._talon_settings().axis_soft_caps()
+            self.assertEqual(caps.get("topology"), 1)
+            self.assertEqual(caps.get("completeness"), 1)
+
+        def test_existing_caps_are_unchanged(self) -> None:
+            """The caps that were already declared keep their values."""
+
+            caps = self._talon_settings().axis_soft_caps()
+            for axis, value in {
+                "scope": 2,
+                "method": 5,
+                "form": 1,
+                "channel": 3,
+                "directional": 1,
+            }.items():
+                self.assertEqual(caps.get(axis), value, axis)
+
+        def test_canonicalise_keeps_the_latest_single_valued_token(self) -> None:
+            """A second topology or completeness token replaces the first."""
+
+            settings = self._talon_settings()
+            self.assertEqual(
+                settings._canonicalise_axis_tokens("topology", ["witness", "audit"]),
+                ["audit"],
+            )
+            self.assertEqual(
+                settings._canonicalise_axis_tokens("completeness", ["full", "deep"]),
+                ["deep"],
+            )
+
     class RealCatalogDesignRuleTests(unittest.TestCase):
         def test_real_catalog_satisfies_design_rules(self) -> None:
             """Regression: the committed catalog satisfies A1, A2 and A5."""

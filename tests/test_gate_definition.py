@@ -48,4 +48,4 @@ def test_gate_definition_no_structural_property_escape():
 
 def test_gate_definition_per_action_cardinality():
     """Each governed action requires its own gate condition block."""
-    assert "a gate condition block from a prior action does not satisfy" in _gate_def()
+    assert "each governed action requires its own gate condition block" in _gate_def()

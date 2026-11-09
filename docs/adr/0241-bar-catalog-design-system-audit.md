@@ -334,6 +334,19 @@ Reason, Reconcile, Leak) and 4 to 5 disposition lines, both declined on the seco
 lines, and no run called an Agent or Task tool. n=1 per arm per subject, haiku only; the delegation clauses
 (b) and (c) were not exercised since they restate earlier sentences.
 
+Verification gap found after the pass (2026-11-08): `tests/` (run by CI with `pytest tests/`, separate from
+`_tests/`) pinned wording this pass removed on purpose and was never run during it. Three assertions failed:
+`tests/test_gate_definition.py` required "a gate condition block from a prior action does not satisfy"
+(removed with `gate`'s closer), and `tests/test_prism_definition.py` required the old single-vantage-point
+clause and the approach prohibition (replaced by the cognitive-frame design). They now pin the current
+text: "each governed action requires its own gate condition block", and for `prism` the cognitive-frame
+clause, the `Construal:`/`Presupposes:`/`Reads fact K:` lines and the differing-reading requirement.
+The CI set is `pytest _tests/`, `pytest tests/`, `go test ./...`, `cd web && npm test`,
+`make axis-import-guard`, `make ci-guardrails`, the grammar regeneration sync check and pyright; all pass
+now except pyright's existing errors (65 at the start of the pass, 61 now; two this pass had added in
+`GPT/gpt.py` and the reciprocity validator were fixed). Rule for repeating a definition pass: run the
+whole CI set, not only the suites the edited files are known to touch.
+
 Summary of the deny-list pass: 16 definitions lost every "does not satisfy" sentence, `prism` was redesigned
 around cognitive frames instead, and `own`, `quiz` and `shoshin`'s (a) clause kept their rule in affirmative
 form. Remaining: `falsify` (4 occurrences) and `ground` (9), blocked on their design notes

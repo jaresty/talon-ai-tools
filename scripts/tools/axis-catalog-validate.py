@@ -411,7 +411,7 @@ def validate_distinctions_reciprocal(catalog) -> List[str]:
         for token, payload in (tokens or {}).items():
             for distinction in (payload or {}).get("distinctions", []) or []:
                 target = (distinction or {}).get("token")
-                if target in axis_of:
+                if isinstance(target, str) and target in axis_of:
                     edges.add((token, target))
 
     for source, target in sorted(edges):

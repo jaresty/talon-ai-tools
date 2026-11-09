@@ -2027,10 +2027,15 @@ class UserActions:
 
         snapshot = last_recipe_snapshot()
         # Replay is a spoken-command surface: clamp each axis to what the voice grammar takes.
-        scope_tokens = clamp_to_voice_slots("scope", snapshot.get("scope_tokens") or [])
-        method_tokens = clamp_to_voice_slots("method", snapshot.get("method_tokens") or [])
-        form_tokens = clamp_to_voice_slots("form", snapshot.get("form_tokens") or [])
-        channel_tokens = clamp_to_voice_slots("channel", snapshot.get("channel_tokens") or [])
+        def _voice_tokens(axis: str, key: str) -> list[str]:
+            value = snapshot.get(key)
+            tokens = [str(t) for t in value] if isinstance(value, (list, tuple)) else []
+            return clamp_to_voice_slots(axis, tokens)
+
+        scope_tokens = _voice_tokens("scope", "scope_tokens")
+        method_tokens = _voice_tokens("method", "method_tokens")
+        form_tokens = _voice_tokens("form", "form_tokens")
+        channel_tokens = _voice_tokens("channel", "channel_tokens")
 
         # Rebuild recipe/state with capped axes to avoid replaying over-cap values.
         set_last_recipe_from_selection(

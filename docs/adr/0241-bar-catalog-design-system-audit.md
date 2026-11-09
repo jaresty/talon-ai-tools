@@ -71,8 +71,17 @@ horizontal {none, rog, ong, bog}, with `jog` the null cell.
    duplication discriminator from ADR-0085.
 3. Mirror the 289 one-way distinctions, or record in the guidebook that one-way is intentional.
    Prefer a generated check over hand edits.
-4. Move procedure out of the `ground` and `falsify` definitions into referenced blocks, then slim
-   `ground+falsify` to the interaction only.
+4. Do not slim `ground+falsify`. Corrected after measuring: the composition (11.6 KB, not ~7 KB) does
+   not restate the definitions (0 of 75 sentences overlap a definition by more than 30%). It holds the
+   adequacy seam (the property<->assertion bijection, distinguishing-state construction, the
+   `Adequacy:` / `Audit:` / `Coverage:` verdicts), which exists only when both tokens are active. That
+   is where the orthogonality protocol and falsify design laws 5 and 7 (nn `20260816151723-4445`) put it.
+   The real work on these three texts is separate and already planned: the falsify domain-agnostic
+   rewrite (`20260817012812-4903`, "not yet an implementation", blocked on the cross-model eval that
+   note says to run before mutating falsify), restoring `ground`'s epistemic opener (`20260719224020-0703`),
+   and the deny-list rewrites below. Measured: "does not satisfy" ground 9, falsify 4, composition 6;
+   software vocabulary per KB ground 2.0, falsify 8.5, composition 6.4 (domain-agnostic protocol
+   `20260716164822-9216`).
 5. Model directional as two axes (vertical, horizontal) in the grammar, keeping the 16 spoken
    tokens as aliases so existing usage does not break.
 6. Add a catalog test that enforces A1 and A2, and that no cross-axis pair is registered in

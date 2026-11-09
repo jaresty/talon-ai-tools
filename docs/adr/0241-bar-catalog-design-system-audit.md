@@ -527,3 +527,20 @@ Under equal underlying pass rates the batch-2b result (three of its four C failu
 Hollow probe on the batch-2b failures (haiku; run after the eval failed): its central claim, that both failing runs had no enumerated `Assertion:` lines so the coverage sentence is vacuously true, holds for two of five failing runs; three failing runs enumerated assertions (3, 4 and 6 lines) and still lacked a `Failure:` line in the required format. Its conclusion that the evidence points to a defect in the definition text was not supported (runs on the same text pass at other times). It did surface, correctly, that `falsify`'s sentence "coverage is complete exactly when every enumerated Assertion line has a matching outcome line" read literally allows the zero-line case; the older deny-form sentence it replaced had the same property. Recorded as a possible gap in `falsify`; not the cause here.
 
 Remaining closers: `[96]` (completeness-check line) and `[122]` (task work before `§ ground complete`). Limits: 3 to 4 runs per cell; haiku only.
+
+### hollow — draft anchoring test measured and rejected; two limits recorded
+
+Follow-up to design note 20260709-style capture `20261109154046-3214` (hollow checks clause validity, not behavioral contribution, and has no test for self-declared strings). Draft addition to `hollow`, built in a separate worktree (the main tree was not edited): "A named string distinguishes a compliant transcript from a non-compliant one only when it is anchored to a transcript position that the model's own prose cannot supply — a tool-result block, or a verbatim quote of a record that appears in one; a string the model writes about itself with no such anchor is a self-declared label, and a clause that relies on one is weak even when it names the string."
+
+Test: twelve haiku runs of `bar build probe hollow full`, each auditing one clause, answering `VERDICT: VALID` or `VERDICT: NOT VALID` with no hint about self-declaration. T1 = the self-declared `Property subject: … — artifact structure` clause (should be flagged); T2 = "Each 'Failure:' line quotes, verbatim, a line from a tool-result block that holds the guard's own output" (anchored control, should be valid). Three runs per clause per arm (control: hollow unchanged; variant: with the sentence).
+
+The test was contaminated by the harness and by me. Agents explored the shared scratchpad and read files there, including the draft's spec file; one control run quoted the new sentence in its verdict, three runs audited the wrong clause (hollow's own sentence; a `falsify` clause from an earlier probe file), and one run was never given a clause. Excluded: 5 of 12. Clean runs (7):
+
+| Clause | Control | Variant |
+|---|---|---|
+| T1 (self-declared; should be flagged) | 1 NOT VALID, 1 VALID | 2 NOT VALID |
+| T2 (anchored; should be valid) | 1 VALID, 1 NOT VALID | 1 NOT VALID |
+
+The arms are not separated: the control flips on both clauses, and the variant marked the anchored control NOT VALID on addressability grounds ("the guard's own output requires semantic inference"), not through the new sentence. No clean variant run cited the new sentence as the basis for its verdict. Not adopted; `hollow` is unchanged.
+
+For a retry: isolate the probe (binaries and a bare subject in an otherwise empty directory; pass the clause with `--subject`; no spec files or earlier probe output reachable), and use more runs per cell. A single-run example (`gV1-3`) remains the only direct evidence of the self-declaration gap; the draft has not shown that a sentence fixes it. Limits: haiku; seven clean runs.

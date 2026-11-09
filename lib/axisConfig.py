@@ -3450,7 +3450,21 @@ class AxisTokenMetadata(TypedDict, total=False):
 AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
     "channel": {
         "adr": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "adr = one decision with its context and consequences as a standalone document; ledger = running record under fixed headings, written to a persistent "
+                    "file",
+                    "token": "ledger",
+                },
+                {
+                    "note": "adr = architecture decision record; skill = reusable agent skill definition",
+                    "token": "skill",
+                },
+                {
+                    "note": "adr = architecture decision record; agent = autonomous subprocess specification",
+                    "token": "agent",
+                },
+            ],
             "heuristics": [
                 "write an ADR",
                 "architecture decision record",
@@ -3560,7 +3574,20 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "code": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "code = notation chosen by the task as the complete output; html = notation fixed to semantic HTML as the complete output",
+                    "token": "html",
+                },
+                {
+                    "note": "code = notation chosen by the task; shellscript = shell notation, written to run as given",
+                    "token": "shellscript",
+                },
+                {
+                    "note": "code = one code artifact; notebook = ordered markdown and code cells for stepwise execution and exploration",
+                    "token": "notebook",
+                },
+            ],
             "heuristics": [
                 "just the code",
                 "code only",
@@ -3572,7 +3599,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "codetour": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "codetour = ordered steps that point at locations in existing source, each with commentary; notebook = cells that carry their own runnable code",
+                    "token": "notebook",
+                }
+            ],
             "heuristics": [
                 "codetour",
                 "VS Code tour",
@@ -3592,7 +3624,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "code",
                 },
                 {
-                    "note": "shellscript = executable script; demo = captured result of execution, not the script",
+                    "note": "demo = the result captured from running a script; shellscript = the executable script",
                     "token": "shellscript",
                 },
                 {
@@ -3627,7 +3659,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "diagram = Mermaid format; sketch = D2 diagram format",
                     "token": "sketch",
-                }
+                },
+                {
+                    "note": "diagram = Mermaid source that a renderer lays out; svg = shapes and paths written directly as vector markup",
+                    "token": "svg",
+                },
             ],
             "heuristics": [
                 "diagram",
@@ -3696,7 +3732,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "gherkin": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "gherkin = scenario notation as the complete output; jira = Jira markup dialect applied to the content",
+                    "token": "jira",
+                }
+            ],
             "heuristics": [
                 "Gherkin format",
                 "Given/When/Then",
@@ -3729,7 +3770,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "html": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "html = semantic document structure (headings, lists, tables) read as a page; svg = drawn shapes and paths rendered as a vector graphic",
+                    "token": "svg",
+                },
+                {
+                    "note": "html = notation fixed to semantic HTML as the complete output; code = notation chosen by the task as the complete output",
+                    "token": "code",
+                },
+            ],
             "heuristics": [
                 "HTML output",
                 "semantic HTML",
@@ -3779,7 +3829,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "jira": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "jira = Jira markup dialect applied to the content; gherkin = scenario notation as the complete output",
+                    "token": "gherkin",
+                },
+                {
+                    "note": "jira = markup for a ticketing destination (headings, lists, panels); slack = markup for a chat destination (mentions, code blocks)",
+                    "token": "slack",
+                },
+            ],
             "heuristics": [
                 "Jira format",
                 "Jira markup",
@@ -3800,6 +3859,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "snap (form) = one-time state snapshot for resumption; ledger (channel) = continuously-maintained categorized record that grows across turns",
                     "token": "snap",
                 },
+                {
+                    "note": "ledger = running record under fixed headings, written to a persistent file; adr = one decision with its context and consequences as a standalone "
+                    "document",
+                    "token": "adr",
+                },
             ],
             "heuristics": [
                 "keep a ledger",
@@ -3815,7 +3879,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "notebook": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "notebook = ordered markdown and code cells for stepwise execution and exploration; code = one code artifact",
+                    "token": "code",
+                },
+                {
+                    "note": "notebook = cells that carry their own runnable code; codetour = ordered steps that point at locations in existing source, each with commentary",
+                    "token": "codetour",
+                },
+            ],
             "heuristics": [
                 "Jupyter notebook",
                 "notebook format",
@@ -3849,7 +3922,20 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "plain": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "plain = plain text displayed inline; aloud = spoken via system TTS command",
+                    "token": "aloud",
+                },
+                {
+                    "note": "plain = suppresses formatting; demo = formatting governed by reviewer legibility",
+                    "token": "demo",
+                },
+                {
+                    "note": "plain = prose in natural paragraphs as a delivery format (channel); tight = concise dense prose style (form) that avoids filler",
+                    "token": "tight",
+                },
+            ],
             "heuristics": [
                 "no bullets",
                 "no formatting",
@@ -3877,7 +3963,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "remote": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "remote = instructions and interaction hints that work over video, voice or screen sharing; sync = a session's agenda, steps and cues",
+                    "token": "sync",
+                }
+            ],
             "heuristics": [
                 "remote delivery",
                 "distributed session",
@@ -3887,7 +3978,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "shellscript": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "shellscript = shell notation, written to run as given; code = notation chosen by the task",
+                    "token": "code",
+                },
+                {
+                    "note": "shellscript = the executable script; demo = the result captured from running it",
+                    "token": "demo",
+                },
+            ],
             "heuristics": [
                 "shell script",
                 "bash script",
@@ -3902,7 +4002,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "sketch = D2 diagram format; diagram = Mermaid format",
                     "token": "diagram",
-                }
+                },
+                {
+                    "note": "sketch = D2 source that a renderer lays out; svg = shapes and paths written directly as vector markup",
+                    "token": "svg",
+                },
             ],
             "heuristics": [
                 "D2 diagram",
@@ -3938,7 +4042,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "slack": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "slack = markup for a chat destination (mentions, code blocks); jira = markup for a ticketing destination (headings, lists, panels)",
+                    "token": "jira",
+                },
+                {
+                    "note": "slack = chat-destination markup in the response; github = delivery to GitHub via the gh CLI",
+                    "token": "github",
+                },
+            ],
             "heuristics": [
                 "Slack format",
                 "format for Slack",
@@ -3969,7 +4082,20 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "svg": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "svg = drawn shapes and paths rendered as a vector graphic; html = semantic document structure (headings, lists, tables) read as a page",
+                    "token": "html",
+                },
+                {
+                    "note": "svg = shapes and paths written directly as vector markup; diagram = Mermaid source that a renderer lays out",
+                    "token": "diagram",
+                },
+                {
+                    "note": "svg = shapes and paths written directly as vector markup; sketch = D2 source that a renderer lays out",
+                    "token": "sketch",
+                },
+            ],
             "heuristics": [
                 "SVG format",
                 "as SVG",
@@ -3984,7 +4110,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "sync = session plan with timing cues; presenterm = actual slide deck artifact",
                     "token": "presenterm",
-                }
+                },
+                {
+                    "note": "sync = a session's agenda, steps and cues; remote = instructions and interaction hints that work over video, voice or screen sharing",
+                    "token": "remote",
+                },
             ],
             "heuristics": [
                 "session plan",
@@ -4880,6 +5010,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "visual (method) = spatial framing of ideas regardless of output format; chart (form) = data artifact with spatial encoding",
                     "token": "visual",
                 },
+                {
+                    "note": "chart = quantities encoded by position, size or color with the data values embedded; wardley = components placed by value-chain visibility and "
+                    "evolution stage",
+                    "token": "wardley",
+                },
             ],
             "heuristics": [
                 "show this as a chart",
@@ -4991,6 +5126,27 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "coupling diagram",
                 "what is joined at the interface",
                 "where do these components couple",
+            ],
+        },
+        "dialogue": {
+            "distinctions": [
+                {
+                    "note": "dialogue = turns assigned to named speakers; ibis = contributions typed by their role in the deliberation, whoever made them",
+                    "token": "ibis",
+                },
+                {
+                    "note": "dialogue = turns assigned to named speakers; storyboard = content assigned to observable visual moments",
+                    "token": "storyboard",
+                },
+            ],
+            "heuristics": [
+                "write this as a dialogue",
+                "script the conversation",
+                "back and forth between two speakers",
+                "turn this into a conversation",
+                "role-play the exchange",
+                "who says what",
+                "write the dialogue between",
             ],
         },
         "direct": {
@@ -5756,7 +5912,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "tight": {
             "distinctions": [
                 {
-                    "note": "plain = no structural decoration as a delivery format (channel); tight = concise dense prose style (form) that avoids filler",
+                    "note": "tight = concise dense prose style (form) that avoids filler; plain = prose in natural paragraphs as a delivery format (channel)",
                     "token": "plain",
                 }
             ],
@@ -5779,6 +5935,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "timeline (form) = temporal layout of stages; log (form) = dated work-log entries",
                     "token": "log",
+                },
+                {
+                    "note": "timeline = events ordered by when they occur; wardley = components placed by value-chain visibility and evolution stage",
+                    "token": "wardley",
                 },
             ],
             "heuristics": [
@@ -5882,7 +6042,17 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "wardley": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "wardley = components placed by value-chain visibility and evolution stage; timeline = events ordered by when they occur",
+                    "token": "timeline",
+                },
+                {
+                    "note": "wardley = components placed by value-chain visibility and evolution stage; chart = quantities encoded by position, size or color with the data values "
+                    "embedded",
+                    "token": "chart",
+                },
+            ],
             "heuristics": [
                 "Wardley map",
                 "map on evolution axis",
@@ -6281,6 +6451,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "ground = treat declared governing layer as fixed authority; bound = limit reach of influence",
                     "token": "ground",
+                },
+                {
+                    "note": "bound = the analysis introduces limits on how far influence propagates through the subject; own = every recommended action affects only artifacts "
+                    "private to the operator",
+                    "token": "own",
                 },
             ],
             "heuristics": [
@@ -7731,7 +7906,17 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             ],
         },
         "own": {
-            "distinctions": [],
+            "distinctions": [
+                {
+                    "note": "own = every recommended action affects only artifacts private to the operator; redact = the output excludes the named categories of content",
+                    "token": "redact",
+                },
+                {
+                    "note": "own = every recommended action affects only artifacts private to the operator; bound = the analysis introduces limits on how far influence propagates "
+                    "through the subject",
+                    "token": "bound",
+                },
+            ],
             "heuristics": [
                 "don't push",
                 "keep it local",
@@ -8171,6 +8356,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "dam (scope) = define containment boundaries conceptually; redact = actively apply removal criteria to produce clean output",
                     "token": "dam",
+                },
+                {
+                    "note": "redact = the output excludes the named categories of content; own = every recommended action affects only artifacts private to the operator",
+                    "token": "own",
                 },
             ],
             "heuristics": [

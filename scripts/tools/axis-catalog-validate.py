@@ -288,6 +288,72 @@ def validate_distinction_targets(catalog) -> List[str]:
     return errors
 
 
+# Tokens that state no distinction on purpose: the null value of an axis has no
+# neighbour to be told apart from.
+_NO_DISTINCTION_REQUIRED = {("directional", "jog")}
+
+
+def validate_token_names_unique_across_axes(catalog) -> List[str]:
+    """A token name belongs to exactly one axis.
+
+    A name registered on two axes cannot be looked up, parsed or described
+    without first deciding which axis was meant.
+    """
+    errors: List[str] = []
+    owners: dict[str, list[str]] = {}
+    for axis_name, tokens in (catalog.get("axes", {}) or {}).items():
+        for token in tokens or {}:
+            owners.setdefault(token, []).append(axis_name)
+    for token, axes in sorted(owners.items()):
+        if len(axes) > 1:
+            errors.append(
+                f"[token ownership] token '{token}' is registered on more than one "
+                f"axis: {', '.join(sorted(axes))} (a token name must belong to one axis)"
+            )
+    return errors
+
+
+def validate_distinctions_present(catalog) -> List[str]:
+    """Every token states at least one distinction against a neighbour.
+
+    A token with none cannot be told apart from its nearest neighbour at
+    selection time. The null value of an axis is exempt.
+    """
+    errors: List[str] = []
+    metadata = catalog.get("axis_token_metadata", {}) or {}
+    for axis_name, tokens in (catalog.get("axes", {}) or {}).items():
+        for token in tokens or {}:
+            if (axis_name, token) in _NO_DISTINCTION_REQUIRED:
+                continue
+            payload = ((metadata.get(axis_name, {}) or {}).get(token, {})) or {}
+            if not payload.get("distinctions"):
+                errors.append(
+                    f"[distinction drift] axis={axis_name} token='{token}' states no "
+                    f"distinction against any neighbour"
+                )
+    return errors
+
+
+def validate_incompatibilities_same_axis(incompatibilities, axes) -> List[str]:
+    """axis_incompatibilities enforces same-axis conflicts only.
+
+    Cross-axis conflicts are advisory and live in the cross-axis guidance;
+    registering one here would be enforced against the wrong axis.
+    """
+    errors: List[str] = []
+    for axis_name, token_map in (incompatibilities or {}).items():
+        axis_tokens = set((axes or {}).get(axis_name, {}) or {})
+        for token, conflicts in (token_map or {}).items():
+            for name in [token, *(conflicts or [])]:
+                if name not in axis_tokens:
+                    errors.append(
+                        f"[incompatibility scope] axis={axis_name} entry for '{token}' "
+                        f"names '{name}', which is not a token of that axis "
+                        f"(axis_incompatibilities is same-axis only)"
+                    )
+    return errors
+
+
 def validate_generated_lists(catalog, lists_dir: Path) -> List[str]:
     """Ensure committed Talon lists match catalog-generated tokens."""
 
@@ -398,6 +464,8 @@ def main() -> int:
     errors.extend(validate_no_legacy_style_axis(catalog))
     errors.extend(validate_kanji_no_duplicates_within_axis(catalog))
     errors.extend(validate_distinction_targets(catalog))
+    errors.extend(validate_token_names_unique_across_axes(catalog))
+    errors.extend(validate_distinctions_present(catalog))
     errors.extend(validate_static_prompt_axes(catalog))
     errors.extend(validate_static_prompt_descriptions(catalog))
     errors.extend(validate_static_prompt_sections_present(catalog))

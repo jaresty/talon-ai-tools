@@ -34,7 +34,7 @@ CLEARED = {
         "listed before any frame is applied",
         "enumerating N named cognitive frames",
         "numbered list of the shared facts of the subject",
-        "'Construal:' followed by a sentence beginning 'The subject is taken to be'",
+        "'Construal:' followed by a sentence whose grammatical subject is the subject's own noun phrase",
         "'Presupposes:' naming the roles present under that frame, what each expects, and what normally happens next",
         "'Reads fact K:'",
         "reads it differently from every other frame's",

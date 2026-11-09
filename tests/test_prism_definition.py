@@ -30,7 +30,7 @@ def test_prism_definition_contains_shared_facts_and_frame_lines():
     """Each frame block carries Construal, Presupposes and one Reads line per shared fact."""
     d = _prism_def()
     assert "numbered list of the shared facts of the subject" in d
-    assert "'Construal:' followed by a sentence beginning 'The subject is taken to be'" in d
+    assert "'Construal:' followed by a sentence whose grammatical subject is the subject's own noun phrase" in d
     assert "'Presupposes:' naming the roles present under that frame" in d
     assert "one 'Reads fact K:' line per shared fact K" in d
 

@@ -363,3 +363,11 @@ form. Remaining: `falsify` (4 occurrences) and `ground` (9), blocked on their de
 
 Whether the tool enforces A3/A4 at build time; whether one-way distinctions were deliberate;
 per-token behaviour of the heavy definitions.
+
+### prism `Construal:` — wording J adopted
+
+The `Construal:` clause now requires a sentence whose grammatical subject is the subject's own noun phrase (copied from the subject or the shared facts) and whose predicate names a kind of thing the subject is taken to be. Measured over 16 construals: 6 name a kind of thing, against 0 of 16 before (city 5 of 8, database 1 of 8).
+
+Open escape hatches, not closed by this wording:
+- one database run copied the whole question as the "subject" ("How should a small team decide … is a problem of …");
+- some database lines were not "is a" statements ("is constrained by …", "must align with …").

@@ -402,3 +402,21 @@ Hollow probe (haiku, `bar build probe hollow full`) on the rewrite pointed at th
 Invalid runs excluded: two scenario-C runs on the adopted build never called `bar help token` (3 tool calls, no definition loaded). The system prompt is byte-identical across the original, rewrite and adopted builds because definitions are fetched later, so the wording cannot have caused the skip. This is a craft-pack skip on a trivial task, not a falsify result.
 
 Open: the sample is 3 runs per arm on one scenario; the original-versus-rewrite gap (3/3 vs 1/3) is not statistically strong on its own, and the ablation arms are what make the cause credible.
+
+### falsify baseline gap — two candidate additions tested, neither adopted
+
+Gap (see the earlier probe section): an assertion about a system the agent cannot reach (production timing) ends as a local stand-in witness or an `Unobservable: … — structural` line, then `Coverage: complete`.
+
+A hollow probe (haiku, `probe hollow full`) on the current definition named two loopholes: (1) the structural/behavioral classification is a semantic judgment with no transcript observable; (2) nothing requires the observation to be of the subject the assertion names. Two affirmative additions were drafted and run on the same scenario (haiku; arms confirmed by grepping each transcript for its arm's wording; outcome read from files left in each sandbox):
+
+| Arm | Runs that ended `Unwitnessed` or `Coverage: incomplete` for the production-timing assertion |
+|---|---|
+| current definition | 0 of 2 |
+| V1: a `Property subject: "<assertion>" — artifact text` / `— artifact structure` line must precede any `Unobservable: … — structural` | 1 of 3 |
+| V2: the A-fail and A-pass results come from the subject the assertion names; results from any other subject go in an `Unwitnessed` line | 0 of 3 |
+
+Not adopted. V2 does not touch the path three of three runs took (the structural label). V1's line is self-declared: one run wrote `Property subject: … — artifact structure` for the production-timing assertion, satisfied the required line, and still ended `complete`; the one V1 success wrote `— artifact behavior`, a value the sentence does not offer, so the line did not drive that outcome either. A label the model writes about itself does not separate a compliant transcript from a non-compliant one, which is the hollow criterion's own objection.
+
+Hollow probe report caveat: its proposed replacement used deny-list wording ("does not satisfy"), and its per-run compliance grades were inconsistent; it served as a source of hypotheses only.
+
+Open: the gap is unfixed. A fix needs an observable the agent cannot produce by declaring it, for example tying the witness to the same named subject in both the assertion line and the guard's own output, or requiring the guard to run against the artifact on the target the assertion names. Sample sizes are 2 to 3 per arm on one scenario.

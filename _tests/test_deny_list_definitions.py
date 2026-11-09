@@ -68,6 +68,8 @@ CLEARED = {
         "Each property has its '§ minimality:' line, in one of these two forms, before Step 2 begins; if that line has not appeared, emit it before introducing any provisional sub-property.",
         "may the response emit '§ properties complete? yes', which appears after a '§ completeness check:' line for the retained set;",
         "A 'minimal' verdict quotes a most specific sub-term, names a candidate relaxation construction that contains that sub-term verbatim, and shows that construction violates the interpretation; if the candidate relaxation instead satisfies the interpretation, the property is over-specific and the over-specific form must be emitted instead.",
+        "a '§ completeness check:' line contains the request constraints quoted verbatim and every retained property expression.",
+        "'§ ground complete' appears before any test, implementation step, tool call, or task reasoning; if task reasoning begins and '§ ground complete' has not yet appeared, emit the Ground properties block in full and '§ ground complete' before continuing.",
     ),
     ("method", "mark"): (
         "## Step N",
@@ -81,10 +83,7 @@ CLEARED = {
 # "does not satisfy" sentence may be kept on purpose: (axis, token) -> allowed occurrences.
 # Empty now: prism's was the one case, and it was removed once a wording that names a
 # transcript-observable (sentence openings) reproduced it (ADR-0241).
-ALLOWED_DENY_SENTENCES = {
-    # ground: two closing sentences remain, each to be converted and measured on its own (ADR-0241).
-    ("method", "ground"): 2,
-}
+ALLOWED_DENY_SENTENCES = {}
 
 
 def _definition(axis, token):

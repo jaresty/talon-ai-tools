@@ -155,8 +155,7 @@ def build_ground_prompt() -> str:
         "the request constraints must be quoted verbatim from the explicit constraints of the original request; "
         "the chosen interpretation determines the meaning of those constraints where the request is ambiguous but does not add, remove, or alter explicit constraints; "
         "interpretive assumptions made to resolve ambiguity and observation-boundary definitions are not themselves request constraints unless they were explicit constraints of the original request; "
-        "every retained atomic property expression must appear exactly once, separated by ' / '; "
-        "a '§ completeness check:' line that omits the request constraints or omits any retained property expression does not satisfy this requirement. "
+        "every retained atomic property expression must appear exactly once, separated by ' / '; a '§ completeness check:' line contains the request constraints quoted verbatim and every retained property expression. "
         "Immediately after the completeness check, attempt to identify one explicit request constraint that is not logically entailed by the conjunction of the retained atomic property expressions. "
         "If such a constraint exists, emit '§ properties complete? no' — "
         "add one new property covering that explicit constraint, perform the required split testing, and repeat the completeness check. "
@@ -196,7 +195,6 @@ def build_ground_prompt() -> str:
         "The response must not terminate solely because '§ ground complete' has been emitted. "
         "All subsequent task work must remain consistent with the completed Ground properties; "
         "the Ground properties block is not itself the requested task unless the original request explicitly asks only for property derivation. "
-        "Any test, implementation step, tool call, or task reasoning that appears before '§ ground complete' does not satisfy this protocol; "
-        "if task reasoning begins and '§ ground complete' has not yet appeared, emit the Ground properties block in full and '§ ground complete' before continuing. "
+        "'§ ground complete' appears before any test, implementation step, tool call, or task reasoning; if task reasoning begins and '§ ground complete' has not yet appeared, emit the Ground properties block in full and '§ ground complete' before continuing. "
         "After '§ ground complete', continue with the requested task; do not treat the sentinel as terminating the response."
     )

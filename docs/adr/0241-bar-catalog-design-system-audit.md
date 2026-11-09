@@ -559,3 +559,28 @@ Criterion not met: the T1 gap is 5 points against the 40 required. The T2 condit
 What the result shows about the measurement: a clause built to be anchored was judged NOT VALID in 10 of 10 clean runs on both arms, usually on the grounds that "the guard's own output" or "tool-result block" needs semantic inference; the baseline NOT VALID rate on the self-declared clause was already 75%. One variant run quoted the new sentence verbatim in its verdict and still rejected the anchored clause. With a ceiling like this, a binary verdict from haiku cannot detect an improvement in hollow's wording. A comparison would need a graded measure (for example, which of two clauses is judged more addressable) or a stronger model, not a VALID/NOT VALID count. This also bears on how much weight to give any single hollow verdict in this audit: where a haiku probe called a clause valid or invalid, the call was not reliable evidence by itself, which is why every conversion here was decided by the craft-pack eval.
 
 The two limits in design note 20261109154046-3214 stand, and the self-declared-string gap still rests on one run (`gV1-3`).
+
+### ground — closing deny sentences, batch 3 (`[96]`, `[122]`): all nine converted
+
+Both converted in place at `lib/groundPrompt.py`, each sentence kept at its original position (the lesson from `[62]`):
+
+| Index | After |
+|---|---|
+| 96 | "…every retained atomic property expression must appear exactly once, separated by ' / '; a '§ completeness check:' line contains the request constraints quoted verbatim and every retained property expression." |
+| 122 | "'§ ground complete' appears before any test, implementation step, tool call, or task reasoning; if task reasoning begins and '§ ground complete' has not yet appeared, emit the Ground properties block in full and '§ ground complete' before continuing." |
+
+`ground` now has no "does not satisfy" sentence (nine of nine converted across batches 1, 2a, 2b/2c and 3); the deny-list test's allowance table is empty. `tests/test_ground_predecessor_sentinel_gates.py` pinned the old `[96]` closer; it now pins the affirmative wording (written first, shown failing, then the edit). Local: 414 tests, the deny-list test, the validator, the sync check.
+
+Craft-pack eval, with a confounded first batch that is set aside and the reason recorded here so it can be checked:
+
+| Batch | Result |
+|---|---|
+| First (C ×5, B ×3, A ×3), run around a usage-limit reset | 2 of 11 pass; 5 of 11 runs made zero `bar help token` calls (never loaded any definition), against 0 of 8 in a baseline run the same hour on the previous committed `ground`; the loaded runs mostly failed (C 0 of 3, A 1 of 2, B 1 of 1). The system prompt is byte-identical across the two builds, so the skips cannot come from the build. Set aside as a degraded window; this exclusion is post hoc. |
+| Same-time baseline, previous committed `ground` (C ×5, A ×3) | C 4 of 5, A 3 of 3; all loaded, none skipped |
+| Final build rerun (C ×5, A ×3) | C 5 of 5; A 1 of 2 valid (one run made zero help calls, excluded; the one failure skipped the completeness check and the `Retained properties:` line) |
+| Alternating A ×5 each (final build / baseline) | final 5 of 5, baseline 4 of 5 |
+| Final build confirmation (B ×3, C ×3) | B 2 of 3, C 3 of 3 |
+
+Healthy-window totals counting runs that loaded the definitions: final build 16 of 18 (A 6/7, C 8/8, B 2/3); unchanged baseline 11 of 13 (A 7/8, C 4/5). Including the discounted first batch's loaded runs, the final build is 18 of 24 against 11 of 13; the difference is not significant at these sizes (Fisher, about 0.4). Limits: haiku only; B was rerun only three times; the first batch's exclusion rests on the skip-rate anomaly, which is why the full numbers are given.
+
+Whole-series note on `ground`: of the nine closers, four were redundant with an adjacent affirmative clause and were removed or folded (batch 1); five carried behavior and were converted in place. Dropping one of the five (`[62]`) cost scenario C (1 of 4 against 7 of 7); converting it in place did not. The same pattern appeared once in `falsify` (the Overreach closer). Two hollow-token limits are recorded in design note `20261109154046-3214`.

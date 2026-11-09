@@ -71,7 +71,7 @@ def test_completeness_check_quotes_all_properties():
     """§ completeness check must include every retained atomic property expression."""
     core = _core()
     assert "every retained atomic property expression must appear exactly once, separated by ' / '" in core
-    assert "omits the request constraints or omits any retained property expression does not satisfy this requirement" in core
+    assert "a '§ completeness check:' line contains the request constraints quoted verbatim and every retained property expression" in core
 
 
 def test_properties_complete_no_sentinel():

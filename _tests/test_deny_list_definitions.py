@@ -46,6 +46,12 @@ CLEARED = {
         "(2) the returned ID must appear as the literal argument to the next command;",
         "nn bulk-link: skipped",
     ),
+    ("method", "shoshin"): (
+        "emits no invocations and is compliant",
+        "any delegation tool-use block must appear at a later transcript position than the disposition lines it enforces",
+        "Every item entering an isolated context",
+        "A response in which a point meets the trigger emits an invocation whose disposition lines establish that its frame set was chosen rather than inherited.",
+    ),
     ("method", "mark"): (
         "## Step N",
         "Governing:",

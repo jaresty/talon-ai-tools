@@ -300,8 +300,30 @@ the command logs. All four runs made six notes (an entry note plus five single-c
 Gap found, not fixed: only one of four runs linked the entry note to the claim notes; the other three
 bulk-linked each note to the stub's single suggestion. The definition says the entry note "links them" but
 its step list gives no command or observable for that link.
-- Remaining "does not satisfy" (3 definitions): method `shoshin` (12.5 KB, 2 occurrences), plus `falsify`
-  and `ground`, which are blocked on their design notes.
+### Progress: shoshin (2026-11-08)
+
+`shoshin` (receipt `20261109022133-7451`) had both occurrences in its last sentence, which had three clauses:
+(a) an eligible response with no disposition lines "has not established that its frame set was chosen rather
+than inherited"; (b) a delegation block with no disposition lines at an earlier position "does not satisfy
+this token"; (c) a delegation block with no `Forwarded:` line at an earlier position does not, "since the
+items ... were not audited for inherited framing". (b) restates sentence 11 (a delegation block must appear
+at a later transcript position than the disposition lines it enforces) and (c) restates sentence 37 (every
+item entering an isolated context is `Forwarded:`-audited, each line at an earlier position than the block).
+(a) is different: sentences 1 and 3 give only one direction ("invoke it only where ...", and a response in
+which no point meets the trigger "emits no invocations and is compliant"); the converse, that a response in
+which a point does meet the trigger must invoke, appeared only in (a). The sentence is replaced by that
+converse stated affirmatively: "A response in which a point meets the trigger emits an invocation whose
+disposition lines establish that its frame set was chosen rather than inherited." Tested original versus
+rewrite on a subject where the trigger is met ("Is a hot dog a sandwich?") and one where it is not ("What is
+17 times 3?"), in-thread only: both arms invoked on the first with all five parts (Trigger, Pool and sort,
+Reason, Reconcile, Leak) and 4 to 5 disposition lines, both declined on the second with zero disposition
+lines, and no run called an Agent or Task tool. n=1 per arm per subject, haiku only; the delegation clauses
+(b) and (c) were not exercised since they restate earlier sentences.
+
+Summary of the deny-list pass: 16 definitions lost every "does not satisfy" sentence, `prism` was redesigned
+around cognitive frames instead, and `own`, `quiz` and `shoshin`'s (a) clause kept their rule in affirmative
+form. Remaining: `falsify` (4 occurrences) and `ground` (9), blocked on their design notes
+(`20260817012812-4903`, the cross-model eval, and `20260719224020-0703`).
 
 ## Consequences
 

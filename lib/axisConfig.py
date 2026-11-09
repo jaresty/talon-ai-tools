@@ -1029,10 +1029,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "the inadmissible frames.  (4) Reconcile: compare the selected-frame result against the current-frame view and either quote a specific differing claim or state no claim "
         "differs. Before Reconcile, run the leak check: for each conclusion, identify any inadmissible frame it relied on — reused in-thread or passed as an assumption in a delegate's "
         "tool-use input; emit 'Leak: found' with the frame and redo excluding it, or 'Leak: not found'; iteration terminates at 'Leak: not found'. When the pass ran in a genuinely "
-        "isolating subagent that never received the inadmissible frames, 'Leak: not found' for those is guaranteed by construction. A shoshin-eligible response that produced no "
-        "disposition lines has not established that its frame set was chosen rather than inherited; a response containing a delegation tool-use block with no disposition lines at an "
-        "earlier transcript position does not satisfy this token; and a response containing a delegation tool-use block with no 'Forwarded:' line at an earlier transcript position "
-        "than that block does not satisfy this token, since the items entering the delegate's prompt were not audited for inherited framing before the handoff.",
+        "isolating subagent that never received the inadmissible frames, 'Leak: not found' for those is guaranteed by construction. A response in which a point meets the trigger emits "
+        "an invocation whose disposition lines establish that its frame set was chosen rather than inherited.",
         "simulation": "The response enhances the task by focusing on explicit thought experiments or scenario walkthroughs that project evolution over time, highlighting feedback loops, "
         "bottlenecks, tipping points, and emergent effects.",
         "snag": "The response enhances the task by surfacing coupled domains or seams — identifying where responsibilities or meanings are intermixed in ways that prevent clean separation.",

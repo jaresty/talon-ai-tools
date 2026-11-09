@@ -1121,13 +1121,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "blind": "The response opens each section that uses prior-session or cross-section context with an assumption block — a labeled list of the assumptions and constraints being carried "
         "forward — before any conclusion in that section that depends on them. Each conclusion that depends on prior context names the specific assumption block it draws from, by "
         "label, in the same section.",
-        "live": "The response precedes or accompanies each paragraph that advances the task with an observation line — a sentence beginning with a label such as 'Noticing:', 'Observing:', or "
-        "'Current state:' — that names the inner state influencing that paragraph. The observation line appears within the same paragraph as the task-advancing content.",
-        "relay": "The response externalizes state for continuation: schemas, contracts, invariants, dependency relationships, and terminology appear explicitly, each named before the section "
-        "that depends on them.",
+        "live": "The response gives each paragraph that advances the task an observation line — a sentence beginning with a label such as 'Noticing:', 'Observing:', or 'Current state:' — that "
+        "names the inner state influencing that paragraph. The observation line appears within that paragraph, before or alongside the task-advancing content.",
+        "relay": "The response externalizes state for continuation: schemas, contracts, invariants, dependency relationships, and terminology each appear under their own label, each named "
+        "before the section that depends on them.",
         "solo": "The response names, in the opening sentence of each intermediate step it includes, the specific prior step or derivation dependency that step closes — the step whose absence "
         "would leave the current derivation unable to proceed. Each intermediate step opens with a dependency label of the form 'Required because [prior step] cannot reach [current "
-        "conclusion] without this.' Output depth is governed by the completeness token independently.",
+        "conclusion] without this.' Depth of coverage is set independently of this requirement.",
         "witness": "The response names each assumption and its epistemic basis in the same paragraph or numbered step before stating any conclusion that depends on it. Each paragraph or "
         "numbered step that advances the reasoning names the assumption it relies on and the causal or epistemic basis for that assumption before the conclusion. Uncertainty is "
         "named in the same paragraph or step before the conclusion that resolves it.",

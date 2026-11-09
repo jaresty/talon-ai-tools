@@ -162,14 +162,20 @@ Behavioral check: three isolated haiku agents applied `audit`, `solo` and `relay
 subjects (nn integration receipt `20261109012420-8107`, partially adopted). It shows the new text is
 followable; it has no baseline against the old text, so it does not show the closers were needed or not.
 
-Findings deferred, not fixed here:
-- `live` contains a clash: "precedes or accompanies each paragraph" versus "appears within the same
-  paragraph". It was finalized by an August hollow audit, so it needs a decision.
-- `solo` ends with "Output depth is governed by the completeness token independently", which names
-  another token and breaks the orthogonality protocol (`20260715194839-8169`).
-- `relay` can be satisfied nominally: the agent's response listed generic labels and its verdict claimed
-  a "dependency relationships" definition that its own text did not contain. The weakness is in the
-  definition's wording and predates the closer's removal.
+Findings deferred from that run, now resolved (2026-11-08, receipt `20261109013042-4389`):
+- `live`: the clash between "precedes or accompanies each paragraph" and "appears within the same
+  paragraph" is resolved to the finalized intent in nn `20260515162048-8287` ("preceded or accompanied
+  ... in the same segment"): the observation line sits within the paragraph, before or alongside the
+  content. The original wording read as outside the paragraph.
+- `solo`: "Output depth is governed by the completeness token independently" named another token
+  (orthogonality protocol `20260715194839-8169`); now "Depth of coverage is set independently of this
+  requirement."
+- `relay`: earlier described here as satisfiable nominally. More precisely, the first agent's verdict was
+  wrong (it counted a heading mention as defining two of the five categories); the definition required
+  all five. Added "each appear under their own label" so presence is a literal check; a fresh agent
+  produced five labeled sections, all before the dependent section.
+  `_tests/test_topology_definitions.py` pins all three. Behavioral checks are one haiku run per token
+  on one subject each with no baseline against the old text.
 - Remaining "does not satisfy" (12 definitions): scope `jobs`; method `eliminate`, `falsify`, `gate`,
   `ground`, `mark`, `own`, `prism`, `redact`, `shoshin`; form `quiz`; channel `zettel`. Many of these
   carry the same redundant-closer shape and may go through the same sequence; `falsify` and `ground` wait

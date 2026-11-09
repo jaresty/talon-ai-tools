@@ -297,9 +297,12 @@ the command logs. All four runs made six notes (an entry note plus five single-c
 `nn suggest-links` on IDs the stub returned. The only run that did not follow each `nn new` with its own
 `suggest-links` was an original run. n=2 per arm, one subject, haiku only.
 
-Gap found, not fixed: only one of four runs linked the entry note to the claim notes; the other three
-bulk-linked each note to the stub's single suggestion. The definition says the entry note "links them" but
-its step list gives no command or observable for that link.
+Gap found, then fixed (receipt `20261109022742-0670`): only one of four runs linked the entry note to the
+claim notes; the other three bulk-linked each note to the stub's single suggestion, because the definition says
+the entry note "links them" but its step list gave no command or observable for that link. `zettel` now
+ends with "For a composite, after the last note: (5) run `nn bulk-link` once more with the entry note's ID
+and every claim note's ID as literal arguments." Two runs through the stub: six notes each, every
+`suggest-links` on a returned ID, and one `bulk-link` carrying all six created IDs (was 1 of 4 before).
 ### Progress: shoshin (2026-11-08)
 
 `shoshin` (receipt `20261109022133-7451`) had both occurrences in its last sentence, which had three clauses:

@@ -45,6 +45,7 @@ CLEARED = {
         "each constituent claim becomes its own note, and one entry note carries the cross-cutting part",
         "(2) the returned ID must appear as the literal argument to the next command;",
         "nn bulk-link: skipped",
+        "(5) run `nn bulk-link` once more with the entry note's ID and every claim note's ID as literal arguments",
     ),
     ("method", "shoshin"): (
         "emits no invocations and is compliant",

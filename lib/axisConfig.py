@@ -150,7 +150,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "in the body is imperative (begins with a bare verb or must/shall). For each note: (1) run `nn new --title '...' --type TYPE --content '...' --no-edit --status draft`; (2) the "
         "returned ID must appear as the literal argument to the next command; (3) run `nn suggest-links <id>`; (4) if the suggest-links output contains at least one candidate not "
         "already marked (already linked), run `nn bulk-link` with those IDs — if zero candidates qualify, write `nn bulk-link: skipped — zero qualifying suggestions` in the "
-        "transcript.",
+        "transcript. For a composite, after the last note: (5) run `nn bulk-link` once more with the entry note's ID and every claim note's ID as literal arguments.",
     },
     "completeness": {
         "deep": "The response goes into substantial depth within the chosen scope, unpacking reasoning layers and fine details without necessarily enumerating every edge case.",

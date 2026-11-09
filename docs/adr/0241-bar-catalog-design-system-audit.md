@@ -420,3 +420,13 @@ Not adopted. V2 does not touch the path three of three runs took (the structural
 Hollow probe report caveat: its proposed replacement used deny-list wording ("does not satisfy"), and its per-run compliance grades were inconsistent; it served as a source of hypotheses only.
 
 Open: the gap is unfixed. A fix needs an observable the agent cannot produce by declaring it, for example tying the witness to the same named subject in both the assertion line and the guard's own output, or requiring the guard to run against the artifact on the target the assertion names. Sample sizes are 2 to 3 per arm on one scenario.
+
+### falsify baseline gap — two further drafts probed before any run; neither passes
+
+Drafts (hollow probe `a`-series agent `aedf2649547e6541b`, haiku, run on the drafts before any scenario run, as asked): D2 (the A-fail and A-pass results come from a guard invocation whose command text contains a host name, address or environment identifier of the target the assertion names; otherwise `Unwitnessed`) and D3 (each `Unobservable: … — structural` line is followed by a `Subject text:` line quoting the artifact verbatim from a tool result).
+
+Both can be satisfied by writing the string: D2 by `python guard.py --env production` (the word appears in the command whether or not the guard uses it); D3 by quoting any line of the artifact, such as the function definition, which has no relation to the assertion. The probe ranked D3 stronger; that ranking is not supported, because D3's quote need not relate to the assertion and so leaves the structural mislabel open. Neither draft was run.
+
+Reframing, from design note 20260817012812-4903 (invariant b, the adequacy boundary): falsify establishes only that a procedure distinguishes its own two observations; whether that procedure is the adequate check for the claim is the ground-and-falsify seam. A local timing for an assertion that names production servers is an adequacy gap in that sense, so part of the observed gap may belong to `ground` (the observation boundary of the property) or `verify`, not `falsify`. The `Unobservable — structural` label for a behavioral assertion is separately a falsify issue, since the definition defines structural as the artifact's own text or structure.
+
+Open: decide whether the local-stand-in half belongs to `ground`/`verify` (then it is a different change and a different probe); the structural-label half remains a `falsify` problem without a hollow-clean wording yet.

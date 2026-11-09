@@ -67,6 +67,7 @@ CLEARED = {
         "The 'Retained properties:' line lists every retained property and quotes each canonical formal definition; '§ ground complete' follows it immediately.",
         "Each property has its '§ minimality:' line, in one of these two forms, before Step 2 begins; if that line has not appeared, emit it before introducing any provisional sub-property.",
         "may the response emit '§ properties complete? yes', which appears after a '§ completeness check:' line for the retained set;",
+        "A 'minimal' verdict quotes a most specific sub-term, names a candidate relaxation construction that contains that sub-term verbatim, and shows that construction violates the interpretation; if the candidate relaxation instead satisfies the interpretation, the property is over-specific and the over-specific form must be emitted instead.",
     ),
     ("method", "mark"): (
         "## Step N",
@@ -81,8 +82,8 @@ CLEARED = {
 # Empty now: prism's was the one case, and it was removed once a wording that names a
 # transcript-observable (sentence openings) reproduced it (ADR-0241).
 ALLOWED_DENY_SENTENCES = {
-    # ground: three closing sentences remain, each to be converted and measured on its own (ADR-0241).
-    ("method", "ground"): 3,
+    # ground: two closing sentences remain, each to be converted and measured on its own (ADR-0241).
+    ("method", "ground"): 2,
 }
 
 

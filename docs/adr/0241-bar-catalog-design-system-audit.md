@@ -446,3 +446,11 @@ No run emitted `Unwitnessed`. The loss is upstream of falsify: `ground`'s canoni
 This supersedes the earlier reading that the local-stand-in half belongs to falsify alone: the falsify-only runs lacked ground, and in the pack the qualifier is already gone before falsify runs.
 
 Open: a candidate is a `ground` clause requiring the retained property line to carry each qualifier of its request constraint (where, when, under what conditions) in the request's own words, so adequacy can then be tested against it. Untested; it needs its own draft, a hollow probe on the draft before runs, and a before-and-after check with the craft-pack eval. Samples: three runs, one scenario.
+
+#### Correction to the section above
+
+"The qualifier is lost in `ground`" was stated too strongly. Re-reading the three runs: gP-2 dropped it explicitly (the formality check named "within 1 millisecond on production hardware" as a hardware-dependent informal claim and rewrote it until no environment remained); gP-1 omitted it from its `Interpretation:` line and noted "production may differ" only in the closing interpretation section; gP-3 reinterpreted it as "production-representative test input". In none of the three does a retained property or the guard carry the production subject.
+
+An alternative reading, raised in review: formal properties usually leave the environment implicit in what a function means (here, `exec_time` as time on the target), so `exec_time(slugify) < 1ms` may not be wrong and the mismatch is between that property and a locally measuring guard. Under that reading the ground+falsify adequacy step is the check that should have caught it (a state fast locally and slow on production, where the property is false and the guard passes). It did not: gP-1 and gP-2 emitted no `Adequacy:` line, and gP-3 declared property [3] `established` with a counterexample shown only for property [1].
+
+What the transcripts support: the production subject is not represented in any retained property or guard, and the adequacy step that could compensate was not performed. Whether the fix belongs in `ground`'s canonicalization or in the adequacy composition is not settled by these runs.

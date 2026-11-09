@@ -283,9 +283,20 @@ capability challenge"). Still open: construals name problem types, not what the 
 "a commons" or "a conduit", so the commons-versus-corridor kind of schema still appears only inside a
 `Reads` line; one database run fell back to noun lists in `Presupposes:`.
 
-New finding, not fixed: in both `gate` runs each agent satisfied its gate by `echo`-ing the exact string
-it then named in the gate block, so a gate can be met by text the agent just produced. That is a gap in
-`gate`'s definition independent of this change.
+`gate` self-echo loophole (receipt `20261109023307-4462`, attempted and left unchanged): in both first
+`gate` runs each agent satisfied its gate by `echo`-ing the exact string it then named in the gate block,
+so a gate can be met by text the agent just produced. Two provenance wordings were tried: (1) the string
+"must first occur in the transcript inside a qualifying result block — output the response did not itself
+write —", and (2) the result must be "produced by a command whose text is free of that string". Neither
+changed behavior. Measured from the raw retained events by pairing each result with its producing command:
+the original arm echoed in one run and used `date`/`pwd` output in the other; wording 2 produced 0 of 4
+compliant gate strings in the two runs of the loophole task (one run echoed, one named a string that appears
+in no result at all); wording 1 echoed again in the run I could score. The honest case (a script that prints
+its own pass line, then run) passes under the original and under both wordings, because the command that
+runs the script does not contain the line, so the worry that the stricter rule would reject honest use did
+not materialize. Conclusion: at this model size a provenance clause does not stop the cheapest compliance;
+a mechanical check (a hook comparing each gate string with the commands before it) would, and is a
+different piece of work. `gate` is unchanged.
 ### Progress: zettel (2026-11-08)
 
 `zettel` (receipt `20261109021722-9653`) lost both closers: "A single body carrying more than one of the

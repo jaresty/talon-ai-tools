@@ -9,7 +9,7 @@ from .axisMappings import axis_docs_for
 from .axisCatalog import axis_catalog
 
 from .modelState import GPTState
-from .talonSettings import _AXIS_SOFT_CAPS
+from .talonSettings import voice_caps_summary
 from .stanceDefaults import stance_defaults_lines
 from .overlayLifecycle import close_overlays, close_common_overlays
 
@@ -1268,12 +1268,8 @@ def _default_draw_quick_help(
     y = _draw_section_label("Session snapshot", x, y)
     for line in stance_defaults_lines():
         y = _draw_wrapped_line(line, x, y)
-    scope_cap = _AXIS_SOFT_CAPS.get("scope", 2)
-    method_cap = _AXIS_SOFT_CAPS.get("method", 3)
-    form_cap = _AXIS_SOFT_CAPS.get("form", 1)
-    channel_cap = _AXIS_SOFT_CAPS.get("channel", 1)
     y = _draw_wrapped_line(
-        f"Caps: C=1 · S≤{scope_cap} · M≤{method_cap} · F≤{form_cap} · Ch≤{channel_cap} · Dir=1",
+        f"Caps: C=1 · {voice_caps_summary()}",
         x,
         y,
     )
@@ -1551,7 +1547,7 @@ def _default_draw_quick_help(
 
     # Brief axis multiplicity hint.
     axes_bottom = max(y_left, y_right)
-    note = f"Note: C single; S≤{scope_cap}, M≤{method_cap}, F≤{form_cap}, Ch≤{channel_cap}; combine tags like actions edges."
+    note = f"Note: C single; {voice_caps_summary()}; combine tags like actions edges."
     y = _draw_wrapped_line(note, x_left, axes_bottom)
     y += line_h // 3
 

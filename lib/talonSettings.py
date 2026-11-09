@@ -153,6 +153,43 @@ _AXIS_INCOMPATIBILITIES: dict[str, dict[str, set[str]]] = {
 }
 
 
+# Tokens per axis the Talon voice grammar can take in one spoken command: one slot per
+# optional capture in the `modelPrompt` rule. This is deliberately narrower than
+# `_AXIS_SOFT_CAPS`, which limits `bar build`.
+_VOICE_AXIS_SLOTS: dict[str, int] = {
+    "scope": 2,
+    "method": 3,
+    "form": 1,
+    "channel": 1,
+    "directional": 1,
+}
+
+
+def voice_axis_slots() -> dict[str, int]:
+    """Return the tokens-per-axis limits of the spoken command grammar."""
+
+    return dict(_VOICE_AXIS_SLOTS)
+
+
+def clamp_to_voice_slots(axis: str, tokens: list[str]) -> list[str]:
+    """Keep the most recent tokens an axis can take in one spoken command."""
+
+    slots = _VOICE_AXIS_SLOTS.get(axis)
+    if slots is None or slots <= 0:
+        return list(tokens)
+    return list(tokens)[-slots:]
+
+
+def voice_caps_summary() -> str:
+    """Summarise what one spoken command can carry, for help surfaces."""
+
+    slots = _VOICE_AXIS_SLOTS
+    return (
+        f"S≤{slots['scope']} · M≤{slots['method']} · F≤{slots['form']} · "
+        f"Ch≤{slots['channel']} · Dir={slots['directional']}"
+    )
+
+
 def axis_soft_caps() -> dict[str, int]:
     """Return the per-axis soft cap map used by prompt parsing."""
 

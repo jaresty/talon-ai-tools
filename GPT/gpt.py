@@ -15,6 +15,7 @@ from ..lib.talonSettings import (
     _axis_tokens_to_string,
     _canonicalise_axis_tokens,
     _tokens_list,
+    clamp_to_voice_slots,
     modelPrompt,
     safe_model_prompt,
 )
@@ -2025,11 +2026,11 @@ class UserActions:
             return
 
         snapshot = last_recipe_snapshot()
-        # Enforce axis caps for replay surfaces (scope≤2, method≤3, form=1, channel=1).
-        scope_tokens = (snapshot.get("scope_tokens") or [])[-2:]
-        method_tokens = (snapshot.get("method_tokens") or [])[-3:]
-        form_tokens = (snapshot.get("form_tokens") or [])[-1:]
-        channel_tokens = (snapshot.get("channel_tokens") or [])[-1:]
+        # Replay is a spoken-command surface: clamp each axis to what the voice grammar takes.
+        scope_tokens = clamp_to_voice_slots("scope", snapshot.get("scope_tokens") or [])
+        method_tokens = clamp_to_voice_slots("method", snapshot.get("method_tokens") or [])
+        form_tokens = clamp_to_voice_slots("form", snapshot.get("form_tokens") or [])
+        channel_tokens = clamp_to_voice_slots("channel", snapshot.get("channel_tokens") or [])
 
         # Rebuild recipe/state with capped axes to avoid replaying over-cap values.
         set_last_recipe_from_selection(

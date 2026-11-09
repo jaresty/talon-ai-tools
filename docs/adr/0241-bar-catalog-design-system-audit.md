@@ -102,14 +102,19 @@ horizontal {none, rog, ong, bog}, with `jog` the null cell.
   path (`channel supports at most 3 tokens`), and the `bar help llm --compact` caps line is generated
   from the table instead of the hardcoded "others 0-1". `TestSoftCapTableMatchesBuild` runs every axis
   in the table through `bar build` at cap and cap+1, so the table cannot drift from build again.
-- Still stale or unchecked (left alone because tests pin some of the wording and the voice surface may
-  genuinely be narrower than `bar build`): Python voice-surface strings say "channel=1" and
-  "method <= 3" (`lib/helpHub.py:556`, `GPT/gpt.py:521,2028`, `lib/modelHelpCanvas.py:1834`,
-  `GPT/readme.md` method line) while the table says channel 3 and method 5; the readme's claim that the
-  Talon grammar speaks one channel per command is unverified. Separately, the `channel=a,b` and repeated
-  `channel=` override syntax behaves oddly (`channel=html,svg` lists html three times; four repeated
-  `channel=` keys fail with "channel accepts a single token", `internal/barcli/tokens/overrides.go`);
-  not touched here.
+- Voice surface vs `bar build`: the Talon grammar is deliberately narrower. The `modelPrompt` capture
+  rule has scope x2, method x3, form x1, channel x1 and directional x1 slots, so strings saying
+  "method <= 3" and "channel=1" are correct for spoken commands; the readme's one-channel claim is
+  verified. What was inconsistent was that those limits lived only as scattered literals (the replay
+  clamps `[-2:]`, `[-3:]`, `[-1:]`) and that the help canvas showed `bar build`'s caps (method 5,
+  channel 3), which cannot be spoken. `_VOICE_AXIS_SLOTS` in `lib/talonSettings.py` now names them once,
+  `_tests/test_voice_axis_slots.py` checks the constant against the capture rule, and the replay clamp
+  and help canvas use it. `_AXIS_SOFT_CAPS` remains the limit for `bar build`. Left as literals
+  (correct for voice, not worth the churn): `lib/helpHub.py:556`, `GPT/gpt.py:521`, readme method line.
+- Correction: two "override oddities" reported earlier were misdiagnoses. `channel=a,b` is compare
+  mode (ADR-0161, one prompt per variant), and the "channel accepts a single token" error on repeated
+  `channel=` keys came from an installed `bar` that predates the multi-channel commit; a fresh build
+  accepts up to the cap. The installed binary needs `make bar-install`.
 - Not done: reciprocal mirroring of the remaining one-way distinctions (~289 before this change),
   `directional` absent from `axis_priority` and persona absent from the hierarchy, and the items below.
 

@@ -3563,6 +3563,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "agent that produces a canvas document outside the response",
                     "token": "draw",
                 },
+                {
+                    "note": "canvas = render named shapes and connections via a canvas agent; browse = act on a live browser via agent-browser skills",
+                    "token": "browse",
+                },
             ],
             "heuristics": [
                 "draw this",
@@ -3586,6 +3590,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "code = one code artifact; notebook = ordered markdown and code cells for stepwise execution and exploration",
                     "token": "notebook",
+                },
+                {
+                    "note": "code = implementation only; demo = observed output of that implementation",
+                    "token": "demo",
+                },
+                {
+                    "note": "code = executable implementation; formal = non-executable specification describing what must be true",
+                    "token": "formal",
                 },
             ],
             "heuristics": [
@@ -3640,6 +3652,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "reviewer-interpretable. demo subsumes ghost's requirement, so choose ghost alone when the trace is a structure rather than the deliverable",
                     "token": "ghost",
                 },
+                {
+                    "note": "demo = emit a self-contained evidence artifact; hunk = deliver findings via live Hunk diff session comments",
+                    "token": "hunk",
+                },
             ],
             "heuristics": [
                 "attach to the PR",
@@ -3663,6 +3679,28 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "diagram = Mermaid source that a renderer lays out; svg = shapes and paths written directly as vector markup",
                     "token": "svg",
+                },
+                {
+                    "note": "diagram = Mermaid code for a Mermaid renderer; canvas = named shapes and connections for a canvas rendering agent that draws them onto a live "
+                    "canvas document",
+                    "token": "canvas",
+                },
+                {
+                    "note": "diagram = structural/relational Mermaid output (nodes and edges); chart = data visualization with quantities encoded spatially",
+                    "token": "chart",
+                },
+                {
+                    "note": "diagram (channel) = Mermaid code, machine-parseable; draw (channel) = spatial ASCII prose, human-readable",
+                    "token": "draw",
+                },
+                {
+                    "note": "diagram = visual representation (Mermaid/D2); formal = textual notation (type signatures, invariants, constraints)",
+                    "token": "formal",
+                },
+                {
+                    "note": "diagram (channel) = Mermaid/D2 code as output; visual (method) = spatial framing of ideas that can be expressed in any output format including "
+                    "prose — visual is about topology of thought, diagram is about rendering format",
+                    "token": "visual",
                 },
             ],
             "heuristics": [
@@ -3690,6 +3728,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "visual (method) = frame ideas spatially regardless of output format; draw (channel) = deliver that framing as ASCII spatial layout",
                     "token": "visual",
                 },
+                {
+                    "note": "draw = ASCII spatial arrangement rendered as text in the response, human-readable only; canvas = named shapes and connections handed to a rendering "
+                    "agent that produces a canvas document outside the response",
+                    "token": "canvas",
+                },
             ],
             "heuristics": [
                 "ASCII diagram",
@@ -3716,6 +3759,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "sketch = D2 visual diagram; formal = textual specification notation",
                     "token": "sketch",
+                },
+                {
+                    "note": "formal (channel) = governs notation style; axiom (form) = governs content structure — what constraints are named and what each rules out",
+                    "token": "axiom",
                 },
             ],
             "heuristics": [
@@ -3756,6 +3803,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "github = post to GitHub; store = write to any durable storage medium",
                     "token": "store",
+                },
+                {
+                    "note": "github = visual delivery to GitHub via gh CLI; aloud = auditory delivery via TTS",
+                    "token": "aloud",
+                },
+                {
+                    "note": "github = deliver to GitHub via the gh CLI; notion = deliver to Notion via the ntn CLI",
+                    "token": "notion",
                 },
             ],
             "heuristics": [
@@ -3798,6 +3853,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "hunk = deliver via Hunk session CLI; store = write output to any durable storage medium",
                     "token": "store",
+                },
+                {
+                    "note": "hunk = visual delivery via Hunk diff session; aloud = auditory delivery via TTS",
+                    "token": "aloud",
+                },
+                {
+                    "note": "hunk = deliver via a Hunk diff review session; browse = drive a live browser via the agent-browser CLI (navigate, click, read)",
+                    "token": "browse",
                 },
             ],
             "heuristics": [
@@ -4007,6 +4070,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "sketch = D2 source that a renderer lays out; svg = shapes and paths written directly as vector markup",
                     "token": "svg",
                 },
+                {
+                    "note": "sketch = D2 visual diagram; formal = textual specification notation",
+                    "token": "formal",
+                },
+                {
+                    "note": "sketch (channel) = D2 diagram source; draw (channel) = freehand ASCII spatial layout without a schema",
+                    "token": "draw",
+                },
+                {
+                    "note": "sketch = D2 diagram source for a D2 renderer; canvas = named shapes and connections handed to the canvas rendering agent",
+                    "token": "canvas",
+                },
             ],
             "heuristics": [
                 "D2 diagram",
@@ -4024,7 +4099,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "adr = architecture decision record; skill = reusable agent skill definition",
                     "token": "adr",
-                }
+                },
+                {
+                    "note": "skill = session-scoped reusable instruction; agent = persistent autonomous subprocess definition",
+                    "token": "agent",
+                },
             ],
             "heuristics": [
                 "write a skill for this",
@@ -4066,7 +4145,28 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "snap (form) = structure content as a save-state artifact; store (channel) = deliver output to durable storage — they compose naturally",
                     "token": "snap",
-                }
+                },
+                {
+                    "note": "store = write to any durable storage medium; github = post to GitHub",
+                    "token": "github",
+                },
+                {
+                    "note": "store = write output to any durable storage medium; hunk = deliver via Hunk session CLI",
+                    "token": "hunk",
+                },
+                {
+                    "note": "store (channel) = persist whatever the response would have been; ledger (channel) = persist only categorized "
+                    "facts/decisions/constraints/open-questions — ledger implies both persistence and a fixed structure",
+                    "token": "ledger",
+                },
+                {
+                    "note": "store = write to any durable storage medium; notion = deliver to Notion via the ntn CLI (read or write)",
+                    "token": "notion",
+                },
+                {
+                    "note": "store = persist output to durable storage; zettel = structure output as nn Zettelkasten note(s)",
+                    "token": "zettel",
+                },
             ],
             "heuristics": [
                 "save this to disk",
@@ -4114,6 +4214,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "sync = a session's agenda, steps and cues; remote = instructions and interaction hints that work over video, voice or screen sharing",
                     "token": "remote",
+                },
+                {
+                    "note": "sync = session plan with timing cues; demo = fixed-at-capture evidence, no timing",
+                    "token": "demo",
                 },
             ],
             "heuristics": [
@@ -4283,6 +4387,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "until a pass finds nothing left to act on",
                     "token": "fixpoint",
                 },
+                {
+                    "note": "full = uniform thorough coverage across all aspects; ration = depth proportionate to a named score, minimal on the tail",
+                    "token": "ration",
+                },
+                {
+                    "note": "full = uniform thorough coverage at consistent grain; zoom = resolution adapts to span magnitude",
+                    "token": "zoom",
+                },
             ],
             "heuristics": [
                 "complete",
@@ -4304,7 +4416,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "gist = brief but complete; skim = light pass, may miss non-obvious issues",
                     "token": "skim",
-                }
+                },
+                {
+                    "note": "gist = condense content to its main points; gloss = compress an unfamiliar system into a tractable representation for someone who needs to "
+                    "understand and intervene, explicitly naming what is lost",
+                    "token": "gloss",
+                },
+                {
+                    "note": "gist = brief summary of everything; prime = selects highest-leverage subset and writes closure statement",
+                    "token": "prime",
+                },
             ],
             "heuristics": [
                 "quick summary",
@@ -4334,6 +4455,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "grow = the demand for added depth comes from the analysis; lazy = the demand for a choice comes from a later step that consumes its result",
                     "token": "lazy",
+                },
+                {
+                    "note": "grow = expand only where analysis explicitly demands it; ration = allocate depth by a named score, leaving the low-scoring tail at minimal depth",
+                    "token": "ration",
+                },
+                {
+                    "note": "grow = depth expands only where analysis explicitly demands it; zoom = interval size scales with span",
+                    "token": "zoom",
+                },
+                {
+                    "note": "grow = expands on demand under analysis pressure; prime = pre-commits to a ranked subset, never expands beyond it",
+                    "token": "prime",
                 },
             ],
             "heuristics": [
@@ -4366,6 +4499,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "response's own output until a pass finds nothing left to act on",
                     "token": "fixpoint",
                 },
+                {
+                    "note": "max = static — exhaust all coverage from the start; grow = dynamic — justifies each expansion",
+                    "token": "grow",
+                },
+                {
+                    "note": "max (completeness) = every distinct question, option, support and objection gets a node, omissions are errors; ibis (form) = the shape of the "
+                    "map. Use max for a map of every distinct argument, or gist for a compact one",
+                    "token": "ibis",
+                },
+                {
+                    "note": "max = fine grain everywhere regardless of span; zoom = grain scales with span in both directions",
+                    "token": "zoom",
+                },
             ],
             "heuristics": [
                 "be exhaustive",
@@ -4387,6 +4533,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "minimal = the smallest answer that satisfies the request; prune = the smallest subject that still serves its stated purpose",
                     "token": "prune",
+                },
+                {
+                    "note": "minimal = keep output minimal throughout; grow = start minimal and expand on demand",
+                    "token": "grow",
                 },
             ],
             "heuristics": [
@@ -4432,6 +4582,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "narrow = the remaining parts are excluded and never covered; descend = the remaining parts are deferred and still covered later",
                     "token": "descend",
+                },
+                {
+                    "note": "narrow = restrict scope of discussion; redact = full scope preserved, named sensitive categories removed from content",
+                    "token": "redact",
                 },
             ],
             "heuristics": [
@@ -4492,6 +4646,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "ration = depth proportionate to a named score, minimal on the tail; full = uniform thorough coverage across all aspects",
                     "token": "full",
                 },
+                {
+                    "note": "ration = allocates coverage depth by a named situational score (e.g. stakes = consequence × uncertainty); prime = ranks by learning leverage, "
+                    "stops at functional competence",
+                    "token": "prime",
+                },
             ],
             "heuristics": [
                 "allocate depth by a named score",
@@ -4510,7 +4669,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "skim = light pass that may miss non-obvious issues; gist = brief but complete",
                     "token": "gist",
-                }
+                },
+                {
+                    "note": "skim = light pass over everything; prime = deliberate high-ROI selection with explicit threshold",
+                    "token": "prime",
+                },
             ],
             "heuristics": [
                 "light review",
@@ -4535,6 +4698,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "zoom = interval size scales with span; grow = depth expands only where analysis explicitly demands it",
                     "token": "grow",
+                },
+                {
+                    "note": "zoom (completeness) = scale bucket size to span magnitude; ladder (method) = move between named abstraction levels around a focal point",
+                    "token": "ladder",
+                },
+                {
+                    "note": "zoom = control depth of coverage; navigate = orient output around current position and goal-relative moves, regardless of depth",
+                    "token": "navigate",
+                },
+                {
+                    "note": "zoom = fixed exponential buckets; ration = allocate coverage depth by a named situational score (subject contour, stakes, or any other)",
+                    "token": "ration",
                 },
             ],
             "heuristics": [
@@ -4794,6 +4969,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "action",
                     "token": "mean",
                 },
+                {
+                    "note": "fog = push toward the abstract; rog = push toward the structural and reflective dimension",
+                    "token": "rog",
+                },
+                {
+                    "note": "fog = push the whole response toward the abstract; ladder (method) = actively traverse both directions within the response",
+                    "token": "ladder",
+                },
+                {
+                    "note": "fog = orient the response toward the abstract; navigate (method) = model the user's position in a space and name reachable next moves",
+                    "token": "navigate",
+                },
             ],
             "heuristics": [
                 "step back and tell me the general principle",
@@ -4874,6 +5061,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "walkthrough = guided sequential narration; actions = direct action list without guided narration",
                     "token": "walkthrough",
                 },
+                {
+                    "note": "form:actions = structure the output as a list of concrete tasks without directional orientation; ong = directional push toward action and extension",
+                    "token": "ong",
+                },
             ],
             "heuristics": [
                 "give me actions",
@@ -4946,7 +5137,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "checklist = imperative action items designed to be ticked off; bullets = general bullet-point organization, not necessarily imperative",
                     "token": "checklist",
-                }
+                },
+                {
+                    "note": "bullets = brief bullet items; cards = richer discrete units each with a heading and short body",
+                    "token": "cards",
+                },
+                {
+                    "note": "bullets = list items read in sequence; reference = each unit carries a lookup label so a reader can jump to one without reading the others",
+                    "token": "reference",
+                },
+                {
+                    "note": "bullets = flat list, no heading per item; slides = titled slide units each with a bounded bullet body",
+                    "token": "slides",
+                },
             ],
             "heuristics": [
                 "bullet points",
@@ -4963,7 +5166,20 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "bullets = brief bullet items; cards = richer discrete units each with a heading and short body",
                     "token": "bullets",
-                }
+                },
+                {
+                    "note": "cards = discrete units chosen for presentation; reference = units arranged specifically for direct retrieval, ordered or grouped so a specific one is "
+                    "findable by its label",
+                    "token": "reference",
+                },
+                {
+                    "note": "cards = discrete headed items; table = columnar grid layout",
+                    "token": "table",
+                },
+                {
+                    "note": "cards = discrete units with headings and prose body, no point limit; slides = each unit has a title and exactly two to four bullet points",
+                    "token": "slides",
+                },
             ],
             "heuristics": [
                 "cards",
@@ -4981,7 +5197,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "indirect = softer narrative reasoning that converges on a point; case = structured argument with explicit evidence, alternatives, and objection handling "
                     "before the recommendation",
                     "token": "indirect",
-                }
+                },
+                {
+                    "note": "case (form) = narrative that builds to a recommendation; argue (method) = expose the logical structure of claims and their supports",
+                    "token": "argue",
+                },
+                {
+                    "note": "case = builds evidence and objection handling toward a recommendation; ibis = records options and arguments and ends on what is still open, with no "
+                    "recommendation",
+                    "token": "ibis",
+                },
             ],
             "heuristics": [
                 "build the case",
@@ -5042,6 +5267,22 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "checklist = imperative tasks with no observation or fallback; runbook = each step carries its expected observation and fallback",
                     "token": "runbook",
                 },
+                {
+                    "note": "checklist = qualitative pass/fail items; scorecard = data-driven metrics with targets and status",
+                    "token": "scorecard",
+                },
+                {
+                    "note": "checklist = verifiable action items to tick off; template = labeled slots to fill in, producing a completed artifact",
+                    "token": "template",
+                },
+                {
+                    "note": "checklist = imperative tasks to complete; test = structured test scenarios with setup/execute/assert structure",
+                    "token": "test",
+                },
+                {
+                    "note": "checklist = imperative action items designed to be ticked off; bullets = general bullet-point organization, not necessarily imperative",
+                    "token": "bullets",
+                },
             ],
             "heuristics": [
                 "checklist",
@@ -5058,7 +5299,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "variants = present a choice of distinct designs; cocreate = iterative process with decision points and alignment checks",
                     "token": "variants",
-                }
+                },
+                {
+                    "note": "cocreate = drives toward a finished shared artifact, resolving all open elements within the exchange; interactive = names a current state and "
+                    "available inputs, ends with a prompt naming at least one input, and withholds causal claims (input → state) until the user acts",
+                    "token": "interactive",
+                },
             ],
             "heuristics": [
                 "work through incrementally",
@@ -5116,7 +5362,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "coupling (form) = output structured as a coupling map; snag/mesh (method) = analytical lens for finding or resolving coupling",
                     "token": "snag",
-                }
+                },
+                {
+                    "note": "coupling = maps which components are joined at a seam and what crosses the boundary; ontology = defines concepts and relations across a whole "
+                    "domain, not just boundaries",
+                    "token": "ontology",
+                },
             ],
             "heuristics": [
                 "coupling map",
@@ -5205,6 +5456,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "activities = segment-level content of what to do; facilitate = overall facilitation structure with goals and participation mechanics",
                     "token": "activities",
                 },
+                {
+                    "note": "facilitate = session management plan with agenda, timing, and participation cues; elicit = information-gathering instrument with per-section "
+                    "holder instructions",
+                    "token": "elicit",
+                },
             ],
             "heuristics": [
                 "facilitate a X",
@@ -5271,6 +5527,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "little",
                     "token": "demo",
                 },
+                {
+                    "note": "ghost = execution trace of autonomous actions and results; snap = save state structured for future resumption or handoff",
+                    "token": "snap",
+                },
+                {
+                    "note": "ghost = autonomous action trace with observed results; stage = named-state sequence with explicit transition artifacts",
+                    "token": "stage",
+                },
+                {
+                    "note": "ghost = workflow execution trace of actions and results; storyboard = pre-structured narrative arc across observable scenes",
+                    "token": "storyboard",
+                },
             ],
             "heuristics": [
                 "show me what you did",
@@ -5335,6 +5603,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "point",
                     "token": "case",
                 },
+                {
+                    "note": "indirect = form that puts reasoning before the conclusion; sense = method that holds impression before decomposition, without necessarily resolving",
+                    "token": "sense",
+                },
             ],
             "heuristics": [
                 "walk me through the reasoning first",
@@ -5386,6 +5658,26 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "bug = structured defect report with reproduction steps; log = work or research log entry",
                     "token": "bug",
                 },
+                {
+                    "note": "log = dated work log entry with bullet updates; commit = short type/scope header format for version control",
+                    "token": "commit",
+                },
+                {
+                    "note": "log = dated work log entry for reference; ghost = workflow execution trace showing actions and their results",
+                    "token": "ghost",
+                },
+                {
+                    "note": "log = narrative record of what happened; snap = forward-oriented state snapshot for resumption",
+                    "token": "snap",
+                },
+                {
+                    "note": "log = chronological work record; storyboard = designed presentational sequence with Scene/Narration structure",
+                    "token": "storyboard",
+                },
+                {
+                    "note": "log (form) = dated work-log entries; timeline (form) = temporal layout of stages",
+                    "token": "timeline",
+                },
             ],
             "heuristics": [
                 "write this as a log entry",
@@ -5427,6 +5719,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "coupling = maps which components are joined at a seam and what crosses the boundary; ontology = defines concepts and relations across a whole "
                     "domain, not just boundaries",
                     "token": "coupling",
+                },
+                {
+                    "note": "ontology = introduces the symbols (what exists); axiom = constrains which interpretations of those symbols are admissible (what must hold)",
+                    "token": "axiom",
+                },
+                {
+                    "note": "ontology = state the concepts and relations that constitute the domain; gloss = map a whole system's structure for an external actor, identifying "
+                    "key mechanisms, actors, and omissions",
+                    "token": "gloss",
                 },
             ],
             "heuristics": [
@@ -5475,6 +5776,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "faq = questions paired with their answers as a reference artifact; questions = response IS a question-list without answers",
                     "token": "faq",
                 },
+                {
+                    "note": "questions = bare list addressed to no one in particular; elicit = addresses the administrator with instructions (ask, listen for, record)",
+                    "token": "elicit",
+                },
             ],
             "heuristics": [
                 "what questions should I ask",
@@ -5512,6 +5817,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "recipe = steps in a custom notation with a key to read it; runbook = each step carries its expected observation and fallback",
                     "token": "runbook",
+                },
+                {
+                    "note": "recipe = step-by-step procedural instructions; template = fill-in-the-blank artifact with labeled placeholders, not a sequence of steps",
+                    "token": "template",
                 },
             ],
             "heuristics": [
@@ -5614,7 +5923,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "walkthrough = guided sequential steps through a known process; scaffold = pedagogical first-principles introduction that builds understanding",
                     "token": "walkthrough",
-                }
+                },
+                {
+                    "note": "scaffold = builds understanding from first principles; template = produces a reusable artifact with labeled slots the reader fills in",
+                    "token": "template",
+                },
             ],
             "heuristics": [
                 "learning-oriented explanation",
@@ -5664,6 +5977,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "table = rows/columns structure; slides = titled slide units",
                     "token": "table",
                 },
+                {
+                    "note": "slides = static content units with no motion spec or timing; reel = ordered scenes with duration, element motion states, and curve tokens",
+                    "token": "reel",
+                },
+                {
+                    "note": "slides = discrete slide units, no transition artifacts required; stage = named states with explicit transition artifacts",
+                    "token": "stage",
+                },
             ],
             "heuristics": [
                 "slide deck",
@@ -5690,6 +6011,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "mark (method) = capture checkpoint evidence during execution; snap (form) = structure output as a resumable state artifact",
                     "token": "mark",
                 },
+                {
+                    "note": "snap (form) = one-time state snapshot for resumption; ledger (channel) = continuously-maintained categorized record that grows across turns",
+                    "token": "ledger",
+                },
+                {
+                    "note": "snap (form) = structure content as a save-state artifact; store (channel) = deliver output to durable storage — they compose naturally",
+                    "token": "store",
+                },
             ],
             "heuristics": [
                 "save where we are",
@@ -5713,6 +6042,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "quiz = test recall via question-then-answer structure; socratic = question-led dialogue to surface reasoning",
                     "token": "quiz",
+                },
+                {
+                    "note": "socratic = LLM asks the user questions interactively to surface their thinking; elicit = instructions to the holder (ask, listen for, record), "
+                    "whether as a standalone instrument or within a live process",
+                    "token": "elicit",
+                },
+                {
+                    "note": "socratic = LLM drives by questioning the user to surface their existing reasoning; interactive = response names a current state and available "
+                    "inputs, ends with a prompt naming an input, and withholds causal claims (input → state) — the exchange continues when the user acts",
+                    "token": "interactive",
                 },
             ],
             "heuristics": [
@@ -5765,6 +6104,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "flow = linear ordering of steps without structurally distinct transition artifacts; stage = named states where each transition is a separate artifact "
                     "naming its source and target",
                     "token": "flow",
+                },
+                {
+                    "note": "stage = semantic state identity established via transition artifacts; reel = temporal scene sequence with explicit duration and element motion",
+                    "token": "reel",
                 },
             ],
             "heuristics": [
@@ -5832,6 +6175,26 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "table = generic grid; scorecard = quantitative metrics with baseline/target/RAG status",
                     "token": "scorecard",
                 },
+                {
+                    "note": "table = data in rows/columns (text positions); chart = data encoded spatially via position, size, color, or motion",
+                    "token": "chart",
+                },
+                {
+                    "note": "table = present content as a columnar grid; formats = the response IS about document types and their suitability",
+                    "token": "formats",
+                },
+                {
+                    "note": "table = rows/columns structure; slides = titled slide units",
+                    "token": "slides",
+                },
+                {
+                    "note": "table = flat columnar comparison; taxonomy = type hierarchy with defined relationships and distinguishing attributes",
+                    "token": "taxonomy",
+                },
+                {
+                    "note": "table = tabular grid for structured multi-attribute comparison; twin = layout form for direct comparison",
+                    "token": "twin",
+                },
             ],
             "heuristics": [
                 "table format",
@@ -5849,7 +6212,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "table = flat columnar comparison; taxonomy = type hierarchy with defined relationships and distinguishing attributes",
                     "token": "table",
-                }
+                },
+                {
+                    "note": "taxonomy = classification of things by type and distinguishing attribute; ibis = map of a deliberation, organized by what answers or supports what",
+                    "token": "ibis",
+                },
+                {
+                    "note": "taxonomy = classifies instances into categories or types; ontology = defines the concepts that exist in a domain and the named relations between "
+                    "them",
+                    "token": "ontology",
+                },
             ],
             "heuristics": [
                 "classify all types of X",
@@ -5940,6 +6312,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "timeline = events ordered by when they occur; wardley = components placed by value-chain visibility and evolution stage",
                     "token": "wardley",
                 },
+                {
+                    "note": "timeline = time-based event layout for narration or history; reel = implementable animation spec with element motion states and curve tokens",
+                    "token": "reel",
+                },
+                {
+                    "note": "timeline = temporal layout of events or milestones at fixed points in time; stage = named states with explicit transition artifacts between them",
+                    "token": "stage",
+                },
             ],
             "heuristics": [
                 "as a timeline",
@@ -5978,7 +6358,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "cocreate = iterative process with decision points and alignment checks; variants = present distinct labeled options without necessarily evaluating "
                     "them against each other",
                     "token": "cocreate",
-                }
+                },
+                {
+                    "note": "variants = labeled options with descriptions (may be narrative); twin = strict side-by-side layout with equal weight per alternative",
+                    "token": "twin",
+                },
             ],
             "heuristics": [
                 "give me options",
@@ -6030,6 +6414,31 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "observation that shows it worked and the fallback",
                     "token": "runbook",
                 },
+                {
+                    "note": "walkthrough = linear narrated steps through a process; facilitate = session structure with participation cues and facilitation agenda",
+                    "token": "facilitate",
+                },
+                {
+                    "note": "walkthrough = guided sequential narration of a process; ghost = trace of autonomous actions actually performed",
+                    "token": "ghost",
+                },
+                {
+                    "note": "walkthrough = guided sequential narration; log = concise dated entry format for archival and reference",
+                    "token": "log",
+                },
+                {
+                    "note": "walkthrough (form) = guided step-by-step narration; timeline (form) = output structured as a temporal sequence layout",
+                    "token": "timeline",
+                },
+                {
+                    "note": "walkthrough = linear narrated steps without custom notation; recipe = structured recipe with a custom mini-language and notation key",
+                    "token": "recipe",
+                },
+                {
+                    "note": "walkthrough = sequential steps toward a goal, no named-state structure or transition artifacts; stage = named states with explicit transition "
+                    "artifacts",
+                    "token": "stage",
+                },
             ],
             "heuristics": [
                 "walk me through",
@@ -6070,7 +6479,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "inversion (method) = reason backward from any catastrophic outcome (past or future) to find causes or design-around paths; wasinawa (form) = "
                     "structured reflection on past events using what/so-what/now-what",
                     "token": "inversion",
-                }
+                },
+                {
+                    "note": "wasinawa = what/so-what/now-what reflection on past events; vet = structured review of experiment results against predictions",
+                    "token": "vet",
+                },
             ],
             "heuristics": [
                 "reflect on incident",
@@ -6099,6 +6512,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "abduce = generate and compare rival explanations, then stop; eliminate = strike rivals from a closed enumerated set until a survivor tally remains",
                     "token": "eliminate",
                 },
+                {
+                    "note": "abduce = propose explanations the evidence would account for, so the conclusion is the best available candidate rather than an entailment; deduce = "
+                    "derive what must follow from stated premises, so the conclusion is entailed",
+                    "token": "deduce",
+                },
             ],
             "heuristics": [
                 "what's the best explanation for",
@@ -6118,7 +6536,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "authority (scope) = who has decision authority; actors (method) = enrich the response with actor-centered analysis regardless of scope",
                     "token": "authority",
-                }
+                },
+                {
+                    "note": "actors = identify and center who is involved; behave = apply COM-B framework to model what that actor needs to change behavior",
+                    "token": "behave",
+                },
             ],
             "heuristics": [
                 "who is involved",
@@ -6149,6 +6571,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "adversarial = categories of failure the subject can exhibit, each with an instance found; unknowns = categories of consideration the subject "
                     "omits, each with an instance found",
                     "token": "unknowns",
+                },
+                {
+                    "note": "adversarial = construct attacks to stress-test; clash = identify existing structural conflicts",
+                    "token": "clash",
+                },
+                {
+                    "note": "adversarial = construct direct opposition to find weaknesses; enter = join the structure's own direction before redirecting",
+                    "token": "enter",
+                },
+                {
+                    "note": "adversarial = construct attacks to find weaknesses; perturb = introduce controlled variations to observe response",
+                    "token": "perturb",
                 },
             ],
             "heuristics": [
@@ -6246,6 +6680,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "models = apply named mental models explicitly; analog = reason through a structural mapping from a specific known case",
                     "token": "models",
                 },
+                {
+                    "note": "analog = apply one structural mapping from a known case; prism = enumerate N named frames first, then apply each independently",
+                    "token": "prism",
+                },
+                {
+                    "note": "analog = map relational structure from a known case; lateral = seek a non-obvious angle on the current case without requiring a source domain",
+                    "token": "lateral",
+                },
+                {
+                    "note": "analog (method) = reason through a structural mapping from a specific known case; visual (method) = frame ideas in spatial/positional terms without "
+                    "requiring a parallel case",
+                    "token": "visual",
+                },
             ],
             "heuristics": [
                 "what is this like",
@@ -6264,7 +6711,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "diagnose = root cause via falsification; analysis = structural decomposition without fault-finding",
                     "token": "diagnose",
-                }
+                },
+                {
+                    "note": "analysis = describe and structure; reify = convert implicit patterns into explicit formal rules",
+                    "token": "reify",
+                },
+                {
+                    "note": "method:analysis = decompose into components as a reasoning procedure; rog = directional orientation toward structure and reflection",
+                    "token": "rog",
+                },
+                {
+                    "note": "analysis = describe and structure; systemic = reason about interactions and emergence",
+                    "token": "systemic",
+                },
             ],
             "heuristics": [
                 "analyze this",
@@ -6283,7 +6742,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "case (form) = narrative that builds to a recommendation; argue (method) = expose the logical structure of claims and their supports",
                     "token": "case",
-                }
+                },
+                {
+                    "note": "argue (method) = structure the reasoning as claims, premises, warrants and rebuttals toward a position; ibis (form) = record a deliberation as typed "
+                    "Question, Idea, Pro and Con nodes without choosing among the Ideas",
+                    "token": "ibis",
+                },
             ],
             "heuristics": [
                 "make the argument",
@@ -6312,6 +6776,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "atomic = decide how a change is divided, one observable change per step; lazy = decide when a choice is resolved, at the step that first needs it",
                     "token": "lazy",
+                },
+                {
+                    "note": "atomic = one observable change per step; chain = each step must cite its predecessor. orthogonal: a step can be atomic yet untraceable, or traceable "
+                    "yet bundled.",
+                    "token": "chain",
+                },
+                {
+                    "note": "atomic = one observable change per execution step; winnow = a selection-time gate on which whole candidate to pursue",
+                    "token": "winnow",
                 },
             ],
             "heuristics": [
@@ -6361,7 +6834,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "survive = behavior when exposed to live uncontrolled conditions; balance = how opposing forces produce equilibrium or instability",
                     "token": "survive",
-                }
+                },
+                {
+                    "note": "balance = model opposing forces that offset each other; align = restructure explicit elements to achieve mutual reinforcement",
+                    "token": "align",
+                },
+                {
+                    "note": "balance = forces offsetting each other; polar = attraction toward some states and aversion from others",
+                    "token": "polar",
+                },
+                {
+                    "note": "balance = acceptable equilibrium state between opposing forces; thrust = identify and catalog the competing forces themselves",
+                    "token": "thrust",
+                },
             ],
             "heuristics": [
                 "how do forces balance",
@@ -6433,6 +6918,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "conditions",
                     "token": "survive",
                 },
+                {
+                    "note": "boom = scale extremes; simulation = systemic feedback dynamics",
+                    "token": "simulation",
+                },
             ],
             "heuristics": [
                 "at 10x",
@@ -6461,6 +6950,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "bound = the analysis introduces limits on how far influence propagates through the subject; own = every recommended action affects only artifacts "
                     "private to the operator",
                     "token": "own",
+                },
+                {
+                    "note": "bound (method) = introducing or reinforcing limits on propagation; dam = containment boundaries describing what stays in/out",
+                    "token": "dam",
+                },
+                {
+                    "note": "bound = limit how far effects propagate; sever = introduce a structural separation that routes all interaction through explicit interfaces",
+                    "token": "sever",
+                },
+                {
+                    "note": "bound = introduce or reinforce propagation limits proactively; seep = identify where those limits have been violated or never existed",
+                    "token": "seep",
                 },
             ],
             "heuristics": [
@@ -6510,6 +7011,24 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "atomic = one observable change per step; chain = each step must cite its predecessor. orthogonal: a step can be atomic yet untraceable, or traceable "
                     "yet bundled.",
                     "token": "atomic",
+                },
+                {
+                    "note": "chain = sequential dependency (A then B); conjoin = simultaneous dependency (A and B must both hold at once)",
+                    "token": "conjoin",
+                },
+                {
+                    "note": "chain = preserves predecessor relationships between steps; falsify = accepts any attributable observation record in the addressable execution lineage",
+                    "token": "falsify",
+                },
+                {
+                    "note": "chain = each step cites its predecessor's actual output; gate = the next action is blocked until a condition is met. gate governs whether to proceed; "
+                    "chain governs how steps are linked when proceeding.",
+                    "token": "gate",
+                },
+                {
+                    "note": "chain = the specific constraint that each step cites its predecessor; ground = recursive protocol for disambiguation then decomposition. chain "
+                    "governs step ordering; ground governs what the steps operate on.",
+                    "token": "ground",
                 },
             ],
             "heuristics": [
@@ -6566,6 +7085,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "adversarial = construct attacks to stress-test; clash = identify existing structural conflicts",
                     "token": "adversarial",
                 },
+                {
+                    "note": "clash = diagnose conflicts; align = resolve them by restructuring",
+                    "token": "align",
+                },
             ],
             "heuristics": [
                 "where do these conflict",
@@ -6591,6 +7114,20 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "compare = evaluate alternatives against criteria; cluster = group without evaluating",
                     "token": "compare",
                 },
+                {
+                    "note": "cluster = group items by similarity; conjoin = surface dependencies where all items in a set must be co-present to enable an outcome",
+                    "token": "conjoin",
+                },
+                {
+                    "note": "cluster = group items by shared characteristics without altering the items themselves; collapse = identify redundant or equivalent representations "
+                    "and unify them into a minimal form",
+                    "token": "collapse",
+                },
+                {
+                    "note": "cluster = groups items by shared characteristics without naming a new basis or required visibility gain; rebase = requires naming original basis, "
+                    "new basis, and what became visible",
+                    "token": "rebase",
+                },
             ],
             "heuristics": [
                 "group these",
@@ -6615,6 +7152,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "stated purpose or duplicate one a retained element performs",
                     "token": "prune",
                 },
+                {
+                    "note": "collapse = minimize the response's form; winnow = minimize the candidate work under decision before comparing",
+                    "token": "winnow",
+                },
             ],
             "heuristics": [
                 "minimize redundant forms",
@@ -6637,6 +7178,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "compare = judge alternatives relative to one another; a single subject is judged on its own terms with good, sense, and check",
                     "token": "check",
+                },
+                {
+                    "note": "compare = evaluate alternatives; meld = balance constraints between elements that must coexist",
+                    "token": "meld",
+                },
+                {
+                    "note": "compare = evaluate alternatives against criteria; cluster = group without evaluating",
+                    "token": "cluster",
                 },
             ],
             "heuristics": [
@@ -6684,6 +7233,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "control = confine recommendations to factors within agency; presume = proceed on open choices without waiting for approval, deferring only what "
                     "cannot be undone",
                     "token": "presume",
+                },
+                {
+                    "note": "control = focus on factors within agency; automate = remove human dependency from repeatable operations",
+                    "token": "automate",
+                },
+                {
+                    "note": "control (method) = separates what is within agency from what is not; lever = identifies where force produces change",
+                    "token": "lever",
                 },
             ],
             "heuristics": [
@@ -6736,6 +7293,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "amorph = diagnose lack of crystallized structure; crystal = restructure toward it",
                     "token": "amorph",
                 },
+                {
+                    "note": "crystal = prescriptively restructures the artifact; rebase = descriptively re-expresses existing items under a new frame without altering them",
+                    "token": "rebase",
+                },
             ],
             "heuristics": [
                 "crystallize the structure",
@@ -6754,7 +7315,21 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "deduce = derive what must follow from stated premises, so the conclusion is entailed; abduce = propose explanations the evidence would account for, "
                     "so the conclusion is the best available candidate rather than an entailment",
                     "token": "abduce",
-                }
+                },
+                {
+                    "note": "deduce = derive what must follow from a stated premise instead; induce = generalize a pattern from an observation set, as when a dependency map is "
+                    "built up from accumulated failed attempts and the failures are the observation set",
+                    "token": "induce",
+                },
+                {
+                    "note": "deduce = apply deductive logic to stated premises; mint = construct the generative structure so conclusions are built forward",
+                    "token": "mint",
+                },
+                {
+                    "note": "deduce = an inference form that shapes how conclusions are derived, as does induce; falsify = an observation discipline that obtains attributable "
+                    "failing and passing results",
+                    "token": "falsify",
+                },
             ],
             "heuristics": [
                 "what follows from",
@@ -6775,7 +7350,23 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "struct (scope) = internal arrangement; depends (method) = propagation and reliance relationships specifically",
                     "token": "struct",
-                }
+                },
+                {
+                    "note": "depends = trace all dependencies; bound = limit how far they spread",
+                    "token": "bound",
+                },
+                {
+                    "note": "depends = trace dependency relationships between components; chain = enforce that each artifact or conclusion cites its predecessor's content",
+                    "token": "chain",
+                },
+                {
+                    "note": "depends = what relies on what (reliance structure); melody = pressure profile of the seam (visibility, scope, volatility)",
+                    "token": "melody",
+                },
+                {
+                    "note": "depends = trace what relies on what; root = reduce multiple representations to a single authoritative locus",
+                    "token": "root",
+                },
             ],
             "heuristics": [
                 "what depends on X",
@@ -6805,6 +7396,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "tier for each",
                     "token": "stumble",
                 },
+                {
+                    "note": "diagnose = narrow to a single root cause via evidence, scoped to causes; eliminate = domain-agnostic elimination over any competing claims with a "
+                    "counted survivor tally and exhaustiveness flag",
+                    "token": "eliminate",
+                },
+                {
+                    "note": "diagnose = root cause via falsification; analysis = structural decomposition without fault-finding",
+                    "token": "analysis",
+                },
             ],
             "heuristics": [
                 "what is causing this",
@@ -6826,7 +7426,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "split = decompose into parts; dimension = surface analytical axes that the parts exist along",
                     "token": "split",
-                }
+                },
+                {
+                    "note": "dimension = discovers implicit axes of analysis; rebase = applies a named alternative basis to re-express existing items",
+                    "token": "rebase",
+                },
             ],
             "heuristics": [
                 "what are the dimensions",
@@ -6845,7 +7449,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "struct (scope) = internal arrangement; domains (method) = identify bounded context separations and capabilities",
                     "token": "struct",
-                }
+                },
+                {
+                    "note": "domains = identify bounded contexts; sever = introduce or reinforce separations between them",
+                    "token": "sever",
+                },
             ],
             "heuristics": [
                 "what are the domains",
@@ -6869,6 +7477,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "mint = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
                     "token": "mint",
+                },
+                {
+                    "note": "drift = identify underenforced conclusions; enforce = structural dependencies",
+                    "token": "enforce",
+                },
+                {
+                    "note": "drift = conclusions structurally underenforced; hollow = instructions satisfiable by surface compliance without genuine reasoning",
+                    "token": "hollow",
+                },
+                {
+                    "note": "drift = follow the subject's own movement; mu = create structural irresolution from the subject's internal tension, not just follow its drift",
+                    "token": "mu",
                 },
             ],
             "heuristics": [
@@ -6994,6 +7614,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "experimental = proposes concrete experiments; pilot = orders the steps already planned by what they teach",
                     "token": "pilot",
                 },
+                {
+                    "note": "experimental = design experiments to test hypotheses; perturb = actively vary the system to see effects",
+                    "token": "perturb",
+                },
+                {
+                    "note": "experimental (method) = analytical lens of proposing experiments; prep (form) = output structured as an experiment write-up",
+                    "token": "prep",
+                },
+                {
+                    "note": "experimental = propose a test to challenge a claim; survive = what the uncontrolled environment actually returned",
+                    "token": "survive",
+                },
             ],
             "heuristics": [
                 "design an experiment",
@@ -7062,7 +7694,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "mapping = surface elements; field = model the medium and why compatibility produces observed routing",
                     "token": "mapping",
-                }
+                },
+                {
+                    "note": "field = actors interact via a shared medium; afford = how available-action structure pre-shapes individual choices",
+                    "token": "afford",
+                },
+                {
+                    "note": "field = model the shared medium through which effects propagate; enter = move into an argument's direction and alter its outcome from within",
+                    "token": "enter",
+                },
             ],
             "heuristics": [
                 "shared infrastructure",
@@ -7079,7 +7719,21 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "time = temporal emphasis as scope lens; flow = step-by-step progression as a reasoning method",
                     "token": "time",
-                }
+                },
+                {
+                    "note": "flow = narrate step-by-step sequence; pulse = model how the medium changes what arrives — noise, distortion, reach, timing, persistence, and attention "
+                    "cost",
+                    "token": "pulse",
+                },
+                {
+                    "note": "flow = describe linear ordering of stages; trace = narrate the sequential control/data progression with intermediate steps",
+                    "token": "trace",
+                },
+                {
+                    "note": "flow = linear ordering of steps without structurally distinct transition artifacts; stage = named states where each transition is a separate artifact "
+                    "naming its source and target",
+                    "token": "stage",
+                },
             ],
             "heuristics": [
                 "walk me through the flow",
@@ -7103,6 +7757,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "spur (method) = branch on key assumptions and prune; fourfold = apply tetralemma exhaustion across all four logical positions",
                     "token": "spur",
+                },
+                {
+                    "note": "fourfold = exhaust logical stance space (true/false/both/neither); square = map semantic opposition field (A, not-A, contrary-A, contrary-not-A) "
+                    "to surface hidden concepts",
+                    "token": "square",
                 },
             ],
             "heuristics": [
@@ -7130,6 +7789,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "gap = assumptions the subject treats as explicit but leaves implicit, whoever reads it; stumble = a named reader's existing understanding set against "
                     "the subject",
                     "token": "stumble",
+                },
+                {
+                    "note": "gap = specific implicit/explicit mismatch in rules or roles; amorph = broader regions lacking stable explicit organization",
+                    "token": "amorph",
+                },
+                {
+                    "note": "gap = implicit treated as explicit producing coordination failures; clash = conflict between explicitly stated structures",
+                    "token": "clash",
+                },
+                {
+                    "note": "gap = implicit assumptions in rules or roles produce coordination failures; drift = structural looseness allows interpretive inference to substitute "
+                    "for derivability",
+                    "token": "drift",
                 },
             ],
             "heuristics": [
@@ -7169,6 +7841,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "gate = blocks the next action until a tool-executed result satisfies a stated condition; runbook = the operator performs each step and reports what "
                     "they observed",
                     "token": "runbook",
+                },
+                {
+                    "note": "gate = blocks action on unmet conditions; enforce = converts procedural requirements into structural dependencies",
+                    "token": "enforce",
+                },
+                {
+                    "note": "gate = blocks action until a condition is met; verify = applies falsification pressure to claims, whether or not an observation pair exists",
+                    "token": "verify",
                 },
             ],
             "heuristics": [
@@ -7268,6 +7948,31 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "what to construct.",
                     "token": "mint",
                 },
+                {
+                    "note": "ground = derive an enforcement process before acting; automate = prefer automated operations over manual ones",
+                    "token": "automate",
+                },
+                {
+                    "note": "ground = treat declared governing layer as fixed authority; bound = limit reach of influence",
+                    "token": "bound",
+                },
+                {
+                    "note": "ground = treat declared governing layer as fixed authority; crystal = broadly shape system toward explicit structural determination",
+                    "token": "crystal",
+                },
+                {
+                    "note": "ground = method deriving enforcement process before acting; live = topology shaping what inner states are visible",
+                    "token": "live",
+                },
+                {
+                    "note": "ground = staged external derivation that earns permission to exist; survive = post-derivation environmental exposure that determines whether what "
+                    "was built remains valid",
+                    "token": "survive",
+                },
+                {
+                    "note": "ground = derives the governing properties and enforcement process; falsify = obtains discriminating observations for already-established assertions",
+                    "token": "falsify",
+                },
             ],
             "heuristics": [
                 "before implementing any code change",
@@ -7286,7 +7991,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "systemic = interacting whole; grove = rate of accumulation through mechanisms",
                     "token": "systemic",
-                }
+                },
+                {
+                    "note": "grove = how effects accumulate and compound; effects = trace the chain of consequences",
+                    "token": "effects",
+                },
             ],
             "heuristics": [
                 "compound",
@@ -7357,7 +8066,20 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "scope=fail = enumerate failure modes; inversion = start FROM disaster and derive what to avoid",
                     "token": "fail",
-                }
+                },
+                {
+                    "note": "inversion (method) = reason backward from any catastrophic outcome (past or future) to find causes or design-around paths; wasinawa (form) = "
+                    "structured reflection on past events using what/so-what/now-what",
+                    "token": "wasinawa",
+                },
+                {
+                    "note": "inversion = flip the problem structure (reason from failure back); lateral = resist the obvious framing without necessarily inverting",
+                    "token": "lateral",
+                },
+                {
+                    "note": "inversion = start from failure outcomes and work backward; paradox = hold contradictory claims in productive tension without resolving either",
+                    "token": "paradox",
+                },
             ],
             "heuristics": [
                 "what would cause this to fail completely",
@@ -7440,6 +8162,12 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "analog = map relational structure from a known case; lateral = seek a non-obvious angle on the current case without requiring a source domain",
                     "token": "analog",
                 },
+                {
+                    "note": "lateral = resist the first framing of the problem; shoshin = sort the frames in play into admit/exclude/default for a pass, reason under that "
+                    "selection, then run a leak check and reconcile the divergence. lateral changes the entry angle; shoshin changes which frames are admissible and "
+                    "audits leakage.",
+                    "token": "shoshin",
+                },
             ],
             "heuristics": [
                 "give me a different angle",
@@ -7501,7 +8229,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "struct (scope) = internal topology of one unit; mapping (method) = surface and organize across the whole landscape",
                     "token": "struct",
-                }
+                },
+                {
+                    "note": "mapping = surface elements; field = model the medium and why compatibility produces observed routing",
+                    "token": "field",
+                },
+                {
+                    "note": "mapping = surface elements and relationships; root = identify or enforce the single canonical source among them",
+                    "token": "root",
+                },
             ],
             "heuristics": [
                 "map out",
@@ -7521,7 +8257,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "trace = narrate the sequential control/data progression; mark = record checkpoint observations without narrating",
                     "token": "trace",
-                }
+                },
+                {
+                    "note": "mark = method for capturing checkpoint evidence during a process; ghost = form for structuring output as workflow execution trace",
+                    "token": "ghost",
+                },
+                {
+                    "note": "mark (method) = capture checkpoint evidence during execution; snap (form) = structure output as a resumable state artifact",
+                    "token": "snap",
+                },
             ],
             "heuristics": [
                 "record what happened at each stage",
@@ -7540,7 +8284,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "compare = evaluate alternatives; meld = balance constraints between elements that must coexist",
                     "token": "compare",
-                }
+                },
+                {
+                    "note": "meld = balance constraints between coexisting elements; enter = join an incoming structure's momentum and redirect it from within",
+                    "token": "enter",
+                },
             ],
             "heuristics": [
                 "balance between",
@@ -7572,6 +8320,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "mesh = trace how coupling propagates across a seam; melody = rate the seam's visibility, scope, and volatility",
                     "token": "mesh",
                 },
+                {
+                    "note": "melody = coordination through timing and synchronization; ritual = structured by established roles and procedures",
+                    "token": "ritual",
+                },
             ],
             "heuristics": [
                 "rate this seam",
@@ -7600,6 +8352,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "mesh = describe how coupling propagates across a seam; seep = identify where that coupling has leaked past intended scope",
                     "token": "seep",
+                },
+                {
+                    "note": "mesh = trace how coupling propagates across a seam; melody = rate the seam's visibility, scope, and volatility",
+                    "token": "melody",
+                },
+                {
+                    "note": "mesh = coupling problems between components; relations = connections as the primary subject, not as a diagnostic lens for coupling issues",
+                    "token": "relations",
                 },
             ],
             "heuristics": [
@@ -7645,6 +8405,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "ground = treat declared governing layer as fixed authority; mint = construct generative assumptions into explicit derivations",
                     "token": "ground",
                 },
+                {
+                    "note": "mint = restructure to make conclusions derivable; drift = diagnose where derivability is absent",
+                    "token": "drift",
+                },
+                {
+                    "note": "mint = make generative assumptions explicit for derivability; trace = narrate the sequential progression for observability",
+                    "token": "trace",
+                },
             ],
             "heuristics": [
                 "build the generative assumptions forward",
@@ -7684,7 +8452,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "analog = reason from a specific analogous case; models = apply named, established mental models explicitly",
                     "token": "analog",
-                }
+                },
+                {
+                    "note": "models = apply named mental models; shift = rotate through distinct cognitive modes or stakeholder perspectives",
+                    "token": "shift",
+                },
             ],
             "heuristics": [
                 "what mental models apply here",
@@ -7775,6 +8547,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "including expectations no established practice supports",
                     "token": "stumble",
                 },
+                {
+                    "note": "norm = classify each departure from established practice as warranted or not; sense = the overall effect of the subject as a whole",
+                    "token": "sense",
+                },
             ],
             "heuristics": [
                 "are we reinventing something",
@@ -7851,6 +8627,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "systemic = map components, flows, and feedback loops; orbit = identify recurrent structural form that persists across varied trajectories",
                     "token": "systemic",
+                },
+                {
+                    "note": "orbit = vary initial conditions to find invariant attractor geometry; prism = apply intentionally chosen named frames to surface what each "
+                    "independently reveals",
+                    "token": "prism",
                 },
             ],
             "heuristics": [
@@ -8035,6 +8816,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "assertion's violating and satisfying states",
                     "token": "falsify",
                 },
+                {
+                    "note": "pin (method) = tie each claim about the subject to a quoted observation and label it observed, inferred or hypothesized; ibis (form) = the shape of a "
+                    "deliberation as typed nodes and parent relations. Use both to see which nodes the subject states and which are inferred",
+                    "token": "ibis",
+                },
             ],
             "heuristics": [
                 "what did we actually observe",
@@ -8105,6 +8891,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "reset = discard compatibility constraints; preserve = explicitly maintain them",
                     "token": "reset",
+                },
+                {
+                    "note": "preserve = maintain compatibility with existing structures; grain = identify which directions are already structurally determined before choosing",
+                    "token": "grain",
+                },
+                {
+                    "note": "preserve = maintain compatibility with existing structures; yield = allow natural resolution with minimal guidance",
+                    "token": "yield",
                 },
             ],
             "heuristics": [
@@ -8200,6 +8994,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "orbit = vary initial conditions to find invariant attractor geometry; prism = apply intentionally chosen named frames to surface what each "
                     "independently reveals",
                     "token": "orbit",
+                },
+                {
+                    "note": "prism = enumerate complementary vantage frames and keep all N; eliminate = enumerate competing rivals and collapse toward the survivors",
+                    "token": "eliminate",
+                },
+                {
+                    "note": "prism = enumerate N vantage frames and apply each in parallel; shoshin = sort the frames in play into admit/exclude/default and reason under one "
+                    "selection guarded by a leak check. prism multiplies lenses and keeps them all; shoshin removes and imports frames deliberately and audits reuse of "
+                    "excluded ones.",
+                    "token": "shoshin",
                 },
             ],
             "heuristics": [
@@ -8385,7 +9189,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "analysis = describe and structure; reify = convert implicit patterns into explicit formal rules",
                     "token": "analysis",
-                }
+                },
+                {
+                    "note": "reify = surface one implicit pattern as an explicit rule; crystal = systemic shift toward structural explicitness",
+                    "token": "crystal",
+                },
+                {
+                    "note": "reify = makes implicit patterns explicit as formal rules; rebase = re-expresses already-explicit items under a different organizing frame",
+                    "token": "rebase",
+                },
             ],
             "heuristics": [
                 "name this pattern",
@@ -8407,6 +9219,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "shift = rotate through multiple cognitive perspectives; release = reduce distortion by loosening identification with transient states or roles "
                     "rather than rotating perspective",
                     "token": "shift",
+                },
+                {
+                    "note": "release = loosen attachment to an outcome; sense = surface the weighted impression before it is analytically unpacked",
+                    "token": "sense",
                 },
             ],
             "heuristics": [
@@ -8448,7 +9264,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "verify = apply falsification pressure to claims; rigor = discipline the reasoning process throughout",
                     "token": "verify",
-                }
+                },
+                {
+                    "note": "rigor = disciplined, well-justified reasoning throughout; atomic = specifically controls step granularity — one observable change per step. Rigorous "
+                    "reasoning can still bundle multiple changes.",
+                    "token": "atomic",
+                },
+                {
+                    "note": "rigor = disciplined logical reasoning; objectivity = separate what is factual from what is evaluative",
+                    "token": "objectivity",
+                },
             ],
             "heuristics": [
                 "be rigorous",
@@ -8490,6 +9315,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "robust = reason under uncertainty by naming where each option fails and an alternative succeeds; presume = commit to one plausible option and revise "
                     "when a stated observation contradicts it",
                     "token": "presume",
+                },
+                {
+                    "note": "robust = select options that survive across uncertain futures; grain = find which options are already foreclosed by the system's dominant modes",
+                    "token": "grain",
                 },
             ],
             "heuristics": [
@@ -8552,6 +9381,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "shear/sever = install a separation; seep = audit whether the boundary is actually holding after installation",
                     "token": "sever",
                 },
+                {
+                    "note": "seep = identify where that coupling has leaked past intended scope; mesh = describe how coupling propagates across a seam",
+                    "token": "mesh",
+                },
             ],
             "heuristics": [
                 "where does this leak",
@@ -8589,6 +9422,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "sense = the overall effect of the subject as a whole; norm = classify each departure from established practice as warranted or not",
                     "token": "norm",
                 },
+                {
+                    "note": "sense = the holistic impression held before criteria are applied; good = the criteria a judgment rests on",
+                    "token": "good",
+                },
             ],
             "heuristics": [
                 "what does this feel like",
@@ -8625,6 +9462,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "sever = introduce structural separation; seep = audit whether the boundary is holding after separation",
                     "token": "seep",
                 },
+                {
+                    "note": "sever = restructure to introduce separations broadly; shear = targeted steps to separate or realign specific coupled domains",
+                    "token": "shear",
+                },
             ],
             "heuristics": [
                 "enforce domain separation",
@@ -8647,6 +9488,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "sever = restructure to introduce separations broadly; shear = targeted steps to separate or realign specific coupled domains",
                     "token": "sever",
                 },
+                {
+                    "note": "shear = outline steps to separate coupled domains; mesh = describe the propagation structure before separating",
+                    "token": "mesh",
+                },
             ],
             "heuristics": [
                 "how to separate these",
@@ -8666,7 +9511,31 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "models = apply named mental models; shift = rotate through distinct cognitive modes or stakeholder perspectives",
                     "token": "models",
-                }
+                },
+                {
+                    "note": "shift = rotates through distinct perspectives contrasting how each interprets the same facts; rebase = re-expresses every item under one singular new "
+                    "basis",
+                    "token": "rebase",
+                },
+                {
+                    "note": "shift = rotate through multiple cognitive perspectives; release = reduce distortion by loosening identification with transient states or roles rather "
+                    "than rotating perspective",
+                    "token": "release",
+                },
+                {
+                    "note": "shift = rotate through distinct perspectives; sense = hold weighted signals from the current vantage before committing to one",
+                    "token": "sense",
+                },
+                {
+                    "note": "shift = rotate through perspectives; square = derive the full relational structure of a binary opposition as a semantic map",
+                    "token": "square",
+                },
+                {
+                    "note": "shift = rotate through lenses on the same fixed facts and context; shoshin = exclude some frames so the pass genuinely cannot reason under them and "
+                    "admit others deliberately, then report the divergence as a finding. shift re-views everything; a shoshin pass deliberately reasons under a selected "
+                    "subset.",
+                    "token": "shoshin",
+                },
             ],
             "heuristics": [
                 "look at this from multiple angles",
@@ -8727,6 +9596,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "boom = scale extremes; simulation = systemic feedback dynamics",
                     "token": "boom",
                 },
+                {
+                    "note": "simulation = project one scenario forward over time; orbit = vary starting conditions across many trajectories to find invariant attractor "
+                    "geometry",
+                    "token": "orbit",
+                },
             ],
             "heuristics": [
                 "run a thought experiment",
@@ -8753,6 +9627,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "snag = surface where the coupling seams are (where is it broken?); seep = audit whether influence has leaked past intended scope (did it work?)",
                     "token": "seep",
+                },
+                {
+                    "note": "snag = surface where coupling seams exist; melody = rate the quality of a seam across three pressure dimensions",
+                    "token": "melody",
+                },
+                {
+                    "note": "snag (method) = analytical lens for finding or resolving coupling; coupling (form) = output structured as a coupling map",
+                    "token": "coupling",
+                },
+                {
+                    "note": "snag = diagnose coupling seams; sever = address coupling by structural separation",
+                    "token": "sever",
                 },
             ],
             "heuristics": [
@@ -8788,7 +9674,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "sweep = enumerate option space without forking; spur = fork on a key assumption and pursue each path before evaluating",
                     "token": "sweep",
-                }
+                },
+                {
+                    "note": "spur (method) = branch on key assumptions and prune; fourfold = apply tetralemma exhaustion across all four logical positions",
+                    "token": "fourfold",
+                },
+                {
+                    "note": "spur = branch on key assumptions in parallel; lateral = resist the first framing before branching",
+                    "token": "lateral",
+                },
+                {
+                    "note": "spur = fork on a key assumption and pursue each branch; prism = enumerate named vantage-point frames as a precondition, then apply each",
+                    "token": "prism",
+                },
             ],
             "heuristics": [
                 "explore multiple paths",
@@ -8889,6 +9787,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "experimental = propose a test to challenge a claim; survive = what the uncontrolled environment actually returned",
                     "token": "experimental",
                 },
+                {
+                    "note": "survive = behavior when exposed to live uncontrolled conditions; balance = how opposing forces produce equilibrium or instability",
+                    "token": "balance",
+                },
+                {
+                    "note": "survive = behavior when exposed to live uncontrolled conditions; boom = behavior at extremes of scale/intensity where things qualitatively break or "
+                    "dominate",
+                    "token": "boom",
+                },
+                {
+                    "note": "survive = behavior when exposed to live uncontrolled conditions; robust = select options that perform across uncertain futures",
+                    "token": "robust",
+                },
             ],
             "heuristics": [
                 "what survived in production",
@@ -8908,7 +9819,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "spur = fork on a key assumption and pursue paths; sweep = broad enumeration without forking on a specific choice",
                     "token": "spur",
-                }
+                },
+                {
+                    "note": "sweep (method) = generate options broadly without commitment; fourfold = exhaust logical stance space (A / not-A / both / neither) before closure",
+                    "token": "fourfold",
+                },
+                {
+                    "note": "sweep = enumerate options without applying any; prism = enumerate frames and apply each, producing a result per frame",
+                    "token": "prism",
+                },
             ],
             "heuristics": [
                 "what are the options",
@@ -8928,7 +9847,23 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "analysis = describe and structure; systemic = reason about interactions and emergence",
                     "token": "analysis",
-                }
+                },
+                {
+                    "note": "systemic = feedback loops and emergent dynamics; afford = structural availability shapes what actors perceive as actionable",
+                    "token": "afford",
+                },
+                {
+                    "note": "systemic = interacting whole; grove = rate of accumulation through mechanisms",
+                    "token": "grove",
+                },
+                {
+                    "note": "systemic = feedback loops and emergent behavior; operations = OR/management science frameworks for resource and flow optimization",
+                    "token": "operations",
+                },
+                {
+                    "note": "systemic = map components, flows, and feedback loops; orbit = identify recurrent structural form that persists across varied trajectories",
+                    "token": "orbit",
+                },
             ],
             "heuristics": [
                 "systems thinking",
@@ -8972,6 +9907,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "mint = make generative assumptions explicit for derivability; trace = narrate the sequential progression for observability",
                     "token": "mint",
+                },
+                {
+                    "note": "trace = narrate the sequential progression for observability; chain = enforce that each step derives from the previous step's actual content",
+                    "token": "chain",
+                },
+                {
+                    "note": "trace = narrate the sequential control/data progression; mark = record checkpoint observations without narrating",
+                    "token": "mark",
                 },
             ],
             "heuristics": [
@@ -9032,6 +9975,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "ground = derive an enforcement process before acting; verify = apply falsification pressure to claims. verify is one thing ground might derive.",
                     "token": "ground",
                 },
+                {
+                    "note": "verify = falsify specific claims; bias = identify cognitive mechanisms producing distortion",
+                    "token": "bias",
+                },
+                {
+                    "note": "verify = apply falsification pressure internally; cite = anchor claims to external sources the user can check",
+                    "token": "cite",
+                },
+                {
+                    "note": "verify = specify one claim's falsification conditions; eliminate = operate over a set, striking each member with a typed defeater and reporting "
+                    "survivors",
+                    "token": "eliminate",
+                },
+                {
+                    "note": "verify = apply falsification pressure analytically; experimental = propose actual runnable tests",
+                    "token": "experimental",
+                },
+                {
+                    "note": "verify = design a challenge against a claim analytically; survive = let uncontrolled environmental exposure answer whether the claim held",
+                    "token": "survive",
+                },
+                {
+                    "note": "verify = applies falsification pressure to claims; falsify = requires assertion-bound, mechanically observed failing and passing results with "
+                    "retained provenance",
+                    "token": "falsify",
+                },
             ],
             "heuristics": [
                 "verify this",
@@ -9060,6 +10029,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "analog (method) = reason through a structural mapping from a specific known case; visual (method) = frame ideas in spatial/positional terms without "
                     "requiring a parallel case",
                     "token": "analog",
+                },
+                {
+                    "note": "visual (method) = spatial framing of ideas regardless of output format; chart (form) = data artifact with spatial encoding",
+                    "token": "chart",
+                },
+                {
+                    "note": "visual = render the structure spatially; navigate = orient from the user's current position within the structure and surface available moves",
+                    "token": "navigate",
                 },
             ],
             "heuristics": [
@@ -9129,6 +10106,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "evidence contradicts it",
                     "token": "presume",
                 },
+                {
+                    "note": "yield = allow natural resolution with minimal intervention; grain = actively diagnose the latent structural direction before acting",
+                    "token": "grain",
+                },
             ],
             "heuristics": [
                 "let it resolve naturally",
@@ -9192,7 +10173,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "assume = the premises that must hold for it to function; mean = how something is conceptually framed or understood",
                     "token": "mean",
-                }
+                },
+                {
+                    "note": "assume (scope) = restrict analysis to the premises domain; gap (method) = identify where implicit is treated as explicit",
+                    "token": "gap",
+                },
+                {
+                    "note": "assume (scope) = restrict analysis to the premises domain; unknowns (method) = surface what has not yet been considered or named",
+                    "token": "unknowns",
+                },
             ],
             "heuristics": [
                 "what assumptions",
@@ -9217,6 +10206,19 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "authority = outcomes explained through actors who can choose among alternatives; stable = states that persist and reinforce themselves",
                     "token": "stable",
                 },
+                {
+                    "note": "authority (scope) = who has decision authority; actors (method) = enrich the response with actor-centered analysis regardless of scope",
+                    "token": "actors",
+                },
+                {
+                    "note": "authority = who has authority to act; lever = structural intervention points in the system",
+                    "token": "lever",
+                },
+                {
+                    "note": "authority (scope) = identify who has decision-making authority in a system; control (method) = direct evaluation exclusively toward factors within "
+                    "agency, excluding those outside it",
+                    "token": "control",
+                },
             ],
             "heuristics": [
                 "who decides",
@@ -9237,6 +10239,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "cross = horizontal span across module boundaries; struct = internal topology and arrangement within units",
                     "token": "struct",
                 },
+                {
+                    "note": "cross = concerns that span multiple areas; relations = the connections between entities as a primary lens, regardless of whether they cross boundaries",
+                    "token": "relations",
+                },
+                {
+                    "note": "cross (scope) = concerns spanning modules by design; seep (method) = concerns overreaching their intended scope unintentionally",
+                    "token": "seep",
+                },
             ],
             "heuristics": [
                 "scattered across",
@@ -9254,7 +10264,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "dam = containment boundaries describing what stays in/out; bound (method) = introducing or reinforcing limits on propagation",
                     "token": "bound",
-                }
+                },
+                {
+                    "note": "dam (scope) = define containment boundaries conceptually; redact = actively apply removal criteria to produce clean output",
+                    "token": "redact",
+                },
             ],
             "heuristics": [
                 "what stays in scope",
@@ -9273,7 +10287,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "fail = scope of breakdown conditions; good = quality criteria and success standards (often paired)",
                     "token": "good",
-                }
+                },
+                {
+                    "note": "fail (scope) = focus on failure modes and fragility; adversarial (method) = actively stress-test by constructing attacks and counterexamples",
+                    "token": "adversarial",
+                },
+                {
+                    "note": "fail (scope) = enumerate failure modes; inversion (method) = start from disaster and derive what to avoid",
+                    "token": "inversion",
+                },
             ],
             "heuristics": [
                 "failure modes",
@@ -9321,6 +10343,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "good = the criteria a judgment rests on; sense = the holistic impression held before criteria are applied",
                     "token": "sense",
                 },
+                {
+                    "note": "good = the criteria by which the whole subject is judged, which a warranted departure can improve; norm = classify departures as warranted or not, "
+                    "treating conventionality as no virtue in itself",
+                    "token": "norm",
+                },
             ],
             "heuristics": [
                 "quality criteria",
@@ -9347,6 +10374,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "jobs = the outcome sought, independent of any current activity; act = the activity presently being performed",
                     "token": "act",
+                },
+                {
+                    "note": "jobs = analyze outcomes users want and forces shaping choices; behave = model capability/opportunity/motivation to diagnose why a behavior occurs or "
+                    "doesn't and design interventions",
+                    "token": "behave",
                 },
             ],
             "heuristics": [
@@ -9418,6 +10450,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "mean = how something is conceptually framed or understood; view = how the subject appears from a specific vantage point",
                     "token": "view",
                 },
+                {
+                    "note": "scope:mean = focus the entire response on conceptual framing before evaluation or action; fog = push an existing response toward the abstract/general",
+                    "token": "fog",
+                },
             ],
             "heuristics": [
                 "what does X mean",
@@ -9439,6 +10475,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "motifs = structural patterns that repeat; cross = concerns that propagate and span across module boundaries",
                     "token": "cross",
+                },
+                {
+                    "note": "motifs (scope) = recurring patterns across codebase; mod (method) = cyclic/periodic reasoning about behavior that repeats with a defined period",
+                    "token": "mod",
                 },
             ],
             "heuristics": [
@@ -9583,6 +10623,26 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "struct = how parts are arranged and related; motifs = recurring forms that appear in multiple places",
                     "token": "motifs",
                 },
+                {
+                    "note": "struct (scope) = internal arrangement; depends (method) = propagation and reliance relationships specifically",
+                    "token": "depends",
+                },
+                {
+                    "note": "struct (scope) = internal arrangement; domains (method) = identify bounded context separations and capabilities",
+                    "token": "domains",
+                },
+                {
+                    "note": "struct (scope) = internal topology of one unit; mapping (method) = surface and organize across the whole landscape",
+                    "token": "mapping",
+                },
+                {
+                    "note": "struct = identify entities and their boundaries; relations = treat the connections between entities as the primary object of study",
+                    "token": "relations",
+                },
+                {
+                    "note": "scope:struct = focus the topic on internal arrangement and dependencies; rog = directional push toward structural examination and what it reveals",
+                    "token": "rog",
+                },
             ],
             "heuristics": [
                 "how is it structured",
@@ -9641,6 +10701,18 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "time = when things occur and how they change; act = what is being done or intended",
                     "token": "act",
+                },
+                {
+                    "note": "time = temporal emphasis as scope lens; flow = step-by-step progression as a reasoning method",
+                    "token": "flow",
+                },
+                {
+                    "note": "time (scope) = sequential/temporal emphasis; origin (method) = specifically causal history and why the present state is as it is",
+                    "token": "origin",
+                },
+                {
+                    "note": "time = temporal sequence and change; storage = what survives and in what form",
+                    "token": "storage",
                 },
             ],
             "heuristics": [
@@ -9777,6 +10849,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "relay = continuation mid-stream; blind = future replay from scratch",
                     "token": "blind",
                 },
+                {
+                    "note": "relay = shapes output for handoff to another agent; live = shapes what of the model's own state is co-present per segment",
+                    "token": "live",
+                },
             ],
             "heuristics": [
                 "handoff-ready",
@@ -9834,6 +10910,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "witness = externalizes propositions (assumptions, epistemic basis); live = externalizes states currently influencing output, named per-segment",
                     "token": "live",
+                },
+                {
+                    "note": "witness = justify for live observer; blind = reconstruct for future reader",
+                    "token": "blind",
+                },
+                {
+                    "note": "witness (topology) = constraint on Claude's own observation behavior; demo = channel producing a human-reviewer evidence artifact",
+                    "token": "demo",
                 },
             ],
             "heuristics": [

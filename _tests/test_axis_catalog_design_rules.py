@@ -295,6 +295,69 @@ if not TYPE_CHECKING:
                 ["deep"],
             )
 
+    class ReciprocalDistinctionTests(unittest.TestCase):
+        def _catalog(self, edges, axes=None, tasks=()):
+            axes = axes or {"scope": {"act": "", "jobs": ""}}
+            meta = {}
+            for axis_name, tokens in axes.items():
+                meta[axis_name] = {t: {"distinctions": []} for t in tokens}
+            for axis_name, src, dst in edges:
+                meta[axis_name][src]["distinctions"].append({"note": "x", "token": dst})
+            return {
+                "axes": axes,
+                "axis_token_metadata": meta,
+                "static_prompts": {"profiled": [{"name": t} for t in tasks]},
+            }
+
+        def test_one_way_distinction_fails(self) -> None:
+            """A distinction stated on one token only is rejected."""
+
+            module = _load_validator()
+            errors = module.validate_distinctions_reciprocal(
+                self._catalog([("scope", "act", "jobs")])
+            )
+            self.assertEqual(len(errors), 1)
+            self.assertIn("'act'", errors[0])
+            self.assertIn("'jobs'", errors[0])
+
+        def test_mirrored_pair_passes(self) -> None:
+            """A pair stated from both sides is accepted."""
+
+            module = _load_validator()
+            errors = module.validate_distinctions_reciprocal(
+                self._catalog([("scope", "act", "jobs"), ("scope", "jobs", "act")])
+            )
+            self.assertEqual(errors, [])
+
+        def test_task_target_is_exempt(self) -> None:
+            """A distinction against a task has no reverse entry to require."""
+
+            module = _load_validator()
+            errors = module.validate_distinctions_reciprocal(
+                self._catalog([("scope", "act", "probe")], tasks=("probe",))
+            )
+            self.assertEqual(errors, [])
+
+        def test_directional_compound_to_part_is_exempt(self) -> None:
+            """A compound names its parts; the parts do not list every compound."""
+
+            module = _load_validator()
+            axes = {"directional": {"fly ong": "", "fog": "", "ong": ""}}
+            errors = module.validate_distinctions_reciprocal(
+                self._catalog(
+                    [("directional", "fly ong", "fog"), ("directional", "fly ong", "ong")],
+                    axes=axes,
+                )
+            )
+            self.assertEqual(errors, [])
+
+        def test_real_catalog_distinctions_are_reciprocal(self) -> None:
+            """Regression: every committed token-to-token distinction is stated both ways."""
+
+            module = _load_validator()
+            errors = module.validate_distinctions_reciprocal(_real_catalog())
+            self.assertEqual(errors, [], f"{len(errors)} one-way distinctions: {errors[:5]}")
+
     class RealCatalogDesignRuleTests(unittest.TestCase):
         def test_real_catalog_satisfies_design_rules(self) -> None:
             """Regression: the committed catalog satisfies A1, A2 and A5."""
@@ -340,5 +403,6 @@ if not TYPE_CHECKING:
                 "validate_token_names_unique_across_axes",
                 "validate_distinctions_present",
                 "validate_directional_compounds_name_their_parts",
+                "validate_distinctions_reciprocal",
             ):
                 self.assertIn(f"{name}(", source.split("def main()")[1])

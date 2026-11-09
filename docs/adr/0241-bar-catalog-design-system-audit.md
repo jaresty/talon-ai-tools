@@ -115,8 +115,17 @@ horizontal {none, rog, ong, bog}, with `jog` the null cell.
   mode (ADR-0161, one prompt per variant), and the "channel accepts a single token" error on repeated
   `channel=` keys came from an installed `bar` that predates the multi-channel commit; a fresh build
   accepts up to the cap. The installed binary needs `make bar-install`.
-- Not done: reciprocal mirroring of the remaining one-way distinctions (~289 before this change),
-  `directional` absent from `axis_priority` and persona absent from the hierarchy, and the items below.
+- Reciprocity: 258 one-way token-to-token distinctions mirrored (so 609 -> 867 directed edges).
+  240 are mechanical clause-order flips of the existing note, so no content was invented; 18 were
+  written by hand because the original had three clauses, an `axis:` prefix, or one clause only
+  (e.g. `chain` -> `gate`, `fail` -> `adversarial`, the three `shoshin` pairs). `validate_distinctions_reciprocal`
+  now enforces it. Exempt by design: distinctions against a task (8, tasks have no distinction metadata
+  here) and directional compound -> part edges (22), which the compound check already derives from
+  the token name. 41 of the mirrored notes carry negation wording that was already in the original
+  ("without", "no", "not"); they were mirrored verbatim, not reworded, and belong to the deny-list
+  follow-up below as distinction text, not definition text.
+- Not done: `directional` absent from `axis_priority` and persona absent from the hierarchy, and the
+  deny-list rewrites below.
 
 ## Follow-up: deny-list phrasing in definitions
 

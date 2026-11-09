@@ -389,6 +389,48 @@ def validate_directional_compounds_name_their_parts(catalog) -> List[str]:
     return errors
 
 
+def _is_directional_compound(token: str) -> bool:
+    return len(token.split()) == 2 or token in _DIRECTIONAL_SPANS
+
+
+def validate_distinctions_reciprocal(catalog) -> List[str]:
+    """A distinction between two tokens is stated from both tokens' side.
+
+    A chooser who starts from either token has to see the seam; a one-sided
+    entry leaves the other token blind. Distinctions against a task have no
+    reverse entry to require, and a directional compound names its parts
+    (checked separately), so the parts do not list every compound.
+    """
+    errors: List[str] = []
+    metadata = catalog.get("axis_token_metadata", {}) or {}
+    axes = catalog.get("axes", {}) or {}
+    axis_of = {token: axis for axis, tokens in axes.items() for token in (tokens or {})}
+
+    edges: set[tuple[str, str]] = set()
+    for axis_name, tokens in metadata.items():
+        for token, payload in (tokens or {}).items():
+            for distinction in (payload or {}).get("distinctions", []) or []:
+                target = (distinction or {}).get("token")
+                if target in axis_of:
+                    edges.add((token, target))
+
+    for source, target in sorted(edges):
+        if (target, source) in edges:
+            continue
+        if (
+            axis_of.get(source) == "directional"
+            and axis_of.get(target) == "directional"
+            and _is_directional_compound(source)
+        ):
+            continue
+        errors.append(
+            f"[distinction reciprocity] '{source}' ({axis_of[source]}) states a "
+            f"distinction against '{target}' ({axis_of[target]}), but '{target}' "
+            f"states none against '{source}'"
+        )
+    return errors
+
+
 def validate_generated_lists(catalog, lists_dir: Path) -> List[str]:
     """Ensure committed Talon lists match catalog-generated tokens."""
 
@@ -502,6 +544,7 @@ def main() -> int:
     errors.extend(validate_token_names_unique_across_axes(catalog))
     errors.extend(validate_distinctions_present(catalog))
     errors.extend(validate_directional_compounds_name_their_parts(catalog))
+    errors.extend(validate_distinctions_reciprocal(catalog))
     errors.extend(validate_static_prompt_axes(catalog))
     errors.extend(validate_static_prompt_descriptions(catalog))
     errors.extend(validate_static_prompt_sections_present(catalog))

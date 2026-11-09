@@ -354,6 +354,41 @@ def validate_incompatibilities_same_axis(incompatibilities, axes) -> List[str]:
     return errors
 
 
+_DIRECTIONAL_VERTICAL_POLE = {"fly": "fog", "dip": "dig", "fip": "fig"}
+_DIRECTIONAL_SPANS = {"fig": {"fog", "dig"}, "bog": {"rog", "ong"}}
+
+
+def validate_directional_compounds_name_their_parts(catalog) -> List[str]:
+    """A compound directional states a distinction against each of its two parts.
+
+    A compound is a vertical pole (fly, dip, fip) joined to a horizontal one
+    (rog, ong, bog); fig and bog span a whole axis. The compounds are stored as
+    flat tokens, so the only record that one is built from two parts is its
+    distinctions: if they name the wrong parts, or one is missing, the flat
+    entry has drifted from the pair it is meant to be.
+    """
+    errors: List[str] = []
+    metadata = (catalog.get("axis_token_metadata", {}) or {}).get("directional", {})
+    for token in (catalog.get("axes", {}) or {}).get("directional", {}) or {}:
+        words = token.split()
+        if len(words) == 2 and words[0] in _DIRECTIONAL_VERTICAL_POLE:
+            expected = {_DIRECTIONAL_VERTICAL_POLE[words[0]], words[1]}
+        elif token in _DIRECTIONAL_SPANS:
+            expected = _DIRECTIONAL_SPANS[token]
+        else:
+            continue
+        targets = {
+            d.get("token")
+            for d in ((metadata.get(token, {}) or {}).get("distinctions", []) or [])
+        }
+        if targets != expected:
+            errors.append(
+                f"[directional compound] token '{token}' should state distinctions "
+                f"against exactly {sorted(expected)} but names {sorted(t for t in targets if t)}"
+            )
+    return errors
+
+
 def validate_generated_lists(catalog, lists_dir: Path) -> List[str]:
     """Ensure committed Talon lists match catalog-generated tokens."""
 
@@ -466,6 +501,7 @@ def main() -> int:
     errors.extend(validate_distinction_targets(catalog))
     errors.extend(validate_token_names_unique_across_axes(catalog))
     errors.extend(validate_distinctions_present(catalog))
+    errors.extend(validate_directional_compounds_name_their_parts(catalog))
     errors.extend(validate_static_prompt_axes(catalog))
     errors.extend(validate_static_prompt_descriptions(catalog))
     errors.extend(validate_static_prompt_sections_present(catalog))

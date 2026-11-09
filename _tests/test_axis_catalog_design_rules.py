@@ -137,6 +137,7 @@ if not TYPE_CHECKING:
         ("form", "wardley", "chart"),
         ("method", "own", "redact"),
         ("method", "own", "bound"),
+        ("method", "adversarial", "unknowns"),
     ]
 
     class AuthoredDistinctionPairTests(unittest.TestCase):
@@ -178,6 +179,77 @@ if not TYPE_CHECKING:
                             bad.append((token, d["token"]))
             self.assertEqual(bad, [], f"prohibition wording in: {bad}")
 
+
+    class DirectionalCompoundTests(unittest.TestCase):
+        def _catalog(self, token, targets):
+            return {
+                "axes": {"directional": {token: ""}},
+                "axis_token_metadata": {
+                    "directional": {
+                        token: {"distinctions": [{"note": "x", "token": t} for t in targets]}
+                    }
+                },
+            }
+
+        def test_compound_naming_both_parts_passes(self) -> None:
+            """A compound whose distinctions name its vertical and horizontal parts is accepted."""
+
+            module = _load_validator()
+            errors = module.validate_directional_compounds_name_their_parts(
+                self._catalog("fly bog", ["fog", "bog"])
+            )
+            self.assertEqual(errors, [])
+
+        def test_compound_missing_a_part_fails(self) -> None:
+            """A compound that omits one component is rejected."""
+
+            module = _load_validator()
+            errors = module.validate_directional_compounds_name_their_parts(
+                self._catalog("fly bog", ["fog"])
+            )
+            self.assertEqual(len(errors), 1)
+            self.assertIn("'fly bog'", errors[0])
+
+        def test_compound_naming_a_wrong_part_fails(self) -> None:
+            """A compound whose distinction targets the wrong vertical pole is rejected."""
+
+            module = _load_validator()
+            errors = module.validate_directional_compounds_name_their_parts(
+                self._catalog("dip ong", ["fog", "ong"])
+            )
+            self.assertEqual(len(errors), 1)
+
+        def test_simple_token_is_ignored(self) -> None:
+            """A single-pole token is not a compound and needs no component check."""
+
+            module = _load_validator()
+            errors = module.validate_directional_compounds_name_their_parts(
+                self._catalog("dig", ["fog"])
+            )
+            self.assertEqual(errors, [])
+
+        def test_real_catalog_compounds_name_their_parts(self) -> None:
+            """Regression: every committed directional compound names its two parts."""
+
+            module = _load_validator()
+            errors = module.validate_directional_compounds_name_their_parts(
+                _real_catalog()
+            )
+            self.assertEqual(errors, [], f"compound drift: {errors}")
+
+    class NullDirectionalTests(unittest.TestCase):
+        def test_jog_label_describes_the_null_orientation(self) -> None:
+            """jog's label and routing concept state its definition: no directional push."""
+
+            catalog = _real_catalog()
+            label = catalog["axis_labels"]["directional"]["jog"].lower()
+            routing = catalog["axis_routing_concept"]["directional"]["jog"].lower()
+            for text in (label, routing):
+                self.assertNotIn("clarification", text)
+                self.assertTrue(
+                    any(w in text for w in ("direction", "orientation", "compass")),
+                    f"jog text does not describe orientation: {text!r}",
+                )
 
     class RealCatalogDesignRuleTests(unittest.TestCase):
         def test_real_catalog_satisfies_design_rules(self) -> None:
@@ -223,5 +295,6 @@ if not TYPE_CHECKING:
             for name in (
                 "validate_token_names_unique_across_axes",
                 "validate_distinctions_present",
+                "validate_directional_compounds_name_their_parts",
             ):
                 self.assertIn(f"{name}(", source.split("def main()")[1])

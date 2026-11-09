@@ -1207,7 +1207,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "fly ong": "Abstract and acting orientation",
         "fly rog": "Abstract, structural, and reflective orientation",
         "fog": "Surface abstract patterns and principles",
-        "jog": "Execute intent directly, no clarification",
+        "jog": "No directional push",
         "ong": "Acting and extending orientation",
         "rog": "Structural and reflective orientation",
     },
@@ -1986,7 +1986,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "fly ong": "Abstract and acting",
         "fly rog": "Abstract, structural, and reflective",
         "fog": "Abstractify/generalise",
-        "jog": "Execute directly",
+        "jog": "No compass push",
         "ong": "Act and extend",
         "rog": "Reflect on structure",
     },
@@ -6145,6 +6145,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "assumption that produces it",
                     "token": "stumble",
                 },
+                {
+                    "note": "adversarial = categories of failure the subject can exhibit, each with an instance found; unknowns = categories of consideration the subject "
+                    "omits, each with an instance found",
+                    "token": "unknowns",
+                },
             ],
             "heuristics": [
                 "what could go wrong",
@@ -8992,6 +8997,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 {
                     "note": "unknowns = what has not been considered or named, regardless of who is reading; stumble = what a named reader would take the subject to mean",
                     "token": "stumble",
+                },
+                {
+                    "note": "unknowns = categories of consideration the subject omits, each with an instance found; adversarial = categories of failure the subject can "
+                    "exhibit, each with an instance found",
+                    "token": "adversarial",
                 },
             ],
             "heuristics": [

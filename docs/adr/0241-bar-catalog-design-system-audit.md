@@ -85,8 +85,16 @@ horizontal {none, rog, ong, bog}, with `jog` the null cell.
   metadata entry and heuristics. `validate_token_names_unique_across_axes` and
   `validate_distinctions_present` run in `axis-catalog-validate.py`; the A5 same-axis check is a unit
   test because reading the hierarchy imports `lib.talonSettings`, which the CLI cannot always load.
-- Not done: reciprocal mirroring of the remaining one-way distinctions (~289 before this change),
-  `adversarial`/`unknowns`, and the items below.
+- Small fixes: `jog` label and routing concept now state the null orientation ("No directional push",
+  "No compass push") instead of "Execute intent directly, no clarification", which contradicted its
+  definition; `adversarial`/`unknowns` declare each other; `validate_directional_compounds_name_their_parts`
+  checks that each of the 9 compounds plus `fig` and `bog` states distinctions against exactly its two
+  components, which is the only record that the flat compound tokens are built from two parts.
+- Decided not to split `directional`; the compound check above is the mitigation.
+- Not done: reciprocal mirroring of the remaining one-way distinctions (~289 before this change), the
+  hierarchy gaps (`directional` absent from `axis_priority`, persona absent from the hierarchy, no soft
+  cap for topology and completeness; a missing cap means no cap, so this is a documentation decision),
+  and the items below.
 
 ## Follow-up: deny-list phrasing in definitions
 

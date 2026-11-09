@@ -226,12 +226,32 @@ eliminate, gate, prism's first and third); one that adds a decision rule must be
 checked against a baseline of the original (`own` took three wordings, `quiz` two); and `prism`'s is the
 one so far no affirmative wording reproduced. All of this is haiku on one or two subjects per token.
 
+Follow-up on `prism` (receipt `20261109015555-9917`): a `bar build probe hollow` audit of the four
+frame-body wordings explained the result. By `hollow`'s own criterion a governing clause must name a
+string or structure that is present in a compliant transcript and absent in a non-compliant one, and a
+deny-list clause must be converted to an allow-list condition naming that observable. The stance
+wordings ("works from that one vantage point", "a vantage point is one place from which the subject is
+viewed") are concept-description clauses and bind nothing; "describes the subject ... in statements
+about the subject" is borderline; the original deny sentence is invalid by `hollow` but names a concrete
+failure the model can match. The observable that separates a descriptive frame from a list of advice is
+the sentence opening: descriptive sentences open with a noun phrase naming part of the subject, the lists
+agents wrote open with verbs ("Evaluate", "Assess", "Consider") or question words. Wording E, "each
+sentence in its body opens with a noun phrase naming part of the subject and states a property of that
+part as seen from that vantage point", produced 0 verb or question openings over 73 frame-body
+sentences (extracted from the retained responses, not the agents' self-checks) on two advice-style
+subjects, and replaces the deny sentence; `prism` now has no "does not satisfy" and
+`ALLOWED_DENY_SENTENCES` is empty. Caveat: E is stricter than the original, which only barred lists of
+approaches; frame bodies are now declarative statements about parts of the subject, so `prism` output
+reads as descriptive facts, not advice. Open question: is that the intended use of a vantage-point frame.
+Method note: this suggests the rule for the rest, that a decision-rule closer converts only when the
+rewrite names something visible in the response's own text (a sentence opening, a literal string, an
+operational test like `own`'s single transmission step), not a stance.
+
 New finding, not fixed: in both `gate` runs each agent satisfied its gate by `echo`-ing the exact string
 it then named in the gate block, so a gate can be met by text the agent just produced. That is a gap in
 `gate`'s definition independent of this change.
-- Remaining "does not satisfy" (5 definitions): method `shoshin` (12.5 KB, 2 occurrences), plus
-  `falsify` and `ground` (blocked on their design notes); channel `zettel` (2); `prism` keeps one by
-  design.
+- Remaining "does not satisfy" (4 definitions): method `shoshin` (12.5 KB, 2 occurrences), plus
+  `falsify` and `ground` (blocked on their design notes); channel `zettel` (2).
 
 ## Consequences
 

@@ -920,8 +920,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "prioritize": "The response enhances the task by ordering items by a named criterion stated in the response, naming the criterion before applying it, and making the ranking explicit.",
         "prism": "The response enhances the task by first enumerating N named vantage-point frames as a governing artifact, where N is stated as a numeral in the enumeration artifact — each "
         "frame is introduced by a named label that appears as a heading in the transcript, and each frame output block is headed by that label. Each frame names a single structural "
-        "vantage point — a frame body that enumerates alternative approaches, methods, or investigation paths does not satisfy this requirement. The enumeration is a precondition: all N "
-        "frames are named before any frame is applied. The response then produces one headed output block per frame, N in total.",
+        "vantage point, and each sentence in its body opens with a noun phrase naming part of the subject and states a property of that part as seen from that vantage point. The "
+        "enumeration is a precondition: all N frames are named before any frame is applied. The response then produces one headed output block per frame, N in total.",
         "probability": "The response enhances the task by applying probability or statistical reasoning to characterize uncertainty and likely outcomes.",
         "prune": "The response states the purpose the subject exists to serve, then treats every element of the subject as removable until it names a function that element performs toward that "
         "purpose and that no other retained element performs. An element that performs no such function, or whose function a retained element already performs, is listed as removed "

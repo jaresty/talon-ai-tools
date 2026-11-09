@@ -33,7 +33,7 @@ CLEARED = {
     ("method", "prism"): (
         "named before any frame is applied",
         "single structural vantage point",
-        "a frame body that enumerates alternative approaches, methods, or investigation paths does not satisfy this requirement",
+        "opens with a noun phrase naming part of the subject",
         "one headed output block per frame, N in total",
     ),
     ("method", "mark"): (
@@ -45,9 +45,10 @@ CLEARED = {
 
 
 # Where a prohibition carried measured behavior that no affirmative wording reproduced, one
-# "does not satisfy" sentence is kept on purpose: (axis, token) -> allowed occurrences.
-# prism: frame bodies that list approaches (3 rewordings, 5 runs, all lists; original 2 runs, none).
-ALLOWED_DENY_SENTENCES = {("method", "prism"): 1}
+# "does not satisfy" sentence may be kept on purpose: (axis, token) -> allowed occurrences.
+# Empty now: prism's was the one case, and it was removed once a wording that names a
+# transcript-observable (sentence openings) reproduced it (ADR-0241).
+ALLOWED_DENY_SENTENCES = {}
 
 
 def _definition(axis, token):
@@ -104,14 +105,14 @@ class ClearedDefinitionTests(unittest.TestCase):
 
 
     def test_prism_states_frames_as_one_vantage_point_each(self) -> None:
-        """prism keeps the one prohibition that measurably stops frame bodies from listing approaches."""
+        """prism states frame bodies by a transcript-observable: each sentence opens with a noun phrase."""
 
         text = _definition("method", "prism")
         self.assertIn(
-            "a frame body that enumerates alternative approaches, methods, or investigation paths does not satisfy this requirement",
+            "each sentence in its body opens with a noun phrase naming part of the subject and states a property of that part as seen from that vantage point",
             text,
         )
-        self.assertEqual(text.count("does not satisfy"), 1)
+        self.assertNotIn("does not satisfy", text)
 
 
     def test_redact_placeholders_are_optional(self) -> None:

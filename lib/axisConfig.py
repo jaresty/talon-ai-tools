@@ -177,9 +177,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "mirror": "The response names the reference whose content or behavior is to be matched, then lists the classes in scope, such as the kinds of input, section, claim, or effect the "
         "reference has, as numbered 'Class N:' lines before judging any of them, splitting until each class can take a single verdict. It gives each class exactly one verdict: "
         "match, differ, or not checked, stating for match and differ what was compared and for not checked what was left untried. A class that was not checked is never counted as "
-        "a match, and a verdict is only as strong as the stated basis for it. It also names anything in the subject that has no counterpart in the reference. The comparison ends "
-        "with 'Not checked: <classes>' or 'Not checked: none', which may also name dimensions deliberately left out of the comparison. For a code port the classes are input kinds "
-        "and effects; for a translation or revision they are sections or claims.",
+        "a match, and a verdict is only as strong as the stated basis for it. It then scans the subject for parts that no class of the reference accounts for, listing each as a "
+        "numbered 'Extra N:' line; when it finds none, it writes 'Extra: none' with what part of the subject was scanned. The comparison ends with 'Not checked: <classes>' or "
+        "'Not checked: none', which names the reference classes left untried and any part of the subject not scanned for extras, and may also name dimensions deliberately left "
+        "out of the comparison. For a code port the classes are input kinds and effects; for a translation or revision they are sections or claims.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "prime": "The response ranks the subject's concepts by learning leverage — the ratio of understanding unlocked to learning effort required — naming this ranking criterion before "
         "covering any concept. It covers only the highest-leverage subset. After naming that subset, it writes a closure statement declaring coverage complete at the functional "
@@ -4353,7 +4354,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "distinctions": [
                 {
                     "note": "full = every named element of the subject, one level deep; mirror = every declared class of a reference's behavior gets a match, differ or "
-                    "not-exercised verdict",
+                    "not-checked verdict and subject parts with no counterpart are listed",
                     "token": "mirror",
                 },
                 {
@@ -4468,8 +4469,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "max": {
             "distinctions": [
                 {
-                    "note": "max = exhaustive coverage of the subject itself, omissions are errors; mirror = coverage measured against a reference, with unchecked classes "
-                    "named",
+                    "note": "max = exhaustive coverage of the subject itself, omissions are errors; mirror = coverage measured against a reference in both directions, with "
+                    "unchecked classes named",
                     "token": "mirror",
                 },
                 {
@@ -4540,13 +4541,13 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "mirror": {
             "distinctions": [
                 {
-                    "note": "mirror = every declared class of a reference's behavior gets a match, differ or not-checked verdict; full = every named element of the "
-                    "subject, one level deep",
+                    "note": "mirror = every declared class of a reference's behavior gets a match, differ or not-checked verdict and subject parts with no counterpart are "
+                    "listed; full = every named element of the subject, one level deep",
                     "token": "full",
                 },
                 {
-                    "note": "mirror = coverage measured against a reference, with unchecked classes named; max = exhaustive coverage of the subject itself, omissions are "
-                    "errors",
+                    "note": "mirror = coverage measured against a reference in both directions, with unchecked classes named; max = exhaustive coverage of the subject "
+                    "itself, omissions are errors",
                     "token": "max",
                 },
             ],

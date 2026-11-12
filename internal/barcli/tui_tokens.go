@@ -4,7 +4,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/talonvoice/talon-ai-tools/internal/bartui2"
+	"github.com/jaresty/talon-ai-tools/internal/bartui2"
 )
 
 func BuildTokenCategories(grammar *Grammar) []bartui2.TokenCategory {

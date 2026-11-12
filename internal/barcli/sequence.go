@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli/cli"
+	"github.com/jaresty/talon-ai-tools/internal/barcli/cli"
 )
 
 // ADR-0225: Named Workflow Sequences — Go grammar layer.

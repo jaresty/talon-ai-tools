@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli"
-	"github.com/talonvoice/talon-ai-tools/internal/bartui2"
-	"github.com/talonvoice/talon-ai-tools/internal/updater"
+	"github.com/jaresty/talon-ai-tools/internal/barcli"
+	"github.com/jaresty/talon-ai-tools/internal/bartui2"
+	"github.com/jaresty/talon-ai-tools/internal/updater"
 )
 
 func TestTUICommandLaunchesProgram(t *testing.T) {

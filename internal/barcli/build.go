@@ -7,7 +7,7 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/talonvoice/talon-ai-tools/internal/barcli/tokens"
+	"github.com/jaresty/talon-ai-tools/internal/barcli/tokens"
 )
 
 const (

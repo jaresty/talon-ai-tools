@@ -421,7 +421,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "produced because the tool call that would produce it has not been made, the required action is to make that tool call now — not to produce text that resembles the expected "
         "output. Chain does not authorize proceeding without a predecessor in context; it authorizes proceeding only after the predecessor exists as a real tool result. Auditability is "
         "a consequence of this structure, not a separate standard to satisfy.",
-        "cite": "The response enhances the task by including sources, citations, or references that anchor claims to evidence, enabling verification and further exploration.",
+        "cite": "The response enhances the task by ending each sentence that states what others hold, do, or have found with a citation naming the source and where it can be found, quoting the "
+        "source's own words whenever words are attributed to it, and describing the evidence base — how many sources agree, or what kind they are — only as the cited sources show.",
         "clash": "The response enhances the task by identifying where explicit structures, rules, or commitments conflict or misalign by naming both the locally valid commitment of each "
         "structure and the condition under which one breaks the other, producing a global inconsistency or breakdown. A circular dependency between two conditions — where each condition "
         "can only be satisfied after the other is satisfied — is a specific instance of this pattern: each condition is locally valid, but the pair produces a globally deadlocked "
@@ -7045,8 +7046,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "verify",
                 },
                 {
-                    "note": "objectivity = partition every claim into cited-evidence versus responder-assessment AND name sources for the cited half; cite = anchor claims to "
-                    "sources without requiring that split. objectivity already covers cite's requirement, so selecting both adds nothing",
+                    "note": "objectivity = partition every claim into cited-evidence versus responder-assessment AND name sources for the cited half; cite = a locatable citation "
+                    "ending each sentence about what others hold, do, or have found, with the source's own words when quoting and an evidence-base description limited to "
+                    "what the sources show, without requiring that split. Choose cite for the per-sentence citation discipline alone; choose objectivity when claims must "
+                    "also be split into factual and evaluative; selecting both applies the split and the per-sentence citation discipline together",
                     "token": "objectivity",
                 },
             ],
@@ -8562,9 +8565,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "rigor",
                 },
                 {
-                    "note": "cite = anchor claims to sources only; objectivity = that anchoring PLUS partitioning every claim into cited-evidence versus "
-                    "responder-assessment. Choose cite when only the anchoring is wanted; choose objectivity when the factual/evaluative split is also wanted; "
-                    "selecting both is redundant",
+                    "note": "cite = a locatable citation ending each sentence about what others hold, do, or have found, with the source's own words when quoting and an "
+                    "evidence-base description limited to what the sources show; objectivity = partitioning every claim into cited-evidence versus "
+                    "responder-assessment and naming sources for the cited half. Choose cite for the per-sentence citation discipline alone; choose objectivity when "
+                    "the factual/evaluative split is also wanted; selecting both applies the split and the per-sentence citation discipline together",
                     "token": "cite",
                 },
             ],

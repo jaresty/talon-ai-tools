@@ -453,6 +453,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency. A finding is valid only when three things are shown: the conclusion "
         "stated, the structural representation claimed to enforce it, and a reachable state of that representation where the conclusion does not hold.",
+        "earn": "The response states, for each difference between the subject and the reference it is judged against, 'Difference: <what differs> — Reason: <why the reference does not serve the "
+        "purpose here>', writing 'none stated' as the reason when the subject gives none. It classifies each difference as warranted when the reference cannot satisfy something the "
+        "purpose requires, and as unwarranted when the difference rebuilds what the reference already provides. The final line of the classification states 'Unwarranted differences: "
+        "<count>'.",
         "effects": "The response enhances the task by naming effects whose causes are themselves named as effects in the same response, tracing at least two causal steps from the initial named "
         "cause.",
         "eliminate": "The response enhances the task by enumerating a closed set of competing candidate claims, each introduced as a labeled item, with N stated as a numeral equal to the item "
@@ -1289,6 +1293,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "dimension": "Explore multiple analytical axes",
         "domains": "Identify bounded contexts",
         "drift": "Identify underenforced conclusions",
+        "earn": "Classify each difference from a reference as warranted or not",
         "effects": "Trace second and third-order effects",
         "eliminate": "Rule out rivals by defeater",
         "enforce": "Convert procedural to structural dependencies",
@@ -1569,6 +1574,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "dimension": "次",
         "domains": "領",
         "drift": "漂",
+        "earn": "得",
         "effects": "効",
         "eliminate": "除",
         "enforce": "拘",
@@ -1800,6 +1806,7 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "dimension": "Comparative",
         "domains": "Exploration",
         "drift": "Diagnostic",
+        "earn": "Diagnostic",
         "effects": "Temporal/Dynamic",
         "eliminate": "Reasoning",
         "enforce": "Structural",
@@ -2068,6 +2075,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "dimension": "Multiple dimensions",
         "domains": "Bounded contexts",
         "drift": "Underenforced conclusions",
+        "earn": "Differences from a reference",
         "effects": "Second-order effects",
         "eliminate": "Rule out rivals by defeater",
         "enforce": "Convert procedural to structural dependencies",
@@ -4541,6 +4549,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "mirror": {
             "distinctions": [
+                {
+                    "note": "mirror = list the classes of a reference's behavior and give each a match, differ or not-checked verdict; earn = classify each difference from "
+                    "a reference as warranted or not",
+                    "token": "earn",
+                },
                 {
                     "note": "mirror = every declared class of a reference's behavior gets a match, differ or not-checked verdict and subject parts with no counterpart are "
                     "listed; full = every named element of the subject, one level deep",
@@ -7493,6 +7506,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "which function contracts are underspecified enough to allow divergent implementations",
             ],
         },
+        "earn": {
+            "distinctions": [
+                {
+                    "note": "earn = judge each difference from a stated reference by whether the reference can serve the purpose; norm = also name the established practice that "
+                    "serves the purpose before judging departures from it",
+                    "token": "norm",
+                },
+                {
+                    "note": "earn = classify each difference from a reference as warranted or not; mirror = list the classes of a reference's behavior and give each a match, "
+                    "differ or not-checked verdict",
+                    "token": "mirror",
+                },
+                {
+                    "note": "earn = audit a finished subject's differences from a reference by whether the reference can serve the purpose; winnow = resize candidates for a "
+                    "decision and choose among them by value over cost",
+                    "token": "winnow",
+                },
+            ],
+            "heuristics": [
+                "which differences earn their place",
+                "is this difference justified",
+                "why not do it the way it is already done",
+                "does the existing way already satisfy this",
+                "audit each deviation from the reference",
+            ],
+        },
         "effects": {
             "distinctions": [
                 {
@@ -8517,6 +8556,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "norm": {
             "distinctions": [
+                {
+                    "note": "norm = name the established practice that serves the purpose, then classify each departure from it; earn = judge each difference from a stated "
+                    "reference by whether the reference can serve the purpose",
+                    "token": "earn",
+                },
                 {
                     "note": "norm = check the subject against practice the field already holds and classify each departure as warranted or not; grain = name the directions the "
                     "subject's own structure already propagates and the interventions that follow them",
@@ -10053,6 +10097,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "winnow": {
             "distinctions": [
+                {
+                    "note": "winnow = resize candidates for a decision and choose among them by value over cost; earn = audit a finished subject's differences from a reference "
+                    "by whether the reference can serve the purpose",
+                    "token": "earn",
+                },
                 {
                     "note": "pick = select among fixed given candidates; winnow = resize each candidate first, then select by a named value-over-cost score (may select 'no "
                     "action')",

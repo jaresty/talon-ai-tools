@@ -827,6 +827,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "dimension",
         "domains",
         "drift",
+        "earn",
         "effects",
         "eliminate",
         "enforce",

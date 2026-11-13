@@ -453,10 +453,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "drift": "The response enhances the task by identifying where conclusions are treated as necessary but are not structurally enforced by the representation, analyzing how this looseness "
         "allows interpretive inference or hidden assumption to substitute for derivability, producing inconsistency. A finding is valid only when three things are shown: the conclusion "
         "stated, the structural representation claimed to enforce it, and a reachable state of that representation where the conclusion does not hold.",
-        "earn": "The response states, for each difference between the subject and the reference it is judged against, 'Difference: <what differs> — Reason: <why the reference does not serve the "
-        "purpose here>', writing 'none stated' as the reason when the subject gives none. It classifies each difference as warranted when the reference cannot satisfy something the "
-        "purpose requires, and as unwarranted when the difference rebuilds what the reference already provides. The final line of the classification states 'Unwarranted differences: "
-        "<count>'.",
+        "earn": "The response lists each difference between the subject and the reference it is judged against as three lines: 'Difference: <what differs>', 'Subject's reason: <the reason the "
+        "subject gives, or 'none stated'>', and 'Classification: <warranted or unwarranted> — <why the reference does or does not serve the purpose here>'. A difference is warranted when "
+        "the reference cannot satisfy something the purpose requires, and unwarranted when the difference rebuilds what the reference already provides. The final line states 'Unwarranted "
+        "differences: <count>'.",
         "effects": "The response enhances the task by naming effects whose causes are themselves named as effects in the same response, tracing at least two causal steps from the initial named "
         "cause.",
         "eliminate": "The response enhances the task by enumerating a closed set of competing candidate claims, each introduced as a labeled item, with N stated as a numeral equal to the item "

@@ -49,11 +49,13 @@ class EarnMethodTokenTests(unittest.TestCase):
     def test_definition_opens_with_the_response(self):
         self.assertTrue(_definition().startswith("The response"))
 
-    def test_definition_requires_a_difference_line_with_reason(self):
+    def test_definition_separates_subject_reason_from_classification(self):
         d = _definition()
-        self.assertIn("Difference: <what differs>", d)
-        self.assertIn("Reason:", d)
+        self.assertIn("'Difference: <what differs>'", d)
+        self.assertIn("'Subject's reason:", d)
         self.assertIn("'none stated'", d)
+        self.assertIn("'Classification: <warranted or unwarranted>", d)
+        self.assertNotIn("Reason: <why the reference does not serve the purpose here>", d)
 
     def test_definition_classifies_warranted_or_unwarranted(self):
         d = _definition()

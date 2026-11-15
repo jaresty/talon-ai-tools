@@ -46,32 +46,44 @@ class LoopFormTokenTests(unittest.TestCase):
     def test_definition_opens_as_a_causal_loop_map(self):
         self.assertTrue(_definition().startswith("The response is a causal loop map"))
 
-    def test_definition_accounts_for_variables_and_link_direction(self):
-        d = _definition()
-        self.assertIn("quantity that can rise or fall", d)
-        self.assertIn("from cause to effect", d)
-        self.assertIn("with the cause or against it", d)
+    def test_definition_states_the_root_criterion(self):
+        self.assertIn(
+            "every claim about a cycle can be read off the links it states", _definition()
+        )
 
-    def test_definition_requires_a_reason_that_states_the_sign(self):
-        d = _definition()
-        self.assertIn("an increase in <cause> raises <effect>", d)
-        self.assertIn("an increase in <cause> lowers <effect>", d)
+    def test_definition_requires_quantity_variables(self):
+        self.assertIn("quantity that can rise or fall", _definition())
 
-    def test_definition_gives_delay_a_stated_test(self):
+    def test_definition_states_each_link_once_with_an_identifier(self):
         d = _definition()
-        self.assertIn("delayed", d)
-        self.assertIn("only after the cause has held its new value", d)
+        self.assertIn("Each link is stated once, with an identifier, from cause to effect", d)
 
-    def test_definition_labels_each_cycle_from_a_count_of_opposing_links(self):
+    def test_definition_ties_the_reason_verb_to_the_direction(self):
         d = _definition()
-        self.assertIn("so that its count of links moving against their cause can be checked against them", d)
-        self.assertIn("reinforcing when the count is even", d)
-        self.assertIn("balancing when it is odd", d)
+        self.assertIn("'an increase in <cause> raises <effect>' when the effect moves with the cause", d)
+        self.assertIn("'an increase in <cause> lowers <effect>' when it moves against it", d)
 
-    def test_definition_states_each_link_once_and_builds_cycles_from_stated_links(self):
+    def test_definition_forces_a_delay_decision_on_every_link(self):
         d = _definition()
-        self.assertIn("Each link is stated once", d)
-        self.assertIn("only stated links", d)
+        self.assertIn("ending with 'delayed' when the effect appears only after the cause has held its new value", d)
+        self.assertIn("and with 'immediate' otherwise", d)
+
+    def test_definition_derives_cycles_from_cited_link_identifiers(self):
+        d = _definition()
+        self.assertIn("lists the identifiers of its links in order", d)
+        self.assertIn("each link's effect being the next link's cause and the last effect being the first cause", d)
+        self.assertIn("No cycle cites a link that has not been stated", d)
+
+    def test_definition_keeps_a_cycle_simple_and_separates_shared_loops(self):
+        d = _definition()
+        self.assertIn("passes through no variable twice", d)
+        self.assertIn("Loops that share a variable are separate cycles", d)
+
+    def test_definition_counts_lowers_links_and_labels_by_parity(self):
+        d = _definition()
+        self.assertIn("the number of those links whose reason says 'lowers'", d)
+        self.assertIn("'reinforcing' when that count is even", d)
+        self.assertIn("'balancing' when it is odd", d)
 
     def test_definition_names_no_other_token_or_subject_domain(self):
         d = _definition().lower()

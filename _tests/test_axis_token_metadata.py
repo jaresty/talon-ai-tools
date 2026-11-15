@@ -426,6 +426,7 @@ class FormAxisMetadataTests(unittest.TestCase):
         "indirect",
         "interactive",
         "log",
+        "loop",
         "merge",
         "ontology",
         "prep",

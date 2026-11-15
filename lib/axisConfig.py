@@ -276,6 +276,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "state' are withheld until the user acts, whether asserted in prose or encoded in the artifact.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
+        "loop": "The response is a causal loop map. Each variable is a quantity that can rise or fall. Each link between two variables states its direction from cause to effect, whether the effect "
+        "moves with the cause or against it with the reason in the form 'an increase in <cause> raises <effect>' or 'an increase in <cause> lowers <effect>', and whether the effect lags: a "
+        "link whose effect appears only after the cause has held its new value for some time is marked as delayed. Each link is stated once. Each closed cycle is identified by the links it "
+        "passes through, using only stated links, so that its count of links moving against their cause can be checked against them; it states that count and is labeled reinforcing when "
+        "the count is even and balancing when it is odd.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
         "ontology": "The response defines the concepts and relations that constitute the subject domain: each named concept gets a definition and a set of properties; each named relation gets a "
         "source concept, a target concept, and a cardinality constraint. A graph channel renders the concepts and relations as nodes and labelled edges; a code or notation channel as a "
@@ -1228,6 +1233,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "indirect": "Background first, conclusion last",
         "interactive": "Multi-turn exchange",
         "log": "Work or research log entry",
+        "loop": "Listed signed links and labeled closed cycles",
         "merge": "Combine multiple sources coherently",
         "ontology": "Concept and relation definitions for a domain",
         "prep": "Experiment design write-up",
@@ -1509,6 +1515,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "indirect": "間",
         "interactive": "対",
         "log": "誌",
+        "loop": "環",
         "merge": "合",
         "ontology": "存",
         "prep": "備",
@@ -2010,6 +2017,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "indirect": "Background then conclusion",
         "interactive": "Multi-turn exchange",
         "log": "Work log entry",
+        "loop": "Signed causal loop map",
         "merge": "Combine sources",
         "ontology": "Domain concept and relation map",
         "prep": "Experiment design",
@@ -5691,6 +5699,32 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "write up as a log",
             ],
         },
+        "loop": {
+            "distinctions": [
+                {
+                    "note": "loop = a map of listed signed causal links with each closed cycle labeled reinforcing or balancing; systemic = interacting whole with components, "
+                    "boundaries, flows and feedback",
+                    "token": "systemic",
+                },
+                {
+                    "note": "loop = a map of listed signed causal links with each closed cycle labeled reinforcing or balancing; effects = trace the chain of consequences from an "
+                    "initial cause",
+                    "token": "effects",
+                },
+                {
+                    "note": "loop = a map of listed signed causal links with each closed cycle labeled reinforcing or balancing; grove = how effects accumulate and compound through "
+                    "mechanisms",
+                    "token": "grove",
+                },
+            ],
+            "heuristics": [
+                "draw the causal loop diagram",
+                "which loops reinforce and which balance",
+                "vicious cycle or virtuous cycle",
+                "does this link raise or lower the next variable",
+                "where are the delays in the feedback structure",
+            ],
+        },
         "merge": {
             "distinctions": [
                 {
@@ -7535,9 +7569,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "effects": {
             "distinctions": [
                 {
+                    "note": "effects = trace the chain of consequences from an initial cause; loop = signed causal links among variables with each closed cycle labeled "
+                    "reinforcing or balancing",
+                    "token": "loop",
+                },
+                {
                     "note": "grove = how effects accumulate and compound; effects = trace the chain of consequences",
                     "token": "grove",
-                }
+                },
             ],
             "heuristics": [
                 "what are the downstream effects",
@@ -8017,6 +8056,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "grove": {
             "distinctions": [
+                {
+                    "note": "grove = how effects accumulate and compound through mechanisms; loop = signed causal links among variables with each closed cycle labeled reinforcing "
+                    "or balancing",
+                    "token": "loop",
+                },
                 {
                     "note": "systemic = interacting whole; grove = rate of accumulation through mechanisms",
                     "token": "systemic",
@@ -9879,6 +9923,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "systemic": {
             "distinctions": [
+                {
+                    "note": "systemic = interacting whole with components, boundaries, flows and feedback; loop = signed causal links among variables with each closed cycle "
+                    "labeled reinforcing or balancing",
+                    "token": "loop",
+                },
                 {
                     "note": "analysis = describe and structure; systemic = reason about interactions and emergence",
                     "token": "analysis",

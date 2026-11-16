@@ -43,8 +43,18 @@ class LoopFormTokenTests(unittest.TestCase):
         ):
             self.assertIn("loop", table["form"])
 
-    def test_definition_opens_as_a_causal_loop_map(self):
-        self.assertTrue(_definition().startswith("The response is a causal loop map"))
+    def test_definition_opens_as_a_representation_of_links_and_loops(self):
+        self.assertTrue(
+            _definition().startswith(
+                "The response is a representation of a causal system's links and loops"
+            )
+        )
+
+    def test_definition_is_medium_neutral_and_complete(self):
+        d = _definition()
+        self.assertIn("in whatever form", d)
+        self.assertIn("includes every stated link and every cycle", d)
+        self.assertNotIn("map", d)
 
     def test_definition_states_the_root_criterion(self):
         self.assertIn(

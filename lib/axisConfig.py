@@ -276,12 +276,13 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "state' are withheld until the user acts, whether asserted in prose or encoded in the artifact.",
         "log": "The response reads like a concise work or research log entry with date or time markers as needed, short bullet-style updates, and enough context for future reference without "
         "unrelated narrative.",
-        "loop": "The response is a causal loop map in which every claim about a cycle can be read off the links it states. Each variable is a quantity that can rise or fall. Each link is stated "
-        "once, with an identifier, from cause to effect, and gives its reason as 'an increase in <cause> raises <effect>' when the effect moves with the cause or 'an increase in <cause> "
-        "lowers <effect>' when it moves against it, ending with 'delayed' when the effect appears only after the cause has held its new value for some time and with 'immediate' otherwise. "
-        "Each closed cycle lists the identifiers of its links in order, each link's effect being the next link's cause and the last effect being the first cause, passes through no variable "
-        "twice, and states its count as the number of those links whose reason says 'lowers'; it is 'reinforcing' when that count is even and 'balancing' when it is odd. Loops that share a "
-        "variable are separate cycles. No cycle cites a link that has not been stated.",
+        "loop": "The response is a representation of a causal system's links and loops, in whatever form, that includes every stated link and every cycle and in which every claim about a cycle can "
+        "be read off the links it states. Each variable is a quantity that can rise or fall. Each link is stated once, with an identifier, from cause to effect, and gives its reason as 'an "
+        "increase in <cause> raises <effect>' when the effect moves with the cause or 'an increase in <cause> lowers <effect>' when it moves against it, ending with 'delayed' when the "
+        "effect appears only after the cause has held its new value for some time and with 'immediate' otherwise. Each closed cycle lists the identifiers of its links in order, each link's "
+        "effect being the next link's cause and the last effect being the first cause, passes through no variable twice, and states its count as the number of those links whose reason says "
+        "'lowers'; it is 'reinforcing' when that count is even and 'balancing' when it is odd. Loops that share a variable are separate cycles. No cycle cites a link that has not been "
+        "stated.",
         "merge": "The response combines multiple sources into a single coherent whole while preserving essential information.",
         "ontology": "The response defines the concepts and relations that constitute the subject domain: each named concept gets a definition and a set of properties; each named relation gets a "
         "source concept, a target concept, and a cardinality constraint. A graph channel renders the concepts and relations as nodes and labelled edges; a code or notation channel as a "

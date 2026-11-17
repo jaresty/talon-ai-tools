@@ -67,8 +67,8 @@ func renderHelpToken(w io.Writer, grammar *Grammar, slug string) error {
 			fmt.Fprintf(w, "**Label**: %s\n\n", label)
 		}
 		fmt.Fprintf(w, "**Description**: %s\n\n", strings.TrimSpace(desc))
-		if h := axisTokenHeuristics(grammar, axis, canonical); h != "" {
-			fmt.Fprintf(w, "**Heuristics** (when to use): %s\n\n", h)
+		if meta := grammar.AxisMetadataFor(axis, canonical); meta != nil && len(meta.Heuristics) > 0 {
+			fmt.Fprintf(w, "**Heuristics** (when to use): %s\n\n", strings.Join(meta.Heuristics, "; "))
 		}
 		if meta := grammar.AxisMetadataFor(axis, canonical); meta != nil && len(meta.Distinctions) > 0 {
 			fmt.Fprintf(w, "**Distinctions** (vs. similar tokens):\n")
@@ -1118,8 +1118,9 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 	}
 }
 
-// maxTokenHeuristics is how many heuristic phrases `bar help token` shows per token.
-// Phrases past this count are never displayed, so the strongest must come first.
+// maxTokenHeuristics is how many heuristic phrases a table cell in `bar help llm`
+// shows per token. `bar help token` lists every stored heuristic, so this cap only
+// shapes the tables, where the strongest phrases must come first.
 const maxTokenHeuristics = 5
 
 // axisTokenHeuristics returns the heuristic trigger phrases for an axis token as a

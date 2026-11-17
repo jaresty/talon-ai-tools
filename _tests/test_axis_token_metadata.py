@@ -344,6 +344,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         "storage",
         "stable",
         "lever",
+        "lacuna",
         "struct",
         "thing",
         "time",

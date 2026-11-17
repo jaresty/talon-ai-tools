@@ -1099,6 +1099,9 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "purpose, audience, and context rather than generic standards.",
         "jobs": "The response focuses on the outcomes the subject is trying to achieve and the pressures that would persist even if every current solution were removed — the pressures that make "
         "the outcome non-negotiable rather than merely convenient.",
+        "lacuna": "The response focuses on what the subject's present structure leaves unoccupied. It first names the elements that are present, then identifies each region those elements bound "
+        "and imply but do not fill, stating for each the surrounding elements that define it and what would occupy it. A region counts only when the present elements imply it; an "
+        "absence the structure does not outline is not named.",
         "lever": "The response focuses on intervention points—places in the system where applied force shifts equilibrium; identifying feedback loops, constraints, delays, rules, or parameters "
         "whose change propagates to alter which stable states the system settles into. Includes load-bearing elements whose change disproportionately alters the outcome, even before any "
         "deliberate intervention.",
@@ -1397,6 +1400,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "fail": "Breakdowns and failure modes",
         "good": "Quality criteria and success standards",
         "jobs": "Outcomes users seek and non-negotiable pressures",
+        "lacuna": "Absences implied by what is present",
         "lever": "Intervention points that shift equilibrium",
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
@@ -1743,6 +1747,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "fail": "敗",
         "good": "良",
         "jobs": "需",
+        "lacuna": "欠",
         "lever": "梃",
         "mean": "意",
         "motifs": "紋",
@@ -2183,6 +2188,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "fail": "Failure modes",
         "good": "Quality/criteria",
         "jobs": "User outcomes and adoption pressures",
+        "lacuna": "Implied absences",
         "lever": "Intervention/leverage points",
         "mean": "Understanding/meaning",
         "motifs": "Recurring patterns",
@@ -7250,6 +7256,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "conjoin": {
             "distinctions": [
                 {
+                    "note": "conjoin (method) = conditions that must all hold together to enable an outcome; lacuna (scope) = a region the present elements bound but do not "
+                    "fill",
+                    "token": "lacuna",
+                },
+                {
                     "note": "cluster = group items by similarity; conjoin = surface dependencies where all items in a set must be co-present to enable an outcome",
                     "token": "cluster",
                 },
@@ -7858,6 +7869,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "gap": {
             "distinctions": [
+                {
+                    "note": "gap (method) = where something treated as explicit is actually implicit; lacuna (scope) = absences the present elements imply and bound",
+                    "token": "lacuna",
+                },
                 {
                     "note": "assume (scope) = restrict analysis to the premises domain; gap (method) = identify where implicit is treated as explicit",
                     "token": "assume",
@@ -10061,6 +10076,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "unknowns": {
             "distinctions": [
                 {
+                    "note": "unknowns (method) = what has not yet been considered or named, by category; lacuna (scope) = what the shape of the present elements implies is "
+                    "absent",
+                    "token": "lacuna",
+                },
+                {
                     "note": "assume (scope) = restrict analysis to the premises domain; unknowns (method) = surface what has not yet been considered or named",
                     "token": "assume",
                 },
@@ -10359,6 +10379,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "assume": {
             "distinctions": [
                 {
+                    "note": "assume = the premises that must hold for it to function; lacuna = what the present structure implies but does not contain",
+                    "token": "lacuna",
+                },
+                {
                     "note": "assume = the premises that must hold for it to function; mean = how something is conceptually framed or understood",
                     "token": "mean",
                 },
@@ -10477,6 +10501,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "fail": {
             "distinctions": [
                 {
+                    "note": "fail = the conditions under which something stops working; lacuna = what the present structure leaves unoccupied",
+                    "token": "lacuna",
+                },
+                {
                     "note": "fail = scope of breakdown conditions; good = quality criteria and success standards (often paired)",
                     "token": "good",
                 },
@@ -10589,6 +10617,52 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "jobs to be done",
                 "what job does this API actually do for its callers",
                 "what is the user trying to accomplish when they hit this endpoint",
+            ],
+        },
+        "lacuna": {
+            "distinctions": [
+                {
+                    "note": "lacuna = what the present elements imply but leave unoccupied; relations = the connections between entities as the primary object",
+                    "token": "relations",
+                },
+                {
+                    "note": "lacuna = what the arrangement of present parts leaves unoccupied; struct = how the parts are arranged and related",
+                    "token": "struct",
+                },
+                {
+                    "note": "lacuna = what the present entities imply but do not include; thing = what entities exist and their boundaries",
+                    "token": "thing",
+                },
+                {
+                    "note": "lacuna = what the present structure implies but does not contain; assume = the premises that must hold for it to function",
+                    "token": "assume",
+                },
+                {
+                    "note": "lacuna = what the present structure leaves unoccupied; fail = the conditions under which something stops working",
+                    "token": "fail",
+                },
+                {
+                    "note": "lacuna (scope) = absences the present elements imply and bound; gap (method) = where something treated as explicit is actually implicit",
+                    "token": "gap",
+                },
+                {
+                    "note": "lacuna (scope) = what the shape of the present elements implies is absent; unknowns (method) = what has not yet been considered or named, by category",
+                    "token": "unknowns",
+                },
+                {
+                    "note": "lacuna (scope) = a region the present elements bound but do not fill; conjoin (method) = conditions that must all hold together to enable an outcome",
+                    "token": "conjoin",
+                },
+            ],
+            "heuristics": [
+                "what's missing here",
+                "what should be here but isn't",
+                "the missing piece",
+                "negative space",
+                "find the hole in the plan",
+                "what are we overlooking in this structure",
+                "the missing edge",
+                "what is conspicuously absent",
             ],
         },
         "lever": {
@@ -10751,6 +10825,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "relations": {
             "distinctions": [
                 {
+                    "note": "relations = the connections between entities as the primary object; lacuna = what the present elements imply but leave unoccupied",
+                    "token": "lacuna",
+                },
+                {
                     "note": "struct = identify entities and their boundaries; relations = treat the connections between entities as the primary object of study",
                     "token": "struct",
                 },
@@ -10851,6 +10929,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "struct": {
             "distinctions": [
                 {
+                    "note": "struct = how the parts are arranged and related; lacuna = what the arrangement of present parts leaves unoccupied",
+                    "token": "lacuna",
+                },
+                {
                     "note": "struct = how the parts are arranged and related; percept = how that arrangement is perceived and what it draws attention to",
                     "token": "percept",
                 },
@@ -10911,6 +10993,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "thing": {
             "distinctions": [
+                {
+                    "note": "thing = what entities exist and their boundaries; lacuna = what the present entities imply but do not include",
+                    "token": "lacuna",
+                },
                 {
                     "note": "thing = what entities exist; act = what those entities are doing or performing",
                     "token": "act",

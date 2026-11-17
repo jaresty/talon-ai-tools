@@ -1072,8 +1072,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "verify": "The response enhances the task by applying falsification pressure to claims: for each claim, the conditions under which it would be false must be made explicit — not as a "
         "rhetorical gesture but as a structural constraint: what would have to be true of the world for this claim to fail? A claim whose negative space cannot be specified is not a "
         "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
-        "visual": "The response enhances the task by placing concepts in named positions relative to each other — in a spatial arrangement, diagram, or map — such that each concept's position "
-        "encodes at least one named relationship to the others.",
+        "visual": "The response enhances the task by reasoning through perceptual encoding: each relationship under analysis is assigned to a perceivable dimension (such as position, size, "
+        "grouping, contrast, or order), each concept takes a value on that dimension, and the relationships are read from the resulting arrangement rather than stated apart from it.",
         "winnow": "The response first resizes each candidate to the smallest form that still changes the decision it serves, then selects among the resized candidates by a value-over-cost score "
         "that the response must name — keeping the candidate whose expected decision-value is greatest relative to its total cost and dropping the rest — where total cost includes "
         "production effort, ongoing maintenance, the cost of gathering the evidence the candidate depends on, and the value of the best forgone alternative. Taking no action is always "
@@ -1104,6 +1104,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "deliberate intervention.",
         "mean": "The response focuses on how something is conceptually framed or understood—its purpose, interpretation, definitions, categorization, or theoretical role.",
         "motifs": "The response focuses on recurring structural or thematic forms that appear in multiple places, identifying repeated configurations or isomorphic patterns.",
+        "percept": "The response focuses on how the subject presents to a perceiver — what is noticed first, what recedes or groups together, and how that arrangement of salience directs "
+        "attention and shapes what is easy or hard to take in.",
         "product": "The response focuses on the subject through a product lens — features, user needs, and value propositions — suppressing concerns that do not bear on what users want, what the "
         "product does, and why it matters to them.",
         "relations": "The response treats the connections between entities as the primary object of study. It names each relationship type present, characterizes what each type asserts, and "
@@ -1381,7 +1383,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "trace": "Narrate sequential progression",
         "unknowns": "Surface critical unknown unknowns",
         "verify": "Falsification pressure",
-        "visual": "Spatial/positional framing",
+        "visual": "Reason through perceptual encoding",
         "winnow": "Resize, then keep the best value-over-cost",
         "yield": "Minimal action, allow natural resolution",
     },
@@ -1398,6 +1400,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "lever": "Intervention points that shift equilibrium",
         "mean": "Conceptual meaning and framing",
         "motifs": "Recurring patterns and themes",
+        "percept": "Perceptual presentation and attention",
         "product": "Product lens — features, users, value",
         "relations": "Connections between entities as primary object",
         "stable": "Stability and persistence of states",
@@ -1743,6 +1746,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "lever": "梃",
         "mean": "意",
         "motifs": "紋",
+        "percept": "覚",
         "product": "商",
         "relations": "縁",
         "stable": "安",
@@ -2165,7 +2169,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "trace": "Sequential narration",
         "unknowns": "Unknown unknowns",
         "verify": "Falsification pressure",
-        "visual": "Spatial/positional framing",
+        "visual": "Perceptual encoding",
         "winnow": "Resize candidates, then keep the greatest decision-value per unit total cost",
         "yield": "Minimal intervention / natural resolution",
     },
@@ -2182,6 +2186,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "lever": "Intervention/leverage points",
         "mean": "Understanding/meaning",
         "motifs": "Recurring patterns",
+        "percept": "Perceptual presentation",
         "product": "Product lens",
         "relations": "Connections / relationships between things",
         "stable": "Invariants/stable states",
@@ -10078,6 +10083,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "visual": {
             "distinctions": [
                 {
+                    "note": "visual = reasoning by placing concepts in named positions that encode relationships; percept = how the subject presents to a perceiver and what "
+                    "draws attention",
+                    "token": "percept",
+                },
+                {
                     "note": "draw (channel) = deliver the output as ASCII spatial layout; visual (method) = frame ideas spatially regardless of output format",
                     "token": "draw",
                 },
@@ -10240,6 +10250,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "afford": {
             "distinctions": [
+                {
+                    "note": "afford = which actions the configuration makes available and salient; percept = what the arrangement makes noticeable and how it directs attention",
+                    "token": "percept",
+                },
                 {
                     "note": "afford = the actions a structure makes available, salient, or suppressed; act = what is actually being done or intended",
                     "token": "act",
@@ -10428,6 +10442,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "good": {
             "distinctions": [
                 {
+                    "note": "good = the criteria by which the subject is judged; percept = how the subject presents to a perceiver and where attention goes",
+                    "token": "percept",
+                },
+                {
                     "note": "good = quality and success standards; fail = breakdown conditions (often paired together)",
                     "token": "fail",
                 },
@@ -10611,6 +10629,44 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "same pattern in different places",
             ],
         },
+        "percept": {
+            "distinctions": [
+                {
+                    "note": "percept = how the subject presents to a perceiver and what draws attention; visual = reasoning by placing concepts in named positions that encode "
+                    "relationships",
+                    "token": "visual",
+                },
+                {
+                    "note": "percept = how the subject's own presentation directs what a perceiver notices; view = how the subject appears from a specific vantage point",
+                    "token": "view",
+                },
+                {
+                    "note": "percept = what the arrangement makes noticeable and how it directs attention; afford = which actions the configuration makes available and salient",
+                    "token": "afford",
+                },
+                {
+                    "note": "percept = how an arrangement is perceived and what it draws attention to; struct = how the parts are arranged and related",
+                    "token": "struct",
+                },
+                {
+                    "note": "percept = how the subject presents to a perceiver and where attention goes; good = the criteria by which the subject is judged",
+                    "token": "good",
+                },
+            ],
+            "heuristics": [
+                "what draws the eye",
+                "visual hierarchy",
+                "how does this look",
+                "what stands out",
+                "what gets noticed first",
+                "is it easy to scan",
+                "color and contrast",
+                "typography choices",
+                "visual design critique",
+                "layout density and whitespace",
+                "does the emphasis match the importance",
+            ],
+        },
         "product": {
             "distinctions": [
                 {
@@ -10724,6 +10780,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "struct": {
             "distinctions": [
+                {
+                    "note": "struct = how the parts are arranged and related; percept = how that arrangement is perceived and what it draws attention to",
+                    "token": "percept",
+                },
                 {
                     "note": "struct = how the parts are arranged and related; afford = what the arrangement lets be done",
                     "token": "afford",
@@ -10854,6 +10914,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "view": {
             "distinctions": [
+                {
+                    "note": "view = how the subject appears from a specific vantage point; percept = how the subject's own presentation directs what a perceiver notices",
+                    "token": "percept",
+                },
                 {
                     "note": "view = how the subject appears from a specific vantage point; authority = who has decision-making authority",
                     "token": "authority",

@@ -338,6 +338,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
         "jobs",
         "mean",
         "motifs",
+        "percept",
         "product",
         "relations",
         "storage",

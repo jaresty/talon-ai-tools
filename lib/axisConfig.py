@@ -908,8 +908,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "moderate, or loose) with a stated reason otherwise. A constraint whose limit or demand is missing gets 'Margin unknown: <constraint> — <what is missing>' and is not ranked. "
         "When relaxing one constraint reduces another's margin, that dependency is named on both lines. After the last margin line, the response states 'Binding: <constraint> — <what "
         "the subject can no longer do once its margin is spent>' for the constraint with the least margin, or 'Binding: none ranked' when no constraint has a known margin.",
-        "polar": "The response models behavior or system dynamics as shaped by both attractors (desired or rewarded states) and repellers (avoided or penalized states), distinguishing pursuit "
-        "from avoidance.",
+        "polar": "The response models behavior as shaped by what it is drawn toward (desired or rewarded states) and what it is pushed away from (avoided or penalized states), distinguishing "
+        "pursuit from avoidance.",
         "preserve": "The response modifies the task by naming each existing interface or assumption the change touches and showing that no named interface or assumption is absent from the "
         "post-change state.",
         "presume": "The response selects the most plausible option wherever the subject leaves a choice open, including a choice that arises only while carrying out the work in any step or "
@@ -1347,7 +1347,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "pilot": "Order by learning rate",
         "pin": "Tie claims to recorded observations",
         "pinch": "Margin on each constraint; name the binding one",
-        "polar": "Attractor and repeller dynamics",
+        "polar": "Pursuit and avoidance",
         "preserve": "Maintain compatibility with existing structures",
         "presume": "Act on a stated assumption; revise on contrary evidence",
         "prioritize": "Rank items by importance or impact",
@@ -2132,7 +2132,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "pilot": "Order by learning rate",
         "pin": "Claims tied to recorded observations",
         "pinch": "Margin per constraint; the binding one",
-        "polar": "Attractors/repellers",
+        "polar": "Pursuit/avoidance",
         "preserve": "Backward compatibility",
         "presume": "Proceed without approval",
         "prioritize": "Rank by importance",
@@ -5707,6 +5707,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "loop": {
             "distinctions": [
                 {
+                    "note": "loop = a map of listed signed causal links with each closed cycle labeled reinforcing or balancing; balance = reasoning about the equilibrium between "
+                    "opposing forces and where it fails",
+                    "token": "balance",
+                },
+                {
                     "note": "loop = a map of listed signed causal links with each closed cycle labeled reinforcing or balancing; systemic = interacting whole with components, "
                     "boundaries, flows and feedback",
                     "token": "systemic",
@@ -6849,6 +6854,25 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "balance": {
             "distinctions": [
                 {
+                    "note": "balance = how opposing forces offset each other and where equilibrium fails; operations = the objective being optimized, the constraints that bound "
+                    "it, and the tradeoffs among them",
+                    "token": "operations",
+                },
+                {
+                    "note": "balance = reasoning about the equilibrium between opposing forces and where it fails; loop = a map of listed signed causal links with each closed "
+                    "cycle labeled reinforcing or balancing",
+                    "token": "loop",
+                },
+                {
+                    "note": "balance = how opposing forces offset each other toward an equilibrium; grove = how an effect compounds through a mechanism",
+                    "token": "grove",
+                },
+                {
+                    "note": "balance = the opposing forces that hold a state in place and the tolerances at which it fails; stable = which states persist and return to "
+                    "themselves after a disturbance",
+                    "token": "stable",
+                },
+                {
                     "note": "survive = behavior when exposed to live uncontrolled conditions; balance = how opposing forces produce equilibrium or instability",
                     "token": "survive",
                 },
@@ -6875,6 +6899,9 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "balance of forces",
                 "balance between code readability and performance",
                 "what trade-offs exist between these two implementations",
+                "oscillates",
+                "overshoots",
+                "self-correcting",
             ],
         },
         "behave": {
@@ -8039,6 +8066,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "grove": {
             "distinctions": [
                 {
+                    "note": "grove = how an effect compounds through a mechanism; balance = how opposing forces offset each other toward an equilibrium",
+                    "token": "balance",
+                },
+                {
                     "note": "grove = how effects accumulate and compound through mechanisms; loop = signed causal links among variables with each closed cycle labeled reinforcing "
                     "or balancing",
                     "token": "loop",
@@ -8655,6 +8686,16 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "operations": {
             "distinctions": [
                 {
+                    "note": "operations = the objective, its constraints, and the tradeoffs among them; polar = what behavior is drawn toward or pushed away from by "
+                    "incentive",
+                    "token": "polar",
+                },
+                {
+                    "note": "operations = the objective being optimized, the constraints that bound it, and the tradeoffs among them; balance = how opposing forces offset "
+                    "each other and where equilibrium fails",
+                    "token": "balance",
+                },
+                {
                     "note": "operations = names the objective, the constraints that bound it, and the tradeoffs among them; pinch = states how much margin remains on each "
                     "constraint and names the one that binds",
                     "token": "pinch",
@@ -8927,9 +8968,17 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "polar": {
             "distinctions": [
                 {
+                    "note": "polar = what behavior is drawn toward or pushed away from by incentive; operations = the objective, its constraints, and the tradeoffs among them",
+                    "token": "operations",
+                },
+                {
+                    "note": "polar = what behavior is drawn toward or pushed away from by reward and penalty; stable = which states maintain themselves after a disturbance",
+                    "token": "stable",
+                },
+                {
                     "note": "balance = forces offsetting each other; polar = attraction toward some states and aversion from others",
                     "token": "balance",
-                }
+                },
             ],
             "heuristics": [
                 "what attracts and repels",
@@ -10723,6 +10772,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "stable": {
             "distinctions": [
                 {
+                    "note": "stable = which states maintain themselves after a disturbance; polar = what behavior is drawn toward or pushed away from by reward and penalty",
+                    "token": "polar",
+                },
+                {
+                    "note": "stable = which states persist and return to themselves after a disturbance; balance = the opposing forces that hold a state in place and the "
+                    "tolerances at which it fails",
+                    "token": "balance",
+                },
+                {
                     "note": "stable = what persists; time = how things evolve (often paired)",
                     "token": "time",
                 },
@@ -10910,6 +10968,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "history",
                 "how did we get here",
                 "phases",
+                "delay between cause and effect",
+                "lag",
             ],
         },
         "view": {

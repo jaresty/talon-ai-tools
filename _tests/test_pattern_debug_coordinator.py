@@ -87,7 +87,7 @@ if bootstrap is not None:
 
             self.assertEqual(axes["completeness"], "full")
             # Scope/method capped and canonicalised.
-            self.assertEqual(axes["scope"], ["fail", "struct"])
+            self.assertEqual(axes["scope"], ["act", "fail", "struct"])
             self.assertEqual(axes["method"], ["flow", "prioritize", "rigor"])
             # Form/channel — channel allows multiple tokens.
             self.assertEqual(axes["form"], ["table"])

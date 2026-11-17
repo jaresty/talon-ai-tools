@@ -102,15 +102,15 @@ if bootstrap is not None:
 
         def test_canonicalise_axis_tokens_applies_soft_caps_with_last_wins(self) -> None:
             """Soft caps should keep the most recent tokens for an axis."""
-            # For scope, the soft cap is 2. Providing three distinct tokens
-            # should result in at most two surviving, and they should be a
+            # For scope, the soft cap is 3. Providing four distinct tokens
+            # should result in at most three surviving, and they should be a
             # subset of the originals.
-            tokens = ["narrow", "focus", "bound"]
+            tokens = ["narrow", "focus", "bound", "frame"]
 
             canonical = _canonicalise_axis_tokens("scope", tokens)
 
-            # The scope soft cap is 2; more than that should be trimmed.
-            self.assertEqual(len(canonical), 2)
+            # The scope soft cap is 3; more than that should be trimmed.
+            self.assertEqual(len(canonical), 3)
             for token in canonical:
                 self.assertIn(token, tokens)
 

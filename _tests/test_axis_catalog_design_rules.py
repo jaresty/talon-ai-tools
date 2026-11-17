@@ -274,7 +274,7 @@ if not TYPE_CHECKING:
 
             caps = self._talon_settings().axis_soft_caps()
             for axis, value in {
-                "scope": 2,
+                "scope": 3,
                 "method": 5,
                 "form": 1,
                 "channel": 3,

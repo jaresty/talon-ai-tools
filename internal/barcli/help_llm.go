@@ -493,7 +493,7 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 
 	fmt.Fprintf(w, "**Important constraints:**\n")
 	fmt.Fprintf(w, "1. **Static token is REQUIRED** for LLM-generated commands\n")
-	fmt.Fprintf(w, "2. **Scope**: maximum 2 tokens\n")
+	fmt.Fprintf(w, "2. **Scope**: maximum %d tokens\n", grammar.AxisSoftCap("scope"))
 	fmt.Fprintf(w, "3. **Method**: maximum 5 tokens\n")
 	fmt.Fprintf(w, "4. **All other constraint axes**: maximum 1 token each\n")
 	fmt.Fprintf(w, "5. **Override mode**: Once you use `key=value` syntax, ALL subsequent tokens must use `key=value` format\n")
@@ -527,9 +527,10 @@ func renderFormalGrammar(w io.Writer, grammar *Grammar, compact bool) {
 	fmt.Fprintf(w, "bar build struct flow --subject \"text\"\n")
 	fmt.Fprintf(w, "# Error: task is required\n\n")
 
-	fmt.Fprintf(w, "# WRONG: Too many scope tokens (max 2)\n")
+	scopeCap := grammar.AxisSoftCap("scope")
+	fmt.Fprintf(w, "# WRONG: Too many scope tokens (max %d)\n", scopeCap)
 	fmt.Fprintf(w, "bar build show struct mean thing time --subject \"text\"\n")
-	fmt.Fprintf(w, "# Error: scope accepts maximum 2 tokens\n\n")
+	fmt.Fprintf(w, "# Error: scope accepts maximum %d tokens\n\n", scopeCap)
 
 	fmt.Fprintf(w, "# WRONG: Multi-word token without dashes\n")
 	fmt.Fprintf(w, "bar build show voice=as teacher --subject \"text\"\n")
@@ -988,7 +989,7 @@ func renderCompositionRules(w io.Writer, grammar *Grammar, compact bool) {
 			}
 		}
 	} else {
-		fmt.Fprintf(w, "- Scope: maximum 2 tokens\n")
+		fmt.Fprintf(w, "- Scope: maximum %d tokens\n", grammar.AxisSoftCap("scope"))
 		fmt.Fprintf(w, "- Method: maximum 5 tokens\n")
 		fmt.Fprintf(w, "- Other axes: maximum 1 token each\n")
 	}

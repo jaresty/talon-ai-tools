@@ -135,7 +135,7 @@ _AXIS_SOFT_CAPS: dict[str, int] = {
     # token on either, and the table says so for every consumer that reads it.
     "topology": 1,
     "completeness": 1,
-    "scope": 2,
+    "scope": 3,
     "method": 5,
     "form": 1,
     "channel": 3,  # multi-channel: all active channel tokens are satisfied

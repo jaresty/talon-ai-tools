@@ -512,7 +512,7 @@ if bootstrap is not None:
 
                 self.assertEqual(static_prompt, "show")
                 self.assertEqual(completeness, "full")
-                self.assertEqual(scope, "fail struct")
+                self.assertEqual(scope, "act fail struct")
                 self.assertEqual(method, "flow prioritize rigor")
                 self.assertEqual(form, "taxonomy")
                 self.assertEqual(channel, "jira slack")

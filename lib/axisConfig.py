@@ -2246,7 +2246,7 @@ AXIS_KEY_TO_AXIS_DESC: Dict[str, str] = {
     "method": "Reasoning approach — how to think through the problem. Up to five can be combined.",
     "persona": "Communication style — who speaks, for whom, and in what tone.",
     "persona_preset": "A bundled preset combining voice, audience, and tone in one choice.",
-    "scope": "Which dimension of the topic to focus on (entities, structure, meaning, actions, quality). Up to two.",
+    "scope": "Which dimension of the topic to focus on (entities, structure, meaning, actions, quality). Up to three.",
     "task": "What the response does — the primary action to perform.",
     "tone": "The emotional register — how the response sounds.",
     "topology": "Who the reasoning is externalised for, and what must therefore be visible in the output — a future reader reconstructing it, a live observer checking each transition, a challenger "

@@ -118,14 +118,14 @@ if bootstrap is not None:
 
                 _run_prompt_pattern("todo", noisy_pattern)
 
-                self.assertEqual(GPTState.last_scope, "edges system")
+                self.assertEqual(GPTState.last_scope, "actions edges system")
                 self.assertEqual(GPTState.last_method, "filter plan rigor steps")
                 self.assertEqual(GPTState.last_form, "plain")
                 self.assertEqual(GPTState.last_channel, "jira slack")
                 self.assertEqual(GPTState.last_directional, "fog")
                 self.assertEqual(
                     GPTState.last_recipe,
-                    "todo · full · edges system · filter plan rigor steps · plain · jira slack · fog",
+                    "todo · full · actions edges system · filter plan rigor steps · plain · jira slack · fog",
                 )
 
             def test_prompt_pattern_run_preset_dispatches_by_name(self) -> None:

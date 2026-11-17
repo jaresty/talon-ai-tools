@@ -188,7 +188,7 @@ if bootstrap is not None:
                 hydrated,
             )
             self.assertIn(
-                "Form: The response organizes ideas as concise bullet points, avoiding long paragraphs.",
+                "Form: The response organizes ideas as concise bullet points, avoiding long paragraphs. Items are numbered rather than marked with a bare glyph whenever their order carries meaning.",
                 hydrated,
             )
             self.assertIn(

@@ -231,7 +231,7 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "formal, code or notation channel renders the axioms as predicates or type-system constraints.",
         "bug": "The response structures ideas as a bug report with sections for Steps to Reproduce, Expected Behavior, Actual Behavior, and Environment or Context, emphasizing concise, testable "
         "details.",
-        "bullets": "The response organizes ideas as concise bullet points, avoiding long paragraphs.",
+        "bullets": "The response organizes ideas as concise bullet points, avoiding long paragraphs. Items are numbered rather than marked with a bare glyph whenever their order carries meaning.",
         "cards": "The response organizes ideas as discrete cards or items, each with a clear heading and short body, avoiding long continuous prose.",
         "case": "The response structures reasoning by building the case before the conclusion, laying out background, evidence, trade-offs, and alternatives before converging on a "
         "clearrecommendation that addresses objections and constraints.",

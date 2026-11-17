@@ -179,7 +179,7 @@ def test_suggest_uses_hydrated_system_prompt_for_llm():
     ), content
     assert _contains_any(
         [
-            "Form: The response organizes ideas as concise bullet points, avoiding long paragraphs.",
+            "Form: The response organizes ideas as concise bullet points, avoiding long paragraphs. Items are numbered rather than marked with a bare glyph whenever their order carries meaning.",
         ]
     ), content
     assert _contains_any(

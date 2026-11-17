@@ -23,7 +23,45 @@ AXIS_OF = {
     "stable": "scope",
     "time": "scope",
     "loop": "form",
+    "probability": "method",
+    "pulse": "method",
 }
+
+# Table cells show the first five heuristics, so appending routing phrases must
+# never change them. C0 records the cells as they were before the routing edits.
+C0_TABLE_CELLS = {
+    "balance": [
+        "how do forces balance",
+        "what opposing pressures exist",
+        "what keeps this in equilibrium",
+        "what countervailing forces",
+        "how do trade-offs play out",
+    ],
+    "time": ["step by step", "in order", "over time", "what happens when", "sequence"],
+    "probability": [
+        "how likely is",
+        "what's the probability",
+        "expected value",
+        "confidence interval",
+        "statistical significance",
+    ],
+    "operations": [
+        "throughput",
+        "bottleneck analysis",
+        "resource allocation",
+        "scheduling problem",
+        "queuing",
+    ],
+    "polar": [
+        "what attracts and repels",
+        "pull toward and push away from",
+        "what are the incentives and disincentives",
+        "goals and anti-goals",
+        "what pulls toward and pushes away",
+    ],
+}
+
+OPTIMIZE_PHRASE = "what does this service optimize for and what does it sacrifice"
 
 
 def _meta(token: str) -> dict:
@@ -93,6 +131,31 @@ class PolarReadsAsPursuitAndAvoidanceTests(unittest.TestCase):
             self.assertNotIn(banned, value, f"polar description still contains {banned!r}")
         for required in ("pursuit", "avoidance"):
             self.assertIn(required, value, f"polar description lost {required!r}")
+
+
+class NoiseAndOptimizeRoutingTests(unittest.TestCase):
+    def test_property_11_pulse_probability_reciprocal(self):
+        self.assertTrue(_distinguishes("pulse", "probability"), "pulse states no distinction against probability")
+        self.assertTrue(_distinguishes("probability", "pulse"), "probability states no distinction against pulse")
+
+    def test_property_12_probability_has_noise_heuristics(self):
+        have = set(_meta("probability").get("heuristics") or [])
+        want = {
+            "estimate the underlying value from noisy data",
+            "separate signal from noise in measurements",
+        }
+        self.assertTrue(want <= have, f"probability heuristics missing {sorted(want - have)}")
+
+    def test_property_13_optimize_heuristic_moved_from_polar_to_operations(self):
+        self.assertIn(OPTIMIZE_PHRASE, _meta("operations").get("heuristics") or [], "operations lacks the optimize heuristic")
+        self.assertNotIn(OPTIMIZE_PHRASE, _meta("polar").get("heuristics") or [], "polar still carries the optimize heuristic")
+
+
+class TableCellsUnchangedTests(unittest.TestCase):
+    def test_property_14_touched_table_cells_unchanged(self):
+        for token, before in C0_TABLE_CELLS.items():
+            now = (_meta(token).get("heuristics") or [])[:5]
+            self.assertEqual(now, before, f"{token} table cell changed: {now}")
 
 
 if __name__ == "__main__":

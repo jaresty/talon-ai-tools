@@ -8718,6 +8718,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "optimization problem",
                 "identify the bottleneck in this data pipeline",
                 "apply queueing theory to this request processing system",
+                "what does this service optimize for and what does it sacrifice",
             ],
         },
         "orbit": {
@@ -8988,7 +8989,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what pulls toward and pushes away",
                 "what's the attractor and repeller",
                 "positive and negative forces",
-                "what does this service optimize for and what does it sacrifice",
                 "what are the attractors and repellers in this system's design space",
             ],
         },
@@ -9135,9 +9135,14 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "probability": {
             "distinctions": [
                 {
+                    "note": "probability = what can be inferred about an underlying value despite noise; pulse = where signal degrades or gets lost in transmission and what "
+                    "detects it",
+                    "token": "pulse",
+                },
+                {
                     "note": "calc = general quantitative computation; probability = specifically statistical and probabilistic reasoning under uncertainty",
                     "token": "calc",
-                }
+                },
             ],
             "heuristics": [
                 "how likely is",
@@ -9152,6 +9157,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "likelihood",
                 "how likely is this race condition to occur in the production system",
                 "estimate the probability of this edge case occurring",
+                "estimate the underlying value from noisy data",
+                "separate signal from noise in measurements",
             ],
         },
         "prune": {
@@ -9193,10 +9200,15 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "pulse": {
             "distinctions": [
                 {
+                    "note": "pulse = where signal degrades or gets lost in transmission and what detects it; probability = what can be inferred about an underlying value despite "
+                    "noise",
+                    "token": "probability",
+                },
+                {
                     "note": "flow = narrate step-by-step sequence; pulse = model how the medium changes what arrives — noise, distortion, reach, timing, persistence, and "
                     "attention cost",
                     "token": "flow",
-                }
+                },
             ],
             "heuristics": [
                 "where does signal get lost",

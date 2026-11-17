@@ -389,9 +389,6 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "actors": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
         "adversarial": "The response enhances the task by first naming the categories of failure it will examine — each category must be nameable as a type (e.g. edge case, unstated assumption, "
         "failure mode, counterexample, etc.) — then for each named category, naming at least one specific instance found in the subject.",
-        "afford": "The response models behavior as shaped by the structural configuration of available actions. Explanations must distinguish between logical possibility and practical salience, "
-        "account for how system design foregrounds or suppresses specific actions, and specify how structural constraints pre-shape the perceived action space. Outcomes may not be "
-        "attributed solely to preferences or incentives without modeling how affordances influenced selection.",
         "align": "The response restructures relationships, assumptions, or responsibilities by naming each pair of elements that contradicted one another and naming the specific change that "
         "makes them no longer contradict.",
         "amorph": "The response enhances the task by identifying regions where behavior, meaning, or interaction depends on ambiguous, fluid, or emergent structure rather than stable, explicit "
@@ -1087,6 +1084,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     },
     "scope": {
         "act": "The response focuses on what is being done or intended—tasks, activities, operations, or work to be performed.",
+        "afford": "The response focuses on the actions the subject makes available — what can be done, which actions its structure foregrounds or suppresses, and how that configuration bounds "
+        "what is practically open versus merely possible, without attributing outcomes solely to preferences or incentives.",
         "assume": "The response focuses on explicit or implicit premises that must hold for the reasoning, system, or argument to function.",
         "authority": "The response explains outcomes in terms of identifiable actors with the capacity to select among alternatives, specifying who can act, what options are available, and how "
         "their choices influence results.",
@@ -1271,7 +1270,6 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "abduce": "Generate explanatory hypotheses",
         "actors": "Center people, roles, and agents",
         "adversarial": "Constructive stress-testing",
-        "afford": "Affordance-driven behavior analysis",
         "align": "Restructure for global coherence",
         "amorph": "Identify fluid unstructured regions",
         "analog": "Reasoning by analogy",
@@ -1389,6 +1387,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     },
     "scope": {
         "act": "Tasks and intended actions",
+        "afford": "Available actions and what shapes them",
         "assume": "Premises and preconditions",
         "authority": "Actors with authority and decision-making",
         "cross": "Cross-cutting concerns spanning modules",
@@ -1553,7 +1552,6 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
         "abduce": "因",
         "actors": "者",
         "adversarial": "攻",
-        "afford": "構",
         "align": "調",
         "amorph": "曖",
         "analog": "類",
@@ -1734,6 +1732,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     },
     "scope": {
         "act": "為",
+        "afford": "構",
         "assume": "仮",
         "authority": "主",
         "cross": "横",
@@ -1785,7 +1784,6 @@ AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
         "abduce": "Reasoning",
         "actors": "Actor-centered",
         "adversarial": "Diagnostic",
-        "afford": "Actor-centered",
         "align": "Structural",
         "amorph": "Diagnostic",
         "analog": "Generative",
@@ -2055,7 +2053,6 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "abduce": "Best explanation",
         "actors": "People/roles",
         "adversarial": "Stress test",
-        "afford": "Structural affordances",
         "align": "Restore structural coherence",
         "amorph": "Fluid/amorphous structure",
         "analog": "Reasoning by analogy",
@@ -2174,6 +2171,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     },
     "scope": {
         "act": "Actions/tasks",
+        "afford": "Available action space",
         "assume": "Premises/preconditions",
         "authority": "Actors with authority",
         "cross": "Cross-cutting concerns",
@@ -6634,29 +6632,6 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "play devil's advocate",
             ],
         },
-        "afford": {
-            "distinctions": [
-                {
-                    "note": "field = actors interact via a shared medium; afford = how available-action structure pre-shapes individual choices",
-                    "token": "field",
-                },
-                {
-                    "note": "systemic = feedback loops and emergent dynamics; afford = structural availability shapes what actors perceive as actionable",
-                    "token": "systemic",
-                },
-            ],
-            "heuristics": [
-                "why do users do X",
-                "the design encourages Y",
-                "affordances",
-                "what the API makes easy",
-                "shaped by the structure",
-                "how the design foregrounds this option",
-                "structural constraints on behavior",
-                "design defaults bias toward",
-                "interface suppresses this action",
-            ],
-        },
         "align": {
             "distinctions": [
                 {
@@ -10244,6 +10219,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "note": "act = what is being done or intended; time = when things occur and how they change",
                     "token": "time",
                 },
+                {
+                    "note": "act = what is actually being done or intended; afford = the actions a structure makes available, salient, or suppressed",
+                    "token": "afford",
+                },
             ],
             "heuristics": [
                 "what actions",
@@ -10257,6 +10236,49 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "what is the current workflow",
                 "what is being done now",
                 "what workarounds are in use",
+            ],
+        },
+        "afford": {
+            "distinctions": [
+                {
+                    "note": "afford = the actions a structure makes available, salient, or suppressed; act = what is actually being done or intended",
+                    "token": "act",
+                },
+                {
+                    "note": "afford = which actions the configuration makes available and salient; authority = which actors hold the capacity to choose among them",
+                    "token": "authority",
+                },
+                {
+                    "note": "afford = the set of actions open under the structure; lever = the points where applied force shifts the system's equilibrium",
+                    "token": "lever",
+                },
+                {
+                    "note": "afford = what the arrangement lets be done; struct = how the parts are arranged and related",
+                    "token": "struct",
+                },
+                {
+                    "note": "afford = how available-action structure pre-shapes individual choices; field = actors interact via a shared medium",
+                    "token": "field",
+                },
+                {
+                    "note": "afford = structural availability shapes what actors perceive as actionable; systemic = feedback loops and emergent dynamics",
+                    "token": "systemic",
+                },
+            ],
+            "heuristics": [
+                "what can be done here",
+                "what options are available",
+                "what does the design make easy or hard",
+                "which actions are hidden or discouraged",
+                "why do people take this path",
+                "what is the default path",
+                "what choices does the setup nudge toward",
+                "why do users do X",
+                "the design encourages Y",
+                "affordances",
+                "what the API makes easy",
+                "design defaults bias toward",
+                "interface suppresses this action",
             ],
         },
         "assume": {
@@ -10285,6 +10307,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "authority": {
             "distinctions": [
+                {
+                    "note": "authority = which actors hold the capacity to choose among alternatives; afford = which actions the configuration makes available and salient",
+                    "token": "afford",
+                },
                 {
                     "note": "authority = who has decision-making authority; view = how the subject appears from a specific vantage point",
                     "token": "view",
@@ -10488,6 +10514,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "lever": {
             "distinctions": [
+                {
+                    "note": "lever = the points where applied force shifts the system's equilibrium; afford = the set of actions open under the structure",
+                    "token": "afford",
+                },
                 {
                     "note": "lever = which element's change moves the outcome most, found by sensitivity; pinch = which limit decides the outcome, found by remaining distance",
                     "token": "pinch",
@@ -10694,6 +10724,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "struct": {
             "distinctions": [
+                {
+                    "note": "struct = how the parts are arranged and related; afford = what the arrangement lets be done",
+                    "token": "afford",
+                },
                 {
                     "note": "struct = internal topology and arrangement within units; cross = horizontal span across module boundaries",
                     "token": "cross",

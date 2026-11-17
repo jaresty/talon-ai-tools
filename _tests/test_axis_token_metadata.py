@@ -328,6 +328,7 @@ class ScopeAxisMetadataTests(unittest.TestCase):
     AXIS = "scope"
     EXPECTED_TOKENS = {
         "act",
+        "afford",
         "authority",
         "assume",
         "cross",
@@ -797,7 +798,6 @@ class MethodAxisMetadataTests(unittest.TestCase):
         "abduce",
         "actors",
         "adversarial",
-        "afford",
         "align",
         "amorph",
         "analog",

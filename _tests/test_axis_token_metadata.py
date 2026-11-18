@@ -798,6 +798,7 @@ class MethodAxisMetadataTests(unittest.TestCase):
     AXIS = "method"
     EXPECTED_TOKENS = {
         "abduce",
+        "absorb",
         "actors",
         "adversarial",
         "align",

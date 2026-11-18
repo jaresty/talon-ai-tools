@@ -386,6 +386,8 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
     "method": {
         "abduce": "The response enhances the task by generating explanatory hypotheses, each naming the specific piece of evidence it explains that the alternatives do not, explicitly comparing "
         "alternative explanations.",
+        "absorb": "The response enhances the task by reasoning with repetition in mind: it treats every step it proposes as one that may be performed again, states for each what a second "
+        "performance would change, and favors forms in which the first performance leaves nothing for a repeat to do.",
         "actors": "The response enhances the task by identifying and centering people, roles, or agents involved in the system.",
         "adversarial": "The response enhances the task by first naming the categories of failure it will examine — each category must be nameable as a type (e.g. edge case, unstated assumption, "
         "failure mode, counterexample, etc.) — then for each named category, naming at least one specific instance found in the subject.",
@@ -1273,6 +1275,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
     },
     "method": {
         "abduce": "Generate explanatory hypotheses",
+        "absorb": "Reason as if every step may be repeated",
         "actors": "Center people, roles, and agents",
         "adversarial": "Constructive stress-testing",
         "align": "Restructure for global coherence",
@@ -1557,6 +1560,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
     },
     "method": {
         "abduce": "因",
+        "absorb": "冪",
         "actors": "者",
         "adversarial": "攻",
         "align": "調",
@@ -1791,6 +1795,7 @@ AXIS_KEY_TO_KANJI: Dict[str, Union[Dict[str, str], Dict[str, Dict[str, str]]]] =
 AXIS_KEY_TO_CATEGORY: Dict[str, Dict[str, str]] = {
     "method": {
         "abduce": "Reasoning",
+        "absorb": "Diagnostic",
         "actors": "Actor-centered",
         "adversarial": "Diagnostic",
         "align": "Structural",
@@ -2060,6 +2065,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
     },
     "method": {
         "abduce": "Best explanation",
+        "absorb": "Repeat-safe by design",
         "actors": "People/roles",
         "adversarial": "Stress test",
         "align": "Restore structural coherence",
@@ -4352,6 +4358,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "fixpoint": {
             "distinctions": [
                 {
+                    "note": "fixpoint = repeat the active instructions over the response's own output until a pass finds nothing left to act on, so several passes may be "
+                    "needed; absorb (method) = one application is enough and repeating adds no effect",
+                    "token": "absorb",
+                },
+                {
                     "note": "fixpoint = repeat the active instructions over the response's own output until a pass finds nothing left to act on; max = cover every "
                     "element and derivable sub-element of the subject, omissions are errors",
                     "token": "max",
@@ -6580,6 +6591,38 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                 "generate competing explanations for this error",
                 "what are the most likely causes of this bug",
                 "generate competing explanations for this test failure",
+            ],
+        },
+        "absorb": {
+            "distinctions": [
+                {
+                    "note": "absorb = reason as if each step may be repeated and favor forms where the first performance suffices; robust = select options that perform across "
+                    "uncertain futures",
+                    "token": "robust",
+                },
+                {
+                    "note": "absorb = check whether a repeat of the same step adds anything; preserve = constrain changes to keep existing components working unchanged",
+                    "token": "preserve",
+                },
+                {
+                    "note": "absorb = ask what a second identical performance would change; perturb = introduce controlled variations to observe the response",
+                    "token": "perturb",
+                },
+                {
+                    "note": "absorb (method) = one application is enough, f(f(x)) = f(x); fixpoint (completeness) = reapply until the output stops changing, which may take "
+                    "several passes",
+                    "token": "fixpoint",
+                },
+            ],
+            "heuristics": [
+                "safe to run twice",
+                "what happens if this runs again",
+                "make this safe to retry",
+                "retry-safe",
+                "does repeating this change anything",
+                "f of f of x equals f of x",
+                "running it twice should be the same as once",
+                "duplicate requests",
             ],
         },
         "actors": {
@@ -8860,6 +8903,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "perturb": {
             "distinctions": [
                 {
+                    "note": "perturb = introduce controlled variations to observe the response; absorb = ask what a second identical performance would change",
+                    "token": "absorb",
+                },
+                {
                     "note": "adversarial = construct attacks to find weaknesses; perturb = introduce controlled variations to observe response",
                     "token": "adversarial",
                 },
@@ -9009,6 +9056,10 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "preserve": {
             "distinctions": [
+                {
+                    "note": "preserve = constrain changes to keep existing components working unchanged; absorb = check whether a repeat of the same step adds anything",
+                    "token": "absorb",
+                },
                 {
                     "note": "migrate = introduce a transition path toward a new structure; preserve = constrain changes to keep existing components working unchanged",
                     "token": "migrate",
@@ -9444,6 +9495,11 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         },
         "robust": {
             "distinctions": [
+                {
+                    "note": "robust = select options that perform across uncertain futures; absorb = reason as if each step may be repeated and favor forms where the first "
+                    "performance suffices",
+                    "token": "absorb",
+                },
                 {
                     "note": "survive = behavior when exposed to live uncontrolled conditions; robust = select options that perform across uncertain futures",
                     "token": "survive",

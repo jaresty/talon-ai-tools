@@ -107,6 +107,8 @@ var generalHelpText = strings.TrimSpace(`USAGE
 
   bar lookup <query> [--axis AXIS] [--json]
 
+  bar step <token>                       take one token as a lens for your next response
+
   bar help
   bar help tokens [section...] [--grammar PATH]
   bar help token <slug> [<slug>...]      one or more token names
@@ -322,6 +324,10 @@ func Run(args []string, stdin io.Reader, stdout, stderr io.Writer) int {
 
 	if options.Command == "lookup" {
 		return runLookup(options, stdout, stderr)
+	}
+
+	if options.Command == "step" {
+		return runStep(options, stdout, stderr)
 	}
 
 	if options.Command == "sequence" {

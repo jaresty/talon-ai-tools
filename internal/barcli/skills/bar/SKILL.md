@@ -40,6 +40,9 @@ bar skills get bar-workflow
 Do not reject a `/bar X` invocation because `bar X` fails as a shell command — check
 the skill layer first.
 
+Exception: `/bar step <token>` is a native subcommand. Run `bar step <token>` and apply
+the lens it prints to your next response only — no subject, no task, no build.
+
 ## Quick reference
 
 ```bash

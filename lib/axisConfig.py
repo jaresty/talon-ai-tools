@@ -1076,10 +1076,11 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "falsifiable claim. verify does not govern which layer those constraints must satisfy — it requires only that the negative space be visible.",
         "visual": "The response enhances the task by reasoning through perceptual encoding: each relationship under analysis is assigned to a perceivable dimension (such as position, size, "
         "grouping, contrast, or order), each concept takes a value on that dimension, and the relationships are read from the resulting arrangement rather than stated apart from it.",
-        "winnow": "The response first resizes each candidate to the smallest form that still changes the decision it serves, then selects among the resized candidates by a value-over-cost score "
-        "that the response must name — keeping the candidate whose expected decision-value is greatest relative to its total cost and dropping the rest — where total cost includes "
-        "production effort, ongoing maintenance, the cost of gathering the evidence the candidate depends on, and the value of the best forgone alternative. Taking no action is always "
-        "among the candidates: when no candidate's expected value exceeds its total cost, the response selects taking no action.",
+        "winnow": "The response first lists each candidate under consideration and states their count as a numeral, then resizes each candidate to the smallest form that still changes the "
+        "decision it serves, then selects among the resized candidates by a value-over-cost score that the response must name — keeping the candidate whose expected decision-value is "
+        "greatest relative to its total cost and dropping the rest — where total cost includes production effort, ongoing maintenance, the cost of gathering the evidence the candidate "
+        "depends on, and the value of the best forgone alternative. Taking no action is always among the candidates: when no candidate's expected value exceeds its total cost, the "
+        "response selects taking no action.",
         "yield": "The response advances the task by naming the specific minimal intervention taken, naming the specific dynamic or structure that resolves the remaining tension after that "
         "intervention, and attributing resolution to those named system dynamics rather than to additional interventions — any content beyond this names conditions under which the named "
         "dynamic operates, not further interventions.",

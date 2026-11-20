@@ -174,13 +174,10 @@ AXIS_KEY_TO_VALUE: Dict[str, Dict[str, str]] = {
         "minimal": "The response makes the smallest change or provides the smallest answer that satisfies the request, avoiding work outside the core need. What the request includes is set "
         "by everything asked for: where another active token imposes a structural requirement, meeting that requirement is part of the request, so this token removes only what "
         "is surplus to it and never reduces the response below it.",
-        "mirror": "The response names the reference whose content or behavior is to be matched, then lists the classes in scope, such as the kinds of input, section, claim, or effect the "
-        "reference has, as numbered 'Class N:' lines before judging any of them, splitting until each class can take a single verdict. It gives each class exactly one verdict: "
-        "match, differ, or not checked, stating for match and differ what was compared and for not checked what was left untried. A class that was not checked is never counted as "
-        "a match, and a verdict is only as strong as the stated basis for it. It then scans the subject for parts that no class of the reference accounts for, listing each as a "
-        "numbered 'Extra N:' line; when it finds none, it writes 'Extra: none' with what part of the subject was scanned. The comparison ends with 'Not checked: <classes>' or "
-        "'Not checked: none', which names the reference classes left untried and any part of the subject not scanned for extras, and may also name dimensions deliberately left "
-        "out of the comparison. For a code port the classes are input kinds and effects; for a translation or revision they are sections or claims.",
+        "mirror": "The response names the reference against which coverage is measured and takes its content or behavior as the scope: the classes of what the reference contains or does, "
+        "such as the kinds of input, section, claim, or effect, are what the response must reach, and the parts of the subject that no class of the reference accounts for are in "
+        "scope as well. A reference class the response does not reach is named as unreached and is never counted as covered. The coverage account ends by naming the reference "
+        "classes left unreached and any part of the subject not scanned for parts with no counterpart in the reference.",
         "narrow": "The response restricts the discussion to a very small slice of the topic, avoiding broad context.",
         "prime": "The response ranks the subject's concepts by learning leverage — the ratio of understanding unlocked to learning effort required — naming this ranking criterion before "
         "covering any concept. It covers only the highest-leverage subset. After naming that subset, it writes a closure statement declaring coverage complete at the functional "
@@ -1192,7 +1189,7 @@ AXIS_KEY_TO_LABEL: Dict[str, Dict[str, str]] = {
         "grow": "Expand only when demanded",
         "max": "Exhaustive, treat omissions as errors",
         "minimal": "Smallest satisfying answer only",
-        "mirror": "Match a reference, class by class",
+        "mirror": "Coverage measured against a reference",
         "narrow": "Restricted to a very small slice",
         "prime": "Highest-leverage concepts only, stop at functional grounding",
         "ration": "Allocate depth by a named score",
@@ -1982,7 +1979,7 @@ AXIS_KEY_TO_ROUTING_CONCEPT: Dict[str, Dict[str, str]] = {
         "grow": "Expand on demand",
         "max": "Exhaustive — every case, every edge",
         "minimal": "Briefest valid response",
-        "mirror": "Verdict per class against a reference",
+        "mirror": "Reference's classes plus subject extras",
         "narrow": "Focused depth on a specific slice",
         "prime": "Highest-leverage concepts first, stop at functional grounding",
         "ration": "Allocate coverage depth by a named situational score",
@@ -4393,8 +4390,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "full": {
             "distinctions": [
                 {
-                    "note": "full = every named element of the subject, one level deep; mirror = every declared class of a reference's behavior gets a match, differ or "
-                    "not-checked verdict and subject parts with no counterpart are listed",
+                    "note": "full = every named element of the subject, one level deep; mirror = every class of a reference's content or behavior is reached, unreached "
+                    "classes are named, and subject parts with no counterpart are listed",
                     "token": "mirror",
                 },
                 {
@@ -4510,7 +4507,7 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
             "distinctions": [
                 {
                     "note": "max = exhaustive coverage of the subject itself, omissions are errors; mirror = coverage measured against a reference in both directions, with "
-                    "unchecked classes named",
+                    "unreached classes named",
                     "token": "mirror",
                 },
                 {
@@ -4581,17 +4578,17 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
         "mirror": {
             "distinctions": [
                 {
-                    "note": "mirror = list the classes of a reference's behavior and give each a match, differ or not-checked verdict; earn = classify each difference from "
-                    "a reference as warranted or not",
+                    "note": "mirror = take the classes of a reference's behavior as the coverage scope, naming unreached classes; earn = classify each difference from a "
+                    "reference as warranted or not",
                     "token": "earn",
                 },
                 {
-                    "note": "mirror = every declared class of a reference's behavior gets a match, differ or not-checked verdict and subject parts with no counterpart are "
+                    "note": "mirror = every class of a reference's content or behavior is reached, unreached classes are named, and subject parts with no counterpart are "
                     "listed; full = every named element of the subject, one level deep",
                     "token": "full",
                 },
                 {
-                    "note": "mirror = coverage measured against a reference in both directions, with unchecked classes named; max = exhaustive coverage of the subject "
+                    "note": "mirror = coverage measured against a reference in both directions, with unreached classes named; max = exhaustive coverage of the subject "
                     "itself, omissions are errors",
                     "token": "max",
                 },
@@ -7612,8 +7609,8 @@ AXIS_TOKEN_METADATA: dict[str, dict[str, AxisTokenMetadata]] = {
                     "token": "norm",
                 },
                 {
-                    "note": "earn = classify each difference from a reference as warranted or not; mirror = list the classes of a reference's behavior and give each a match, "
-                    "differ or not-checked verdict",
+                    "note": "earn = classify each difference from a reference as warranted or not; mirror = take the classes of a reference's behavior as the coverage scope, "
+                    "naming unreached classes",
                     "token": "mirror",
                 },
                 {

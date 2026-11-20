@@ -83,8 +83,8 @@ _CLOSING_ROWS = (
     (
         "completeness",
         "mirror",
-        "The comparison ends with 'Not checked:",
-        "It ends with 'Not checked:",
+        "The coverage account ends by naming",
+        "The response ends by naming",
     ),
     (
         "method",

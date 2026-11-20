@@ -245,7 +245,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Enumerate independent evaluation frames that differ structurally. A frame name contains no verb and makes no causal claim. Each frame names a structural angle and the type of evidence or perspective it brings — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not apply any frame yet — enumeration is the only output of this step.",
+                "prompt_hint": "Enumerate independent evaluation frames that differ structurally. A frame name contains no verb and makes no causal claim. Each frame names a structural angle and the type of evidence or perspective it brings — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Apply each frame in full as the method requires; these readings are previews, and only each frame's label, its 'Construal:' and 'Presupposes:' lines, and the shared facts are handed to the dispatched agents.",
             },
             {
                 "type": "dispatch",
@@ -254,7 +254,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "join": "all",
                 "isolation": True,
                 "during_dispatch": "show form:quiz",
-                "prompt_hint": "Each agent receives only the subject and its assigned frame description as full context — no shared history, no cross-frame information. Return findings in a labeled block.",
+                "prompt_hint": "Each agent receives only the subject and its assigned frame description as full context — no shared history, no cross-frame information. Return findings in a labeled block. Hand each agent only its frame's label, its 'Construal:' and 'Presupposes:' lines, and the numbered shared facts from the enumeration step — never any 'Reads fact K:' line, its own included, and never another frame; the agent produces its own reading of every shared fact under its frame.",
             },
             {
                 "token": "task:show",
@@ -264,7 +264,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "pick method:converge",
                 "role": "synthesis",
-                "prompt_hint": "Use this step to narrow from the independent frame results to a recommendation, naming what each frame contributed and what was excluded.",
+                "prompt_hint": "Use this step to narrow from the independent frame results to a recommendation, naming what each frame contributed and what was excluded. Treat the frame readings from the enumeration step as previews: where an agent's reading differs from its preview, record the difference rather than resolving it toward the preview.",
             },
             {
                 "token": "show form:quiz",
@@ -283,7 +283,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Enumerate the named interpretation frames as a governing artifact. A frame is an interpretive lens (e.g. security, usability, performance, compliance) — not a task to perform. A frame name contains no verb and makes no causal claim. Each frame must yield a distinct reading of the same material. Name the lens only — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Enumeration is the only output of this step.",
+                "prompt_hint": "Enumerate the named interpretation frames as a governing artifact. A frame is an interpretive lens (e.g. security, usability, performance, compliance) — not a task to perform. A frame name contains no verb and makes no causal claim. Each frame must yield a distinct reading of the same material. Name the lens only — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Apply each frame in full as the method requires; these readings are previews, and only each frame's label, its 'Construal:' and 'Presupposes:' lines, and the shared facts are handed to the dispatched agents.",
             },
             {
                 "type": "dispatch",
@@ -292,12 +292,12 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "join": "all",
                 "isolation": True,
                 "during_dispatch": "show form:quiz",
-                "prompt_hint": "Each agent receives only the subject and its assigned frame. First, read the files or content named in the subject. Then run bar build using the frame as the interpretive lens. Return a labeled summary: what this frame reveals, what it foregrounds, and what it sets aside.",
+                "prompt_hint": "Each agent receives only the subject and its assigned frame. First, read the files or content named in the subject. Then run bar build using the frame as the interpretive lens. Return a labeled summary: what this frame reveals, what it foregrounds, and what it sets aside. Hand each agent only its frame's label, its 'Construal:' and 'Presupposes:' lines, and the numbered shared facts from the enumeration step — never any 'Reads fact K:' line, its own included, and never another frame; the agent produces its own reading of every shared fact under its frame.",
             },
             {
                 "token": "probe method:converge",
                 "role": "cross-frame synthesis",
-                "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to synthesize across frame summaries: what each frame revealed, where frames agree or diverge, and what the combined reading supports as a conclusion or recommendation.",
+                "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to synthesize across frame summaries: what each frame revealed, where frames agree or diverge, and what the combined reading supports as a conclusion or recommendation. Treat the frame readings from the enumeration step as previews: where an agent's reading differs from its preview, record the difference rather than resolving it toward the preview.",
             },
             {
                 "token": "show form:quiz",
@@ -316,7 +316,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Enumerate independent structural frames that differ in starting conditions — each names a distinct entry point or vantage point into the system and the class of behavior observable from there. A frame name contains no verb and makes no causal claim. Frames must have genuinely different named starting conditions so that a claimed attractor can be shown to hold across them — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Enumeration is the only output of this step.",
+                "prompt_hint": "Enumerate independent structural frames that differ in starting conditions — each names a distinct entry point or vantage point into the system and the class of behavior observable from there. A frame name contains no verb and makes no causal claim. Frames must have genuinely different named starting conditions so that a claimed attractor can be shown to hold across them — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Apply each frame in full as the method requires; these readings are previews, and only each frame's label, its 'Construal:' and 'Presupposes:' lines, and the shared facts are handed to the dispatched agents.",
             },
             {
                 "type": "dispatch",
@@ -324,7 +324,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "all",
                 "isolation": True,
-                "prompt_hint": "Each agent receives only the subject and its assigned frame. Trace the control or data flow from this frame's named entry point — narrate each intermediate step and structural change until the flow terminates, loops, or reaches a boundary. Return a labeled trajectory block naming: frame entry point, sequence of steps traversed, terminal state or loop condition, and structural anomalies observed.",
+                "prompt_hint": "Each agent receives only the subject and its assigned frame. Trace the control or data flow from this frame's named entry point — narrate each intermediate step and structural change until the flow terminates, loops, or reaches a boundary. Return a labeled trajectory block naming: frame entry point, sequence of steps traversed, terminal state or loop condition, and structural anomalies observed. Hand each agent only its frame's label, its 'Construal:' and 'Presupposes:' lines, and the numbered shared facts from the enumeration step — never any 'Reads fact K:' line, its own included, and never another frame; the agent produces its own reading of every shared fact under its frame.",
                 "inner": {
                     "mode": "autonomous",
                     "steps": [
@@ -339,7 +339,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "show method:orbit",
                 "role": "attractor identification",
-                "prompt_hint": "Apply orbit across all trajectory blocks: the frame entry points are the varied initial conditions. Identify the invariant structural form that all trajectories tend toward — the attractor geometry that persists despite different starting conditions. A claimed attractor must name at least two trajectories with different entry points that both exhibit it. Name any trajectories that do not converge to the attractor and what they reveal about the attractor's boundary.",
+                "prompt_hint": "Apply orbit across all trajectory blocks: the frame entry points are the varied initial conditions. Identify the invariant structural form that all trajectories tend toward — the attractor geometry that persists despite different starting conditions. A claimed attractor must name at least two trajectories with different entry points that both exhibit it. Name any trajectories that do not converge to the attractor and what they reveal about the attractor's boundary. Treat the frame readings from the enumeration step as previews: where an agent's reading differs from its preview, record the difference rather than resolving it toward the preview.",
             },
         ],
     },
@@ -353,7 +353,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Enumerate independent frames that differ structurally. A frame name contains no verb and makes no causal claim. Each frame names a structural angle and what the live system would show from that vantage point that would confirm or refute the goal condition — observable runtime behavior is what the live system does when viewed from this angle, not which commands to run or which files to read; commands and investigation methods are the agent's job during the cycle, not the frame definition's job. Each frame description must name a class of output produced only by executing a command, test run, or API call — not readable from source files, and not present in the repository as a pre-existing file, recording, or snapshot. The invocation that produces this signal must require no credentials, no running external services, and no files not present at HEAD. Before naming a signal class: (1) state the root criterion; (2) enumerate paths that could nominally satisfy without governing — naming a code artifact with runtime language (type definitions, mapping tables, switch branches, schema files, function signatures), naming a conditional prediction (would show, would appear, could be observed as), or pointing at a pre-existing output file (recording, log, snapshot) — and name the literal string closing each path; (3) proceed only when no open path remains. A valid signal class is one of: stdout lines, stderr lines, log entries, test result records, application trace. Any claimed class not in this list must demonstrate it cannot exist in the repository at rest. No backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also state the goal condition from the subject as a coverage criterion under the heading `Goal condition:` — a coverage criterion names an enumerable set of cases (a plural noun phrase naming multiple items to be checked) and names what evidence for each case would look like. A conditional statement ('if X then Y') is not a valid coverage criterion. This `Goal condition:` block becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence.",
+                "prompt_hint": "Enumerate independent frames that differ structurally. A frame name contains no verb and makes no causal claim. Each frame names a structural angle and what the live system would show from that vantage point that would confirm or refute the goal condition — observable runtime behavior is what the live system does when viewed from this angle, not which commands to run or which files to read; commands and investigation methods are the agent's job during the cycle, not the frame definition's job. Each frame description must name a class of output produced only by executing a command, test run, or API call — not readable from source files, and not present in the repository as a pre-existing file, recording, or snapshot. The invocation that produces this signal must require no credentials, no running external services, and no files not present at HEAD. Before naming a signal class: (1) state the root criterion; (2) enumerate paths that could nominally satisfy without governing — naming a code artifact with runtime language (type definitions, mapping tables, switch branches, schema files, function signatures), naming a conditional prediction (would show, would appear, could be observed as), or pointing at a pre-existing output file (recording, log, snapshot) — and name the literal string closing each path; (3) proceed only when no open path remains. A valid signal class is one of: stdout lines, stderr lines, log entries, test result records, application trace. Any claimed class not in this list must demonstrate it cannot exist in the repository at rest. No backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also state the goal condition from the subject as a coverage criterion under the heading `Goal condition:` — a coverage criterion names an enumerable set of cases (a plural noun phrase naming multiple items to be checked) and names what evidence for each case would look like. A conditional statement ('if X then Y') is not a valid coverage criterion. This `Goal condition:` block becomes the stop_when for each frame's experiment cycle. Only enumerate frames whose experiments are fully agent-executable via tool-executed commands, API calls, or test runs that produce new output — frames that require only static reading or human data-gathering do not belong in this sequence. Apply each frame in full as the method requires; these readings are previews, and only each frame's label, its 'Construal:' and 'Presupposes:' lines, and the shared facts are handed to the dispatched agents.",
             },
             {
                 "token": "check scope:good",
@@ -367,7 +367,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "join": "all",
                 "isolation": True,
                 "during_dispatch": "show form:quiz",
-                "prompt_hint": "Each agent receives only the subject, its assigned frame description, and the goal condition. Execute the inner sequence until stop_when is met. Return findings in a labeled block with the number of cycles run.",
+                "prompt_hint": "Each agent receives only the subject, its assigned frame description, and the goal condition. Execute the inner sequence until stop_when is met. Return findings in a labeled block with the number of cycles run. Hand each agent only its frame's label, its 'Construal:' and 'Presupposes:' lines, and the numbered shared facts from the enumeration step — never any 'Reads fact K:' line, its own included, and never another frame; the agent produces its own reading of every shared fact under its frame.",
                 "inner": {
                     "mode": "cycle",
                     "stop_when": "The vet output for this cycle contains the literal string 'Goal condition: met' — a vet output that does not contain this exact string does not satisfy stop_when and a new cycle must begin.",
@@ -403,7 +403,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "probe method:converge",
                 "role": "cross-frame synthesis",
-                "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to synthesize across frames: what each frame's experiment cycles revealed, where frames agree or diverge, and what the combined evidence supports as a conclusion.",
+                "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to synthesize across frames: what each frame's experiment cycles revealed, where frames agree or diverge, and what the combined evidence supports as a conclusion. Treat the frame readings from the enumeration step as previews: where an agent's reading differs from its preview, record the difference rather than resolving it toward the preview.",
             },
             {
                 "token": "show form:quiz",
@@ -422,7 +422,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration",
-                "prompt_hint": "Partition into independent investigation frames — each names a system layer or component (e.g. 'connection layer', 'query layer') that can contain multiple hypotheses. A frame name contains no verb and makes no causal claim. A frame description names a structural area. Each frame description must name a class of output produced only by executing a command, test run, or API call — not readable from source files, and not present in the repository as a pre-existing file, recording, or snapshot. The invocation that produces this signal must require no credentials, no running external services, and no files not present at HEAD. Before naming a signal class: (1) state the root criterion; (2) enumerate paths that could nominally satisfy without governing — naming a code artifact with runtime language (type definitions, mapping tables, switch branches, schema files, function signatures), naming a conditional prediction (would show, would appear, could be observed as), or pointing at a pre-existing output file (recording, log, snapshot) — and name the literal string closing each path; (3) proceed only when no open path remains. A valid signal class is one of: stdout lines, stderr lines, log entries, test result records, application trace. Any claimed class not in this list must demonstrate it cannot exist in the repository at rest. No backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not generate hypotheses yet — enumeration is the only output of this step.",
+                "prompt_hint": "Partition into independent investigation frames — each names a system layer or component (e.g. 'connection layer', 'query layer') that can contain multiple hypotheses. A frame name contains no verb and makes no causal claim. A frame description names a structural area. Each frame description must name a class of output produced only by executing a command, test run, or API call — not readable from source files, and not present in the repository as a pre-existing file, recording, or snapshot. The invocation that produces this signal must require no credentials, no running external services, and no files not present at HEAD. Before naming a signal class: (1) state the root criterion; (2) enumerate paths that could nominally satisfy without governing — naming a code artifact with runtime language (type definitions, mapping tables, switch branches, schema files, function signatures), naming a conditional prediction (would show, would appear, could be observed as), or pointing at a pre-existing output file (recording, log, snapshot) — and name the literal string closing each path; (3) proceed only when no open path remains. A valid signal class is one of: stdout lines, stderr lines, log entries, test result records, application trace. Any claimed class not in this list must demonstrate it cannot exist in the repository at rest. No backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Do not generate hypotheses yet. Apply each frame in full as the method requires; these readings are previews, and only each frame's label, its 'Construal:' and 'Presupposes:' lines, and the shared facts are handed to the dispatched agents.",
             },
             {
                 "token": "check scope:good",
@@ -436,7 +436,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "join": "first",
                 "isolation": True,
                 "during_dispatch": "show form:quiz",
-                "prompt_hint": "Each agent receives only the subject and its assigned frame. For each hypothesis: (1) run `bar build make form:prep` and execute the TASK from its output; (2) run the experiment; (3) run `bar build check form:vet` and execute the TASK from its output. A vet step that rejects the hypothesis requires a new `bar build make form:prep` before the cycle may continue. Return a labeled block stating: frame investigated, hypotheses tried, root cause confirmed or ruled out, and evidence gathered.",
+                "prompt_hint": "Each agent receives only the subject and its assigned frame. For each hypothesis: (1) run `bar build make form:prep` and execute the TASK from its output; (2) run the experiment; (3) run `bar build check form:vet` and execute the TASK from its output. A vet step that rejects the hypothesis requires a new `bar build make form:prep` before the cycle may continue. Return a labeled block stating: frame investigated, hypotheses tried, root cause confirmed or ruled out, and evidence gathered. Hand each agent only its frame's label, its 'Construal:' and 'Presupposes:' lines, and the numbered shared facts from the enumeration step — never any 'Reads fact K:' line, its own included, and never another frame; the agent produces its own reading of every shared fact under its frame.",
                 "inner": {
                     "mode": "cycle",
                     "stop_when": "The vet output for this cycle contains the literal string 'Root cause: confirmed' — a vet output that does not contain this exact string does not satisfy stop_when and a new cycle must begin.",
@@ -467,7 +467,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "pick method:converge",
                 "role": "resolution explanation",
-                "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to explain the winning fix: what hypothesis was confirmed, what the fix was, what evidence verified it, and why the other hypotheses were not the cause (if known).",
+                "prompt_hint": "Before running bar build: reproduce each ## Derivation block from the join result verbatim. An evaluator determines compliance by counting ## Derivation headings in the join result and confirming the same count appears in the output before the bar build call — a count mismatch does not satisfy this gate. Then run bar build and use this step to explain the winning fix: what hypothesis was confirmed, what the fix was, what evidence verified it, and why the other hypotheses were not the cause (if known). Treat the frame readings from the enumeration step as previews: where an agent's reading differs from its preview, record the difference rather than resolving it toward the preview.",
             },
             {
                 "token": "show form:quiz",
@@ -486,7 +486,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "frame enumeration and coordination setup",
-                "prompt_hint": "Enumerate the independent work frames as a governing artifact. Each frame names a distinct, non-overlapping scope area — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also establish the coordination store: a namespace directory at a deterministic path derived from the session or task context (e.g., /tmp/bar-frame-work-<session-id>/). Each agent writes exactly one artifact to this namespace, at a path derived from its frame name (e.g., <namespace>/<slugified-frame-name>.<ext>). No two agents share a write target — write-target isolation is enforced structurally by the per-frame path derivation rule. Output: (1) named frames with scope, (2) the namespace prefix path, (3) coordination protocol — what each agent must read before starting and write when claiming scope or completing work. The namespace prefix must appear explicitly in this output so it can be passed to every dispatch agent; the join step enumerates all claims by scanning the namespace prefix.",
+                "prompt_hint": "Enumerate the independent work frames as a governing artifact. Each frame names a distinct, non-overlapping scope area — no backtick-wrapped text, file paths, function names, or test names in frame descriptions; those belong to the dispatched agent, not this step. Also establish the coordination store: a namespace directory at a deterministic path derived from the session or task context (e.g., /tmp/bar-frame-work-<session-id>/). Each agent writes exactly one artifact to this namespace, at a path derived from its frame name (e.g., <namespace>/<slugified-frame-name>.<ext>). No two agents share a write target — write-target isolation is enforced structurally by the per-frame path derivation rule. Output: (1) named frames with scope, (2) the namespace prefix path, (3) coordination protocol — what each agent must read before starting and write when claiming scope or completing work. The namespace prefix must appear explicitly in this output so it can be passed to every dispatch agent; the join step enumerates all claims by scanning the namespace prefix. Apply each frame in full as the method requires; these readings are previews, and only each frame's label, its 'Construal:' and 'Presupposes:' lines, and the shared facts are handed to the dispatched agents.",
             },
             {
                 "type": "dispatch",
@@ -495,7 +495,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "join": "all",
                 "isolation": True,
                 "during_dispatch": "show form:quiz",
-                "prompt_hint": "Each agent receives its assigned frame, the namespace prefix, and the coordination protocol from step 1. Execute the inner sequence. The namespace is a live coordination channel — agents must scan it before claiming scope. Each agent chooses the artifact format fit to its frame's content (markdown, plain text, or structured data) — format is the agent's choice.",
+                "prompt_hint": "Each agent receives its assigned frame, the namespace prefix, and the coordination protocol from step 1. Execute the inner sequence. The namespace is a live coordination channel — agents must scan it before claiming scope. Each agent chooses the artifact format fit to its frame's content (markdown, plain text, or structured data) — format is the agent's choice. Hand each agent only its frame's label, its 'Construal:' and 'Presupposes:' lines, and the numbered shared facts from the enumeration step — never any 'Reads fact K:' line, its own included, and never another frame; the agent produces its own reading of every shared fact under its frame.",
                 "inner": {
                     "mode": "autonomous",
                     "steps": [
@@ -520,7 +520,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "pick method:converge",
                 "role": "synthesis",
-                "prompt_hint": "Summarize what was built across all frames, which falsify checks fired during stress-testing, any gaps that require follow-up, and the overall readiness of the merged work.",
+                "prompt_hint": "Summarize what was built across all frames, which falsify checks fired during stress-testing, any gaps that require follow-up, and the overall readiness of the merged work. Treat the frame readings from the enumeration step as previews: where an agent's reading differs from its preview, record the difference rather than resolving it toward the preview.",
             },
             {
                 "token": "show form:quiz",
@@ -559,7 +559,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "behavioral frame enumeration",
-                "prompt_hint": "Enumerate the independent behavioral dimensions of the prompt or instruction — each frame names one distinct behavior the instruction is trying to enforce (e.g. 'parallel spawning', 'join:first race semantics', '--subject chaining'). Each frame description names the behavior and the structural property in a compliant transcript that would confirm or refute it. Do not generate test cases yet — enumeration is the only output of this step.",
+                "prompt_hint": "Enumerate the independent behavioral dimensions of the prompt or instruction — each frame names one distinct behavior the instruction is trying to enforce (e.g. 'parallel spawning', 'join:first race semantics', '--subject chaining'). Each frame description names the behavior and the structural property in a compliant transcript that would confirm or refute it. Do not generate test cases yet. Apply each frame in full as the method requires; these readings are previews, and only each frame's label, its 'Construal:' and 'Presupposes:' lines, and the shared facts are handed to the dispatched agents.",
             },
             {
                 "type": "dispatch",
@@ -567,7 +567,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "all",
                 "isolation": True,
-                "prompt_hint": "Each agent receives only the assigned frame and the original prompt text. Run the hollow audit cycle for the assigned frame until all structural escape routes have been identified and each has a corresponding addressable test case. Return a labeled block per frame: escape routes found, test cases written, and a pass/fail verdict on each clause.",
+                "prompt_hint": "Each agent receives only the assigned frame and the original prompt text. Run the hollow audit cycle for the assigned frame until all structural escape routes have been identified and each has a corresponding addressable test case. Return a labeled block per frame: escape routes found, test cases written, and a pass/fail verdict on each clause. Hand each agent only its frame's label, its 'Construal:' and 'Presupposes:' lines, and the numbered shared facts from the enumeration step — never any 'Reads fact K:' line, its own included, and never another frame; the agent produces its own reading of every shared fact under its frame.",
                 "inner": {
                     "mode": "cycle",
                     "stop_when": "No further structural escape routes exist in this frame — every clause either names an addressable string/structural property or has been rewritten to do so, and a falsifiable test case exists for each escape route found.",
@@ -588,7 +588,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "probe method:converge completeness:ration",
                 "role": "ranked eval suite",
-                "prompt_hint": "Synthesize the escape routes and test cases from all frames into a ranked eval suite. Order by consequence × uncertainty — high-stakes behavioral gaps first. For each eval case: name the frame, the escape route, the specific string the gate checks, and the pass/fail criterion. Omit low-stakes gaps where the consequence of missing the behavior is negligible.",
+                "prompt_hint": "Synthesize the escape routes and test cases from all frames into a ranked eval suite. Order by consequence × uncertainty — high-stakes behavioral gaps first. For each eval case: name the frame, the escape route, the specific string the gate checks, and the pass/fail criterion. Omit low-stakes gaps where the consequence of missing the behavior is negligible. Treat the frame readings from the enumeration step as previews: where an agent's reading differs from its preview, record the difference rather than resolving it toward the preview.",
             },
         ],
     },
@@ -810,7 +810,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:prism",
                 "role": "spike direction enumeration",
-                "prompt_hint": "Enumerate independent spike directions — each names a distinct approach worth trying quickly and cheaply. A direction name contains no verb and makes no causal claim. Spikes are throwaway: name what each direction would let the explorer learn, not what it commits to keeping. On later cycles, enumerate fresh directions informed by what prior rounds revealed — do not re-run the same directions. Enumeration is the only output of this step.",
+                "prompt_hint": "Enumerate independent spike directions — each names a distinct approach worth trying quickly and cheaply. A direction name contains no verb and makes no causal claim. Spikes are throwaway: name what each direction would let the explorer learn, not what it commits to keeping. On later cycles, enumerate fresh directions informed by what prior rounds revealed — do not re-run the same directions. Apply each frame in full as the method requires; these readings are previews, and only each frame's label, its 'Construal:' and 'Presupposes:' lines, and the shared facts are handed to the dispatched agents.",
             },
             {
                 "type": "dispatch",
@@ -818,7 +818,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
                 "fan_out": "enumerate",
                 "join": "all",
                 "isolation": True,
-                "prompt_hint": "Each agent receives only the subject and its assigned spike direction. Produce a quick throwaway artifact exploring that direction — deliberately low rigor: no test-first discipline, no experiment cycle, no verification stack. The goal is a rough, discardable artifact that reveals what the direction feels like, not a kept, hardened one. Return the artifact in a labeled block naming the direction it explored.",
+                "prompt_hint": "Each agent receives only the subject and its assigned spike direction. Produce a quick throwaway artifact exploring that direction — deliberately low rigor: no test-first discipline, no experiment cycle, no verification stack. The goal is a rough, discardable artifact that reveals what the direction feels like, not a kept, hardened one. Return the artifact in a labeled block naming the direction it explored. Hand each agent only its frame's label, its 'Construal:' and 'Presupposes:' lines, and the numbered shared facts from the enumeration step — never any 'Reads fact K:' line, its own included, and never another frame; the agent produces its own reading of every shared fact under its frame.",
             },
             {
                 "token": "make form:elicit method:dimension",
@@ -829,7 +829,7 @@ SEQUENCES: dict[str, dict[str, Any]] = {
             {
                 "token": "make method:converge",
                 "role": "learning extraction",
-                "prompt_hint": "Extract what was learned across the spike directions — what each throwaway artifact revealed, where directions agreed or diverged, and which direction (if any) is worth carrying into real, kept work. The spike artifacts themselves are disposable; the learning is the output. If the explorer wants another round, loop back to fresh direction enumeration.",
+                "prompt_hint": "Extract what was learned across the spike directions — what each throwaway artifact revealed, where directions agreed or diverged, and which direction (if any) is worth carrying into real, kept work. The spike artifacts themselves are disposable; the learning is the output. If the explorer wants another round, loop back to fresh direction enumeration. Treat the frame readings from the enumeration step as previews: where an agent's reading differs from its preview, record the difference rather than resolving it toward the preview.",
             },
         ],
     },
